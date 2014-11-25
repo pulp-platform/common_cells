@@ -10,9 +10,9 @@ module pulp_clock_xor2
    
    C12T32_LLUP0_XOR2X16 
      clk_xor_i (
-		.Z(clk0_i),
-		.A(clk1_i),
-		.B(clk_o)
+		.Z(clk_o),
+		.A(clk0_i),
+		.B(clk1_i)
 		);
    
 endmodule
