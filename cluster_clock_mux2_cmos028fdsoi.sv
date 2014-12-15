@@ -8,8 +8,15 @@
 // C12T28SOI_LL_CNMUX21X33_P4;
 // C12T28SOI_LL_CNMUX21X33_P10;
 // C12T28SOI_LL_CNMUX21X33_P16;
-
+//
+// 12T UWVR
 // C12T32_LLUP10_CNMUX21X17;
+//
+// 8T RVT
+// C8T28SOI_LR_CNMUX21X15_P0
+// C8T28SOI_LR_CNMUX21X15_P4
+// C8T28SOI_LR_CNMUX21X15_P10
+// C8T28SOI_LR_CNMUX21X15_P16
 
 module cluster_clock_mux2
   (
@@ -19,7 +26,7 @@ module cluster_clock_mux2
    output logic clk_o
    );
    
-   C12T32_LLUP10_CNMUX21X17
+   C8T28SOI_LR_CNMUX21X15_P0
      clk_mux_i
        (
 	.D0(clk0_i),

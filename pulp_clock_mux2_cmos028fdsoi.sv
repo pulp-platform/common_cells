@@ -11,6 +11,12 @@
 
 // C12T32_LLUP10_CNMUX21X17;
 
+// 8T RVT
+// C8T28SOI_LR_CNMUX21X15_P0
+// C8T28SOI_LR_CNMUX21X15_P4
+// C8T28SOI_LR_CNMUX21X15_P10
+// C8T28SOI_LR_CNMUX21X15_P16
+
 module pulp_clock_mux2
   (
    input  logic clk0_i,
@@ -19,7 +25,7 @@ module pulp_clock_mux2
    output logic clk_o
    );
    
-   C12T32_LLUP10_CNMUX21X17
+   C8T28SOI_LR_CNMUX21X15_P0
      clk_mux_i
        (
 	.D0(clk0_i),

@@ -11,16 +11,23 @@
 // C12T28SOI_LRP_CNHLSX58_P16
 // UWVR
 // C12T32_LLUAL4_CNHLSX7
+//
+// 8T RVT
+// C8T28SOI_LRP_CNHLSX54_P0
+// C8T28SOI_LRP_CNHLSX54_P4
+// C8T28SOI_LRP_CNHLSX54_P10
+// C8T28SOI_LRP_CNHLSX54_P16
+
 
 module cluster_clock_gating
-  (
+(
    input  logic clk_i,
    input  logic en_i,
    input  logic test_en_i,
    output logic clk_o
-   );
+);
    
-   C12T32_LLUAL4_CNHLSX7
+   C8T28SOI_LRP_CNHLSX54_P0
      clk_gate_i (
 		 .Q(clk_o),
 		 .CP(clk_i),
