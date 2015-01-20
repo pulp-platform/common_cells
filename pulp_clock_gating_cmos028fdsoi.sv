@@ -20,6 +20,8 @@
 // C8T28SOI_LRP_CNHLSX54_P10
 // C8T28SOI_LRP_CNHLSX54_P16
 
+`include "ulpsoc_defines.sv"
+
 module pulp_clock_gating
 (
    input  logic clk_i,
@@ -29,6 +31,7 @@ module pulp_clock_gating
 );
 
 
+`ifdef CMOS28FDSOI_8T
    C8T28SOI_LRP_CNHLSX54_P0
      clk_gate_i (
 		 .Q(clk_o),
@@ -36,5 +39,17 @@ module pulp_clock_gating
 		 .E(en_i),
 		 .TE(test_en_i)
 		 );
-   
+`endif
+
+
+`ifdef CMOS28FDSOI_12T_UWVR
+   C12T32_LLUAL4_CNHLSX7
+     clk_gate_i (
+		 .Q(clk_o),
+		 .CP(clk_i),
+		 .E(en_i),
+		 .TE(test_en_i)
+		 );
+`endif  
+
 endmodule
