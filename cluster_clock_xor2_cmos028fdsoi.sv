@@ -33,7 +33,7 @@ module cluster_clock_xor2
      clk_xor_i (
 		.Z(clk_o),
 		.A(clk0_i),
-		.S(clk1_i) // --> 8T uses A,S as inputs, 12T uses A,B
+		.B(clk1_i) // --> 8T uses A,S as inputs, 12T uses A,B
 		);
 `endif 
    
