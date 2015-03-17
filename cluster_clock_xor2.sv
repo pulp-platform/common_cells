@@ -6,6 +6,6 @@ module cluster_clock_xor2
    output logic clk_o
    );
    
-   assign clk_o = clk0_1 ^ clk1_i;
+   assign clk_o = clk0_i ^ clk1_i;
    
 endmodule
