@@ -26,16 +26,16 @@
 // CKINVM40S, CKINVM48S
 
 module pulp_clock_inverter
-  (
-   input  logic clk_i,
-   output logic clk_o
-   );
-   
+(
+    input  logic clk_i,
+    output logic clk_o
+);
 
-   CKINVM22RA
-     clk_inv_i (
-		.A(clk_i),
-		.Z(clk_o)
-		);
+
+    CKINVM22RA clk_inv_i 
+    (
+        .A(clk_i),
+        .Z(clk_o)
+    );
 
 endmodule

@@ -27,14 +27,14 @@
 
 module pulp_clock_buffer
 (
-   input  logic clk_i,
-   output logic clk_o
+    input  logic clk_i,
+    output logic clk_o
 );
 
-   CKBUFM22RA
-     clk_buf_i (
-		.A(clk_i),
-		.Z(clk_o)
-		);
+    CKBUFM22RA clk_buf_i
+    (
+        .A(clk_i),
+        .Z(clk_o)
+    );
 
 endmodule
