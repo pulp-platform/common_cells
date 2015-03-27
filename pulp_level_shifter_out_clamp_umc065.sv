@@ -3,7 +3,7 @@ module pulp_level_shifter_clamp_out
 (
     input  logic in_i,
     output logic out_o,
-    input logic clamp_i
+    input logic  clamp_i
 );
 
 
