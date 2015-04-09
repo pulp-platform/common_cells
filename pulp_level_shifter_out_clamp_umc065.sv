@@ -7,10 +7,10 @@ module pulp_level_shifter_clamp_out
 );
 
 
-    SHIFT_IN_EN_X10  lsout
+    DZ_LSEM4  lsout
     (
-        .Z(out_o),
-        .A(in_i),
-        .R(clamp_i)
+        .H(out_o),
+        .L(in_i),
+        .EN(clamp_i)
     );
 endmodule
