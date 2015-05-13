@@ -15,7 +15,7 @@ module pulp_level_shifter_out
     (
         .Z(out_o),
         .A(in_i)
-    )
+    );
 `endif
 
 

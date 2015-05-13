@@ -1,10 +1,13 @@
-
 module pulp_buffer
 (
     input  logic in_i,
     output logic out_o
 );
 
-   assign out_o = in_i;
+    C8T28SOI_LR_BFX19_P0 buf_i
+    (
+        .A(in_i),
+        .Z(out_o)
+    );
 
 endmodule

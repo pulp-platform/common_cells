@@ -13,7 +13,7 @@ module cluster_level_shifter_in
     C8T28SOIDV_LRV_LSINX32 lsin
     (
         .Z(out_o),
-        .A(in_i),
+        .A(in_i)
     );
 `endif
 

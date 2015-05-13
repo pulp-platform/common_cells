@@ -19,25 +19,25 @@
 `include "ulpsoc_defines.sv"
 
 module pulp_clock_buffer
-  (
-   input  logic clk_i,
-   output logic clk_o
-   );
-   
+(
+    input  logic clk_i,
+    output logic clk_o
+);
+
 `ifdef CMOS28FDSOI_8T
-   C12T32_LLUP10_CNBFX36
-     clk_buf_i (
-		.A(clk_i),
-		.Z(clk_o)
-		);
+    C12T32_LLUP10_CNBFX36  clk_buf_i
+    (
+        .A(clk_i),
+        .Z(clk_o)
+    );
 `endif
 
 
 `ifdef CMOS28FDSOI_12T_UWVR
-   C12T32_LLUP10_CNBFX36
-     clk_buf_i (
-		.A(clk_i),
-		.Z(clk_o)
-		);
+    C12T32_LLUP10_CNBFX36 clk_buf_i
+    (
+        .A(clk_i),
+        .Z(clk_o)
+    );
 `endif
 endmodule
