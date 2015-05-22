@@ -39,14 +39,27 @@ module edge_propagator_rx
     output logic valid_o
 );
 
-  sync_wedge u_sync_clkb(
-            .clk(clk_i), 
-            .rst_n(rstn_i), 
-            .en(1'b1), 
-            .serial_in(valid_i), 
-            .rising_edge(valid_o), 
-            .falling_edge(), 
-            .serial_out(ack_o));
+    pulp_sync_wedge  u_sync_clkb
+    (
+        .clk_i(clk_i), 
+        .rstn_i(rstn_i), 
+        .en_i(1'b1), 
+        .serial_i(valid_i), 
+        .r_edge_o(valid_o), 
+        .f_edge_o(), 
+        .serial_o(ack_o)
+    );
+/*    
+    pulp_sync_wedge
+    (
+        input  logic clk_i,
+        input  logic rstn_i,
+        input  logic en_i,
+        input  logic serial_i,
+        output logic r_edge_o,
+        output logic f_edge_o,
+        output logic serial_o
+    );*/
 
 endmodule
 

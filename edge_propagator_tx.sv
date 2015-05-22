@@ -40,7 +40,7 @@ module edge_propagator_tx
 );
 
   reg [1:0] sync_a;
-  
+
   reg  r_input_reg;
   wire s_input_reg_next;
 
