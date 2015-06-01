@@ -25,11 +25,11 @@ module cluster_clock_buffer
 );
 
 `ifdef CMOS28FDSOI_8T
-   C12T32_LLUP10_CNBFX36
-     clk_buf_i (
-		.A(clk_i),
-		.Z(clk_o)
-		);
+    C8T28SOI_LR_CNBFX37_P0    clk_buf_i
+    (
+        .A(clk_i),
+        .Z(clk_o)
+    );
 `endif
 
 
