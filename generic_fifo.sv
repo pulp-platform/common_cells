@@ -50,15 +50,15 @@ module generic_fifo
    input  logic                                    clk,
    input  logic                                    rst_n,
    //PUSH SIDE
-   input  logic [DATA_WIDTH-1:0]                   DATA_IN,
-   input  logic                                    VALID_IN,
-   output logic                                    GRANT_OUT,
+   input  logic [DATA_WIDTH-1:0]                   data_i,
+   input  logic                                    valid_i,
+   output logic                                    grant_o,
    //POP SIDE
-   output logic [DATA_WIDTH-1:0]                   DATA_OUT,
-   output logic                                    VALID_OUT,
-   input  logic                                    GRANT_IN,
+   output logic [DATA_WIDTH-1:0]                   data_o,
+   output logic                                    valid_o,
+   input  logic                                    grant_i,
 
-   input  logic                                    test_en_i
+   input  logic                                    test_mode_i
 );
 
 
@@ -101,10 +101,10 @@ module generic_fifo
 
    cluster_clock_gating cg_cell
    (
-     .clk_i     ( clk        ),
-     .en_i      (~gate_clock ),
-     .test_en_i ( test_en_i  ),
-     .clk_o     ( clk_gated  )
+     .clk_i     ( clk         ),
+     .en_i      (~gate_clock  ),
+     .test_en_i ( test_mode_i ),
+     .clk_o     ( clk_gated   )
    );
 
    // UPDATE THE STATE
@@ -134,10 +134,10 @@ module generic_fifo
 
       EMPTY:
       begin
-          GRANT_OUT = 1'b1;
-          VALID_OUT = 1'b0;
+          grant_o = 1'b1;
+          valid_o = 1'b0;
 
-          case(VALID_IN)
+          case(valid_i)
           1'b0 : 
           begin 
                   NS                      = EMPTY;
@@ -158,10 +158,10 @@ module generic_fifo
 
       MIDDLE:
       begin
-          GRANT_OUT = 1'b1;
-          VALID_OUT = 1'b1;
+          grant_o = 1'b1;
+          valid_o = 1'b1;
 
-          case({VALID_IN,GRANT_IN})
+          case({valid_i,grant_i})
 
           2'b01:
           begin
@@ -223,11 +223,11 @@ module generic_fifo
 
       FULL:
       begin
-          GRANT_OUT = 1'b0;
-          VALID_OUT = 1'b1;
+          grant_o = 1'b0;
+          valid_o = 1'b1;
           gate_clock      = 1'b1;
 
-          case(GRANT_IN)
+          case(grant_i)
           1'b1: 
           begin 
                   NS              = MIDDLE;
@@ -253,8 +253,8 @@ module generic_fifo
       default :
       begin
           gate_clock      = 1'b1;
-          GRANT_OUT       = 1'b0;
-          VALID_OUT       = 1'b0;
+          grant_o       = 1'b0;
+          valid_o       = 1'b0;
           NS              = EMPTY;
           Pop_Pointer_NS  = 0;
           Push_Pointer_NS = 0;
@@ -272,11 +272,11 @@ module generic_fifo
       end
       else
       begin
-         if((GRANT_OUT == 1'b1) && (VALID_IN == 1'b1))
-            FIFO_REGISTERS[Push_Pointer_CS] <= DATA_IN;
+         if((grant_o == 1'b1) && (valid_i == 1'b1))
+            FIFO_REGISTERS[Push_Pointer_CS] <= data_i;
       end
    end
 
-   assign DATA_OUT = FIFO_REGISTERS[Pop_Pointer_CS];
+   assign data_o = FIFO_REGISTERS[Pop_Pointer_CS];
 
 endmodule // generic_fifo
