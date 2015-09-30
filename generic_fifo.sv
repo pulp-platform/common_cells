@@ -98,7 +98,7 @@ module generic_fifo
    end
    // synopsys translate_on
 
-
+`ifndef PULP_FPGA_EMUL
    cluster_clock_gating cg_cell
    (
      .clk_i     ( clk         ),
@@ -106,6 +106,9 @@ module generic_fifo
      .test_en_i ( test_mode_i ),
      .clk_o     ( clk_gated   )
    );
+`else
+   assign clk_gated = clk;
+`endif
 
    // UPDATE THE STATE
    always_ff @(posedge clk, negedge rst_n)
