@@ -1,4 +1,21 @@
 
+`ifndef GF_TRACK
+  `define GF_TRACK  7
+`endif
+
+`ifndef GF_VT
+  `define GF_VT     R
+`endif
+
+`ifndef GF_LEN
+  `define GF_LEN   34
+`endif
+
+//andy hack: support different standard cell libraries by setting `GF_TRACK,
+//`GF_VT and `GF_LEN
+`define GF_MXGL2(t,v,c)  MXGL2_X2B_A``t``T``v``_C``c
+
+
 // MXGL2
 // 2-to-1 glitchless multiplexer
 
@@ -10,7 +27,7 @@ module cluster_clock_mux2
     output logic clk_o
   );
 
-  MXGL2_X2B_A7TR_C34 clk_mux_i
+  `GF_MXGL2(`GF_TRACK, `GF_VT, `GF_LEN) clk_mux_i
   (
     .A  ( clk0_i    ),
     .B  ( clk1_i    ),
