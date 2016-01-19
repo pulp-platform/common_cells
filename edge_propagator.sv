@@ -67,8 +67,8 @@ module edge_propagator
             .rstn_i(rstn_rx_i), 
             .en_i(1'b1), 
             .serial_i(r_input_reg), 
-            .r_edge_i(edge_o), 
-            .f_edge_i(), 
+            .r_edge_o(edge_o), 
+            .f_edge_o(), 
             .serial_o(sync_b));
 
 endmodule
