@@ -65,7 +65,7 @@ module edge_propagator
   pulp_sync_wedge u_sync_clkb(
             .clk_i(clk_rx_i), 
             .rstn_i(rstn_rx_i), 
-            .en(1'b1), 
+            .en_i(1'b1), 
             .serial_i(r_input_reg), 
             .r_edge_i(edge_o), 
             .f_edge_i(), 
