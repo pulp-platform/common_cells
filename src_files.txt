@@ -35,7 +35,7 @@ common_cells:
   files_xilinx_synth: [
     cluster_clock_and2.sv,
     cluster_clock_buffer.sv,
-    cluster_clock_gating.sv,
+    cluster_clock_gating_xilinx.sv,
     cluster_clock_inverter.sv,
     cluster_clock_mux2.sv,
     cluster_clock_xor2.sv,
