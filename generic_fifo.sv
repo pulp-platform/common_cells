@@ -73,7 +73,7 @@ module generic_fifo
    logic [ADDR_DEPTH-1:0]          Pop_Pointer_CS,  Pop_Pointer_NS;
    logic [ADDR_DEPTH-1:0]          Push_Pointer_CS, Push_Pointer_NS;
    logic [DATA_WIDTH-1:0]          FIFO_REGISTERS[DATA_DEPTH-1:0];
-   integer                         i;
+   int unsigned                    i;
 
 
 
