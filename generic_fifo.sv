@@ -143,7 +143,7 @@ module generic_fifo
           case(valid_i)
           1'b0 : 
           begin 
-                  NS                      = EMPTY;
+                  NS              = EMPTY;
                   Push_Pointer_NS = Push_Pointer_CS;
                   Pop_Pointer_NS  = Pop_Pointer_CS;
                   gate_clock      = 1'b1;
@@ -151,7 +151,7 @@ module generic_fifo
 
           1'b1: 
           begin 
-                  NS                      = MIDDLE;
+                  NS              = MIDDLE;
                   Push_Pointer_NS = Push_Pointer_CS + 1'b1;
                   Pop_Pointer_NS  = Pop_Pointer_CS;
           end
@@ -186,7 +186,7 @@ module generic_fifo
           2'b00 : 
           begin
                   gate_clock      = 1'b1; 
-                  NS                      = MIDDLE;
+                  NS              = MIDDLE;
                   Push_Pointer_NS = Push_Pointer_CS;
                   Pop_Pointer_NS  = Pop_Pointer_CS;
           end
@@ -226,9 +226,9 @@ module generic_fifo
 
       FULL:
       begin
-          grant_o = 1'b0;
-          valid_o = 1'b1;
-          gate_clock      = 1'b1;
+          grant_o     = 1'b0;
+          valid_o     = 1'b1;
+          gate_clock  = 1'b1;
 
           case(grant_i)
           1'b1: 
@@ -256,8 +256,8 @@ module generic_fifo
       default :
       begin
           gate_clock      = 1'b1;
-          grant_o       = 1'b0;
-          valid_o       = 1'b0;
+          grant_o         = 1'b0;
+          valid_o         = 1'b0;
           NS              = EMPTY;
           Pop_Pointer_NS  = 0;
           Push_Pointer_NS = 0;
