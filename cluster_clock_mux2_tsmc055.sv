@@ -23,12 +23,34 @@ module cluster_clock_mux2
    output logic clk_o
 );
 
-   CLKMX2_X12_A8TR clk_mux_i
+`ifdef USE_SC8
+   CLKMX2_X12_A8TL clk_mux_i
    (
       .A(clk0_i),
       .B(clk1_i),
       .S0(clk_sel_i),
       .Y(clk_o)
    );
-   
+`endif
+
+`ifdef USE_SC9
+   MX2_X1P4M_A9TL clk_mux_i
+   (
+      .A(clk0_i),
+      .B(clk1_i),
+      .S0(clk_sel_i),
+      .Y(clk_o)
+   );
+`endif
+
+`ifdef USE_SC12
+   MX2_X1P4M_A12TL clk_mux_i
+   (
+      .A(clk0_i),
+      .B(clk1_i),
+      .S0(clk_sel_i),
+      .Y(clk_o)
+   );
+`endif
+
 endmodule

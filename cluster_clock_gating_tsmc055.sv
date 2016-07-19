@@ -26,13 +26,39 @@ module cluster_clock_gating
     output logic clk_o
 );
 
-    //LAGCEPM12R  clk_gate_i
-    TLATNTSCA_X12_A8TR clk_gate_i
+`ifdef USE_SC8
+    TLATNTSCA_X12_A8TL clk_gate_i
     (
         .ECK(clk_o),
         .CK(clk_i),
         .E(en_i),
         .SE(test_en_i)
     );
+`endif 
+
+`ifdef USE_SC9
+    POSTICG_X2P5B_A9TL clk_gate_i
+    (
+        .ECK(clk_o),
+        .CK(clk_i),
+        .E(en_i),
+        .SEN(~
+            test_en_i)
+    );
+`endif 
+
+
+`ifdef USE_SC12
+    //LAGCEPM12R  clk_gate_i
+    POSTICG_X2P5B_A12TL clk_gate_i
+    (
+        .ECK(clk_o),
+        .CK(clk_i),
+        .E(en_i),
+        .SEN(~test_en_i)
+    );
+`endif 
+
+
 
 endmodule

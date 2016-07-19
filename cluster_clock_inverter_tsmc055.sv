@@ -31,11 +31,30 @@ module cluster_clock_inverter
    output logic clk_o
 );
 
-
+`ifdef USE_SC8
    CLKINV_X20_A8TR clk_inv_i 
    (
       .A(clk_i),
       .Y(clk_o)
    );
+`endif
+
+`ifdef USE_SC9
+    INV_X2P5B_A9TL clk_inv_i
+    (
+      .A(clk_i),
+      .Y(clk_o)
+    );
+`endif 
+
+
+`ifdef USE_SC12
+    INV_X2P5B_A12TL clk_inv_i
+    (
+      .A(clk_i),
+      .Y(clk_o)
+    );
+`endif 
+
 
 endmodule

@@ -31,10 +31,31 @@ module cluster_clock_buffer
    output logic clk_o
 );
 
+`ifdef USE_SC8
    CLKBUF_X24_A8TR clk_buf_i
    (
       .A(clk_i),
       .Y(clk_o)
    );
+`endif
+
+`ifdef USE_SC9
+   BUF_X1P4M_A9TR clk_buf_i
+   (
+      .A(clk_i),
+      .Y(clk_o)
+   );
+`endif
+
+
+`ifdef USE_SC12
+   BUF_X0P8M_A12TR clk_buf_i
+   (
+      .A(clk_i),
+      .Y(clk_o)
+   );
+`endif
+
+
 
 endmodule

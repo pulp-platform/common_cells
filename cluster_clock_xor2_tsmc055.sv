@@ -17,13 +17,34 @@ module cluster_clock_xor2
    output logic clk_o
 );
 
-
-   CLKXOR2_X12_A8TR clk_xor_i 
+`ifdef USE_SC8
+   CLKXOR2_X12_A8TL clk_xor_i 
    (
       .Y(clk_o),
       .A(clk0_i),
       .B(clk1_i) 
    );
+`endif
+
+`ifdef USE_SC9
+   XOR2_X1P4M_A9TL clk_xor_i 
+   (
+      .Y(clk_o),
+      .A(clk0_i),
+      .B(clk1_i) 
+   );
+`endif
+
+
+`ifdef USE_SC12
+   XOR2_X1P4M_A12TL clk_xor_i 
+   (
+      .Y(clk_o),
+      .A(clk0_i),
+      .B(clk1_i) 
+   );
+`endif
+
 
 
 endmodule
