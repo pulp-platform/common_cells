@@ -1,9 +1,9 @@
-module cluster_clock_buffer
+
+module pulp_clock_buffer
 (
    input  logic clk_i,
    output logic clk_o
 );
-
 
    BUF_X4B_A9TL  clk_buf_i
    (

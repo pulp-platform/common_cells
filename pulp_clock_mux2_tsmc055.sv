@@ -1,11 +1,10 @@
-module cluster_clock_mux2
+module pulp_clock_mux2
 (
    input  logic clk0_i,
    input  logic clk1_i,
    input  logic clk_sel_i,
    output logic clk_o
 );
-
 
    MX2_X4B_A9TL clk_mux_i
    (
