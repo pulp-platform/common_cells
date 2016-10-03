@@ -6,7 +6,7 @@ module pulp_clock_gating
     output logic clk_o
 );
 
-    POSTICG_X4B_A9TL clk_gate_i
+    PREICG_X4B_A9TL clk_gate_i
     (
         .ECK(clk_o),
         .CK(clk_i),
