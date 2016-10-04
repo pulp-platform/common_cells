@@ -11,7 +11,7 @@ module pulp_clock_gating
         .ECK(clk_o),
         .CK(clk_i),
         .E(en_i),
-        .SEN(~test_en_i)
+        .SE(test_en_i)
     );
 
 endmodule
