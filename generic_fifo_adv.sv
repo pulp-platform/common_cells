@@ -205,13 +205,7 @@ module generic_fifo_adv
 
           2'b11: 
           begin
-                   if( (Push_Pointer_CS == Pop_Pointer_CS - 2) || ( (Push_Pointer_CS == DATA_DEPTH-1) && (Pop_Pointer_CS == 1) ) || ( (Push_Pointer_CS == DATA_DEPTH-2) && (Pop_Pointer_CS == 0) )  )
-                          NS        = FULL;
-                  else
-                          NS        = MIDDLE;
-
-
-                          
+                  NS              = MIDDLE;
 
                   if(Push_Pointer_CS == DATA_DEPTH-1)
                           Push_Pointer_NS = 0;
@@ -226,8 +220,8 @@ module generic_fifo_adv
 
           2'b10:
           begin 
-                  if( (Push_Pointer_CS == Pop_Pointer_CS - 2) || ( (Push_Pointer_CS == DATA_DEPTH-1) && (Pop_Pointer_CS == 1) ) || ( (Push_Pointer_CS == DATA_DEPTH-2) && (Pop_Pointer_CS == 0) )  )
-                          NS        = FULL;
+                  if(( Push_Pointer_CS == Pop_Pointer_CS - 1) || ( (Push_Pointer_CS == DATA_DEPTH-1) && (Pop_Pointer_CS == 0) ))
+                          NS              = FULL;
                   else
                           NS        = MIDDLE;
 
@@ -246,14 +240,14 @@ module generic_fifo_adv
       begin
           grant_o     = 1'b0;
           valid_o     = 1'b1;
-          gate_clock  = ~valid_i;
-
-          Push_Pointer_NS = (valid_i) ? Push_Pointer_CS + 1'b1 : Push_Pointer_CS; 
+          gate_clock  = 1'b1;
 
           case(grant_i)
           1'b1: 
           begin 
                   NS              = MIDDLE;
+
+                  Push_Pointer_NS = Push_Pointer_CS;
 
                   if(Pop_Pointer_CS == DATA_DEPTH-1)
                           Pop_Pointer_NS  = 0;
@@ -264,6 +258,7 @@ module generic_fifo_adv
           1'b0:
           begin 
                   NS              = FULL;
+                  Push_Pointer_NS = Push_Pointer_CS;
                   Pop_Pointer_NS  = Pop_Pointer_CS;
           end
           endcase                 
@@ -292,7 +287,7 @@ module generic_fifo_adv
       end
       else
       begin
-         if( /*(grant_o == 1'b1 ) && */ (valid_i == 1'b1))
+         if((grant_o == 1'b1) && (valid_i == 1'b1))
             FIFO_REGISTERS[Push_Pointer_CS] <= data_i;
       end
    end
