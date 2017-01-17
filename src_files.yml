@@ -3,6 +3,7 @@ common_cells_all:
     generic_fifo.sv,         
     generic_LFSR_8bit.sv,          
     onehot_to_bin.sv,              
+    rstgen.sv,
   ]
 
 common_cells_rtl:
@@ -37,6 +38,15 @@ common_cells_rtl:
     pulp_sync_wedge.sv,                
     pulp_clock_gating_async.sv,
     pulp_sync_wedge.sv,        
-    rstgen.sv,                
+  ]
+
+common_cells_fpga:
+  targets: [
+    xilinx,
+  ]
+  files: [
+    cluster_clock_gating_xilinx.sv,
+    pulp_clock_gating_xilinx.sv,
+    pulp_clock_mux2_xilinx.sv,
   ]
 
