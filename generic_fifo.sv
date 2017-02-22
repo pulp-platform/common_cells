@@ -43,8 +43,8 @@
 
 module generic_fifo 
 #( 
-   parameter                       DATA_WIDTH = 32,
-   parameter                       DATA_DEPTH = 8
+   parameter int unsigned          DATA_WIDTH = 32,
+   parameter int unsigned          DATA_DEPTH = 8
 )
 (
    input  logic                                    clk,
@@ -63,7 +63,7 @@ module generic_fifo
 
 
    // Local Parameter
-   localparam  ADDR_DEPTH = $clog2(DATA_DEPTH);
+   localparam  int unsigned ADDR_DEPTH = $clog2(DATA_DEPTH);
    enum logic [1:0] { EMPTY, FULL, MIDDLE } CS, NS;
    // Internal Signals
 
