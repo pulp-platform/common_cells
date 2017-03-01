@@ -1,4 +1,12 @@
-common_cells:
+common_cells_all:
+  files: [
+    generic_fifo.sv,         
+    generic_LFSR_8bit.sv,          
+    onehot_to_bin.sv,              
+    rstgen.sv,
+  ]
+
+common_cells_rtl:
   flags: [
     skip_synthesis,
   ]
@@ -17,9 +25,6 @@ common_cells:
     edge_propagator.sv,
     edge_propagator_tx.sv,
     generic_fifo_adv.sv,
-    generic_fifo.sv,
-    generic_LFSR_8bit.sv,
-    onehot_to_bin.sv,
     pulp_buffer.sv,
     pulp_clock_and2.sv,
     pulp_clock_buffer.sv,
@@ -34,5 +39,4 @@ common_cells:
     pulp_level_shifter_out_clamp.sv,
     pulp_level_shifter_out.sv,
     pulp_sync_wedge.sv,
-    rstgen.sv,
   ]
