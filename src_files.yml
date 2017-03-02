@@ -30,7 +30,6 @@ common_cells_rtl:
     pulp_clock_buffer.sv,
     pulp_clock_gating_async.sv,
     pulp_clock_gating.sv,
-    pulp_clock_gating_xilinx.sv,
     pulp_clock_inverter.sv,
     pulp_clock_mux2.sv,
     pulp_clock_xor2.sv,
