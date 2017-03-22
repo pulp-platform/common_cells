@@ -6,7 +6,7 @@ common_cells_all:
     rstgen.sv,
   ]
 
-common_cells_rtl:
+common_cells_rtl_no_synth:
   targets: [
     rtl,
   ]
@@ -53,7 +53,7 @@ common_cells_fpga:
     pulp_clock_mux2_xilinx.sv,
   ]
 
-common_cells_fpga:
+common_cells_fpga_no_synth:
   targets: [
     xilinx,
   ]
