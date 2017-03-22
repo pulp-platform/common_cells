@@ -7,13 +7,18 @@ common_cells_all:
   ]
 
 common_cells_rtl:
+  targets: [
+    rtl,
+  ]
   flags: [
     skip_synthesis,
   ]
   files: [
+    cluster_clock_gating.sv,
+    pulp_clock_gating.sv,
+    pulp_clock_mux2.sv,
     cluster_clock_and2.sv,
     cluster_clock_buffer.sv,
-    cluster_clock_gating.sv,
     cluster_clock_inverter.sv,
     cluster_clock_mux2.sv,
     cluster_clock_xor2.sv,
@@ -29,9 +34,7 @@ common_cells_rtl:
     pulp_clock_and2.sv,
     pulp_clock_buffer.sv,
     pulp_clock_gating_async.sv,
-    pulp_clock_gating.sv,
     pulp_clock_inverter.sv,
-    pulp_clock_mux2.sv,
     pulp_clock_xor2.sv,
     pulp_level_shifter_in_clamp.sv,
     pulp_level_shifter_in.sv,
@@ -48,5 +51,39 @@ common_cells_fpga:
     cluster_clock_gating_xilinx.sv,
     pulp_clock_gating_xilinx.sv,
     pulp_clock_mux2_xilinx.sv,
+  ]
+
+common_cells_fpga:
+  targets: [
+    xilinx,
+  ]
+  flags: [
+    skip_synthesis,
+  ]
+  files: [
+    cluster_clock_and2.sv,
+    cluster_clock_buffer.sv,
+    cluster_clock_inverter.sv,
+    cluster_clock_mux2.sv,
+    cluster_clock_xor2.sv,
+    cluster_level_shifter_in_clamp.sv,
+    cluster_level_shifter_in.sv,
+    cluster_level_shifter_out_clamp.sv,
+    cluster_level_shifter_out.sv,
+    edge_propagator_rx.sv,
+    edge_propagator.sv,
+    edge_propagator_tx.sv,
+    generic_fifo_adv.sv,
+    pulp_buffer.sv,
+    pulp_clock_and2.sv,
+    pulp_clock_buffer.sv,
+    pulp_clock_gating_async.sv,
+    pulp_clock_inverter.sv,
+    pulp_clock_xor2.sv,
+    pulp_level_shifter_in_clamp.sv,
+    pulp_level_shifter_in.sv,
+    pulp_level_shifter_out_clamp.sv,
+    pulp_level_shifter_out.sv,
+    pulp_sync_wedge.sv,
   ]
 
