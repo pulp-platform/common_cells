@@ -51,16 +51,6 @@ common_cells_fpga:
     cluster_clock_gating_xilinx.sv,
     pulp_clock_gating_xilinx.sv,
     pulp_clock_mux2_xilinx.sv,
-  ]
-
-common_cells_fpga_no_synth:
-  targets: [
-    xilinx,
-  ]
-  flags: [
-    skip_synthesis,
-  ]
-  files: [
     cluster_clock_and2.sv,
     cluster_clock_buffer.sv,
     cluster_clock_inverter.sv,
