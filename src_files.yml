@@ -74,19 +74,19 @@ common_cells_fpga:
 
 common_cells_tsmc40:
   targets: [
-    tsmc40,
+    tsmc55,
   ]
   files: [
-    cluster_clock_buffer_tsmc040lp.sv
-    cluster_clock_gating_tsmc040lp.sv
-    cluster_clock_inverter_tsmc040lp.sv
-    cluster_clock_mux2_tsmc040lp.sv
-    cluster_clock_xor2_tsmc040lp.sv
-    pulp_clock_buffer_tsmc040lp.sv
-    pulp_clock_gating_tsmc040lp.sv
-    pulp_clock_inverter_tsmc040lp.sv
-    pulp_clock_mux2_tsmc040lp.sv
-    pulp_clock_xor2_tsmc040lp.sv
+    cluster_clock_buffer_tsmc040lp.sv,
+    cluster_clock_gating_tsmc040lp.sv,
+    cluster_clock_inverter_tsmc040lp.sv,
+    cluster_clock_mux2_tsmc040lp.sv,
+    cluster_clock_xor2_tsmc040lp.sv,
+    pulp_clock_buffer_tsmc040lp.sv,
+    pulp_clock_gating_tsmc040lp.sv,
+    pulp_clock_inverter_tsmc040lp.sv,
+    pulp_clock_mux2_tsmc040lp.sv,
+    pulp_clock_xor2_tsmc040lp.sv,
     edge_propagator_tx.sv,             
     edge_propagator_rx.sv,             
     edge_propagator.sv,             
