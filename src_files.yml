@@ -72,10 +72,15 @@ common_cells_fpga:
     pulp_clock_gating_async.sv,
   ]
 
+# These files must not be compiled for rtl simulation,
+# I cannot find any way to avoid in vsim elab
 common_cells_tsmc40:
   targets: [
     tsmc55,
   ]
+  flags: [
+    skip_simulation,
+  ]  
   files: [
     cluster_clock_buffer_tsmc040lp.sv,
     cluster_clock_gating_tsmc040lp.sv,
