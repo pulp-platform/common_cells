@@ -1,8 +1,8 @@
 common_cells_all:
   files: [
-    generic_fifo.sv,         
-    generic_LFSR_8bit.sv,          
-    onehot_to_bin.sv,              
+    generic_fifo.sv,
+    generic_LFSR_8bit.sv,
+    onehot_to_bin.sv,
     rstgen.sv,
   ]
 
@@ -38,6 +38,7 @@ common_cells_rtl_no_synth:
     pulp_level_shifter_out_clamp.sv,
     pulp_level_shifter_out.sv,
     pulp_sync_wedge.sv,
+    pulp_power_gating.sv,
   ]
 
 common_cells_fpga:
