@@ -22,7 +22,7 @@ module pulp_power_gating
    HEADBUFTIE16_X1M_A9TR40 power_gate_i
      (
       .SLEEP(sleep_i),
-      .SLEEPOUT(sleepout_o),
+      .SLEEPOUT(sleepout_o)
       );
    
 endmodule
