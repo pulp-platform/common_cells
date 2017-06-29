@@ -38,6 +38,7 @@ common_cells_rtl:
     pulp_sync_wedge.sv,                
     pulp_sync.sv,                
     pulp_clock_gating_async.sv,
+    pulp_power_gating.sv,
   ]
 
 common_cells_fpga:
@@ -71,6 +72,7 @@ common_cells_fpga:
     edge_propagator.sv,             
     pulp_sync_wedge.sv,                
     pulp_clock_gating_async.sv,
+    pulp_power_gating.sv,
   ]
 
 # These files must not be compiled for rtl simulation,
@@ -93,6 +95,7 @@ common_cells_tsmc40:
     pulp_clock_inverter_tsmc040lp.sv,
     pulp_clock_mux2_tsmc040lp.sv,
     pulp_clock_xor2_tsmc040lp.sv,
+    pulp_power_gating_tsmc40.sv,
     edge_propagator_tx.sv,             
     edge_propagator_rx.sv,             
     edge_propagator.sv,             
