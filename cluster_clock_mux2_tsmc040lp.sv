@@ -7,7 +7,7 @@ module cluster_clock_mux2
 );
 
 
-   MX2_X4B_A9TR50 clk_mux_i
+   MX2_X4B_A9TL40 clk_mux_i
    (
       .A(clk0_i),
       .B(clk1_i),

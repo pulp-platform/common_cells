@@ -5,7 +5,7 @@ module pulp_clock_inverter
 );
 
 
-    INV_X4B_A9TR50 clk_inv_i
+    INV_X4B_A9TL40 clk_inv_i
     (
       .A(clk_i),
       .Y(clk_o)
