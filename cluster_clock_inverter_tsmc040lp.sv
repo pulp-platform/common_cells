@@ -5,7 +5,7 @@ module cluster_clock_inverter
    output logic clk_o
 );
 
-    INV_X4B_A9TR50 clk_inv_i
+    INV_X4B_A9TL40 clk_inv_i
     (
       .A(clk_i),
       .Y(clk_o)

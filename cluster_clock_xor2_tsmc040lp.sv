@@ -5,7 +5,7 @@ module cluster_clock_xor2
    output logic clk_o
 );
 
-   XOR2_X2M_A9TR50 clk_xor_i 
+   XOR2_X2M_A9TL40 clk_xor_i 
    (
       .Y(clk_o),
       .A(clk0_i),
