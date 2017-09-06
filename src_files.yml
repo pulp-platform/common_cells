@@ -96,10 +96,26 @@ common_cells_tsmc40:
     pulp_clock_mux2_tsmc040lp.sv,
     pulp_clock_xor2_tsmc040lp.sv,
     pulp_power_gating_tsmc40.sv,
-    edge_propagator_tx.sv,             
-    edge_propagator_rx.sv,             
-    edge_propagator.sv,             
-    pulp_sync_wedge.sv,                
+    edge_propagator_tx.sv,
+    edge_propagator_rx.sv,
+    edge_propagator.sv,
+    pulp_sync_wedge.sv,
+    pulp_clock_gating_async.sv,
+    pulp_sync.sv,
+  ]
+
+common_cells_gf22:
+  targets: [
+    gf22,
+  ]
+  flags: [
+    skip_simulation,
+  ]
+  files: [
+    edge_propagator_tx.sv,
+    edge_propagator_rx.sv,
+    edge_propagator.sv,
+    pulp_sync_wedge.sv,
     pulp_clock_gating_async.sv,
     pulp_sync.sv,
   ]
