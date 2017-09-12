@@ -5,7 +5,7 @@ module cluster_clock_buffer
 );
 
 
-   BUF_X4B_A9TR50  clk_buf_i
+   BUF_X4B_A9TL40  clk_buf_i
    (
       .A(clk_i),
       .Y(clk_o)
