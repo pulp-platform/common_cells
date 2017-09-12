@@ -1,9 +1,15 @@
 common_cells_all:
   files: [
-    generic_fifo.sv,         
-    generic_LFSR_8bit.sv,          
-    onehot_to_bin.sv,              
+    generic_fifo.sv,
+    generic_LFSR_8bit.sv,
+    onehot_to_bin.sv,
     rstgen.sv,
+    edge_propagator_tx.sv,
+    edge_propagator_rx.sv,
+    edge_propagator.sv,
+    pulp_sync_wedge.sv,
+    pulp_clock_gating_async.sv,
+    pulp_sync.sv,
   ]
 
 common_cells_rtl:
@@ -11,33 +17,27 @@ common_cells_rtl:
     skip_synthesis,
   ]
   files: [
-    cluster_clock_gating.sv,         
+    cluster_clock_gating.sv,
     pulp_clock_gating.sv,
-    pulp_clock_mux2.sv,              
+    pulp_clock_mux2.sv,
     pulp_clock_buffer.sv,
     pulp_clock_inverter.sv,
-    pulp_clock_xor2.sv,                
-    pulp_buffer.sv,                
-    pulp_level_shifter_in.sv,           
-    pulp_level_shifter_in_clamp.sv,     
-    pulp_level_shifter_out.sv,    
-    pulp_level_shifter_out_clamp.sv,    
-    pulp_clock_and2.sv,   
-    cluster_clock_buffer.sv,            
-    cluster_clock_inverter.sv,         
-    cluster_clock_mux2.sv,           
-    cluster_clock_xor2.sv,             
-    cluster_level_shifter_in.sv,   
-    cluster_level_shifter_in_clamp.sv,  
-    cluster_level_shifter_out.sv, 
+    pulp_clock_xor2.sv,
+    pulp_buffer.sv,
+    pulp_level_shifter_in.sv,
+    pulp_level_shifter_in_clamp.sv,
+    pulp_level_shifter_out.sv,
+    pulp_level_shifter_out_clamp.sv,
+    pulp_clock_and2.sv,
+    cluster_clock_buffer.sv,
+    cluster_clock_inverter.sv,
+    cluster_clock_mux2.sv,
+    cluster_clock_xor2.sv,
+    cluster_level_shifter_in.sv,
+    cluster_level_shifter_in_clamp.sv,
+    cluster_level_shifter_out.sv,
     cluster_level_shifter_out_clamp.sv,
     cluster_clock_and2.sv,
-    edge_propagator_tx.sv,             
-    edge_propagator_rx.sv,             
-    edge_propagator.sv,             
-    pulp_sync_wedge.sv,                
-    pulp_sync.sv,                
-    pulp_clock_gating_async.sv,
     pulp_power_gating.sv,
   ]
 
@@ -51,27 +51,22 @@ common_cells_fpga:
     pulp_clock_mux2_xilinx.sv,
     pulp_clock_buffer.sv,
     pulp_clock_inverter.sv,
-    pulp_clock_xor2.sv,                
-    pulp_buffer.sv,                
-    pulp_level_shifter_in.sv,           
-    pulp_level_shifter_in_clamp.sv,     
-    pulp_level_shifter_out.sv,    
-    pulp_level_shifter_out_clamp.sv,    
-    pulp_clock_and2.sv,   
-    cluster_clock_buffer.sv,            
-    cluster_clock_inverter.sv,         
-    cluster_clock_mux2.sv,           
-    cluster_clock_xor2.sv,             
-    cluster_level_shifter_in.sv,   
-    cluster_level_shifter_in_clamp.sv,  
-    cluster_level_shifter_out.sv, 
+    pulp_clock_xor2.sv,
+    pulp_buffer.sv,
+    pulp_level_shifter_in.sv,
+    pulp_level_shifter_in_clamp.sv,
+    pulp_level_shifter_out.sv,
+    pulp_level_shifter_out_clamp.sv,
+    pulp_clock_and2.sv,
+    cluster_clock_buffer.sv,
+    cluster_clock_inverter.sv,
+    cluster_clock_mux2.sv,
+    cluster_clock_xor2.sv,
+    cluster_level_shifter_in.sv,
+    cluster_level_shifter_in_clamp.sv,
+    cluster_level_shifter_out.sv,
     cluster_level_shifter_out_clamp.sv,
     cluster_clock_and2.sv,
-    edge_propagator_tx.sv,             
-    edge_propagator_rx.sv,             
-    edge_propagator.sv,             
-    pulp_sync_wedge.sv,                
-    pulp_clock_gating_async.sv,
     pulp_power_gating.sv,
   ]
 
@@ -79,7 +74,7 @@ common_cells_fpga:
 # I cannot find any way to avoid in vsim elab
 common_cells_tsmc40:
   targets: [
-    tsmc40,
+    tsmc55,
   ]
   flags: [
     skip_simulation,
@@ -96,26 +91,4 @@ common_cells_tsmc40:
     pulp_clock_mux2_tsmc040lp.sv,
     pulp_clock_xor2_tsmc040lp.sv,
     pulp_power_gating_tsmc40.sv,
-    edge_propagator_tx.sv,
-    edge_propagator_rx.sv,
-    edge_propagator.sv,
-    pulp_sync_wedge.sv,
-    pulp_clock_gating_async.sv,
-    pulp_sync.sv,
-  ]
-
-common_cells_gf22:
-  targets: [
-    gf22,
-  ]
-  flags: [
-    skip_simulation,
-  ]
-  files: [
-    edge_propagator_tx.sv,
-    edge_propagator_rx.sv,
-    edge_propagator.sv,
-    pulp_sync_wedge.sv,
-    pulp_clock_gating_async.sv,
-    pulp_sync.sv,
   ]
