@@ -9,4 +9,6 @@ common_cells_all:
     edge_propagator.sv,
     pulp_sync_wedge.sv,
     pulp_sync.sv,
+    clock_divider.sv,
+    clock_divider_counter.sv,
   ]
