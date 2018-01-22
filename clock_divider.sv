@@ -1,17 +1,14 @@
+// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright and related rights are licensed under the Solderpad Hardware
+// License, Version 0.51 (the “License”); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
+// or agreed to in writing, software, hardware and materials distributed under
+// this License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, either express or implied. See the License for the
+// specific language governing permissions and limitations under the License.
+
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (C) 2017 ETH Zurich, University of Bologna                       //
-// All rights reserved.                                                       //
-//                                                                            //
-// This code is under development and not yet released to the public.         //
-// Until it is released, the code is under the copyright of ETH Zurich and    //
-// the University of Bologna, and may contain confidential and/or unpublished //
-// work. Any reuse/redistribution is strictly forbidden without written       //
-// permission from ETH Zurich.                                                //
-//                                                                            //
-// Bug fixes and contributions will eventually be released under the          //
-// SolderPad open hardware license in the context of the PULP platform        //
-// (http://www.pulp-platform.org), under the copyright of ETH Zurich and the  //
-// University of Bologna.                                                     //
 //                                                                            //
 // Company:        Multitherman Laboratory @ DEIS - University of Bologna     //
 //                    Viale Risorgimento 2 40136                              //
@@ -86,7 +83,7 @@ module clock_divider
         .test_mode_i(test_mode_i),
 
         // OUTPUT RESET
-        .rst_no(s_rstn_sync),      
+        .rst_no(s_rstn_sync),
         .init_no()                 //not used
     );
   `else
@@ -94,7 +91,7 @@ module clock_divider
 `endif
 
 
-    //handle the handshake with the soc_ctrl. Interface is now async   
+    //handle the handshake with the soc_ctrl. Interface is now async
     pulp_sync_wedge i_edge_prop
     (
         .clk_i(clk_i),
@@ -106,7 +103,7 @@ module clock_divider
         .f_edge_o()
     );
 
-    clock_divider_counter 
+    clock_divider_counter
     #(
         .BYPASS_INIT(BYPASS_INIT),
         .DIV_INIT(DIV_INIT)
@@ -146,21 +143,21 @@ module clock_divider
         begin
             s_clock_enable   = 1'b0;
             s_clk_div_valid  = 1'b1;
-            state_next = WAIT; 
+            state_next = WAIT;
         end
 
         WAIT:
         begin
             s_clock_enable   = 1'b0;
             s_clk_div_valid  = 1'b0;
-            state_next = RELEASE; 
+            state_next = RELEASE;
         end
 
         RELEASE:
         begin
             s_clock_enable   = 1'b0;
             s_clk_div_valid  = 1'b0;
-            state_next = IDLE; 
+            state_next = IDLE;
         end
         endcase
     end
@@ -187,7 +184,7 @@ module clock_divider
     begin
         if (!s_rstn_sync)
             reg_ext_gate_sync <= 2'b00;
-        else 
+        else
             reg_ext_gate_sync <= {clk_gate_async_i, reg_ext_gate_sync[1]};
     end
 

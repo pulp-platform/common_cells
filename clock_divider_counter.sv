@@ -1,18 +1,14 @@
+// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright and related rights are licensed under the Solderpad Hardware
+// License, Version 0.51 (the “License”); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
+// or agreed to in writing, software, hardware and materials distributed under
+// this License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, either express or implied. See the License for the
+// specific language governing permissions and limitations under the License.
+
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (C) 2017 ETH Zurich, University of Bologna                       //
-// All rights reserved.                                                       //
-//                                                                            //
-// This code is under development and not yet released to the public.         //
-// Until it is released, the code is under the copyright of ETH Zurich and    //
-// the University of Bologna, and may contain confidential and/or unpublished //
-// work. Any reuse/redistribution is strictly forbidden without written       //
-// permission from ETH Zurich.                                                //
-//                                                                            //
-// Bug fixes and contributions will eventually be released under the          //
-// SolderPad open hardware license in the context of the PULP platform        //
-// (http://www.pulp-platform.org), under the copyright of ETH Zurich and the  //
-// University of Bologna.                                                     //
-//                                                                            //
 // Company:        Multitherman Laboratory @ DEIS - University of Bologna     //
 //                    Viale Risorgimento 2 40136                              //
 //                    Bologna - fax 0512093785 -                              //
@@ -142,12 +138,12 @@ module clock_divider_counter
                       if (clk_div[0])
                         begin
                           is_odd  <= 1'b1;
-                          clk_cnt <= clk_cnt_odd; 
+                          clk_cnt <= clk_cnt_odd;
                         end
                       else
                         begin
                           is_odd  <= 1'b0;
-                          clk_cnt <= clk_cnt_even; 
+                          clk_cnt <= clk_cnt_even;
                         end
                   end
                 div1 <= 1'b0;
@@ -165,7 +161,7 @@ module clock_divider_counter
         .clk_i(clk),
         .clk_o(clk_inv)
     );
-   
+
 `ifndef PULP_FPGA_EMUL
  `ifdef PULP_DFT
    pulp_clock_mux2 clk_muxinv_i
@@ -197,14 +193,14 @@ module clock_divider_counter
         end
     end // always_ff @ (posedge clk_inv_test or negedge rstn)
 
-    pulp_clock_xor2 clock_xor_i 
+    pulp_clock_xor2 clock_xor_i
     (
         .clk_o(clk_out_gen),
         .clk0_i(div1),
         .clk1_i(div2)
     );
 
-    pulp_clock_mux2 clk_mux_i 
+    pulp_clock_mux2 clk_mux_i
     (
         .clk0_i(clk_out_gen),
         .clk1_i(clk),
