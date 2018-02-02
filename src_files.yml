@@ -1,0 +1,14 @@
+common_cells_all:
+  files: [
+    generic_fifo.sv,
+    generic_LFSR_8bit.sv,
+    onehot_to_bin.sv,
+    rstgen.sv,
+    edge_propagator_tx.sv,
+    edge_propagator_rx.sv,
+    edge_propagator.sv,
+    pulp_sync_wedge.sv,
+    pulp_sync.sv,
+    clock_divider.sv,
+    clock_divider_counter.sv,
+  ]
