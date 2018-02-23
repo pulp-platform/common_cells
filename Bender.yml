@@ -1,6 +1,9 @@
 package:
   name: common_cells
 
+dependencies:
+  tech_cells_generic: { git: "git@iis-git.ee.ethz.ch:pulp-open/tech_cells_generic.git", rev: master }
+
 sources:
   - generic_fifo.sv
   - generic_LFSR_8bit.sv
