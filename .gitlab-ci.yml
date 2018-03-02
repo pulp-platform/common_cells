@@ -1,0 +1,22 @@
+before_script:
+  - export PATH="~fschuiki/.cargo/bin/":$PATH
+
+stages:
+  - build
+  - test
+
+compile:
+  stage: build
+  script:
+    - bender vsim
+
+test_fifo:
+  stage: test
+  script:
+    - bender vsim -t test
+    - cd build
+    - vsim -c work.fifo_tb -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" -GDEPTH=0
+    - vsim -c work.fifo_tb -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" -GDEPTH=13
+    - vsim -c work.fifo_tb -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" -GDEPTH=32 -GFALL_THROUGH=1
+
+

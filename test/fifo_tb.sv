@@ -23,6 +23,8 @@ module fifo_tb #(
 
     logic [7:0] wdata, rdata;
 
+    int unsigned nr_checks;
+
     fifo #(
         .FALL_THROUGH ( FALL_THROUGH ),
         .DATA_WIDTH   ( 8            ),
@@ -53,6 +55,13 @@ module fifo_tb #(
             #10ns clk = ~clk;
     end
 
+    // simulator stopper, this is suboptimal better go for coverage
+    initial begin
+        #100ms
+        $display("Checked %d stimuli", nr_checks);
+        $stop;
+    end
+
     class random_action_t;
         rand logic [1:0] action;
 
@@ -79,6 +88,10 @@ module fifo_tb #(
             default input #2 output #4;
             input flush, wdata, push, pop, full, empty, rdata, thrs;
         endclocking
+
+        initial begin
+            $display("Running test with parameter:\nFALL_THROUGH: %d\nDEPTH: %d", FALL_THROUGH, DEPTH);
+        end
         // --------
         // Driver
         // --------
@@ -126,8 +139,8 @@ module fifo_tb #(
         // Monitor && Checker
         // -------------------
         initial begin
-
             automatic logic [7:0] data;
+            nr_checks = 0;
             forever begin
                 @(pck)
 
@@ -139,6 +152,7 @@ module fifo_tb #(
                     data = queue.pop_front();
                     // $display("Time: %t, Expected: %0h Got %0h", $time, data, fifo_if.pck.rdata);
                     assert(data == pck.rdata) else $error("Mismatch, Expected: %0h Got %0h", data, pck.rdata);
+                    nr_checks++;
                 end
 
                 if (pck.flush) begin
