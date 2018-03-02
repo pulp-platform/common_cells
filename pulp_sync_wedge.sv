@@ -10,31 +10,29 @@
 
 // Antonio Pullini <pullinia@iis.ee.ethz.ch>
 
-module pulp_sync_wedge
-  (
-   input  logic clk_i,
-   input  logic rstn_i,
-   input  logic en_i,
-   input  logic serial_i,
-   output logic r_edge_o,
-   output logic f_edge_o,
-   output logic serial_o
-   );
-   
-   logic [2:0] 	r_reg;
-   logic [2:0] 	r_next;
-   
-   always_ff @(posedge clk_i, negedge rstn_i)
-     begin
-	if(!rstn_i)
-          r_reg <= 3'h0;
-	else 
-          if (en_i)
-            r_reg <= {serial_i, r_reg[2:1]};
+module pulp_sync_wedge (
+    input  logic clk_i,
+    input  logic rst_ni,
+    input  logic en_i,
+    input  logic serial_i,
+    output logic r_edge_o,
+    output logic f_edge_o,
+    output logic serial_o
+);
+
+   logic [2:0]  r_reg;
+   logic [2:0]  r_next;
+
+   assign serial_o =  r_reg[0];
+   assign f_edge_o = (~r_reg[1]) & r_reg[0];
+   assign r_edge_o =  r_reg[1] & (~r_reg[0]);
+
+   always_ff @(posedge clk_i, negedge rst_ni) begin
+        if (~rst_ni)
+            r_reg <= 3'h0;
+        else
+            if (en_i)
+                r_reg <= {serial_i, r_reg[2:1]};
      end
-   
-   assign serial_o   =  r_reg[0];
-   assign f_edge_o   = !r_reg[1] &  r_reg[0];
-   assign r_edge_o   =  r_reg[1] & !r_reg[0];
-   
+
 endmodule
