@@ -6,16 +6,16 @@ dependencies:
   tech_cells_generic: { git: "git@iis-git.ee.ethz.ch:pulp-open/tech_cells_generic.git", rev: master }
 
 sources:
-  - fifo.sv
-  - lfsr_8bit.sv
-  - onehot_to_bin.sv
-  - rstgen.sv
-  - edge_propagator_tx.sv
-  - edge_propagator_rx.sv
-  - edge_propagator.sv
-  - find_first_one.sv
-  - pulp_sync_wedge.sv
-  - pulp_sync.sv
+  - src/fifo.sv
+  - src/lfsr_8bit.sv
+  - src/onehot_to_bin.sv
+  - src/rstgen.sv
+  - src/edge_propagator_tx.sv
+  - src/edge_propagator_rx.sv
+  - src/edge_propagator.sv
+  - src/find_first_one.sv
+  - src/pulp_sync_wedge.sv
+  - src/pulp_sync.sv
   - target: test
     files:
       - test/fifo_tb.sv
