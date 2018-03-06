@@ -13,10 +13,13 @@
 // University of Bologna.
 
 
-/// A leading zero counter.
+/// A leading-one finder / leading zero counter.
+/// Set FLIP to 0 for find_first_one => first_one_o is the index of the first one (from the LSB)
+/// Set FLIP to 1 for leading zero counter => first_one_o is the number of leading zeroes (from the MSB)
 module find_first_one #(
-    /// The width of the number.
-    parameter int WIDTH = -1
+    /// The width of the input vector.
+    parameter int WIDTH = -1,
+    parameter int FLIP = 0
 )(
     input  logic [WIDTH-1:0]         in_i,
     output logic [$clog2(WIDTH)-1:0] first_one_o,
@@ -35,6 +38,11 @@ module find_first_one #(
     logic [2**NUM_LEVELS-1:0]                  sel_nodes;
     logic [2**NUM_LEVELS-1:0][NUM_LEVELS-1:0]  index_nodes;
 
+    logic [WIDTH-1:0] in_tmp;
+
+    for (genvar i = 0; i < WIDTH; i++) begin
+        assign in_tmp[i] = FLIP ? in_i[WIDTH-1-i] : in_i[i];
+    end
 
     for (genvar j = 0; j < WIDTH; j++) begin
         assign index_lut[j] = j;
@@ -54,12 +62,12 @@ module find_first_one #(
             for (genvar k = 0; k < 2**level; k++) begin
                 // if two successive indices are still in the vector...
                 if (k * 2 < WIDTH) begin
-                    assign sel_nodes[2**level-1+k]   = in_i[k*2] | in_i[k*2+1];
-                    assign index_nodes[2**level-1+k] = (in_i[k*2] == 1'b1) ? index_lut[k*2] : index_lut[k*2+1];
+                    assign sel_nodes[2**level-1+k]   = in_tmp[k*2] | in_tmp[k*2+1];
+                    assign index_nodes[2**level-1+k] = (in_tmp[k*2] == 1'b1) ? index_lut[k*2] : index_lut[k*2+1];
                 end
                 // if only the first index is still in the vector...
                 if (k * 2 == WIDTH) begin
-                    assign sel_nodes[2**level-1+k]   = in_i[k*2];
+                    assign sel_nodes[2**level-1+k]   = in_tmp[k*2];
                     assign index_nodes[2**level-1+k] = index_lut[k*2];
                 end
                 // if index is out of range
