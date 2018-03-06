@@ -13,6 +13,7 @@ sources:
   - edge_propagator_tx.sv
   - edge_propagator_rx.sv
   - edge_propagator.sv
+  - find_first_one.sv
   - pulp_sync_wedge.sv
   - pulp_sync.sv
   - target: test
