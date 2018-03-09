@@ -20,3 +20,4 @@ sources:
   - target: test
     files:
       - test/fifo_tb.sv
+  - src/deprecated/generic_fifo.sv
