@@ -1,6 +1,6 @@
-authors: ["Florian Zaruba <zarubaf@iis.ethz.ch>"]
 package:
   name: common_cells
+  authors: ["Florian Zaruba <zarubaf@iis.ethz.ch>"]
 
 dependencies:
   tech_cells_generic: { git: "git@iis-git.ee.ethz.ch:pulp-open/tech_cells_generic.git", rev: master }
@@ -20,4 +20,7 @@ sources:
   - target: test
     files:
       - test/fifo_tb.sv
+
+  # deprecated modules
   - src/deprecated/generic_fifo.sv
+  - src/deprecated/generic_LFSR_8bit.sv
