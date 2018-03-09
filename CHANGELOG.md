@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## 1.2.1 - 2018-03-09
+### Fixed
+- Fix an issue in the spill register which causes transactions to be lost
+
 ## 1.2.0 - 2018-03-09
 ### Added
 - Add spill register

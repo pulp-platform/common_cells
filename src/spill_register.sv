@@ -30,45 +30,63 @@ module spill_register #(
   output T     data_o
 );
 
-  // Create the data and fullness registers.
-  T data_slice_q, data_spill_q;
-  logic slice_full_q, spill_full_q;
+  // The A register.
+  T a_data_q;
+  logic a_full_q;
+  logic a_fill, a_drain;
+  logic a_en, a_en_data;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin : ps_a_data
     if (!rst_ni)
-      data_slice_q <= '0;
-    else if (valid_i && ~spill_full_q)
-      data_slice_q <= data_i;
+      a_data_q <= '0;
+    else if (a_fill)
+      a_data_q <= data_i;
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin : ps_a_full
     if (!rst_ni)
-      slice_full_q <= 0;
-    else if (~spill_full_q)
-      slice_full_q <= valid_i;
+      a_full_q <= 0;
+    else if (a_fill || a_drain)
+      a_full_q <= a_fill;
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
+  // The B register.
+  T b_data_q;
+  logic b_full_q;
+  logic b_fill, b_drain;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : ps_b_data
     if (!rst_ni)
-      data_spill_q <= '0;
-    else if (~ready_i && slice_full_q)
-      data_spill_q <= data_slice_q;
+      b_data_q <= '0;
+    else if (b_fill)
+      b_data_q <= a_data_q;
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin : ps_b_full
     if (!rst_ni)
-      spill_full_q <= 0;
-    else if (~ready_i || spill_full_q)
-      spill_full_q <= ~ready_i && slice_full_q;
+      b_full_q <= 0;
+    else if (b_fill || b_drain)
+      b_full_q <= b_fill;
   end
 
-  // The unit is able to accept input as long as the spill register is empty.
-  assign ready_o = ~spill_full_q;
+  // Fill the A register when the A or B register is empty. Drain the A register
+  // whenever it is full and being filled.
+  assign a_fill = valid_i && ready_o;
+  assign a_drain = a_full_q && !b_full_q;
+
+  // Fill the B register whenever the A register is drained, but the downstream
+  // circuit is not ready. Drain the B register whenever it is full and the
+  // downstream circuit is ready.
+  assign b_fill = a_drain && !ready_i;
+  assign b_drain = b_full_q && ready_i;
+
+  // We can accept input as long as register B is not full.
+  assign ready_o = !a_full_q || !b_full_q;
 
   // The unit provides output as long as one of the registers is filled.
-  assign valid_o = slice_full_q | spill_full_q;
+  assign valid_o = a_full_q | b_full_q;
 
   // We empty the spill register before the slice register.
-  assign data_o = spill_full_q ? data_spill_q : data_slice_q;
+  assign data_o = b_full_q ? b_data_q : a_data_q;
 
 endmodule
