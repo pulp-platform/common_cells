@@ -8,6 +8,7 @@ dependencies:
 sources:
   - src/fifo.sv
   - src/lfsr_8bit.sv
+  - src/spill_register.sv
   - src/onehot_to_bin.sv
   - src/rstgen.sv
   - src/edge_propagator_tx.sv
