@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## 1.3.0 - 2018-03-12
+### Added
+- 2-phase clock domain crossing
+- Add old common cells as deprecated legacy modules
+
 ## 1.2.3 - 2018-03-09
 ### Added
 - Backwards compatibility wrapper for `generic_LFSR_8bit`
