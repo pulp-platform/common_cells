@@ -19,4 +19,10 @@ test_fifo:
     - vsim -c work.fifo_tb -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" -GDEPTH=13
     - vsim -c work.fifo_tb -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" -GDEPTH=32 -GFALL_THROUGH=1
 
-
+test_cdc_2phase:
+  stage: test
+  script:
+    - bender vsim -t test
+    - cd build
+    - vopt cdc_2phase_tb -o cdc_2phase_tb_opt -GUNTIL=1000000
+    - vsim -c cdc_2phase_tb_opt -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"
