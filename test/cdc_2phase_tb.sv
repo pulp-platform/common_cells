@@ -17,6 +17,7 @@ module cdc_2phase_tb;
 
   parameter int UNTIL = 100000;
   parameter bit INJECT_DELAYS = 1;
+  parameter bit POST_SYNTHESIS = 0;
 
   time tck_src = 10ns;
   time tck_dst = 10ns;
@@ -39,7 +40,9 @@ module cdc_2phase_tb;
   logic        dst_ready_i = 0;
 
   // Instantiate the design under test.
-  if (INJECT_DELAYS) begin : g_dut
+  if (POST_SYNTHESIS) begin : g_dut
+    cdc_2phase_synth i_dut (.*);
+  end else if (INJECT_DELAYS) begin : g_dut
     cdc_2phase_tb_delay_injector #(0.8ns) i_dut (.*);
   end else begin : g_dut
     cdc_2phase #(logic [31:0]) i_dut (.*);
