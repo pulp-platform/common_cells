@@ -15,6 +15,7 @@
 ///
 /// This FIFO has its push and pop ports in two separate clock domains. Its size
 /// can only be powers of two, which is why its depth is given as 2**LOG_DEPTH.
+/// LOG_DEPTH must be at least 1.
 ///
 /// CONSTRAINT: See the constraints for `cdc_2phase`. An additional maximum
 /// delay path needs to be specified from fifo_data_q to dst_data_o.
@@ -36,6 +37,13 @@ module cdc_fifo #(
   output logic dst_valid_o,
   input  logic dst_ready_i
 );
+
+  // Check the invariants.
+  `ifndef SYNTHESIS
+  initial begin
+    assert(LOG_DEPTH > 0);
+  end
+  `endif
 
   localparam int PTR_WIDTH = LOG_DEPTH+1;
   typedef logic [PTR_WIDTH-1:0] pointer_t;
