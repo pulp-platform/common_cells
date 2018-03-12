@@ -26,3 +26,11 @@ test_cdc_2phase:
     - cd build
     - vopt cdc_2phase_tb -o cdc_2phase_tb_opt -GUNTIL=1000000
     - vsim -c cdc_2phase_tb_opt -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"
+
+test_cdc_fifo:
+  stage: test
+  script:
+    - bender vsim -t test
+    - cd build
+    - for i in 0 1 2 3 4 5; do vopt cdc_fifo_tb -o cdc_fifo_tb_depth$i -GDEPTH=$i; done
+    - for i in 0 1 2 3 4 5; do vsim -c cdc_fifo_tb_depth$i -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"; done
