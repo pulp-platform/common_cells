@@ -5,6 +5,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+
+## 1.5.0 - 2018-03-14
+
+### Added
+- Add behavioural SRAM model
+
+## 1.4.0 - 2018-03-14
+
+### Changed
+- Re-name new sync modules to resolve namespace collisions
+
 ### Added
 - clock domain crossing FIFO
 
