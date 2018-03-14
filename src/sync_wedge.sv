@@ -10,7 +10,7 @@
 
 // Antonio Pullini <pullinia@iis.ee.ethz.ch>
 
-module pulp_sync_wedge (
+module sync_wedge (
     input  logic clk_i,
     input  logic rst_ni,
     input  logic en_i,

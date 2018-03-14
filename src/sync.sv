@@ -10,7 +10,7 @@
 
 // Antonio Pullini <pullinia@iis.ee.ethz.ch>
 
-module pulp_sync #(
+module sync #(
     parameter int unsigned STAGES = 2
 )(
     input  logic clk_i,

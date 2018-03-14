@@ -17,8 +17,8 @@ sources:
   - src/edge_propagator_rx.sv
   - src/edge_propagator.sv
   - src/find_first_one.sv
-  - src/pulp_sync_wedge.sv
-  - src/pulp_sync.sv
+  - src/sync_wedge.sv
+  - src/sync.sv
   - target: test
     files:
       - test/fifo_tb.sv
