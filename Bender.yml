@@ -19,6 +19,9 @@ sources:
   - src/find_first_one.sv
   - src/sync_wedge.sv
   - src/sync.sv
+  - target: simulation
+    files:
+      - src/sram.sv
   - target: test
     files:
       - test/fifo_tb.sv
