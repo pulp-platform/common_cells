@@ -7,6 +7,7 @@ common_cells_all:
     edge_propagator_tx.sv,
     edge_propagator_rx.sv,
     edge_propagator.sv,
+    edge_propagator_ack.sv,
     pulp_sync_wedge.sv,
     pulp_sync.sv,
     clock_divider.sv,
