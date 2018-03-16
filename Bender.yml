@@ -31,7 +31,6 @@ sources:
   # deprecated modules
   - src/deprecated/generic_fifo.sv
   - src/deprecated/generic_LFSR_8bit.sv
-  - src/deprecated/rstgen.sv
   - src/deprecated/edge_propagator_tx.sv
   - src/deprecated/edge_propagator_rx.sv
   - src/deprecated/edge_propagator.sv
