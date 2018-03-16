@@ -13,7 +13,7 @@
 module rstgen (
     input  logic clk_i,
     input  logic rst_ni,
-    input  logic testmode_i,
+    input  logic test_mode_i,
     output logic rst_no,
     output logic init_no
 );
