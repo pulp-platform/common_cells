@@ -37,7 +37,7 @@ module rstgen (
     end
 
     always_comb begin
-        if (testmode_i == 1'b0) begin
+        if (test_mode_i == 1'b0) begin
             rst_no  = s_rst_n;
             init_no = s_rst_n;
         end else begin
