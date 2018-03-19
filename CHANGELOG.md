@@ -6,18 +6,28 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
-## 1.5.0 - 2018-03-14
+## 1.5.3 - 2018-03-16
+### Changed
+- Remove duplicate deprecated modules.
 
+## 1.5.2 - 2018-03-16
+### Changed
+- Remove deprecated `rstgen` and fix interface.
+
+## 1.5.1 - 2018-03-16
+### Changed
+- Remove deprecated `onehot_to_bin`.
+
+## 1.5.0 - 2018-03-14
 ### Added
 - Add behavioural SRAM model
 
 ## 1.4.0 - 2018-03-14
+### Added
+- Clock domain crossing FIFO
 
 ### Changed
 - Re-name new sync modules to resolve namespace collisions
-
-### Added
-- clock domain crossing FIFO
 
 ## 1.3.0 - 2018-03-12
 ### Added
