@@ -37,7 +37,7 @@ module fifo #(
     localparam int unsigned FIFO_DEPTH = (DEPTH > 0) ? DEPTH : 1;
     localparam int unsigned ADDR_DEPTH = (DEPTH > 1) ? $clog2(DEPTH) : 1;
     // clock gating control
-    logic gated_clk, gate_clock;
+    logic gate_clock;
     // pointer to the read and write section of the queue
     logic [ADDR_DEPTH - 1:0] read_pointer_n, read_pointer_q, write_pointer_n, write_pointer_q;
     // keep a counter to keep track of the current queue status
@@ -105,13 +105,6 @@ module fifo #(
         end
     end
 
-    cluster_clock_gating i_clock_gate (
-        .clk_i     (  clk_i       ),
-        .en_i      ( ~gate_clock  ),
-        .test_en_i (  testmode_i  ),
-        .clk_o     (  gated_clk   )
-    );
-
     // sequential process
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
@@ -131,10 +124,10 @@ module fifo #(
         end
     end
 
-    always_ff @(posedge gated_clk or negedge rst_ni) begin
+    always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
             mem_q <= '0;
-        end else begin
+        end else if (!gate_clock) begin
             mem_q <= mem_n;
         end
     end

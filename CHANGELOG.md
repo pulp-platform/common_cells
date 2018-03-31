@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## 1.5.4 - 2018-03-31
+### Changed
+- Replace explicit clock gate in `fifo` with implicit one.
+
 ## 1.5.3 - 2018-03-16
 ### Changed
 - Remove duplicate deprecated modules.
