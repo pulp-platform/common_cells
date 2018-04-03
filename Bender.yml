@@ -19,6 +19,7 @@ sources:
   - src/find_first_one.sv
   - src/sync_wedge.sv
   - src/sync.sv
+  - src/graycode.sv
   - target: simulation
     files:
       - src/sram.sv
@@ -27,6 +28,7 @@ sources:
       - test/fifo_tb.sv
       - test/cdc_2phase_tb.sv
       - test/cdc_fifo_tb.sv
+      - test/graycode_tb.sv
 
   # deprecated modules
   - src/deprecated/generic_fifo.sv

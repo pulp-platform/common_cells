@@ -34,3 +34,11 @@ test_cdc_fifo:
     - cd build
     - for i in 1 2 3 4 5; do vopt cdc_fifo_tb -o cdc_fifo_tb_depth$i -GDEPTH=$i; done
     - for i in 1 2 3 4 5; do vsim -c cdc_fifo_tb_depth$i -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"; done
+
+test_graycode:
+  stage: test
+  script:
+    - bender vsim -t test
+    - cd build
+    - for i in 1 2 3 4 8 16; do vopt graycode_tb -o graycode_tb_$i -GN=$i; done
+    - for i in 1 2 3 4 8 16; do vsim -c graycode_tb_$i -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"; done
