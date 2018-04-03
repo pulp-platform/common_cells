@@ -11,15 +11,19 @@
 //
 // Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
 
-/// A clock domain crossing FIFO.
+/// A clock domain crossing FIFO, using gray counters.
 ///
 /// This FIFO has its push and pop ports in two separate clock domains. Its size
 /// can only be powers of two, which is why its depth is given as 2**LOG_DEPTH.
 /// LOG_DEPTH must be at least 1.
 ///
-/// CONSTRAINT: See the constraints for `cdc_2phase`. An additional maximum
-/// delay path needs to be specified from fifo_data_q to dst_data_o.
-module cdc_fifo #(
+/// # Constraints
+///
+/// The following constraints need to be set:
+/// - max_delay -from src_wptr_gray_q -to dst_wptr_gray_q
+/// - max_delay -from dst_rptr_gray_q -to src_rptr_gray_q
+/// - max_delay -from fifo_data_q -to fifo_rdata
+module cdc_fifo_gray #(
   /// The data type of the payload transported by the FIFO.
   parameter type T = logic,
   /// The FIFO's depth given as 2**LOG_DEPTH.
@@ -73,62 +77,82 @@ module cdc_fifo #(
     end
   end
 
-  // Allocate the read and write pointers in the source and destination domain.
-  pointer_t src_wptr_q, dst_wptr, src_rptr, dst_rptr_q;
+  // Create the write and read pointers in the source and destination domain.
+  // These are binary counters combined with a Gray encoder. Both the binary and
+  // the Gray coded output are registered; the binary one for use in the local
+  // domain, the Gray one for synchronization into the other domain.
+  pointer_t src_wptr_bin_q, src_wptr_gray_q, dst_rptr_bin_q, dst_rptr_gray_q;
+  pointer_t src_wptr_bin_d, src_wptr_gray_d, dst_rptr_bin_d, dst_rptr_gray_d;
+
+  assign src_wptr_bin_d = src_wptr_bin_q + 1;
+  assign dst_rptr_bin_d = dst_rptr_bin_q + 1;
+
+  binary_to_gray #(PTR_WIDTH) i_src_b2g (src_wptr_bin_d, src_wptr_gray_d);
+  binary_to_gray #(PTR_WIDTH) i_dst_b2g (dst_rptr_bin_d, dst_rptr_gray_d);
 
   always_ff @(posedge src_clk_i, negedge src_rst_ni) begin
-    if (!src_rst_ni)
-      src_wptr_q <= 0;
-    else if (src_valid_i && src_ready_o)
-      src_wptr_q <= src_wptr_q + 1;
+    if (!src_rst_ni) begin
+      src_wptr_bin_q  <= '0;
+      src_wptr_gray_q <= '0;
+    end else if (src_valid_i && src_ready_o) begin
+      src_wptr_bin_q  <= src_wptr_bin_d;
+      src_wptr_gray_q <= src_wptr_gray_d;
+    end
   end
 
   always_ff @(posedge dst_clk_i, negedge dst_rst_ni) begin
-    if (!dst_rst_ni)
-      dst_rptr_q <= 0;
-    else if (dst_valid_o && dst_ready_i)
-      dst_rptr_q <= dst_rptr_q + 1;
+    if (!dst_rst_ni) begin
+      dst_rptr_bin_q  <= '0;
+      dst_rptr_gray_q <= '0;
+    end else if (dst_valid_o && dst_ready_i) begin
+      dst_rptr_bin_q  <= dst_rptr_bin_d;
+      dst_rptr_gray_q <= dst_rptr_gray_d;
+    end
   end
+
+  // Move the Gray-coded pointers over into the other clock domain and
+  // synchronize them to reduce the probability of metastability.
+  pointer_t src_rptr_gray_q, src_rptr_gray_q2;
+  pointer_t dst_wptr_gray_q, dst_wptr_gray_q2;
+
+  always_ff @(posedge src_clk_i, negedge src_rst_ni) begin
+    if (!src_clk_i) begin
+      src_rptr_gray_q  <= '0;
+      src_rptr_gray_q2 <= '0;
+    end else begin
+      src_rptr_gray_q  <= dst_rptr_gray_q;
+      src_rptr_gray_q2 <= src_rptr_gray_q;
+    end
+  end
+
+  always_ff @(posedge dst_clk_i, negedge dst_rst_ni) begin
+    if (!dst_clk_i) begin
+      dst_wptr_gray_q  <= '0;
+      dst_wptr_gray_q2 <= '0;
+    end else begin
+      dst_wptr_gray_q  <= src_wptr_gray_q;
+      dst_wptr_gray_q2 <= dst_wptr_gray_q;
+    end
+  end
+
+  // Reverse the Gray coding of the synchronized pointers.
+  pointer_t src_rptr_bin, dst_wptr_bin;
+
+  gray_to_binary #(PTR_WIDTH) i_src_g2b (src_rptr_gray_q2, src_rptr_bin);
+  gray_to_binary #(PTR_WIDTH) i_dst_g2b (dst_wptr_gray_q2, dst_wptr_bin);
 
   // The pointers into the FIFO are one bit wider than the actual address into
   // the FIFO. This makes detecting critical states very simple: if all but the
   // topmost bit of rptr and wptr agree, the FIFO is in a critical state. If the
   // topmost bit is equal, the FIFO is empty, otherwise it is full.
-  assign src_ready_o = ((src_wptr_q ^ src_rptr) != PTR_FULL);
-  assign dst_valid_o = ((dst_rptr_q ^ dst_wptr) != PTR_EMPTY);
-
-  // Transport the read and write pointers across the clock domain boundary.
-  cdc_2phase #(pointer_t) i_cdc_wptr (
-    .src_rst_ni  ( src_rst_ni ),
-    .src_clk_i   ( src_clk_i  ),
-    .src_data_i  ( src_wptr_q ),
-    .src_valid_i ( 1'b1       ),
-    .src_ready_o (            ),
-    .dst_rst_ni  ( dst_rst_ni ),
-    .dst_clk_i   ( dst_clk_i  ),
-    .dst_data_o  ( dst_wptr   ),
-    .dst_valid_o (            ),
-    .dst_ready_i ( 1'b1       )
-  );
-
-  cdc_2phase #(pointer_t) i_cdc_rptr (
-    .src_rst_ni  ( dst_rst_ni ),
-    .src_clk_i   ( dst_clk_i  ),
-    .src_data_i  ( dst_rptr_q ),
-    .src_valid_i ( 1'b1       ),
-    .src_ready_o (            ),
-    .dst_rst_ni  ( src_rst_ni ),
-    .dst_clk_i   ( src_clk_i  ),
-    .dst_data_o  ( src_rptr   ),
-    .dst_valid_o (            ),
-    .dst_ready_i ( 1'b1       )
-  );
+  assign src_ready_o = ((src_wptr_bin_q ^ src_rptr_bin) != PTR_FULL);
+  assign dst_valid_o = ((dst_rptr_bin_q ^ dst_wptr_bin) != PTR_EMPTY);
 
   // Drive the FIFO write and read ports.
-  assign fifo_widx  = src_wptr_q;
+  assign fifo_widx  = src_wptr_bin_q;
   assign fifo_wdata = src_data_i;
   assign fifo_write = src_valid_i && src_ready_o;
-  assign fifo_ridx  = dst_rptr_q;
+  assign fifo_ridx  = dst_rptr_bin_q;
   assign dst_data_o = fifo_rdata;
 
 endmodule

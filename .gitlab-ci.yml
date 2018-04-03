@@ -43,8 +43,8 @@ test_cdc_fifo:
   script:
     - bender vsim -t test
     - cd build
-    - for i in 1 2 3 4 5; do $VOPT cdc_fifo_tb -o cdc_fifo_tb_depth$i -GDEPTH=$i; done
-    - for i in 1 2 3 4 5; do $VSIM -c cdc_fifo_tb_depth$i -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"; done
+    - for g in 0 1; do for i in 1 2 3 4 5; do $VOPT cdc_fifo_tb -o cdc_fifo_tb_depth${i}_gray${g} -GDEPTH=$i -GGRAY=$g; done; done
+    - for g in 0 1; do for i in 1 2 3 4 5; do $VSIM -c cdc_fifo_tb_depth${i}_gray${g} -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"; done; done
 
 test_graycode:
   stage: test

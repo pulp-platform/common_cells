@@ -19,6 +19,7 @@ module cdc_fifo_tb;
   parameter bit INJECT_DST_STALLS = 0;
   parameter int UNTIL = 100000;
   parameter int DEPTH = 0;
+  parameter bit GRAY = 0;
 
   time tck_src = 10ns;
   time tck_dst = 10ns;
@@ -46,7 +47,10 @@ module cdc_fifo_tb;
   assert property (@(posedge dst_clk_i) dst_valid_o |-> !$isunknown(dst_data_o));
 
   // Instantiate the design under test.
-  cdc_fifo #(.T(logic [31:0]), .LOG_DEPTH(DEPTH)) i_dut (.*);
+  if (GRAY)
+    cdc_fifo_gray #(.T(logic [31:0]), .LOG_DEPTH(DEPTH)) i_dut (.*);
+  else
+    cdc_fifo_2phase #(.T(logic [31:0]), .LOG_DEPTH(DEPTH)) i_dut (.*);
 
   // Mailbox with expected items on destination side.
   mailbox #(int) dst_mbox = new();

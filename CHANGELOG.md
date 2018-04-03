@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add binary to Gray code converter.
 - Add Gray code to binary converter.
 - Add Gray code testbench.
+- Add CDC FIFO based on Gray counters. This is a faster alternative to the 2-phase FIFO which also works if a domain's clock has stopped.
+
+### Changed
+- Rename `cdc_fifo` to `cdc_fifo_2phase`.
+- Adjust CDC FIFO testbench to cover both implementations.
 
 ## 1.5.4 - 2018-03-31
 ### Changed
