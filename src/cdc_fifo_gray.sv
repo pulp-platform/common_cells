@@ -116,7 +116,7 @@ module cdc_fifo_gray #(
   pointer_t dst_wptr_gray_q, dst_wptr_gray_q2;
 
   always_ff @(posedge src_clk_i, negedge src_rst_ni) begin
-    if (!src_clk_i) begin
+    if (!src_rst_ni) begin
       src_rptr_gray_q  <= '0;
       src_rptr_gray_q2 <= '0;
     end else begin
@@ -126,7 +126,7 @@ module cdc_fifo_gray #(
   end
 
   always_ff @(posedge dst_clk_i, negedge dst_rst_ni) begin
-    if (!dst_clk_i) begin
+    if (!dst_rst_ni) begin
       dst_wptr_gray_q  <= '0;
       dst_wptr_gray_q2 <= '0;
     end else begin
