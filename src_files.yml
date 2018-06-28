@@ -3,6 +3,7 @@ common_cells_all:
     generic_fifo.sv,
     generic_LFSR_8bit.sv,
     onehot_to_bin.sv,
+    find_first_one.sv,
     rstgen.sv,
     edge_propagator_tx.sv,
     edge_propagator_rx.sv,
