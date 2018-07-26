@@ -9,6 +9,7 @@ sources:
   - src/fifo.sv
   - src/lfsr_8bit.sv
   - src/spill_register.sv
+  - src/stream_register.sv
   - src/cdc_2phase.sv
   - src/cdc_fifo_2phase.sv
   - src/cdc_fifo_gray.sv
@@ -27,6 +28,7 @@ sources:
   - target: test
     files:
       - test/fifo_tb.sv
+      - test/stream_register_tb.sv
       - test/cdc_2phase_tb.sv
       - test/cdc_fifo_tb.sv
       - test/graycode_tb.sv

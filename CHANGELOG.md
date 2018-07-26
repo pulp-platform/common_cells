@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+- Add Stream Register.
+
 ## 1.6.0 - 2018-04-03
 ### Added
 - Add binary to Gray code converter.
