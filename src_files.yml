@@ -1,6 +1,7 @@
 common_cells_all:
   files: [
     generic_fifo.sv,
+    generic_fifo_adv.sv,
     generic_LFSR_8bit.sv,
     onehot_to_bin.sv,
     find_first_one.sv,
