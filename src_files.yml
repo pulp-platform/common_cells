@@ -4,19 +4,19 @@ common_cells_all:
     - src/lfsr_8bit.sv
     - src/spill_register.sv
     - src/stream_register.sv
-    - src/stream_mux.sv
-    - src/stream_demux.sv
     - src/cdc_2phase.sv
     - src/onehot_to_bin.sv
     - src/rstgen.sv
     - src/edge_propagator_tx.sv
     - src/edge_propagator_rx.sv
     - src/edge_propagator.sv
-    - src/find_first_one.sv
+    - src/lzc.sv
+    - src/rrarbiter.sv
     - src/sync_wedge.sv
     - src/sync.sv
 
     # deprecated modules
+    - src/deprecated/find_first_one.sv
     - src/deprecated/generic_fifo.sv
     - src/deprecated/generic_LFSR_8bit.sv
     - src/deprecated/pulp_sync_wedge.sv
