@@ -12,6 +12,7 @@
 // (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
 // University of Bologna.
 
+// Deprecated, use lzc unit instead.
 
 /// A leading-one finder / leading zero counter.
 /// Set FLIP to 0 for find_first_one => first_one_o is the index of the first one (from the LSB)
