@@ -11,6 +11,7 @@ sources:
   - src/spill_register.sv
   - src/stream_register.sv
   - src/stream_mux.sv
+  - src/stream_demux.sv
   - src/cdc_2phase.sv
   - src/cdc_fifo_2phase.sv
   - src/cdc_fifo_gray.sv
