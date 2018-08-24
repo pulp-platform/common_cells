@@ -1,6 +1,10 @@
 package:
   name: common_cells
-  authors: ["Florian Zaruba <zarubaf@iis.ethz.ch>"]
+  authors:
+    - "Florian Zaruba <zarubaf@iis.ee.ethz.ch>"
+    - "Fabian Schuiki <fschuiki@iis.ee.ethz.ch>"
+    - "Michael Schaffner <schaffner@iis.ee.ethz.ch>"
+    - "Andreas Kurth <akurth@iis.ee.ethz.ch>"
 
 dependencies:
   tech_cells_generic: { git: "git@iis-git.ee.ethz.ch:pulp-open/tech_cells_generic.git", rev: master }
@@ -25,9 +29,11 @@ sources:
   - src/sync_wedge.sv
   - src/sync.sv
   - src/graycode.sv
+
   - target: simulation
     files:
       - src/sram.sv
+
   - target: test
     files:
       - test/fifo_tb.sv
