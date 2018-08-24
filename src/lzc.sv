@@ -13,24 +13,24 @@
 // University of Bologna.
 
 
-/// A leading-one finder / leading zero counter.
-/// Set FLIP to 0 for find_first_one => first_one_o is the index of the first one (from the LSB)
-/// Set FLIP to 1 for leading zero counter => first_one_o is the number of leading zeroes (from the MSB)
-module find_first_one #(
+/// A trailing zero counter / leading zero counter.
+/// Set LZC to 0 for trailing zero counter => cnt_o is the number of trailing zeroes (from the LSB)
+/// Set LZC to 1 for leading zero counter  => cnt_o is the number of leading zeroes  (from the MSB)
+module lzc #(
     /// The width of the input vector.
     parameter int WIDTH = -1,
-    parameter int FLIP = 0
+    parameter int MODE  = 0
 )(
     input  logic [WIDTH-1:0]         in_i,
-    output logic [$clog2(WIDTH)-1:0] first_one_o,
-    output logic                     no_ones_o
+    output logic [$clog2(WIDTH)-1:0] cnt_o,
+    output logic                     empty_o // asserted if all bits in in_i are zero
 );
 
     localparam int NUM_LEVELS = $clog2(WIDTH);
 
     // pragma translate_off
     initial begin
-        assert(WIDTH >= 0);
+        assert(WIDTH > 0) else $fatal("input must be at least one bit wide");
     end
     // pragma translate_on
 
@@ -41,7 +41,7 @@ module find_first_one #(
     logic [WIDTH-1:0] in_tmp;
 
     for (genvar i = 0; i < WIDTH; i++) begin
-        assign in_tmp[i] = FLIP ? in_i[WIDTH-1-i] : in_i[i];
+        assign in_tmp[i] = MODE ? in_i[WIDTH-1-i] : in_i[i];
     end
 
     for (genvar j = 0; j < WIDTH; j++) begin
@@ -79,7 +79,7 @@ module find_first_one #(
         end
     end
 
-    assign first_one_o = NUM_LEVELS > 0 ? index_nodes[0] : '0;
-    assign no_ones_o   = NUM_LEVELS > 0 ? ~sel_nodes[0]  : '1;
+    assign cnt_o   = NUM_LEVELS > 0 ? index_nodes[0] : '0;
+    assign empty_o = NUM_LEVELS > 0 ? ~sel_nodes[0]  : ~(|in_i);
 
-endmodule
+endmodule : lzc

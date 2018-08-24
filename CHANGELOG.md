@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## Unreleased
 
 - Add Stream Register.
-- Add Stream Multiplexer and Demultiplexer.
+- Add round robin arbiter
+- Add lzc as replacement for find_first_one (find_first_one is now deprecated)
 
 ## 1.6.0 - 2018-04-03
 ### Added
