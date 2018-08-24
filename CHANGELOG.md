@@ -5,10 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+### Added
+- Add stream register (`stream_register`).
+- Add stream multiplexer and demultiplexer (`stream_mux`, `stream_demux`).
+- Add round robin arbiter (`rrarbiter`).
+- Add leading zero counter (`lzc`).
 
-- Add Stream Register.
-- Add round robin arbiter
-- Add lzc as replacement for find_first_one (find_first_one is now deprecated)
+### Changed
+- Deprecate `find_first_one` in favor of `lzc`.
 
 ## 1.6.0 - 2018-04-03
 ### Added
