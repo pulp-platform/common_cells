@@ -31,7 +31,7 @@ module generic_fifo #(
   assign grant_o = ~full;
   assign valid_o = ~empty;
 
-  fifo #(
+  fifo_v2 #(
     .DATA_WIDTH ( DATA_WIDTH ),
     .DEPTH      ( DATA_DEPTH )
   ) i_fifo (
