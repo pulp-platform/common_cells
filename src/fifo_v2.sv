@@ -10,11 +10,12 @@
 
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
-module fifo #(
+module fifo_v2 #(
     parameter bit          FALL_THROUGH = 1'b0, // fifo is in fall-through mode
     parameter int unsigned DATA_WIDTH   = 32,   // default data width if the fifo is of type logic
     parameter int unsigned DEPTH        = 8,    // depth can be arbitrary from 0 to 2**32
-    parameter int unsigned THRESHOLD    = 1,    // fill count until when to assert threshold_o
+    parameter int unsigned ALM_EMPTY_TH = 1,    // almost empty threshold (when to assert alm_empty_o)
+    parameter int unsigned ALM_FULL_TH  = 1,    // almost full threshold (when to assert alm_full_o)
     parameter type dtype                = logic [DATA_WIDTH-1:0]
 )(
     input  logic  clk_i,            // Clock
@@ -24,7 +25,8 @@ module fifo #(
     // status flags
     output logic  full_o,           // queue is full
     output logic  empty_o,          // queue is empty
-    output logic  threshold_o,      // the FIFO is above the specified threshold
+    output logic  alm_full_o,       // FIFO fillstate >= the specified threshold
+    output logic  alm_empty_o,      // FIFO fillstate <= the specified threshold
     // as long as the queue is not full we can push new data
     input  dtype  data_i,           // data to push into the queue
     input  logic  push_i,           // data is valid and can be pushed to the queue
@@ -48,11 +50,13 @@ module fifo #(
     if (DEPTH == 0) begin
         assign empty_o     = ~push_i;
         assign full_o      = ~pop_i;
-        assign threshold_o = 1'b0; // that signal does not make any sense in a FIFO of depth 0
+        assign alm_full_o  = 1'b0; // that signal does not make any sense in a FIFO of depth 0
+        assign alm_empty_o = 1'b0; // that signal does not make any sense in a FIFO of depth 0
     end else begin
         assign full_o       = (status_cnt_q == FIFO_DEPTH);
         assign empty_o      = (status_cnt_q == 0) & ~(FALL_THROUGH & push_i);
-        assign threshold_o  = (status_cnt_q > THRESHOLD);
+        assign alm_full_o   = (status_cnt_q >= ALM_FULL_TH);
+        assign alm_empty_o  = (status_cnt_q <= ALM_EMPTY_TH);
     end
     // status flags
 

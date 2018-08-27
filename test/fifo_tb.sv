@@ -12,36 +12,39 @@
 
 /// Testbench for generic FIFO
 module fifo_tb #(
-    parameter bit          FALL_THROUGH = 1'b1,
-    parameter int unsigned DEPTH        = 8,
-    parameter int unsigned THRESHOLD    = 1
+    parameter bit          FALL_THROUGH  = 1'b1,
+    parameter int unsigned DEPTH         = 8,
+    parameter int unsigned ALM_FULL_TH   = 6,
+    parameter int unsigned ALM_EMPTY_TH  = 2
 );
 
     logic clk, rst_n;
 
-    logic flush, full, empty, thrs, push, pop;
+    logic flush, full, empty, alm_full, alm_empty, push, pop;
 
     logic [7:0] wdata, rdata;
 
     int unsigned nr_checks;
 
-    fifo #(
+    fifo_v2 #(
         .FALL_THROUGH ( FALL_THROUGH ),
         .DATA_WIDTH   ( 8            ),
         .DEPTH        ( DEPTH        ),
-        .THRESHOLD    ( THRESHOLD    )
+        .ALM_FULL_TH  ( ALM_FULL_TH  ),
+        .ALM_EMPTY_TH ( ALM_EMPTY_TH )
     ) dut (
-        .clk_i        ( clk    ),
-        .rst_ni       ( rst_n  ),
-        .testmode_i   ( 1'b0   ),
-        .flush_i      ( flush  ),
-        .full_o       ( full   ),
-        .empty_o      ( empty  ),
-        .threshold_o  ( thrs   ),
-        .data_i       ( wdata  ),
-        .push_i       ( push   ),
-        .data_o       ( rdata  ),
-        .pop_i        ( pop    )
+        .clk_i        ( clk       ),
+        .rst_ni       ( rst_n     ),
+        .testmode_i   ( 1'b0      ),
+        .flush_i      ( flush     ),
+        .full_o       ( full      ),
+        .empty_o      ( empty     ),
+        .alm_full_o   ( alm_full  ),
+        .alm_empty_o  ( alm_empty ),
+        .data_i       ( wdata     ),
+        .push_i       ( push      ),
+        .data_o       ( rdata     ),
+        .pop_i        ( pop       )
     );
 
     initial begin
@@ -81,12 +84,12 @@ module fifo_tb #(
         clocking cb @(posedge clk);
             default input #2 output #4;
             output flush, wdata, push, pop;
-            input full, empty, rdata, thrs;
+            input full, empty, rdata, alm_full, alm_empty;
         endclocking
 
         clocking pck @(posedge clk);
             default input #2 output #4;
-            input flush, wdata, push, pop, full, empty, rdata, thrs;
+            input flush, wdata, push, pop, full, empty, rdata, alm_full, alm_empty;
         endclocking
 
         initial begin

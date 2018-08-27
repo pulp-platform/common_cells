@@ -31,7 +31,7 @@ module stream_register #(
     logic   fifo_empty,
             fifo_full;
 
-    fifo #(
+    fifo_v2 #(
         .FALL_THROUGH   (1'b0),
         .DATA_WIDTH     ($size(T)),
         .DEPTH          (1),
@@ -43,7 +43,8 @@ module stream_register #(
         .testmode_i     (testmode_i),
         .full_o         (fifo_full),
         .empty_o        (fifo_empty),
-        .threshold_o    (),
+        .alm_full_o     ( ),
+        .alm_empty_o    ( ),
         .data_i         (data_i),
         .push_i         (valid_i),
         .data_o         (data_o),
