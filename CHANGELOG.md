@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## 1.7.1 - 2018-08-27
+### Fixed
+- Revert breaking changes to `fifo`.
+
 ## 1.7.0 - 2018-08-24
 ### Added
 - Add stream register (`stream_register`).
