@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## 1.7.2 - 2018-08-27
+### Added
+- Almost full/empty flags to FIFO, as `fifo_v2`.
+
+### Changed
+- FIFO moved to `fifo_v1` and instantiates `fifo_v2`.
+
 ## 1.7.1 - 2018-08-27
 ### Fixed
 - Revert breaking changes to `fifo`.
