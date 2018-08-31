@@ -138,22 +138,21 @@ always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
 end
 
 
-`ifndef SYNTHESIS
+//pragma translate_off
 `ifndef VERILATOR
     // check parameterization, enable and hot1 property of acks
     // todo: check RR fairness with sequence assertion
     initial begin
         assert (NUM_REQ>=2) else $fatal ("minimum input width of req vecor is 2");
     end
-    ack_implies_vld: assert property (@(posedge clk_i) disable iff (~rst_ni) |ack_o |-> vld_o)              else $fatal ("an asserted ack signal implies that vld_o must be asserted, too");
-    vld_implies_ack: assert property (@(posedge clk_i) disable iff (~rst_ni) vld_o  |-> |ack_o)             else $fatal ("an asserted vld_o signal implies that one ack_o must be asserted, too");
-    en_vld_check:    assert property (@(posedge clk_i) disable iff (~rst_ni) !en_i  |-> !vld_o)             else $fatal ("vld must not be asserted when arbiter is disabled");
-    en_ack_check:    assert property (@(posedge clk_i) disable iff (~rst_ni) !en_i  |-> !ack_o)             else $fatal ("ack_o must not be asserted when arbiter is disabled");
-    ack_idx_check:   assert property (@(posedge clk_i) disable iff (~rst_ni) vld_o |-> ack_o[idx_o])        else $fatal ("index / ack_o do not match");
-    hot1_check:      assert property (@(posedge clk_i) disable iff (~rst_ni) ((~(1<<idx_o)) & ack_o) == 0 ) else $fatal ("only one ack_o can be asserted at a time (i.e. ack_o must be hot1)");
+    ack_implies_vld: assert property (@(posedge clk_i) disable iff (~rst_ni) |ack_o |-> vld_o)              else $fatal (1,"an asserted ack signal implies that vld_o must be asserted, too");
+    vld_implies_ack: assert property (@(posedge clk_i) disable iff (~rst_ni) vld_o  |-> |ack_o)             else $fatal (1,"an asserted vld_o signal implies that one ack_o must be asserted, too");
+    en_vld_check:    assert property (@(posedge clk_i) disable iff (~rst_ni) !en_i  |-> !vld_o)             else $fatal (1,"vld must not be asserted when arbiter is disabled");
+    en_ack_check:    assert property (@(posedge clk_i) disable iff (~rst_ni) !en_i  |-> !ack_o)             else $fatal (1,"ack_o must not be asserted when arbiter is disabled");
+    ack_idx_check:   assert property (@(posedge clk_i) disable iff (~rst_ni) vld_o |-> ack_o[idx_o])        else $fatal (1,"index / ack_o do not match");
+    hot1_check:      assert property (@(posedge clk_i) disable iff (~rst_ni) ((~(1<<idx_o)) & ack_o) == 0 ) else $fatal (1,"only one ack_o can be asserted at a time (i.e. ack_o must be hot1)");
 `endif
-`endif
-
+//pragma translate_on
 
 endmodule // rrarbiter
 
