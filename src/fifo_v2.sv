@@ -135,19 +135,22 @@ module fifo_v2 #(
             mem_q <= mem_n;
         end
     end
-    `ifndef SYNTHESIS
-    `ifndef verilator
+
+//pragma translate_off
+`ifndef verilator
     initial begin
-        // assert ((THRESHOLD - 1) > DEPTH) else $error("Threshold can't be bigger than the DEPTH.");
-
-        assert property(
-            @(posedge clk_i) (rst_ni && full_o |-> ~push_i))
-            else $warning ("Trying to push new data although the FIFO is full.");
-
-        assert property(
-            @(posedge clk_i) (rst_ni && empty_o |-> ~pop_i))
-            else $warning ("Trying to pop data although the FIFO is empty.");
+        assert (ALM_FULL_TH <= DEPTH) else $error("ALM_FULL_TH can't be larger than the DEPTH.");
+        assert (ALM_EMPTY_TH <= DEPTH) else $error("ALM_EMPTY_TH can't be larger than the DEPTH.");
     end
-    `endif
-    `endif
-endmodule // generic_fifo
+
+    full_write : assert property(
+        @(posedge clk_i) (rst_ni && full_o |-> ~push_i))
+        else $fatal (1,"Trying to push new data although the FIFO is full.");
+
+    empty_read : assert property(
+        @(posedge clk_i) (rst_ni && empty_o |-> ~pop_i))
+        else $fatal (1,"Trying to pop data although the FIFO is empty.");
+`endif
+//pragma translate_on
+
+endmodule // fifo_v2
