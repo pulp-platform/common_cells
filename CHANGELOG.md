@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+- Fix assertions in `fifo_v2` (write on full / read on empty did not trigger properly)
 
 ## 1.7.3 - 2018-08-27
 ### Fixed

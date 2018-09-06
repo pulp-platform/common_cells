@@ -137,18 +137,19 @@ module fifo_v2 #(
     end
 
 //pragma translate_off
-`ifndef verilator
+`ifndef VERILATOR
     initial begin
-        assert (ALM_FULL_TH <= DEPTH) else $error("ALM_FULL_TH can't be larger than the DEPTH.");
+        assert (ALM_FULL_TH <= DEPTH)  else $error("ALM_FULL_TH can't be larger than the DEPTH.");
         assert (ALM_EMPTY_TH <= DEPTH) else $error("ALM_EMPTY_TH can't be larger than the DEPTH.");
+        assert (DEPTH > 0)             else $error("DEPTH must be greater than 0.");
     end
 
     full_write : assert property(
-        @(posedge clk_i) (rst_ni && full_o |-> ~push_i))
+        @(posedge clk_i) disable iff (~rst_ni) (full_o |-> ~push_i))
         else $fatal (1,"Trying to push new data although the FIFO is full.");
 
     empty_read : assert property(
-        @(posedge clk_i) (rst_ni && empty_o |-> ~pop_i))
+        @(posedge clk_i) disable iff (~rst_ni) (empty_o |-> ~pop_i))
         else $fatal (1,"Trying to pop data although the FIFO is empty.");
 `endif
 //pragma translate_on

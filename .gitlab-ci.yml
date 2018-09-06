@@ -25,7 +25,7 @@ test_fifo:
   stage: test
   script:
     # workaround to prevent simulation from failing due to assertions
-    - bender vsim -t test --vlog-flag="+define+verilator"
+    - bender vsim -t test --vlog-flag="+define+VERILATOR"
     - cd build
     - $VSIM -c work.fifo_tb -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" -GDEPTH=0
     - $VSIM -c work.fifo_tb -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" -GDEPTH=13
@@ -35,7 +35,7 @@ test_stream_register:
   stage: test
   script:
     # workaround to prevent simulation from failing due to assertions
-    - bender vsim -t test --vlog-flag="+define+verilator"
+    - bender vsim -t test --vlog-flag="+define+VERILATOR"
     - cd build
     - $VSIM -c work.stream_register_tb -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"
 
