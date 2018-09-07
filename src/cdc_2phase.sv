@@ -37,7 +37,7 @@ module cdc_2phase #(
   (* dont_touch = "true" *) T async_data;
 
   // The sender in the source domain.
-  cdc_2phase_src #(T) i_src (
+  cdc_2phase_src #(.T(T)) i_src (
     .rst_ni       ( src_rst_ni  ),
     .clk_i        ( src_clk_i   ),
     .data_i       ( src_data_i  ),
@@ -49,7 +49,7 @@ module cdc_2phase #(
   );
 
   // The receiver in the destination domain.
-  cdc_2phase_dst #(T) i_dst (
+  cdc_2phase_dst #(.T(T)) i_dst (
     .rst_ni       ( dst_rst_ni  ),
     .clk_i        ( dst_clk_i   ),
     .data_o       ( dst_data_o  ),
