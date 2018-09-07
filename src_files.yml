@@ -20,6 +20,7 @@ common_cells_all:
     # deprecated modules
     - src/deprecated/find_first_one.sv
     - src/deprecated/generic_fifo.sv
+    - src/deprecated/generic_fifo_adv.sv
     - src/deprecated/generic_LFSR_8bit.sv
     - src/deprecated/pulp_sync_wedge.sv
     - src/deprecated/pulp_sync.sv
