@@ -5,8 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+
+## 1.7.5 - 2018-09-06
+
 ### Fixed
 - Fix incompatibility with verilator
+- Fix dependency to open-source repo
 
 ## 1.7.4 - 2018-09-06
 - Fix assertions in `fifo_v2` (write on full / read on empty did not trigger properly)

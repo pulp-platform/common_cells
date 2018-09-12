@@ -7,7 +7,7 @@ package:
     - "Andreas Kurth <akurth@iis.ee.ethz.ch>"
 
 dependencies:
-  tech_cells_generic: { git: "git@iis-git.ee.ethz.ch:pulp-open/tech_cells_generic.git", rev: master }
+  tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.1.1 }
 
 sources:
   - src/fifo_v1.sv
