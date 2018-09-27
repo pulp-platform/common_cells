@@ -22,6 +22,7 @@ sources:
   - src/cdc_fifo_gray.sv
   - src/onehot_to_bin.sv
   - src/rstgen.sv
+  - src/rstgen_bypass.sv
   - src/edge_propagator_tx.sv
   - src/edge_propagator_rx.sv
   - src/edge_propagator.sv

@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## 1.7.5 - 2018-09-27
+- Add reset synchronizer with explicit reset bypass in testmode
+
 ## 1.7.4 - 2018-09-06
 - Fix assertions in `fifo_v2` (write on full / read on empty did not trigger properly)
 

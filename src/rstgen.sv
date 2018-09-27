@@ -18,31 +18,13 @@ module rstgen (
     output logic init_no
 );
 
-    logic s_rst_ff3,s_rst_ff2,s_rst_ff1,s_rst_ff0,s_rst_n;
+    rstgen_bypass i_rstgen_bypass (
+        .clk_i            ( clk_i       ),
+        .rst_ni           ( rst_ni      ),
+        .rst_test_mode_ni ( rst_ni      ),
+        .test_mode_i      ( test_mode_i ),
+        .rst_no           ( rst_no      ),
+        .init_no          ( init_no     )
+    );
 
-    always @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            s_rst_ff0  <= 1'b0;
-            s_rst_ff1  <= 1'b0;
-            s_rst_ff2  <= 1'b0;
-            s_rst_ff3  <= 1'b0;
-            s_rst_n    <= 1'b0;
-        end else begin
-            s_rst_ff3  <= 1'b1;
-            s_rst_ff2  <= s_rst_ff3;
-            s_rst_ff1  <= s_rst_ff2;
-            s_rst_ff0  <= s_rst_ff1;
-            s_rst_n    <= s_rst_ff0;
-        end
-    end
-
-    always_comb begin
-        if (test_mode_i == 1'b0) begin
-            rst_no  = s_rst_n;
-            init_no = s_rst_n;
-        end else begin
-            rst_no  = rst_ni;
-            init_no = 1'b1;
-        end
-    end
 endmodule
