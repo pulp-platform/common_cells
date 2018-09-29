@@ -20,10 +20,25 @@ module rstgen_bypass (
     output logic init_no
 );
 
+    // internal reset
+    logic rst_n;
     logic s_rst_ff3,s_rst_ff2,s_rst_ff1,s_rst_ff0,s_rst_n;
 
-    always @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
+    // bypass mode
+    always_comb begin
+        if (test_mode_i == 1'b0) begin
+            rst_n   = rst_ni;
+            rst_no  = s_rst_n;
+            init_no = s_rst_n;
+        end else begin
+            rst_n   = rst_test_mode_ni;
+            rst_no  = rst_test_mode_ni;
+            init_no = 1'b1;
+        end
+    end
+
+    always @(posedge clk_i or negedge rst_n) begin
+        if (~rst_n) begin
             s_rst_ff0  <= 1'b0;
             s_rst_ff1  <= 1'b0;
             s_rst_ff2  <= 1'b0;
@@ -35,17 +50,6 @@ module rstgen_bypass (
             s_rst_ff1  <= s_rst_ff2;
             s_rst_ff0  <= s_rst_ff1;
             s_rst_n    <= s_rst_ff0;
-        end
-    end
-
-    // bypass mode
-    always_comb begin
-        if (test_mode_i == 1'b0) begin
-            rst_no  = s_rst_n;
-            init_no = s_rst_n;
-        end else begin
-            rst_no  = rst_test_mode_ni;
-            init_no = 1'b1;
         end
     end
 
