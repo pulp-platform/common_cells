@@ -6,17 +6,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## 1.8.0 - 2018-10-15
+
 - Add lock feature to the rrarbiter. This prevents the arbiter to change the decision when we have pending requests that remain unaknowledged for several cycles.
-
-## 1.7.6 - 2018-09-27
-
-### Added
-- Add reset synchronizer with explicit reset bypass in testmode
 - Add deglitching circuit
 - Add generic clock divider
 - Add edge detecter as alias to sync_wedge (name is more expressive)
 - Add generic counter
 - Add moving deglitcher
+
+## 1.7.6 - 2018-09-27
+
+### Added
+- Add reset synchronizer with explicit reset bypass in testmode
 
 ## 1.7.5 - 2018-09-06
 ### Fixed
