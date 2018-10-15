@@ -17,6 +17,11 @@ common_cells_all:
     - src/rrarbiter.sv
     - src/sync_wedge.sv
     - src/sync.sv
+    - src/clk_div.sv
+    - src/edge_detect.sv
+    - src/serial_deglitch.sv
+    - src/counter.sv
+    - src/mv_filter.sv
 
     # deprecated modules
     - src/deprecated/find_first_one.sv

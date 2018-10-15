@@ -31,6 +31,11 @@ sources:
   - src/sync_wedge.sv
   - src/sync.sv
   - src/graycode.sv
+  - src/clk_div.sv
+  - src/edge_detect.sv
+  - src/serial_deglitch.sv
+  - src/counter.sv
+  - src/mv_filter.sv
 
   - target: simulation
     files:

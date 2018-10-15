@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## Unreleased
 
 ## 1.7.6 - 2018-09-27
+
+### Added
 - Add reset synchronizer with explicit reset bypass in testmode
+- Add deglitching circuit
+- Add generic clock divider
+- Add edge detecter as alias to sync_wedge (name is more expressive)
+- Add generic counter
+- Add moving deglitcher
 
 ## 1.7.5 - 2018-09-06
 ### Fixed

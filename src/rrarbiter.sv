@@ -1,17 +1,13 @@
-// Copyright (c) 2018 ETH Zurich, University of Bologna
-// All rights reserved.
-//
-// This code is under development and not yet released to the public.
-// Until it is released, the code is under the copyright of ETH Zurich and
-// the University of Bologna, and may contain confidential and/or unpublished
-// work. Any reuse/redistribution is strictly forbidden without written
-// permission from ETH Zurich.
-//
-// Bug fixes and contributions will eventually be released under the
-// SolderPad open hardware license in the context of the PULP platform
-// (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
-// University of Bologna.
-//
+// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright and related rights are licensed under the Solderpad Hardware
+// License, Version 0.51 (the "License"); you may not use this file except in
+// compliance with the License. You may obtain a copy of the License at
+// http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
+// or agreed to in writing, software, hardware and materials distributed under
+// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, either express or implied. See the License for the
+// specific language governing permissions and limitations under the License.
+// 
 // Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
 // Date: 16.08.2018
 // Description: Round robin arbiter with lookahead
@@ -158,7 +154,7 @@ always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
 end
 
 
-//pragma translate_off
+// pragma translate_off
 `ifndef VERILATOR
     // check parameterization, enable and hot1 property of acks
     // todo: check RR fairness with sequence assertion
@@ -172,7 +168,7 @@ end
     ack_idx_check:   assert property (@(posedge clk_i) disable iff (~rst_ni) vld_o |-> ack_o[idx_o])        else $fatal (1,"index / ack_o do not match");
     hot1_check:      assert property (@(posedge clk_i) disable iff (~rst_ni) ((~(1<<idx_o)) & ack_o) == 0 ) else $fatal (1,"only one ack_o can be asserted at a time (i.e. ack_o must be hot1)");
 `endif
-//pragma translate_on
+// pragma translate_on
 
 endmodule // rrarbiter
 
