@@ -14,7 +14,7 @@ module mv_filter #(
     parameter int unsigned WIDTH     = 4,
     parameter int unsigned THRESHOLD = 10
 )(
-    input  logic clki,
+    input  logic clk_i,
     input  logic rst_ni,
     input  logic sample_i,
     input  logic clear_i,
@@ -43,7 +43,7 @@ module mv_filter #(
         end
     end
 
-    always_ff @(posedge clki or negedge rst_ni) begin
+    always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
             counter_q <= '0;
             q         <= 1'b0;
