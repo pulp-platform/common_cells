@@ -39,11 +39,11 @@ module cdc_fifo_2phase #(
 );
 
   // Check the invariants.
-  `ifndef SYNTHESIS
+  //pragma translate_off
   initial begin
     assert(LOG_DEPTH > 0);
   end
-  `endif
+  //pragma translate_on
 
   localparam int PTR_WIDTH = LOG_DEPTH+1;
   typedef logic [PTR_WIDTH-1:0] pointer_t;
