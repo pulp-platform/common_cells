@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+- Add `fifo_v3` with generic fill count
+
 ## 1.7.6 - 2018-09-27
 
 ### Added

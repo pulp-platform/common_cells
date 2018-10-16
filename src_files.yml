@@ -1,6 +1,8 @@
 common_cells_all:
   files:
-    - src/fifo.sv
+    - src/fifo_v1.sv
+    - src/fifo_v2.sv
+    - src/fifo_v3.sv
     - src/lfsr_8bit.sv
     - src/spill_register.sv
     - src/stream_register.sv
