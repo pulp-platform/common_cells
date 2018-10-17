@@ -63,8 +63,6 @@ module fifo_v2 #(
         .full_o,
         .empty_o,
         .usage_o (usage),
-        .alm_full_o,
-        .alm_empty_o,
         .data_i,
         .push_i,
         .data_o,

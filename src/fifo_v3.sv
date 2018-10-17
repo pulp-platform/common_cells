@@ -14,8 +14,6 @@ module fifo_v3 #(
     parameter bit          FALL_THROUGH = 1'b0, // fifo is in fall-through mode
     parameter int unsigned DATA_WIDTH   = 32,   // default data width if the fifo is of type logic
     parameter int unsigned DEPTH        = 8,    // depth can be arbitrary from 0 to 2**32
-    parameter int unsigned ALM_EMPTY_TH = 1,    // almost empty threshold (when to assert alm_empty_o)
-    parameter int unsigned ALM_FULL_TH  = 1,    // almost full threshold (when to assert alm_full_o)
     parameter type dtype                = logic [DATA_WIDTH-1:0],
     // DO NOT OVERWRITE THIS PARAMETER
     parameter int unsigned ADDR_DEPTH   = (DEPTH > 1) ? $clog2(DEPTH) : 1
@@ -28,8 +26,6 @@ module fifo_v3 #(
     output logic  full_o,           // queue is full
     output logic  empty_o,          // queue is empty
     output logic  [ADDR_DEPTH-1:0] usage_o,  // fill pointer
-    output logic  alm_full_o,       // FIFO fillstate >= the specified threshold
-    output logic  alm_empty_o,      // FIFO fillstate <= the specified threshold
     // as long as the queue is not full we can push new data
     input  dtype  data_i,           // data to push into the queue
     input  logic  push_i,           // data is valid and can be pushed to the queue
