@@ -15,7 +15,7 @@
 /// the input stream can just be applied at all output streams.
 
 module stream_demux #(
-  parameter integer N_OUP,
+  parameter integer N_OUP = 1,
   /// Dependent parameters, DO NOT OVERRIDE!
   localparam integer LOG_N_OUP = $clog2(N_OUP)
 ) (

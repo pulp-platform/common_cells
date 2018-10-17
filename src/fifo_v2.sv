@@ -52,8 +52,6 @@ module fifo_v2 #(
         .FALL_THROUGH,
         .DATA_WIDTH,
         .DEPTH,
-        .ALM_EMPTY_TH,
-        .ALM_FULL_TH,
         .dtype ( dtype )
     ) i_fifo_v3 (
         .clk_i,
