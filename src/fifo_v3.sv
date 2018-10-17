@@ -135,8 +135,6 @@ module fifo_v3 #(
 // pragma translate_off
 `ifndef VERILATOR
     initial begin
-        assert (ALM_FULL_TH <= DEPTH)  else $error("ALM_FULL_TH can't be larger than the DEPTH.");
-        assert (ALM_EMPTY_TH <= DEPTH) else $error("ALM_EMPTY_TH can't be larger than the DEPTH.");
         assert (DEPTH > 0)             else $error("DEPTH must be greater than 0.");
     end
 

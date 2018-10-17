@@ -49,10 +49,10 @@ module fifo_v2 #(
     end
 
     fifo_v3 #(
-        .FALL_THROUGH,
-        .DATA_WIDTH,
-        .DEPTH,
-        .dtype ( dtype )
+        .FALL_THROUGH ( FALL_THROUGH ),
+        .DATA_WIDTH   ( DATA_WIDTH   ),
+        .DEPTH        ( DEPTH        ),
+        .dtype        ( dtype        )
     ) i_fifo_v3 (
         .clk_i,
         .rst_ni,
@@ -66,5 +66,14 @@ module fifo_v2 #(
         .data_o,
         .pop_i
     );
+
+    // pragma translate_off
+    `ifndef VERILATOR
+        initial begin
+            assert (ALM_FULL_TH <= DEPTH)  else $error("ALM_FULL_TH can't be larger than the DEPTH.");
+            assert (ALM_EMPTY_TH <= DEPTH) else $error("ALM_EMPTY_TH can't be larger than the DEPTH.");
+        end
+    `endif
+    // pragma translate_on
 
 endmodule // fifo_v2
