@@ -21,18 +21,18 @@ module sync_wedge (
 );
 
    logic [2:0]  r_reg;
-   logic [2:0]  r_next;
 
    assign serial_o =  r_reg[0];
    assign f_edge_o = (~r_reg[1]) & r_reg[0];
    assign r_edge_o =  r_reg[1] & (~r_reg[0]);
 
    always_ff @(posedge clk_i, negedge rst_ni) begin
-        if (~rst_ni)
+        if (~rst_ni) begin
             r_reg <= 3'h0;
-        else
-            if (en_i)
+        end else begin
+            if (en_i) begin
                 r_reg <= {serial_i, r_reg[2:1]};
+            end
+        end
      end
-
 endmodule

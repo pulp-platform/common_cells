@@ -10,6 +10,7 @@
 
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
+/* verilator lint_off DECLFILENAME */
 module fifo #(
     parameter bit          FALL_THROUGH = 1'b0, // fifo is in fall-through mode
     parameter int unsigned DATA_WIDTH   = 32,   // default data width if the fifo is of type logic
@@ -53,3 +54,4 @@ module fifo #(
         .pop_i       ( pop_i       )
     );
 endmodule
+/* verilator lint_on DECLFILENAME */
