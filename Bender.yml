@@ -5,6 +5,7 @@ package:
     - "Fabian Schuiki <fschuiki@iis.ee.ethz.ch>"
     - "Michael Schaffner <schaffner@iis.ee.ethz.ch>"
     - "Andreas Kurth <akurth@iis.ee.ethz.ch>"
+    - "Manuel Eggimann <meggimann@iis.ee.ethz.ch>"
 
 dependencies:
   tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.1.1 }

@@ -24,6 +24,7 @@ common_cells_all:
     - src/serial_deglitch.sv
     - src/counter.sv
     - src/mv_filter.sv
+    - src/popcount.sv
 
     # deprecated modules
     - src/deprecated/find_first_one.sv
