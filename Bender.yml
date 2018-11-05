@@ -14,6 +14,7 @@ sources:
   - src/fifo_v2.sv
   - src/fifo_v3.sv
   - src/lfsr_8bit.sv
+  - src/lfsr_16bit.sv
   - src/spill_register.sv
   - src/stream_register.sv
   - src/stream_mux.sv
