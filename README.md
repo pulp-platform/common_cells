@@ -2,9 +2,9 @@
 
 Maintainer: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
-This repository contains commonly used cells for use in various other projects.
+This repository contains commonly used cells and headers for use in various projects.
 
-## Contents
+## Cell Contents
 
 This repository currently contains the following cells, ordered by categories.
 Please note that cells with status *deprecated* are not to be used for new designs and only serve to provide compatibility with old code.
@@ -35,7 +35,6 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | `serial_deglitch`    | Serial line deglitcher                                                           | active       |
 | `sync`               | Serial line synchronizer                                                         | active       |
 | `sync_wedge`         | Serial line synchronizer with edge detector                                      | active       |
-|                      |                                                                                  |              |
 
 ### Counters and Shift Registers
 
@@ -46,7 +45,6 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | `lfsr_8bit`         | 8-bit linear feedback shift register (LFSR)     | active       |
 | `lfsr_16bit`        | 16-bit linear feedback shift register (LFSR)    | active       |
 | `mv_filter`         | **ZARUBAF ADD DESCRIPTION**                     | active       |
-|                     |                                                 |              |
 
 ### Data Path Elements
 
@@ -76,4 +74,34 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | `generic_fifo_adv` | FIFO register without thresholds              | *deprecated* |
 | `sram`             | SRAM behavioral model                         | active       |
 | `unread`           | Empty module to sink unconnected outputs into | active       |
-|                    |                                               |              |
+
+
+## Header Contents
+
+This repository currently contains the following header files.
+
+### Register Header
+
+The register header file `register_defines.svh` contains macros that expand to descriptions of registers.
+To avoid misuse of `always_ff` blocks, only the following macros shall be used to describe sequential behavior.
+The use of linter rules that flag explicit uses of `always_ff` in source code is encouraged.
+
+|         Macro         |                            Arguments                            |                               Description                               |
+|-----------------------|-----------------------------------------------------------------|-------------------------------------------------------------------------|
+| <code>\`FF</code>     | `q_sig`, `d_sig`, `rst_val`                                     | Flip-flop with asynchronous active-low reset (implicit)                 |
+| <code>\`FFAR</code>   | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `arst_sig`              | Flip-flop with asynchronous active-high reset                           |
+| <code>\`FFARN</code>  | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `arstn_sig`             | Flip-flop with asynchronous active-low reset                            |
+| <code>\`FFSR</code>   | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `rst_sig`               | Flip-flop with synchronous active-high reset                            |
+| <code>\`FFSRN</code>  | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `rstn_sig`              | Flip-flop with synchronous active-low reset                             |
+| <code>\`FFNR</code>   | `q_sig`, `d_sig`, `clk_sig`                                     | Flip-flop without reset                                                 |
+|                       |                                                                 |                                                                         |
+| <code>\`FFL</code>    | `q_sig`, `d_sig`, `load_ena`, `rst_val`                         | Flip-flop with load-enable and asynchronous active-low reset (implicit) |
+| <code>\`FFLAR</code>  | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `arst_sig`  | Flip-flop with load-enable and asynchronous active-high reset           |
+| <code>\`FFLARN</code> | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `arstn_sig` | Flip-flop with load-enable and asynchronous active-low reset            |
+| <code>\`FFLSR</code>  | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `rst_sig`   | Flip-flop with load-enable and synchronous active-high reset            |
+| <code>\`FFLSRN</code> | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `rstn_sig`  | Flip-flop with load-enable and synchronous active-low reset             |
+| <code>\`FFLNR</code>  | `q_sig`, `d_sig`, `load_ena`, `clk_sig`                         | Flip-flop with load-enable without reset                                |
+- *The name of the clock and reset signals for implicit variants is `clk_i` and `rst_ni`, respectively.*
+- *Argument suffix `_sig` indicates signal names for present and next state as well as clocks and resets.*
+- *Argument `rst_val` specifies the value literal to be assigned upon reset.*
+- *Argument `load_ena` specifies the boolean expression that forms the load enable of the register.*
