@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add 16 bit LFSR
 - Add ready/valid handshake delayer
 
+## 1.9.0 - 2018-11-02
+
+### Added
+- Add popcount circuit `popcount`
+
 ## 1.8.0 - 2018-10-15
 
 ### Added

@@ -64,6 +64,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | `stream_mux`        | Ready/valid interface multiplexer                                            | active       |
 | `stream_register`   | Register with ready/valid interface                                          | active       |
 | `ready_valid_delay` | Randomize or delay ready/valid interface                                     | active       |
+| `popcount`          | Combinatorial popcount (hamming weight)                                      | active       |
 
 ### Data Structures
 
