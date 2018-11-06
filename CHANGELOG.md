@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## Unreleased
 
 - Add `fifo_v3` with generic fill count
+- Add 16 bit LFSR
+- Add ready/valid handshake delayer
 
 ## 1.9.0 - 2018-11-02
 

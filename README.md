@@ -44,26 +44,27 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | `counter`           | Generic up/down counter with overflow detection | active       |
 | `generic_LFSR_8bit` | 8-bit linear feedback shift register (LFSR)     | *deprecated* |
 | `lfsr_8bit`         | 8-bit linear feedback shift register (LFSR)     | active       |
+| `lfsr_16bit`        | 16-bit linear feedback shift register (LFSR)    | active       |
 | `mv_filter`         | **ZARUBAF ADD DESCRIPTION**                     | active       |
 |                     |                                                 |              |
 
 ### Data Path Elements
 
-|        Name       |                                 Description                                  |    Status    |
-|-------------------|------------------------------------------------------------------------------|--------------|
-| `binary_to_gray`  | Binary to gray code converter                                                | active       |
-| `find_first_one`  | Leading-one finder / leading-zero counter                                    | *deprecated* |
-| `gray_to_binary`  | Gray code to binary converter                                                | active       |
-| `lzc`             | Leading/trailing-zero counter                                                | active       |
-| `onehot_to_bin`   | One-hot to binary converter                                                  | active       |
-| `pipe_reg_simple` | Pipeline register for arbitrary types                                        | active       |
-| `rrarbiter`       | Round-robin arbiter for ready/valid inteface with look-ahead                 | active       |
-| `spill_register`  | Register with ready/valid interface to cut all combinational interface paths | active       |
-| `stream_demux`    | Ready/valid interface demultiplexer                                          | active       |
-| `stream_mux`      | Ready/valid interface multiplexer                                            | active       |
-| `stream_register` | Register with ready/valid interface                                          | active       |
-| `popcount`        | Combinatorial popcount (hamming weight)                                      | active       |
-
+|         Name        |                                 Description                                  |    Status    |
+|---------------------|------------------------------------------------------------------------------|--------------|
+| `binary_to_gray`    | Binary to gray code converter                                                | active       |
+| `find_first_one`    | Leading-one finder / leading-zero counter                                    | *deprecated* |
+| `gray_to_binary`    | Gray code to binary converter                                                | active       |
+| `lzc`               | Leading/trailing-zero counter                                                | active       |
+| `onehot_to_bin`     | One-hot to binary converter                                                  | active       |
+| `pipe_reg_simple`   | Pipeline register for arbitrary types                                        | active       |
+| `rrarbiter`         | Round-robin arbiter for ready/valid inteface with look-ahead                 | active       |
+| `spill_register`    | Register with ready/valid interface to cut all combinational interface paths | active       |
+| `stream_demux`      | Ready/valid interface demultiplexer                                          | active       |
+| `stream_mux`        | Ready/valid interface multiplexer                                            | active       |
+| `stream_register`   | Register with ready/valid interface                                          | active       |
+| `ready_valid_delay` | Randomize or delay ready/valid interface                                     | active       |
+| `popcount`          | Combinatorial popcount (hamming weight)                                      | active       |
 
 ### Data Structures
 
