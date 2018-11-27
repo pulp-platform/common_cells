@@ -11,4 +11,5 @@ common_cells_all:
     pulp_sync.sv,
     clock_divider.sv,
     clock_divider_counter.sv,
+    pulp_clock_gating_async.sv,
   ]
