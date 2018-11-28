@@ -35,18 +35,18 @@ module generic_fifo #(
     .DATA_WIDTH ( DATA_WIDTH ),
     .DEPTH      ( DATA_DEPTH )
   ) i_fifo (
-    .clk_i       ( clk          ),
-    .rst_ni      ( rst_n        ),
-    .flush_i     ( 1'b0         ),
-    .testmode_i  ( test_mode_i  ),
-    .full_o      ( full         ),
-    .empty_o     ( empty        ),
-    .alm_full_o  (              ),
-    .alm_empty_o (              ),
-    .data_i      ( data_i       ),
-    .push_i      ( valid_i      ),
-    .data_o      ( data_o       ),
-    .pop_i       ( grant_i      )
+    .clk_i       ( clk                ),
+    .rst_ni      ( rst_n              ),
+    .flush_i     ( 1'b0               ),
+    .testmode_i  ( test_mode_i        ),
+    .full_o      ( full               ),
+    .empty_o     ( empty              ),
+    .alm_full_o  (                    ),
+    .alm_empty_o (                    ),
+    .data_i      ( data_i             ),
+    .push_i      ( valid_i && ~full   ),
+    .data_o      ( data_o             ),
+    .pop_i       ( grant_i && ~empty  )
   );
 
 endmodule

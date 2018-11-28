@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add ready/valid handshake delayer
 - Add stream arbiter
 
+### Fixed
+- Fix `valid_i` and `grant_i` guarantees in `generic_fifo` for backward compatibility.
+
 ## 1.9.0 - 2018-11-02
 
 ### Added
