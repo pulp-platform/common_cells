@@ -3,18 +3,19 @@
 `define REGISTER_DEFINES_H_
 
 // Abridged Summary of available FF macros:
-// `FF:     asynchronous active-low reset (implicit clock and reset)
-// `FFAR:   asynchronous active-high reset
-// `FFARN:  asynchronous active-low reset
-// `FFSR:   synchronous active-high reset
-// `FFSRN:  synchronous active-low reset
-// `FFNR:   without reset
-// `FFL:    load-enable and asynchronous active-low reset (implicit clock and reset)
-// `FFLAR:  load-enable and asynchronous active-high reset
-// `FFLARN: load-enable and asynchronous active-low reset
-// `FFLSR:  load-enable and synchronous active-high reset
-// `FFLSRN: load-enable and synchronous active-low reset
-// `FFLNR:  load-enable without reset
+// `FF:      asynchronous active-low reset (implicit clock and reset)
+// `FFAR:    asynchronous active-high reset
+// `FFARN:   asynchronous active-low reset
+// `FFSR:    synchronous active-high reset
+// `FFSRN:   synchronous active-low reset
+// `FFNR:    without reset
+// `FFL:     load-enable and asynchronous active-low reset (implicit clock and reset)
+// `FFLAR:   load-enable and asynchronous active-high reset
+// `FFLARN:  load-enable and asynchronous active-low reset
+// `FFLARNC: load-enable and asynchronous active-low reset and synchronous active-high clear
+// `FFLSR:   load-enable and synchronous active-high reset
+// `FFLSRN:  load-enable and synchronous active-low reset
+// `FFLNR:   load-enable without reset
 
 
 // Flip-Flop with asynchronous active-low reset (implicit clock and reset)
@@ -99,7 +100,7 @@
 // Flip-Flop with load-enable and asynchronous active-low reset (implicit clock and reset)
 // __q: Q output of FF
 // __d: D input of FF
-// __load: Load d value into FF
+// __load: load d value into FF
 // __reset_value: value assigned upon reset
 // Implicit:
 // clk_i: clock input
@@ -116,7 +117,7 @@
 // Flip-Flop with load-enable and asynchronous active-high reset
 // __q: Q output of FF
 // __d: D input of FF
-// __load: Load d value into FF
+// __load: load d value into FF
 // __reset_value: value assigned upon reset
 // __clk: clock input
 // __arst: asynchronous reset
@@ -132,7 +133,7 @@
 // Flip-Flop with load-enable and asynchronous active-low reset
 // __q: Q output of FF
 // __d: D input of FF
-// __load: Load d value into FF
+// __load: load d value into FF
 // __reset_value: value assigned upon reset
 // __clk: clock input
 // __arst_n: asynchronous reset
@@ -148,7 +149,7 @@
 // Flip-Flop with load-enable and synchronous active-high reset
 // __q: Q output of FF
 // __d: D input of FF
-// __load: Load d value into FF
+// __load: load d value into FF
 // __reset_value: value assigned upon reset
 // __clk: clock input
 // __reset_clk: reset input
@@ -161,7 +162,7 @@
 // Flip-Flop with load-enable and synchronous active-low reset
 // __q: Q output of FF
 // __d: D input of FF
-// __load: Load d value into FF
+// __load: load d value into FF
 // __reset_value: value assigned upon reset
 // __clk: clock input
 // __reset_n_clk: reset input
@@ -171,10 +172,28 @@
     __q <= (!__reset_n_clk) ? (__reset_value) : ((__load) ? (__d) : (__q)); \
   end
 
+// Flip-Flop with load-enable and asynchronous active-low reset and synchronous clear
+// __q: Q output of FF
+// __d: D input of FF
+// __load: load d value into FF
+// __clear: assign reset value into FF
+// __reset_value: value assigned upon reset
+// __clk: clock input
+// __arst_n: asynchronous reset
+`define FFLARNC(__q, __d, __load, __clear, __reset_value, __clk, __arst_n) \
+  /``* synopsys sync_set_reset `"__clear`" *``/                       \
+  always_ff @(posedge (__clk) or negedge (__arst_n)) begin                 \
+    if (!__arst_n) begin                                                   \
+      __q <= (__reset_value);                                              \
+    end else begin                                                         \
+      __q <= (__clear) ? (__reset_value) : (__load) ? (__d) : (__q);       \
+    end                                                                    \
+  end
+
 // Load-enable Flip-Flop without reset
 // __q: Q output of FF
 // __d: D input of FF
-// __load: Load d value into FF
+// __load: load d value into FF
 // __clk: clock input
 `define FFLNR(__q, __d, __load, __clk) \
   always_ff @(posedge (__clk)) begin   \
