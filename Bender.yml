@@ -44,7 +44,7 @@ sources:
   - src/edge_detect.sv
   - src/serial_deglitch.sv
   - src/counter.sv
-  - src/ready_valid_delay.sv
+  - src/stream_delay.sv
   - src/mv_filter.sv
 
   - target: simulation

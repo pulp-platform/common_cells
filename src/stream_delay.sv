@@ -11,7 +11,7 @@
 // Author: Florian Zaruba, zarubaf@iis.ee.ethz.ch
 // Description: Delay (or randomize) AXI-like handshaking
 
-module ready_valid_delay #(
+module stream_delay #(
     parameter bit   StallRandom = 0,
     parameter int   FixedDelay  = 1,
     parameter type  payload_t  = logic
