@@ -14,6 +14,7 @@ export_include_dirs:
   - include
 
 sources:
+  - src/shift_reg.sv
   - src/fifo_v1.sv
   - src/fifo_v2.sv
   - src/fifo_v3.sv

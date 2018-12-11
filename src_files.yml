@@ -1,5 +1,6 @@
 common_cells_all:
   files:
+    - src/shift_reg.sv
     - src/fifo_v1.sv
     - src/fifo_v2.sv
     - src/fifo_v3.sv

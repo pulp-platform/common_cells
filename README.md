@@ -55,7 +55,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | `gray_to_binary`           | Gray code to binary converter                                                | active       |
 | `lzc`                      | Leading/trailing-zero counter                                                | active       |
 | `onehot_to_bin`            | One-hot to binary converter                                                  | active       |
-| `pipe_reg_simple`          | Pipeline register for arbitrary types                                        | active       |
+| `shift_reg`                | Shift register for arbitrary types                                           | active       |
 | `rrarbiter`                | Round-robin arbiter for req/ack interface with look-ahead                    | active       |
 | `spill_register`           | Register with ready/valid interface to cut all combinational interface paths | active       |
 | `stream_arbiter`           | Round-robin arbiter for ready/valid stream interface                         | active       |

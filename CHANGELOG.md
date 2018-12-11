@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add stream delayer
 - Add stream arbiter
 - Add register macros for RTL
+- Add shift register
 
 ### Changed
 - Make number of registers of `rstgen_bypass` a parameter.
