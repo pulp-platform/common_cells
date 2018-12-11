@@ -13,7 +13,7 @@
 
 module stream_mux #(
   parameter type DATA_T = logic,  // Vivado requires a default value for type parameters.
-  parameter integer N_INP,
+  parameter integer N_INP = 0,    // Synopsys DC requires a default value for value parameters.
   /// Dependent parameters, DO NOT OVERRIDE!
   localparam integer LOG_N_INP = $clog2(N_INP)
 ) (
@@ -34,5 +34,13 @@ module stream_mux #(
   end
   assign oup_data_o   = inp_data_i[inp_sel_i];
   assign oup_valid_o  = inp_valid_i[inp_sel_i];
+
+// pragma translate_off
+`ifndef VERILATOR
+  initial begin: p_assertions
+    assert (N_INP >= 1) else $fatal ("The number of inputs must be at least 1!");
+  end
+`endif
+// pragma translate_on
 
 endmodule
