@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add 16 bit LFSR
 - Add ready/valid handshake delayer
 - Add stream arbiter
+- Add register macros for RTL
+
+### Changed
+- Make number of registers of `rstgen_bypass` a parameter.
 
 ### Fixed
 - Fix `valid_i` and `grant_i` guarantees in `generic_fifo` for backward compatibility.
