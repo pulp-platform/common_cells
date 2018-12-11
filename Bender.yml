@@ -10,6 +10,9 @@ package:
 dependencies:
   tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.1.1 }
 
+export_include_dirs:
+  - include
+
 sources:
   - src/fifo_v1.sv
   - src/fifo_v2.sv
