@@ -83,9 +83,9 @@ Please note that cells with status *deprecated* are not to be used for new desig
 
 This repository currently contains the following header files.
 
-### Register Header
+### RTL Register Macros
 
-The register header file `register_defines.svh` contains macros that expand to descriptions of registers.
+The header file `registers.svh` contains macros that expand to descriptions of registers.
 To avoid misuse of `always_ff` blocks, only the following macros shall be used to describe sequential behavior.
 The use of linter rules that flag explicit uses of `always_ff` in source code is encouraged.
 
