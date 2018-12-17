@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 - Fix `valid_i` and `grant_i` guarantees in `generic_fifo` for backward compatibility.
+- lzc: Synthesis of streaming operators in ternary operators
 
 ## 1.9.0 - 2018-11-02
 
