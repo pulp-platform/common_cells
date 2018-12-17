@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 - Fix `valid_i` and `grant_i` guarantees in `generic_fifo` for backward compatibility.
+- LZC: Synthesis of streaming operators in ternary operators
 - Add missing entry for `popcount` to `Bender.yml`.
 - Add default values for parameters to improve compatibility with Synopsys DC and Vivado.
 

@@ -41,7 +41,11 @@ module lzc #(
   logic [WIDTH-1:0] in_tmp;
 
   // reverse vector if required
-  assign in_tmp = MODE ? {<<{in_i}} : in_i;
+  always_comb begin : flip_vector
+    in_tmp = in_i;
+    if (MODE)
+      in_tmp = {<< {in_i}};
+  end
 
   for (genvar j = 0; j < WIDTH; j++) begin : g_index_lut
     assign index_lut[j] = j;
