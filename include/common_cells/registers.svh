@@ -1,6 +1,6 @@
 // Common register defines for RTL designs
-`ifndef REGISTER_DEFINES_H_
-`define REGISTER_DEFINES_H_
+`ifndef COMMON_CELLS_FLIPFLOPS_SVH_
+`define COMMON_CELLS_FLIPFLOPS_SVH_
 
 // Abridged Summary of available FF macros:
 // `FF:      asynchronous active-low reset (implicit clock and reset)

@@ -13,7 +13,7 @@
 //
 // Description: Simple shift register for arbitrary depth and types
 
-module pipe_reg_simple #(
+module shift_reg #(
     parameter type dtype         = logic,
     parameter int unsigned Depth = 1
 )(

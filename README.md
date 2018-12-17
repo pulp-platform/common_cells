@@ -55,7 +55,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | `gray_to_binary`           | Gray code to binary converter                                                | active       |
 | `lzc`                      | Leading/trailing-zero counter                                                | active       |
 | `onehot_to_bin`            | One-hot to binary converter                                                  | active       |
-| `pipe_reg_simple`          | Pipeline register for arbitrary types                                        | active       |
+| `shift_reg`                | Shift register for arbitrary types                                           | active       |
 | `rrarbiter`                | Round-robin arbiter for req/ack interface with look-ahead                    | active       |
 | `spill_register`           | Register with ready/valid interface to cut all combinational interface paths | active       |
 | `stream_arbiter`           | Round-robin arbiter for ready/valid stream interface                         | active       |
@@ -63,7 +63,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | `stream_demux`             | Ready/valid interface demultiplexer                                          | active       |
 | `stream_mux`               | Ready/valid interface multiplexer                                            | active       |
 | `stream_register`          | Register with ready/valid interface                                          | active       |
-| `ready_valid_delay`        | Randomize or delay ready/valid interface                                     | active       |
+| `stream_delay`             | Randomize or delay ready/valid interface                                     | active       |
 | `popcount`                 | Combinatorial popcount (hamming weight)                                      | active       |
 
 ### Data Structures
@@ -83,9 +83,9 @@ Please note that cells with status *deprecated* are not to be used for new desig
 
 This repository currently contains the following header files.
 
-### Register Header
+### RTL Register Macros
 
-The register header file `register_defines.svh` contains macros that expand to descriptions of registers.
+The header file `registers.svh` contains macros that expand to descriptions of registers.
 To avoid misuse of `always_ff` blocks, only the following macros shall be used to describe sequential behavior.
 The use of linter rules that flag explicit uses of `always_ff` in source code is encouraged.
 

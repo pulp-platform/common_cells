@@ -12,7 +12,7 @@
 /// This register does not cut combinatorial paths on all control signals; if you need a complete
 /// cut, use the `spill_register`.
 module stream_register #(
-    parameter type T
+    parameter type T = logic  // Vivado requires a default value for type parameters.
 ) (
     input  logic    clk_i,          // Clock
     input  logic    rst_ni,         // Asynchronous active-low reset
