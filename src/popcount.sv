@@ -1,16 +1,3 @@
-//-----------------------------------------------------------------------------
-// Title         : Popcount
-//-----------------------------------------------------------------------------
-// File          : popcount.sv
-// Author        : Manuel Eggimann  <meggimann@iis.ee.ethz.ch>
-// Created       : 01.11.2018
-//-----------------------------------------------------------------------------
-// Description :
-// This module calculates the hamming weight (number of ones) in its input vector using a
-// balanced binary adder tree. Recursive instantiation is used to build the tree.
-// Any unsigned INPUT_WIDTH larger or equal 2 is legal. The module pads the signal internally
-// to the next power of two. The output result width is ceil(log2(INPUT_WIDTH))+1.
-//-----------------------------------------------------------------------------
 // Copyright (C) 2013-2018 ETH Zurich, University of Bologna
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
@@ -20,7 +7,14 @@
 // this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
-//-----------------------------------------------------------------------------
+
+// Author: Manuel Eggimann <meggimann@iis.ee.ethz.ch>
+
+// Description: This module calculates the hamming weight (number of ones) in
+// its input vector using a balanced binary adder tree. Recursive instantiation
+// is used to build the tree.  Any unsigned INPUT_WIDTH larger or equal 2 is
+// legal.  The module pads the signal internally to the next power of two.  The
+// output result width is ceil(log2(INPUT_WIDTH))+1.
 
 module popcount #(
     parameter int unsigned INPUT_WIDTH = 256,

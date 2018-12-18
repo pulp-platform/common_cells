@@ -1,5 +1,6 @@
 common_cells_all:
   files:
+    - src/shift_reg.sv
     - src/fifo_v1.sv
     - src/fifo_v2.sv
     - src/fifo_v3.sv
@@ -25,6 +26,7 @@ common_cells_all:
     - src/edge_detect.sv
     - src/serial_deglitch.sv
     - src/counter.sv
+    - src/stream_delay.sv
     - src/mv_filter.sv
     - src/popcount.sv
 

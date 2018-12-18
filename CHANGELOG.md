@@ -4,15 +4,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 1.10.0 - 2018-12-18
 
+### Added
 - Add `fifo_v3` with generic fill count
 - Add 16 bit LFSR
-- Add ready/valid handshake delayer
+- Add stream delayer
 - Add stream arbiter
+- Add register macros for RTL
+- Add shift register
+
+### Changed
+- Make number of registers of `rstgen_bypass` a parameter.
 
 ### Fixed
 - Fix `valid_i` and `grant_i` guarantees in `generic_fifo` for backward compatibility.
+- LZC: Synthesis of streaming operators in ternary operators
+- Add missing entry for `popcount` to `Bender.yml`.
+- Add default values for parameters to improve compatibility with Synopsys DC and Vivado.
 
 ## 1.9.0 - 2018-11-02
 

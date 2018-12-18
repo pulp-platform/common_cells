@@ -10,7 +10,11 @@ package:
 dependencies:
   tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.1.1 }
 
+export_include_dirs:
+  - include
+
 sources:
+  - src/shift_reg.sv
   - src/fifo_v1.sv
   - src/fifo_v2.sv
   - src/fifo_v3.sv
@@ -20,6 +24,7 @@ sources:
   - src/stream_register.sv
   - src/stream_mux.sv
   - src/stream_demux.sv
+  - src/popcount.sv
   - src/cdc_2phase.sv
   - src/cdc_fifo_2phase.sv
   - src/cdc_fifo_gray.sv
@@ -31,6 +36,7 @@ sources:
   - src/edge_propagator.sv
   - src/lzc.sv
   - src/rrarbiter.sv
+  - src/stream_arbiter_flushable.sv
   - src/stream_arbiter.sv
   - src/sync_wedge.sv
   - src/sync.sv
@@ -39,6 +45,7 @@ sources:
   - src/edge_detect.sv
   - src/serial_deglitch.sv
   - src/counter.sv
+  - src/stream_delay.sv
   - src/mv_filter.sv
 
   - target: simulation
