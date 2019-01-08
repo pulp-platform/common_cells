@@ -14,8 +14,8 @@
 
 
 /// A trailing zero counter / leading zero counter.
-/// Set LZC to 0 for trailing zero counter => cnt_o is the number of trailing zeroes (from the LSB)
-/// Set LZC to 1 for leading zero counter  => cnt_o is the number of leading zeroes  (from the MSB)
+/// Set MODE to 0 for trailing zero counter => cnt_o is the number of trailing zeroes (from the LSB)
+/// Set MODE to 1 for leading zero counter  => cnt_o is the number of leading zeroes  (from the MSB)
 module lzc #(
   /// The width of the input vector.
   parameter int unsigned WIDTH = 2,
