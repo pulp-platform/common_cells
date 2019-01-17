@@ -42,11 +42,23 @@ module lzc #(
 
   // reverse vector if required
   always_comb begin : flip_vector
-    in_tmp = in_i;
-    if (MODE)
-      in_tmp = {<< {in_i}};
+    for (int i = 0; i < WIDTH; i++) begin
+      in_tmp[i] = MODE ? in_i[WIDTH-1-i] : in_i[i];
+    end
   end
 
+`ifdef VERILATOR
+  always_comb begin : behav_lzc
+    cnt_o   = '0;
+    for (int unsigned i = 0; i < WIDTH; i++) begin
+      if (in_tmp[i]) begin
+        cnt_o = i;
+        break;
+      end
+    end
+  end
+  assign empty_o = ~(|in_i);
+`else
   for (genvar j = 0; j < WIDTH; j++) begin : g_index_lut
     assign index_lut[j] = j;
   end
@@ -82,5 +94,6 @@ module lzc #(
 
   assign cnt_o   = NUM_LEVELS > 0 ? index_nodes[0] : '0;
   assign empty_o = NUM_LEVELS > 0 ? ~sel_nodes[0]  : ~(|in_i);
+`endif
 
 endmodule : lzc
