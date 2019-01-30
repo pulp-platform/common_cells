@@ -26,7 +26,7 @@ module lzc #(
   output logic                     empty_o // asserted if all bits in in_i are zero
 );
 
-  localparam int NUM_LEVELS = $clog2(WIDTH);
+  localparam int unsigned NUM_LEVELS = $clog2(WIDTH);
 
   // pragma translate_off
   initial begin
@@ -42,7 +42,7 @@ module lzc #(
 
   // reverse vector if required
   always_comb begin : flip_vector
-    for (int i = 0; i < WIDTH; i++) begin
+    for (int unsigned i = 0; i < WIDTH; i++) begin
       in_tmp[i] = MODE ? in_i[WIDTH-1-i] : in_i[i];
     end
   end
@@ -59,26 +59,26 @@ module lzc #(
   end
   assign empty_o = ~(|in_i);
 `else
-  for (genvar j = 0; j < WIDTH; j++) begin : g_index_lut
-    assign index_lut[j] = j;
+  for (genvar j = 0; unsigned'(j) < WIDTH; j++) begin : g_index_lut
+    assign index_lut[j] = unsigned'(j);
   end
 
-  for (genvar level = 0; level < NUM_LEVELS; level++) begin : g_levels
-    if (level == NUM_LEVELS-1) begin : g_last_level
+  for (genvar level = 0; unsigned'(level) < NUM_LEVELS; level++) begin : g_levels
+    if (unsigned'(level) == NUM_LEVELS-1) begin : g_last_level
       for (genvar k = 0; k < 2**level; k++) begin : g_level
         // if two successive indices are still in the vector...
-        if (k * 2 < WIDTH-1) begin
+        if (unsigned'(k) * 2 < WIDTH-1) begin
           assign sel_nodes[2**level-1+k]   = in_tmp[k*2] | in_tmp[k*2+1];
           assign index_nodes[2**level-1+k] = (in_tmp[k*2] == 1'b1) ? index_lut[k*2] :
                                                                      index_lut[k*2+1];
         end
         // if only the first index is still in the vector...
-        if (k * 2 == WIDTH-1) begin
+        if (unsigned'(k) * 2 == WIDTH-1) begin
           assign sel_nodes[2**level-1+k]   = in_tmp[k*2];
           assign index_nodes[2**level-1+k] = index_lut[k*2];
         end
         // if index is out of range
-        if (k * 2 > WIDTH-1) begin
+        if (unsigned'(k) * 2 > WIDTH-1) begin
           assign sel_nodes[2**level-1+k]   = 1'b0;
           assign index_nodes[2**level-1+k] = '0;
         end
