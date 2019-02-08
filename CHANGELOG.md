@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 - Add stream fork
+- Add fall-through register
 
 ### Changed
 - `sync_wedge` use existing synchronizer. This defines a single place where a tech-specific synchronizer can be defined.
