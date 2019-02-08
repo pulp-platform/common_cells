@@ -46,9 +46,9 @@ module stream_register #(
         .alm_full_o     ( ),
         .alm_empty_o    ( ),
         .data_i         (data_i),
-        .push_i         (valid_i),
+        .push_i         (valid_i && !fifo_full),
         .data_o         (data_o),
-        .pop_i          (ready_i)
+        .pop_i          (ready_i && !fifo_empty)
     );
 
     assign ready_o = ~fifo_full;
