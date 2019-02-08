@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Add stream fork
 
+### Fixed
+- Fix FIFO push and pop signals in `stream_register` to observe interface prerequisites.
+
 ## 1.10.0 - 2018-12-18
 
 ### Added
