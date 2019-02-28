@@ -35,6 +35,7 @@ sources:
   - src/shift_reg.sv
   - src/spill_register.sv
   - src/stream_demux.sv
+  - src/stream_filter.sv
   - src/stream_fork.sv
   - src/stream_mux.sv
   - src/sync.sv

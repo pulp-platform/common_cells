@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Add stream fork
 - Add fall-through register
+- Add stream filter
 
 ### Fixed
 - Fix FIFO push and pop signals in `stream_register` to observe interface prerequisites.
