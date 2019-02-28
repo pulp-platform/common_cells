@@ -46,6 +46,7 @@ sources:
   - src/cdc_fifo_gray.sv
   - src/edge_detect.sv
   - src/fifo_v2.sv
+  - src/id_queue.sv
   - src/rrarbiter.sv
   - src/rstgen.sv
   - src/stream_delay.sv
@@ -67,6 +68,7 @@ sources:
       - test/cdc_fifo_tb.sv
       - test/fifo_tb.sv
       - test/graycode_tb.sv
+      - test/id_queue_tb.sv
       - test/popcount_tb.sv
       - test/stream_register_tb.sv
 
@@ -74,6 +76,7 @@ sources:
     files:
       # Level 0
       - test/cdc_2phase_synth.sv
+      - test/id_queue_synth.sv
       # Level 1
       - test/synth_bench.sv
 

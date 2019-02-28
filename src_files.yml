@@ -27,6 +27,7 @@ common_cells_all:
     # Level 1
     - src/edge_detect.sv
     - src/fifo_v2.sv
+    - src/id_queue.sv
     - src/rrarbiter.sv
     - src/rstgen.sv
     - src/stream_delay.sv

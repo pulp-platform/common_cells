@@ -22,6 +22,6 @@ call_vsim() {
 }
 
 #call_vsim cdc_fifo_tb # currently broken
-for tb in cdc_2phase_tb graycode_tb popcount_tb stream_register_tb; do
+for tb in cdc_2phase_tb graycode_tb id_queue_tb popcount_tb stream_register_tb; do
     call_vsim $tb
 done
