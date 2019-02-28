@@ -25,7 +25,7 @@ module synth_bench (
     input  logic        dst_ready_i
 );
 
-    cdc_2phase_synth (
+    cdc_2phase_synth i_cdc_2phase (
         .src_rst_ni     (src_rst_ni),
         .src_clk_i      (src_clk_i),
         .src_data_i     (src_data_i),
@@ -39,7 +39,7 @@ module synth_bench (
         .dst_ready_i    (dst_ready_i)
     );
 
-    id_queue_synth (
+    id_queue_synth i_id_queue (
         .clk_i  (clk_i),
         .rst_ni (rst_ni)
     );
