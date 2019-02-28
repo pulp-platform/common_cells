@@ -67,6 +67,7 @@ sources:
       - test/cdc_fifo_tb.sv
       - test/fifo_tb.sv
       - test/graycode_tb.sv
+      - test/popcount_tb.sv
       - test/stream_register_tb.sv
 
   - target: synth_test

@@ -15,7 +15,7 @@ timeunit 1ns/1ns;
 
 module graycode_tb;
 
-    parameter int N;
+    parameter int N = 9;
 
     logic [N-1:0] a, b, c, bp = '0;
 
