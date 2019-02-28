@@ -69,6 +69,13 @@ sources:
       - test/graycode_tb.sv
       - test/stream_register_tb.sv
 
+  - target: synth_test
+    files:
+      # Level 0
+      - test/cdc_2phase_synth.sv
+      # Level 1
+      - test/synth_bench.sv
+
   # Deprecated modules
   # Level 0
   - src/deprecated/clock_divider_counter.sv
