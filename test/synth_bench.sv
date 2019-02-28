@@ -39,4 +39,9 @@ module synth_bench (
         .dst_ready_i    (dst_ready_i)
     );
 
+    id_queue_synth (
+        .clk_i  (clk_i),
+        .rst_ni (rst_ni)
+    );
+
 endmodule
