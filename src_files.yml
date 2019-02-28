@@ -1,41 +1,51 @@
 common_cells_all:
   files:
-    - src/shift_reg.sv
-    - src/fifo_v1.sv
-    - src/fifo_v2.sv
+    # Source files grouped in levels. Files in level 0 have no dependencies on files in this
+    # package. Files in level 1 only depend on files in level 0, files in level 2 on files in
+    # levels 1 and 0, etc. Files within a level are ordered alphabetically.
+    # Level 0
+    - src/cdc_2phase.sv
+    - src/clk_div.sv
+    - src/counter.sv
+    - src/edge_propagator_tx.sv
     - src/fifo_v3.sv
     - src/lfsr_8bit.sv
-    - src/spill_register.sv
-    - src/stream_register.sv
-    - src/stream_mux.sv
-    - src/stream_demux.sv
-    - src/cdc_2phase.sv
-    - src/onehot_to_bin.sv
-    - src/rstgen.sv
-    - src/rstgen_bypass.sv
-    - src/edge_propagator_tx.sv
-    - src/edge_propagator_rx.sv
-    - src/edge_propagator.sv
     - src/lzc.sv
-    - src/rrarbiter.sv
-    - src/stream_arbiter.sv
-    - src/stream_arbiter_flushable.sv
-    - src/sync_wedge.sv
-    - src/sync.sv
-    - src/clk_div.sv
-    - src/edge_detect.sv
-    - src/serial_deglitch.sv
-    - src/counter.sv
-    - src/stream_delay.sv
     - src/mv_filter.sv
+    - src/onehot_to_bin.sv
     - src/popcount.sv
+    - src/rstgen_bypass.sv
+    - src/serial_deglitch.sv
+    - src/shift_reg.sv
+    - src/spill_register.sv
+    - src/stream_demux.sv
+    - src/stream_mux.sv
+    - src/sync.sv
+    - src/sync_wedge.sv
+    # Level 1
+    - src/edge_detect.sv
+    - src/fifo_v2.sv
+    - src/rrarbiter.sv
+    - src/rstgen.sv
+    - src/stream_delay.sv
+    # Level 2
+    - src/fifo_v1.sv
+    - src/stream_arbiter_flushable.sv
+    - src/stream_register.sv
+    # Level 3
+    - src/stream_arbiter.sv
 
-    # deprecated modules
+    # Deprecated modules
+    # Level 0
+    - src/deprecated/clock_divider_counter.sv
     - src/deprecated/find_first_one.sv
+    - src/deprecated/generic_LFSR_8bit.sv
     - src/deprecated/generic_fifo.sv
     - src/deprecated/generic_fifo_adv.sv
-    - src/deprecated/generic_LFSR_8bit.sv
-    - src/deprecated/pulp_sync_wedge.sv
     - src/deprecated/pulp_sync.sv
+    - src/deprecated/pulp_sync_wedge.sv
     - src/deprecated/clock_divider.sv
-    - src/deprecated/clock_divider_counter.sv
+
+    # Depend on deprecated modules
+    - src/edge_propagator.sv
+    - src/edge_propagator_rx.sv
