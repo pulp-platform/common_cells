@@ -47,9 +47,9 @@ module fall_through_register #(
         .alm_full_o     ( ),
         .alm_empty_o    ( ),
         .data_i         (data_i),
-        .push_i         (valid_i && !fifo_full),
+        .push_i         (valid_i & ~fifo_full),
         .data_o         (data_o),
-        .pop_i          (ready_i && !fifo_empty)
+        .pop_i          (ready_i & ~fifo_empty)
     );
 
     assign ready_o = ~fifo_full;
