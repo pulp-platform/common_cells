@@ -100,6 +100,7 @@ module id_queue #(
     linked_data_t [CAPACITY-1:0]    linked_data_d,  linked_data_q;
 
     logic                           full,
+                                    match_id_valid,
                                     no_id_match;
 
     logic [HT_CAPACITY-1:0]         head_tail_free,
@@ -117,7 +118,8 @@ module id_queue #(
 
     // Find the index in the head-tail table that matches a given ID.
     for (genvar i = 0; i < HT_CAPACITY; i++) begin: gen_idx_match
-        assign idx_matches_id[i] = (head_tail_q[i].id == match_id) && !head_tail_q[i].free;
+        assign idx_matches_id[i] = match_id_valid && (head_tail_q[i].id == match_id) &&
+                !head_tail_q[i].free;
     end
     assign no_id_match = !(|idx_matches_id);
     onehot_to_bin #(
@@ -159,6 +161,7 @@ module id_queue #(
     assign inp_gnt_o = !full;
     always_comb begin
         match_id            = 'x;
+        match_id_valid      = 1'b0;
         head_tail_d         = head_tail_q;
         linked_data_d       = linked_data_q;
         oup_gnt_o           = 1'b0;
@@ -166,6 +169,7 @@ module id_queue #(
         oup_data_valid_o    = 1'b0;
         if (inp_req_i && !full) begin
             match_id = inp_id_i;
+            match_id_valid = 1'b1;
             // If the ID does not yet exist in the queue, add a new ID entry.
             if (no_id_match) begin
                 head_tail_d[head_tail_free_idx] = '{
@@ -186,6 +190,7 @@ module id_queue #(
             };
         end else if (oup_req_i) begin
             match_id = oup_id_i;
+            match_id_valid = 1'b1;
             if (!no_id_match) begin
                 oup_data_o = data_t'(linked_data_q[head_tail_q[match_idx].head].data);
                 oup_data_valid_o = 1'b1;
