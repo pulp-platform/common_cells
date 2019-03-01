@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add fall-through register
 - Add stream filter
 - Add ID queue
+- Add randomization capabilities to SRAM `sram.sv`
+- Add FPGA inferable SRAM to `sram.sv`
 
 ### Fixed
 - Fix FIFO push and pop signals in `stream_register` to observe interface prerequisites.
