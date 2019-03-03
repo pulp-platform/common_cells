@@ -25,56 +25,19 @@ module counter #(
     output logic [WIDTH-1:0] q_o,
     output logic             overflow_o
 );
-    logic [WIDTH:0] counter_q, counter_d;
-    if (LATCH_OVERFLOW) begin: gen_latch_overflow
-        logic overflow_d, overflow_q;
-        always_comb begin
-            overflow_d = overflow_q;
-            if (clear_i || load_i) begin
-                overflow_d = 1'b0;
-            end else if (!overflow_q && en_i) begin
-                if (down_i) begin
-                    overflow_d = (counter_q == '0);
-                end else begin
-                    overflow_d = (counter_q[WIDTH-1:0] == '1);
-                end
-            end
-        end
-        assign overflow_o = overflow_q;
-        always_ff @(posedge clk_i or negedge rst_ni) begin
-            if (!rst_ni) begin
-                overflow_q <= 1'b0;
-            end else begin
-                overflow_q <= overflow_d;
-            end
-        end
-    end else begin
-        // counter overflowed if the MSB is set
-        assign overflow_o = counter_q[WIDTH];
-    end
-    assign q_o = counter_q[WIDTH-1:0];
-
-    always_comb begin
-        counter_d = counter_q;
-
-        if (clear_i) begin
-            counter_d = '0;
-        end else if (load_i) begin
-            counter_d = {1'b0, d_i};
-        end else if (en_i) begin
-            if (down_i) begin
-                counter_d = counter_q - 1;
-            end else begin
-                counter_d = counter_q + 1;
-            end
-        end
-    end
-
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-           counter_q <= '0;
-        end else begin
-           counter_q <= counter_d;
-        end
-    end
+    delta_counter #(
+        .WIDTH          (WIDTH),
+        .LATCH_OVERFLOW (LATCH_OVERFLOW)
+    ) i_counter (
+        .clk_i,
+        .rst_ni,
+        .clear_i,
+        .en_i,
+        .load_i,
+        .down_i,
+        .delta_i({{WIDTH-1{1'b0}}, 1'b1}),
+        .d_i,
+        .q_o,
+        .overflow_o
+    );
 endmodule

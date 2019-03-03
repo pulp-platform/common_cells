@@ -6,7 +6,7 @@ common_cells_all:
     # Level 0
     - src/cdc_2phase.sv
     - src/clk_div.sv
-    - src/counter.sv
+    - src/delta_counter.sv
     - src/edge_propagator_tx.sv
     - src/fifo_v3.sv
     - src/lfsr_8bit.sv
@@ -27,6 +27,7 @@ common_cells_all:
     - src/sync.sv
     - src/sync_wedge.sv
     # Level 1
+    - src/counter.sv
     - src/edge_detect.sv
     - src/id_queue.sv
     - src/rstgen.sv
