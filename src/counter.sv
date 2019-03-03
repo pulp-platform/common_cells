@@ -12,7 +12,8 @@
 // Description: Generic up/down counter
 
 module counter #(
-    parameter int unsigned WIDTH = 4
+    parameter int unsigned WIDTH = 4,
+    parameter bit LATCH_OVERFLOW = 1'b0
 )(
     input  logic             clk_i,
     input  logic             rst_ni,
@@ -25,8 +26,32 @@ module counter #(
     output logic             overflow_o
 );
     logic [WIDTH:0] counter_q, counter_d;
-    // counter overflowed if the MSB is set
-    assign overflow_o = counter_q[WIDTH];
+    if (LATCH_OVERFLOW) begin: gen_latch_overflow
+        logic overflow_d, overflow_q;
+        always_comb begin
+            overflow_d = overflow_q;
+            if (clear_i || load_i) begin
+                overflow_d = 1'b0;
+            end else if (!overflow_q && en_i) begin
+                if (down_i) begin
+                    overflow_d = (counter_q == '0);
+                end else begin
+                    overflow_d = (counter_q[WIDTH-1:0] == '1);
+                end
+            end
+        end
+        assign overflow_o = overflow_q;
+        always_ff @(posedge clk_i or negedge rst_ni) begin
+            if (!rst_ni) begin
+                overflow_q <= 1'b0;
+            end else begin
+                overflow_q <= overflow_d;
+            end
+        end
+    end else begin
+        // counter overflowed if the MSB is set
+        assign overflow_o = counter_q[WIDTH];
+    end
     assign q_o = counter_q[WIDTH-1:0];
 
     always_comb begin
