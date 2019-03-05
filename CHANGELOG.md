@@ -16,6 +16,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 - Fix FIFO push and pop signals in `stream_register` to observe interface prerequisites.
+- In `fifo_v3`, fix data output when pushing into empty fall-through FIFO. Previously, the data
+  output of an empty fall-through FIFO with data at its input (and `push_i=1`) depended on
+  `pop_i`: When `pop_i=0`, old, invalid data were visible at the output (even though `empty_o=0`,
+  indicating that the data output is valid). Only when `pop_i=1`, the data from the input fell
+  through. One consequence of this bug was that `data_o` of the `fall_through_register` could change
+  while `valid_o=1`, violating the basic stream specification.
 
 ## 1.10.0 - 2018-12-18
 

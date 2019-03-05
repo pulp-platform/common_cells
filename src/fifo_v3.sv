@@ -97,11 +97,13 @@ module fifo_v3 #(
             status_cnt_n   = status_cnt_q;
 
         // FIFO is in pass through mode -> do not change the pointers
-        if (FALL_THROUGH && (status_cnt_q == 0) && push_i && pop_i) begin
+        if (FALL_THROUGH && (status_cnt_q == 0) && push_i) begin
             data_o = data_i;
-            status_cnt_n = status_cnt_q;
-            read_pointer_n = read_pointer_q;
-            write_pointer_n = write_pointer_q;
+            if (pop_i) begin
+                status_cnt_n = status_cnt_q;
+                read_pointer_n = read_pointer_q;
+                write_pointer_n = write_pointer_q;
+            end
         end
     end
 
