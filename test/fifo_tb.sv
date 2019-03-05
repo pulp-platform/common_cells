@@ -13,9 +13,7 @@ module fifo_inst_tb #(
     // FIFO parameters
     parameter bit           FALL_THROUGH,
     parameter int unsigned  DEPTH,
-    parameter int unsigned  DATA_WIDTH      = 8,
-    parameter int unsigned  ALM_FULL_TH     = 6,
-    parameter int unsigned  ALM_EMPTY_TH    = 2,
+    parameter int unsigned  DATA_WIDTH = 8,
     // TB parameters
     parameter int unsigned  N_CHECKS,
     parameter time          TA,
@@ -37,8 +35,6 @@ module fifo_inst_tb #(
                     flush,
                     full,
                     empty,
-                    alm_full,
-                    alm_empty,
                     push,
                     pop,
                     try_push,
@@ -51,21 +47,18 @@ module fifo_inst_tb #(
 
     assign clk = clk_i;
 
-    fifo_v2 #(
+    fifo_v3 #(
         .FALL_THROUGH   ( FALL_THROUGH  ),
         .DATA_WIDTH     ( DATA_WIDTH    ),
-        .DEPTH          ( DEPTH         ),
-        .ALM_FULL_TH    ( ALM_FULL_TH   ),
-        .ALM_EMPTY_TH   ( ALM_EMPTY_TH  )
+        .DEPTH          ( DEPTH         )
     ) dut (
         .clk_i,
         .rst_ni,
-        .testmode_i     ( 1'b0          ),
         .flush_i        ( flush         ),
+        .testmode_i     ( 1'b0          ),
         .full_o         ( full          ),
         .empty_o        ( empty         ),
-        .alm_full_o     ( alm_full      ),
-        .alm_empty_o    ( alm_empty     ),
+        .usage_o        (               ),
         .data_i         ( wdata         ),
         .push_i         ( push          ),
         .data_o         ( rdata         ),
