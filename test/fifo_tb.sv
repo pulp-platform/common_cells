@@ -8,30 +8,32 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-import rand_verif_pkg::rand_wait;
-
 // Testbench for generic FIFO
-module fifo_tb #(
+module fifo_inst_tb #(
     // FIFO parameters
-    parameter bit           FALL_THROUGH    = 1'b1,
+    parameter bit           FALL_THROUGH,
+    parameter int unsigned  DEPTH,
     parameter int unsigned  DATA_WIDTH      = 8,
-    parameter int unsigned  DEPTH           = 8,
     parameter int unsigned  ALM_FULL_TH     = 6,
     parameter int unsigned  ALM_EMPTY_TH    = 2,
     // TB parameters
-    parameter int unsigned  N_CHECKS        = 100000,
-    parameter time          TCLK            = 10ns,
-    parameter time          TA              = TCLK * 1/4,
-    parameter time          TT              = TCLK * 3/4
+    parameter int unsigned  N_CHECKS,
+    parameter time          TA,
+    parameter time          TT
+) (
+    input  logic    clk_i,
+    input  logic    rst_ni,
+    output logic    done_o
 );
 
     timeunit 1ns;
     timeprecision 10ps;
 
+    import rand_verif_pkg::rand_wait;
+
     typedef logic [DATA_WIDTH-1:0] data_t;
 
     logic           clk,
-                    rst_n,
                     flush,
                     full,
                     empty,
@@ -47,6 +49,8 @@ module fifo_tb #(
 
     int unsigned    n_checks = 0;
 
+    assign clk = clk_i;
+
     fifo_v2 #(
         .FALL_THROUGH   ( FALL_THROUGH  ),
         .DATA_WIDTH     ( DATA_WIDTH    ),
@@ -54,8 +58,8 @@ module fifo_tb #(
         .ALM_FULL_TH    ( ALM_FULL_TH   ),
         .ALM_EMPTY_TH   ( ALM_EMPTY_TH  )
     ) dut (
-        .clk_i          ( clk           ),
-        .rst_ni         ( rst_n         ),
+        .clk_i,
+        .rst_ni,
         .testmode_i     ( 1'b0          ),
         .flush_i        ( flush         ),
         .full_o         ( full          ),
@@ -68,18 +72,14 @@ module fifo_tb #(
         .pop_i          ( pop           )
     );
 
-    clk_rst_gen #(.CLK_PERIOD(TCLK), .RST_CLK_CYCLES(10)) i_clk_rst_gen (
-        .clk_o    (clk),
-        .rst_no   (rst_n)
-    );
-
     // Simulation information and stopping.
     // TODO: Better stop after certain coverage is reached.
     initial begin
-        $display("Running test with FALL_THROUGH=%0d, DEPTH=%0d", FALL_THROUGH, DEPTH);
+        done_o = 1'b0;
+        $display("%m: Running test with FALL_THROUGH=%0d, DEPTH=%0d", FALL_THROUGH, DEPTH);
         wait (n_checks >= N_CHECKS);
-        $display("Checked %0d stimuli", n_checks);
-        $stop;
+        done_o = 1'b1;
+        $display("%m: Checked %0d stimuli", n_checks);
     end
 
     class random_action_t;
@@ -101,7 +101,7 @@ module fifo_tb #(
         flush       <= 1'b0;
         wdata       <= 'x;
         try_push    <= 1'b0;
-        wait (rst_n);
+        wait (rst_ni);
         forever begin
             static logic rand_success;
             rand_wait(1, 8, clk);
@@ -128,7 +128,7 @@ module fifo_tb #(
     assign pop = try_pop & ~empty;
     initial begin
         try_pop <= 1'b0;
-        wait (rst_n);
+        wait (rst_ni);
         forever begin
             rand_wait(1, 8, clk);
             try_pop <= #TA $random();
@@ -138,9 +138,9 @@ module fifo_tb #(
     // Monitor & checker: model expected response and check against actual response
     initial begin
         data_t queue[$];
-        wait (rst_n);
+        wait (rst_ni);
         forever begin
-            @(posedge clk);
+            @(posedge clk_i);
             #(TT);
             if (flush) begin
                 queue = {};
@@ -155,6 +155,83 @@ module fifo_tb #(
                 end
             end
         end
+    end
+
+endmodule
+
+// Testbench for different FIFO configurations
+module fifo_tb #(
+    // TB parameters
+    parameter int unsigned  N_CHECKS        = 100000,
+    parameter time          TCLK            = 10ns,
+    parameter time          TA              = TCLK * 1/4,
+    parameter time          TT              = TCLK * 3/4
+);
+
+    timeunit 1ns;
+    timeprecision 10ps;
+
+    logic       clk,
+                rst_n;
+
+    logic [3:0] done;
+
+    clk_rst_gen #(.CLK_PERIOD(TCLK), .RST_CLK_CYCLES(10)) i_clk_rst_gen (
+        .clk_o    (clk),
+        .rst_no   (rst_n)
+    );
+
+    fifo_inst_tb #(
+        .FALL_THROUGH   (1'b0),
+        .DEPTH          (8),
+        .N_CHECKS       (N_CHECKS),
+        .TA             (TA),
+        .TT             (TT)
+    ) i_tb_8 (
+        .clk_i  (clk),
+        .rst_ni (rst_n),
+        .done_o (done[0])
+    );
+
+    fifo_inst_tb #(
+        .FALL_THROUGH   (1'b1),
+        .DEPTH          (8),
+        .N_CHECKS       (N_CHECKS),
+        .TA             (TA),
+        .TT             (TT)
+    ) i_tb_ft_8 (
+        .clk_i  (clk),
+        .rst_ni (rst_n),
+        .done_o (done[1])
+    );
+
+    fifo_inst_tb #(
+        .FALL_THROUGH   (1'b0),
+        .DEPTH          (1),
+        .N_CHECKS       (N_CHECKS),
+        .TA             (TA),
+        .TT             (TT)
+    ) i_tb_1 (
+        .clk_i  (clk),
+        .rst_ni (rst_n),
+        .done_o (done[2])
+    );
+
+    fifo_inst_tb #(
+        .FALL_THROUGH   (1'b1),
+        .DEPTH          (1),
+        .N_CHECKS       (N_CHECKS),
+        .TA             (TA),
+        .TT             (TT)
+    ) i_tb_ft_1 (
+        .clk_i  (clk),
+        .rst_ni (rst_n),
+        .done_o (done[3])
+    );
+
+    initial begin
+        wait ((&done));
+        $finish();
     end
 
 endmodule
