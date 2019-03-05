@@ -8,66 +8,82 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-// Author: Florian Zaruba <zaruabf@iis.ee.ethz.ch>
+import rand_verif_pkg::rand_wait;
 
-/// Testbench for generic FIFO
+// Testbench for generic FIFO
 module fifo_tb #(
-    parameter bit          FALL_THROUGH  = 1'b1,
-    parameter int unsigned DEPTH         = 8,
-    parameter int unsigned ALM_FULL_TH   = 6,
-    parameter int unsigned ALM_EMPTY_TH  = 2
+    // FIFO parameters
+    parameter bit           FALL_THROUGH    = 1'b1,
+    parameter int unsigned  DATA_WIDTH      = 8,
+    parameter int unsigned  DEPTH           = 8,
+    parameter int unsigned  ALM_FULL_TH     = 6,
+    parameter int unsigned  ALM_EMPTY_TH    = 2,
+    // TB parameters
+    parameter int unsigned  N_CHECKS        = 100000,
+    parameter time          TCLK            = 10ns,
+    parameter time          TA              = TCLK * 1/4,
+    parameter time          TT              = TCLK * 3/4
 );
 
-    logic clk, rst_n;
+    timeunit 1ns;
+    timeprecision 10ps;
 
-    logic flush, full, empty, alm_full, alm_empty, push, pop;
+    typedef logic [DATA_WIDTH-1:0] data_t;
 
-    logic [7:0] wdata, rdata;
+    logic           clk,
+                    rst_n,
+                    flush,
+                    full,
+                    empty,
+                    alm_full,
+                    alm_empty,
+                    push,
+                    pop,
+                    try_push,
+                    try_pop;
 
-    int unsigned nr_checks;
+    data_t          wdata,
+                    rdata;
+
+    int unsigned    n_checks = 0;
 
     fifo_v2 #(
-        .FALL_THROUGH ( FALL_THROUGH ),
-        .DATA_WIDTH   ( 8            ),
-        .DEPTH        ( DEPTH        ),
-        .ALM_FULL_TH  ( ALM_FULL_TH  ),
-        .ALM_EMPTY_TH ( ALM_EMPTY_TH )
+        .FALL_THROUGH   ( FALL_THROUGH  ),
+        .DATA_WIDTH     ( DATA_WIDTH    ),
+        .DEPTH          ( DEPTH         ),
+        .ALM_FULL_TH    ( ALM_FULL_TH   ),
+        .ALM_EMPTY_TH   ( ALM_EMPTY_TH  )
     ) dut (
-        .clk_i        ( clk       ),
-        .rst_ni       ( rst_n     ),
-        .testmode_i   ( 1'b0      ),
-        .flush_i      ( flush     ),
-        .full_o       ( full      ),
-        .empty_o      ( empty     ),
-        .alm_full_o   ( alm_full  ),
-        .alm_empty_o  ( alm_empty ),
-        .data_i       ( wdata     ),
-        .push_i       ( push      ),
-        .data_o       ( rdata     ),
-        .pop_i        ( pop       )
+        .clk_i          ( clk           ),
+        .rst_ni         ( rst_n         ),
+        .testmode_i     ( 1'b0          ),
+        .flush_i        ( flush         ),
+        .full_o         ( full          ),
+        .empty_o        ( empty         ),
+        .alm_full_o     ( alm_full      ),
+        .alm_empty_o    ( alm_empty     ),
+        .data_i         ( wdata         ),
+        .push_i         ( push          ),
+        .data_o         ( rdata         ),
+        .pop_i          ( pop           )
     );
 
-    initial begin
-        clk = 1'b0;
-        rst_n = 1'b0;
-        repeat(8)
-            #10ns clk = ~clk;
+    clk_rst_gen #(.CLK_PERIOD(TCLK), .RST_CLK_CYCLES(10)) i_clk_rst_gen (
+        .clk_o    (clk),
+        .rst_no   (rst_n)
+    );
 
-        rst_n = 1'b1;
-        forever
-            #10ns clk = ~clk;
-    end
-
-    // simulator stopper, this is suboptimal better go for coverage
+    // Simulation information and stopping.
+    // TODO: Better stop after certain coverage is reached.
     initial begin
-        #100ms
-        $display("Checked %d stimuli", nr_checks);
+        $display("Running test with FALL_THROUGH=%0d, DEPTH=%0d", FALL_THROUGH, DEPTH);
+        wait (n_checks >= N_CHECKS);
+        $display("Checked %0d stimuli", n_checks);
         $stop;
     end
 
     class random_action_t;
         rand logic [1:0] action;
-
         constraint random_action {
             action dist {
                 0 := 40,
@@ -78,93 +94,67 @@ module fifo_tb #(
         }
     endclass
 
-    program testbench ();
-        logic[7:0] queue [$];
-        // clocking outputs are DUT inputs and vice versa
-        clocking cb @(posedge clk);
-            default input #2 output #4;
-            output flush, wdata, push, pop;
-            input full, empty, rdata, alm_full, alm_empty;
-        endclocking
-
-        clocking pck @(posedge clk);
-            default input #2 output #4;
-            input flush, wdata, push, pop, full, empty, rdata, alm_full, alm_empty;
-        endclocking
-
-        initial begin
-            $display("Running test with parameter:\nFALL_THROUGH: %d\nDEPTH: %d", FALL_THROUGH, DEPTH);
+    // Input driver: push, wdata, and flush
+    assign push = try_push & ~full;
+    initial begin
+        automatic random_action_t rand_act = new();
+        flush       <= 1'b0;
+        wdata       <= 'x;
+        try_push    <= 1'b0;
+        wait (rst_n);
+        forever begin
+            static logic rand_success;
+            rand_wait(1, 8, clk);
+            rand_success = rand_act.randomize(); assert(rand_success);
+            case (rand_act.action)
+                0: begin // new random data and try to push
+                    wdata       <= #TA $random();
+                    try_push    <= #TA 1'b1;
+                end
+                1: begin // new random data but do not try to push
+                    wdata       <= #TA $random();
+                    try_push    <= #TA 1'b0;
+                end
+                2: begin // flush
+                    flush       <= #TA 1'b1;
+                    rand_wait(1, 8, clk);
+                    flush       <= #TA 1'b0;
+                end
+            endcase
         end
-        // --------
-        // Driver
-        // --------
-        initial begin
-            automatic random_action_t random_action = new();
+    end
 
-            cb.flush <= 1'b0;
+    // Output driver: pop
+    assign pop = try_pop & ~empty;
+    initial begin
+        try_pop <= 1'b0;
+        wait (rst_n);
+        forever begin
+            rand_wait(1, 8, clk);
+            try_pop <= #TA $random();
+        end
+    end
 
-            wait (rst_n == 1'b1);
-            push  <= 1'b0;
-
-            forever begin
-                void'(random_action.randomize());
-                repeat($urandom_range(0, 8)) @(cb);
-                // $display("%d\n", random_action.action);
-                if (random_action.action == 0) begin
-                    cb.wdata <= $urandom_range(0,256);
-                    cb.push  <= 1'b1;
-                end else if (random_action.action == 1) begin
-                    cb.flush <= 1'b0;
-                    cb.wdata <= $urandom_range(0,256);
-                    cb.push  <= 1'b0;
-                end else begin
-                    cb.flush <= 1'b1;
-                    cb.push  <= 1'b0;
-                    @(cb);
-                    cb.flush <= 1'b0;
+    // Monitor & checker: model expected response and check against actual response
+    initial begin
+        data_t queue[$];
+        wait (rst_n);
+        forever begin
+            @(posedge clk);
+            #(TT);
+            if (flush) begin
+                queue = {};
+            end else begin
+                if (push && !full) begin
+                    queue.push_back(wdata);
+                end
+                if (pop && !empty) begin
+                    automatic data_t data = queue.pop_front();
+                    assert (rdata == data) else $error("Queue output %0x != %0x", rdata, data);
+                    n_checks++;
                 end
             end
         end
+    end
 
-        initial begin
-            // wait for reset to be high
-            wait (rst_n == 1'b1);
-            // pop from queue
-            forever begin
-                @(cb)
-                cb.pop <= 1'b1;
-                repeat($urandom_range(0, 8)) @(cb);
-                cb.pop <= 1'b0;
-            end
-        end
-
-        // -------------------
-        // Monitor && Checker
-        // -------------------
-        initial begin
-            automatic logic [7:0] data;
-            nr_checks = 0;
-            forever begin
-                @(pck)
-
-                if (pck.push && !pck.full && !pck.flush) begin
-                    queue.push_back(pck.wdata);
-                end
-
-                if (pck.pop && !pck.empty) begin
-                    data = queue.pop_front();
-                    // $display("Time: %t, Expected: %0h Got %0h", $time, data, fifo_if.pck.rdata);
-                    assert(data == pck.rdata) else $error("Mismatch, Expected: %0h Got %0h", data, pck.rdata);
-                    nr_checks++;
-                end
-
-                if (pck.flush) begin
-                    queue = {};
-                end
-
-            end
-        end
-    endprogram
-
-    testbench tb();
 endmodule
