@@ -29,7 +29,7 @@
 // unused, tie `exists_req_i` to `1'b0` and the synthesizer should remove the internal comparators.
 //
 // This ID queue can store at most `CAPACITY` elements, independent of their ID. Let
-// - C = `COMPLEXITY`
+// - C = `CAPACITY`
 // - B = $bits(data_t)
 // - I = 2**`ID_WIDTH`
 // Then
