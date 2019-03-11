@@ -21,6 +21,7 @@ sources:
   # etc. Files within a level are ordered alphabetically.
   # Level 0
   - src/cdc_2phase.sv
+  - src/cf_math_pkg.sv
   - src/clk_div.sv
   - src/counter.sv
   - src/edge_propagator_tx.sv
