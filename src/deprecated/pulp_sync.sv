@@ -11,26 +11,26 @@
 // Antonio Pullini <pullinia@iis.ee.ethz.ch>
 
 module pulp_sync
-  #(
+#(
     parameter STAGES = 2
-    )
-   (
+)
+(
     input  logic clk_i,
     input  logic rstn_i,
     input  logic serial_i,
     output logic serial_o
-    );
+);
    
-   logic [STAGES-1:0] r_reg;
+   logic [STAGES-1:0] r_bf_synch;
    
-   always_ff @(posedge clk_i, negedge rstn_i)
-     begin
-	if(!rstn_i)
-          r_reg <= 'h0;
-	else
-          r_reg <= {r_reg[STAGES-2:0], serial_i};
-     end
+    always_ff @(posedge clk_i, negedge rstn_i)
+    begin
+      if(!rstn_i)
+          r_bf_synch <= 'h0;
+      else
+          r_bf_synch <= {r_bf_synch[STAGES-2:0], serial_i};
+    end
    
-   assign serial_o   =  r_reg[STAGES-1];
+   assign serial_o   =  r_bf_synch[STAGES-1];
    
 endmodule
