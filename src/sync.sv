@@ -12,21 +12,23 @@
 
 module sync #(
     parameter int unsigned STAGES = 2
-)(
+) (
     input  logic clk_i,
     input  logic rst_ni,
     input  logic serial_i,
     output logic serial_o
 );
 
-   logic [STAGES-1:0] r_reg;
+   logic [STAGES-1:0] reg_q;
 
-   always_ff @(posedge clk_i, negedge rst_ni) begin
-	if (~rst_ni)
-        r_reg <= 'h0;
-	else
-        r_reg <= {r_reg[STAGES-2:0], serial_i};
+    always_ff @(posedge clk_i, negedge rst_ni) begin
+        if (!rst_ni) begin
+            reg_q <= 'h0;
+        end else begin
+            reg_q <= {reg_q[STAGES-2:0], serial_i};
+        end
     end
 
-    assign serial_o   =  r_reg[STAGES-1];
+    assign serial_o = reg_q[STAGES-1];
+
 endmodule

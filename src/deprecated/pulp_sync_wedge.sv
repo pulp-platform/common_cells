@@ -10,7 +10,9 @@
 
 // Antonio Pullini <pullinia@iis.ee.ethz.ch>
 
-module pulp_sync_wedge (
+module pulp_sync_wedge #(
+    parameter int unsigned STAGES = 2
+) (
     input  logic clk_i,
     input  logic rstn_i,
     input  logic en_i,
@@ -19,22 +21,35 @@ module pulp_sync_wedge (
     output logic f_edge_o,
     output logic serial_o
 );
-   
-    logic [2:0] r_reg;
-    logic [2:0] r_next;
-    
-    always_ff @(posedge clk_i, negedge rstn_i) begin
-         if (!rstn_i) begin
-             r_reg <= 3'h0;
-         end else begin
-             if (en_i) begin
-                 r_reg <= {serial_i, r_reg[2:1]};
-             end
-         end
-      end
-    
-    assign serial_o =  r_reg[0];
-    assign f_edge_o = !r_reg[1] &  r_reg[0];
-    assign r_edge_o =  r_reg[1] & !r_reg[0];
-   
+    logic clk;
+    logic serial, serial_q;
+
+    assign serial_o =  serial_q;
+    assign f_edge_o = ~serial &  serial_q;
+    assign r_edge_o =  serial & ~serial_q;
+
+    pulp_sync #(
+        .STAGES(STAGES)
+    ) i_pulp_sync (
+        .clk_i,
+        .rstn_i,
+        .serial_i,
+        .serial_o ( serial )
+    );
+
+    pulp_clock_gating i_pulp_clock_gating (
+        .clk_i,
+        .en_i,
+        .test_en_i ( 1'b0    ),
+        .clk_o     ( clk )
+    );
+
+    always_ff @(posedge clk, negedge rstn_i) begin
+        if (!rstn_i) begin
+            serial_q <= 1'b0;
+        end else begin
+            serial_q <= serial;
+        end
+    end
+
 endmodule
