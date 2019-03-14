@@ -10,7 +10,8 @@
 
 // Antonio Pullini <pullinia@iis.ee.ethz.ch>
 
-module pulp_sync_wedge (
+module pulp_sync_wedge 
+(
     input  logic clk_i,
     input  logic rstn_i,
     input  logic en_i,
@@ -19,22 +20,45 @@ module pulp_sync_wedge (
     output logic f_edge_o,
     output logic serial_o
 );
+    logic       clk_int;
+    logic       serial_int;
    
-    logic [2:0] r_reg;
-    logic [2:0] r_next;
+    logic r_bf_synch;
+
     
-    always_ff @(posedge clk_i, negedge rstn_i) begin
-         if (!rstn_i) begin
-             r_reg <= 3'h0;
-         end else begin
-             if (en_i) begin
-                 r_reg <= {serial_i, r_reg[2:1]};
-             end
+    always_ff @(posedge clk_int, negedge rstn_i)
+    begin
+         if (!rstn_i)
+         begin
+             r_bf_synch <= 1'b0;
          end
-      end
+         else
+         begin
+             r_bf_synch <= serial_int;
+         end
+    end
     
-    assign serial_o =  r_reg[0];
-    assign f_edge_o = !r_reg[1] &  r_reg[0];
-    assign r_edge_o =  r_reg[1] & !r_reg[0];
+    assign serial_o =  r_bf_synch;
+
+    assign f_edge_o = !serial_int &  r_bf_synch;
+    assign r_edge_o =  serial_int & !r_bf_synch;
    
+
+
+    pulp_sync #( .STAGES(2) )  r_bf_synch_1_2
+    (
+        .clk_i    ( clk_int     ),
+        .rstn_i   ( rstn_i      ),
+        .serial_i ( serial_i    ),
+        .serial_o ( serial_int  )
+    );
+
+    pulp_clock_gating i_clk_gate
+    (
+        .clk_i    ( clk_i     ),
+        .en_i     ( en_i      ),
+        .test_en_i( 1'b0      ),
+        .clk_o    ( clk_int   )
+    );
+
 endmodule
