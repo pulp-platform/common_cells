@@ -40,13 +40,15 @@ module rstgen_bypass #(
         end
     end
 
-    always @(posedge clk_i or negedge rst_n) begin
-        if (~rst_n) begin
-            synch_regs_q <= 0;
-        end else begin
-            synch_regs_q <= {synch_regs_q[NumRegs-2:0], 1'b1};
-        end
-    end
+
+    pulp_sync #( .STAGES(NumRegs) )  r_bf_synch
+    (
+        .clk_i    ( clk_i        ),
+        .rstn_i   ( rst_n        ),
+        .serial_i ( 1'b1         ),
+        .serial_o ( s_synch_regs )
+    );
+
 
     initial begin : p_assertions
         if (NumRegs < 1) $fatal(1, "At least one register is required.");
