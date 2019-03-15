@@ -68,7 +68,7 @@ module clock_divider
 
    logic               s_rstn_sync;
 
-   logic [1:0]         reg_ext_gate_sync;
+   logic               reg_ext_gate_sync;
 
     assign s_clock_enable_gate =  s_clock_enable & reg_ext_gate_sync;
 
@@ -180,12 +180,21 @@ module clock_divider
     end
 
     //sample the data when valid has been sync and there is a rise edge
-    always_ff @(posedge clk_i or negedge s_rstn_sync)
-    begin
-        if (!s_rstn_sync)
-            reg_ext_gate_sync <= 2'b00;
-        else
-            reg_ext_gate_sync <= {clk_gate_async_i, reg_ext_gate_sync[1]};
-    end
+    pulp_sync #( .STAGES(2) )  r_bf_synch
+    (
+        .clk_i    ( clk_i                ),
+        .rstn_i   ( s_rstn_sync          ),
+        .serial_i ( clk_gate_async_i     ),
+        .serial_o ( reg_ext_gate_sync    )
+    );
+
+    
+    //always_ff @(posedge clk_i or negedge s_rstn_sync)
+    //begin
+    //    if (!s_rstn_sync)
+    //        reg_ext_gate_sync <= 2'b00;
+    //    else
+    //        reg_ext_gate_sync <= {clk_gate_async_i, reg_ext_gate_sync[1]};
+    //end
 
 endmodule
