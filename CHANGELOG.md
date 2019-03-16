@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+
+- Add priority arbiter
+- Add Pseudo Least Recently Used tree
+
+### Changed
+- Add priority arbiter implementation
+- Add `$onehot0` assertion in one-hot to bin
+
 ## 1.11.0 - 2019-03-20
 
 ### Added
