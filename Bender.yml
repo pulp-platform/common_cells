@@ -47,6 +47,7 @@ sources:
   - src/edge_detect.sv
   - src/fifo_v2.sv
   - src/id_queue.sv
+  - src/prioarbiter.sv
   - src/rrarbiter.sv
   - src/rstgen.sv
   - src/stream_delay.sv

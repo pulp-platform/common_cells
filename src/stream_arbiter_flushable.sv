@@ -15,7 +15,8 @@
 
 module stream_arbiter_flushable #(
     parameter type      DATA_T = logic,   // Vivado requires a default value for type parameters.
-    parameter integer   N_INP = -1        // Synopsys DC requires a default value for parameters.
+    parameter integer   N_INP = -1,       // Synopsys DC requires a default value for parameters.
+    parameter           ARBITER = "rr"    // "rr" or "prio"
 ) (
     input  logic              clk_i,
     input  logic              rst_ni,
@@ -32,23 +33,51 @@ module stream_arbiter_flushable #(
 
   logic [$clog2(N_INP)-1:0] idx;
 
-  rrarbiter #(
-    .NUM_REQ  (N_INP),
-    // Lock arbitration decision once the output is valid and until the handshake happens.
-    .LOCK_IN  (1)
-  ) i_arbiter (
-    .clk_i    (clk_i),
-    .rst_ni   (rst_ni),
-    .flush_i  (flush_i),
-    .en_i     (oup_ready_i),
-    .req_i    (inp_valid_i),
-    .ack_o    (inp_ready_o),
-    // The `vld_o` port of `rrarbiter` combinatorially depends on `en_i`.  In the stream protocol,
-    // a valid may not depend on a ready, so we drive `oup_valid_o` from the `inp_valid_i`s in (1)
-    // and leave `vld_o` unconnected.
-    .vld_o    (),
-    .idx_o    (idx)
-  );
+  if (ARBITER == "rr") begin
+    rrarbiter #(
+      .NUM_REQ  (N_INP),
+      // Lock arbitration decision once the output is valid and until the handshake happens.
+      .LOCK_IN  (1)
+    ) i_arbiter (
+      .clk_i    (clk_i),
+      .rst_ni   (rst_ni),
+      .flush_i  (flush_i),
+      .en_i     (oup_ready_i),
+      .req_i    (inp_valid_i),
+      .ack_o    (inp_ready_o),
+      // The `vld_o` port of `rrarbiter` combinatorially depends on `en_i`.  In the stream protocol,
+      // a valid may not depend on a ready, so we drive `oup_valid_o` from the `inp_valid_i`s in (1)
+      // and leave `vld_o` unconnected.
+      .vld_o    (),
+      .idx_o    (idx)
+    );
+  end else if (ARBITER == "prio") begin
+    prioarbiter #(
+      .NUM_REQ  (N_INP),
+      // Lock arbitration decision once the output is valid and until the handshake happens.
+      .LOCK_IN  (1)
+    ) i_arbiter (
+      .clk_i    (clk_i),
+      .rst_ni   (rst_ni),
+      .flush_i  (flush_i),
+      .en_i     (oup_ready_i),
+      .req_i    (inp_valid_i),
+      .ack_o    (inp_ready_o),
+      // The `vld_o` port of `rrarbiter` combinatorially depends on `en_i`.  In the stream protocol,
+      // a valid may not depend on a ready, so we drive `oup_valid_o` from the `inp_valid_i`s in (1)
+      // and leave `vld_o` unconnected.
+      .vld_o    (),
+      .idx_o    (idx)
+    );
+  end else begin
+    // pragma translate_off
+    `ifndef VERILATOR
+    initial begin
+      $fatal(1, "Entries must be a power of two");
+    end
+    `endif
+    // pragma translate_on
+  end
 
   assign oup_valid_o = (|inp_valid_i); // (1), see reference above.
   assign oup_data_o = inp_data_i[idx];
