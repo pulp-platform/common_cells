@@ -72,14 +72,15 @@ Please note that cells with status *deprecated* are not to be used for new desig
 
 ### Data Structures
 
-|        Name        |                  Description                  |    Status    |
-|--------------------|-----------------------------------------------|--------------|
+| Name               | Description                                   | Status       |
+|:-------------------|:----------------------------------------------|:-------------|
 | `fifo`             | FIFO register with upper threshold            | *deprecated* |
 | `fifo_v2`          | FIFO register with upper and lower threshold  | *deprecated* |
 | `fifo_v3`          | FIFO register with generic fill counts        | active       |
 | `generic_fifo`     | FIFO register without thresholds              | *deprecated* |
 | `generic_fifo_adv` | FIFO register without thresholds              | *deprecated* |
 | `sram`             | SRAM behavioral model                         | active       |
+| `plru_tree`        | Pseudo least recently used tree               | active       |
 | `unread`           | Empty module to sink unconnected outputs into | active       |
 
 
