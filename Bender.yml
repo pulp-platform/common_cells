@@ -30,6 +30,7 @@ sources:
   - src/lzc.sv
   - src/mv_filter.sv
   - src/onehot_to_bin.sv
+  - src/plru_tree.sv
   - src/popcount.sv
   - src/rstgen_bypass.sv
   - src/serial_deglitch.sv
