@@ -15,7 +15,8 @@
 
 module stream_arbiter #(
     parameter type      DATA_T = logic,   // Vivado requires a default value for type parameters.
-    parameter integer   N_INP = -1        // Synopsys DC requires a default value for parameters.
+    parameter integer   N_INP = -1,       // Synopsys DC requires a default value for parameters.
+    parameter           ARBITER = "rr"    // "rr" or "prio"
 ) (
     input  logic              clk_i,
     input  logic              rst_ni,
@@ -31,7 +32,8 @@ module stream_arbiter #(
 
   stream_arbiter_flushable #(
     .DATA_T (DATA_T),
-    .N_INP  (N_INP)
+    .N_INP  (N_INP),
+    .ARBITER (ARBITER)
   ) i_arb (
     .clk_i        (clk_i),
     .rst_ni       (rst_ni),

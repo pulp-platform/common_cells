@@ -48,8 +48,8 @@ Please note that cells with status *deprecated* are not to be used for new desig
 
 ### Data Path Elements
 
-|            Name            |                                 Description                                  |    Status    |
-|----------------------------|------------------------------------------------------------------------------|--------------|
+| Name                       | Description                                                                  | Status       |
+|:---------------------------|:-----------------------------------------------------------------------------|:-------------|
 | `binary_to_gray`           | Binary to gray code converter                                                | active       |
 | `find_first_one`           | Leading-one finder / leading-zero counter                                    | *deprecated* |
 | `gray_to_binary`           | Gray code to binary converter                                                | active       |
@@ -57,6 +57,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | `onehot_to_bin`            | One-hot to binary converter                                                  | active       |
 | `shift_reg`                | Shift register for arbitrary types                                           | active       |
 | `rrarbiter`                | Round-robin arbiter for req/ack interface with look-ahead                    | active       |
+| `prioarbiter`              | Priority arbiter arbiter for req/ack interface with look-ahead               | active       |
 | `fall_through_register`    | Fall-through register with ready/valid interface                             | active       |
 | `spill_register`           | Register with ready/valid interface to cut all combinational interface paths | active       |
 | `stream_arbiter`           | Round-robin arbiter for ready/valid stream interface                         | active       |
