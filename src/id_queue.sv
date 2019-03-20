@@ -158,7 +158,7 @@ module id_queue #(
     // The queue is full if and only if there are no free items in the linked data structure.
     assign full = !(|linked_data_free);
 
-    assign inp_gnt_o = !full;
+    assign inp_gnt_o = ~full;
     always_comb begin
         match_id            = 'x;
         match_id_valid      = 1'b0;
