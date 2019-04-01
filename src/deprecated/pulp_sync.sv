@@ -32,5 +32,13 @@ module pulp_sync
     end
    
    assign serial_o   =  r_bf_synch[STAGES-1];
-   
+
+
+  initial
+  begin
+	if((STAGES < 2) || (STAGES > 4))
+	begin
+	   $fatal ( "NUM STAGES out of bounds [$d] != [2-4] in %m", STAGES );
+	end
+  end	  
 endmodule
