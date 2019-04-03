@@ -19,7 +19,7 @@
 module lzc #(
   /// The width of the input vector.
   parameter int unsigned WIDTH = 2,
-  parameter int unsigned MODE  = 0
+  parameter bit          MODE  = 1'b0
 ) (
   input  logic [WIDTH-1:0]         in_i,
   output logic [$clog2(WIDTH)-1:0] cnt_o,
@@ -43,7 +43,7 @@ module lzc #(
   // reverse vector if required
   always_comb begin : flip_vector
     for (int unsigned i = 0; i < WIDTH; i++) begin
-      in_tmp[i] = MODE ? in_i[WIDTH-1-i] : in_i[i];
+      in_tmp[i] = (MODE) ? in_i[WIDTH-1-i] : in_i[i];
     end
   end
 
@@ -52,7 +52,7 @@ module lzc #(
     cnt_o   = '0;
     for (int unsigned i = 0; i < WIDTH; i++) begin
       if (in_tmp[i]) begin
-        cnt_o = i;
+        cnt_o = $clog2(WIDTH)'(i);
         break;
       end
     end
