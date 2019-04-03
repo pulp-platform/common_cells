@@ -8,13 +8,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+### Changed
+
+## 1.12.0 - 2019-04-09
+
+### Added
 - Add priority arbiter
 - Add Pseudo Least Recently Used tree
+- Add round robin arbiter mux tree
 
 ### Changed
-- Add selectable arbiter implementation for `stream_arbiter` and `stream_arbiter_flushable`. One
-  can choose between priority (`prio`) and round-robin arbitration (`rr`).
+- Add selectable arbiter implementation for `stream_arbiter` and `stream_arbiter_flushable`. One can choose between priority (`prio`) and round-robin arbitration (`rr`).
 - Add `$onehot0` assertion in one-hot to bin
+- Rework `rrarbiter` unit (uses `rr_arb_tree` implementation underneath)
 
 ## 1.11.0 - 2019-03-20
 
