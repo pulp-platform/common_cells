@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+- Added exponential backoff window module
+
 ### Changed
 
 ## 1.12.0 - 2019-04-09
