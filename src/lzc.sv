@@ -1,4 +1,4 @@
-// Copyright (c) 2018 ETH Zurich, University of Bologna
+// Copyright (c) 2018 - 2019 ETH Zurich, University of Bologna
 // All rights reserved.
 //
 // This code is under development and not yet released to the public.
@@ -12,14 +12,21 @@
 // (http://www.pulp-platform.org), under the copyright of ETH Zurich and the
 // University of Bologna.
 
-
 /// A trailing zero counter / leading zero counter.
-/// Set MODE to 0 for trailing zero counter => cnt_o is the number of trailing zeroes (from the LSB)
-/// Set MODE to 1 for leading zero counter  => cnt_o is the number of leading zeroes  (from the MSB)
+/// Set MODE to 0 for trailing zero counter => cnt_o is the number of trailing zeros (from the LSB)
+/// Set MODE to 1 for leading zero counter  => cnt_o is the number of leading zeros  (from the MSB)
+/// If the input does not contain a zero, `empty_o` is asserted. Additionally `cnt_o` contains
+/// the maximum number of zeros - 1. For example:
+///   in_i = 000_0000, empty_o = 1, cnt_o = 6 (mode = 0)
+///   in_i = 000_0001, empty_o = 0, cnt_o = 0 (mode = 0)
+///   in_i = 000_1000, empty_o = 0, cnt_o = 3 (mode = 0)
+/// Furthermore, this unit contains a more efficient implementation for Verilator (simulation only).
+/// This speeds up simulation significantly.
+
 module lzc #(
   /// The width of the input vector.
   parameter int unsigned WIDTH = 2,
-  parameter bit          MODE  = 1'b0
+  parameter bit          MODE  = 1'b0 // 0 -> trailing zero, 1 -> leading zero
 ) (
   input  logic [WIDTH-1:0]         in_i,
   output logic [$clog2(WIDTH)-1:0] cnt_o,
@@ -47,20 +54,8 @@ module lzc #(
     end
   end
 
-`ifdef VERILATOR
-  always_comb begin : behav_lzc
-    cnt_o   = '0;
-    for (int unsigned i = 0; i < WIDTH; i++) begin
-      if (in_tmp[i]) begin
-        cnt_o = $clog2(WIDTH)'(i);
-        break;
-      end
-    end
-  end
-  assign empty_o = ~(|in_i);
-`else
   for (genvar j = 0; unsigned'(j) < WIDTH; j++) begin : g_index_lut
-    assign index_lut[j] = unsigned'(j);
+    assign index_lut[j] = NUM_LEVELS'(j);
   end
 
   for (genvar level = 0; unsigned'(level) < NUM_LEVELS; level++) begin : g_levels
@@ -94,6 +89,5 @@ module lzc #(
 
   assign cnt_o   = NUM_LEVELS > 0 ? index_nodes[0] : '0;
   assign empty_o = NUM_LEVELS > 0 ? ~sel_nodes[0]  : ~(|in_i);
-`endif
 
 endmodule : lzc
