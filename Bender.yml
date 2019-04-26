@@ -6,6 +6,7 @@ package:
     - "Michael Schaffner <schaffner@iis.ee.ethz.ch>"
     - "Andreas Kurth <akurth@iis.ee.ethz.ch>"
     - "Manuel Eggimann <meggimann@iis.ee.ethz.ch>"
+    - "Stefan Mach <smach@iis.ee.ethz.ch>"
 
 dependencies:
   common_verification: { git: "https://github.com/pulp-platform/common_verification.git", version: 0.1.1 }
@@ -47,19 +48,12 @@ sources:
   - src/cdc_fifo_2phase.sv
   - src/cdc_fifo_gray.sv
   - src/edge_detect.sv
-  - src/fifo_v2.sv
   - src/id_queue.sv
-  - src/prioarbiter.sv
-  - src/rrarbiter.sv
   - src/rstgen.sv
   - src/stream_delay.sv
   # Level 2
   - src/fall_through_register.sv
-  - src/fifo_v1.sv
-  - src/stream_arbiter_flushable.sv
   - src/stream_register.sv
-  # Level 3
-  - src/stream_arbiter.sv
 
   - target: simulation
     files:
@@ -86,13 +80,21 @@ sources:
   # Deprecated modules
   # Level 0
   - src/deprecated/clock_divider_counter.sv
+  - src/deprecated/fifo_v1.sv
+  - src/deprecated/fifo_v2.sv
   - src/deprecated/find_first_one.sv
   - src/deprecated/generic_LFSR_8bit.sv
   - src/deprecated/generic_fifo.sv
+  - src/deprecated/prioarbiter.sv
   - src/deprecated/pulp_sync.sv
   - src/deprecated/pulp_sync_wedge.sv
+  - src/deprecated/rrarbiter.sv
   # Level 1
   - src/deprecated/clock_divider.sv
+  # Level 2
+  - src/deprecated/stream_arbiter_flushable.sv
+  # Level 3
+  - src/deprecated/stream_arbiter.sv
 
   # Depend on deprecated modules
   - src/edge_propagator.sv
