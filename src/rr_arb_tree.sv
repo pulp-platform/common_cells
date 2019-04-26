@@ -22,13 +22,16 @@
 //
 // The `ExtPrio` option allows to override the internal round robin counter via the
 // `rr_i` signal. This can be useful in case multiple arbiters need to have
-// rotating priorities that are operating in lock-step. Just connect `rr_i`
-// to '0 if unused.
+// rotating priorities that are operating in lock-step. If static priority arbitration
+// is needed, just connect `rr_i` to '0.
+//
+// The req/gnt signals are compliant with the AXI style vld/rdy handshake.
 //
 
 module rr_arb_tree #(
   parameter int unsigned NumIn      = 64,
   parameter int unsigned DataWidth  = 32,
+  parameter type         DataType   = logic [DataWidth-1:0],
   parameter bit          ExtPrio    = 1'b0, // set to 1'b1 to enable
   parameter bit          LockIn     = 1'b0  // set to 1'b1 to enable
 ) (
@@ -39,11 +42,11 @@ module rr_arb_tree #(
   // input requests and data
   input  logic [NumIn-1:0]                 req_i,
   output logic [NumIn-1:0]                 gnt_o,
-  input  logic [NumIn-1:0][DataWidth-1:0]  data_i,
+  input  DataType [NumIn-1:0]              data_i,
   // arbitrated output
   input  logic                             gnt_i,
   output logic                             req_o,
-  output logic [DataWidth-1:0]             data_o,
+  output DataType                          data_o,
   output logic [$clog2(NumIn)-1:0]         idx_o
 );
   // just pass through in this corner case
@@ -58,7 +61,7 @@ module rr_arb_tree #(
 
     /* verilator lint_off UNOPTFLAT */
     logic [2**NumLevels-2:0][NumLevels-1:0]  index_nodes; // used to propagate the indices
-    logic [2**NumLevels-2:0][DataWidth-1:0]  data_nodes;  // used to propagate the data
+    DataType [2**NumLevels-2:0]              data_nodes;  // used to propagate the data
     logic [2**NumLevels-2:0]                 gnt_nodes;   // used to propagate the grant to masters
     logic [2**NumLevels-2:0]                 req_nodes;   // used to propagate the requests to slave
     /* lint_off */
