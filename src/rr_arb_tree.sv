@@ -22,14 +22,21 @@
 //
 // The `ExtPrio` option allows to override the internal round robin counter via the
 // `rr_i` signal. This can be useful in case multiple arbiters need to have
-// rotating priorities that are operating in lock-step. Just connect `rr_i`
-// to '0 if unused.
+// rotating priorities that are operating in lock-step. If static priority arbitration
+// is needed, just connect `rr_i` to '0.
+//
+// If `AxiVldRdy` is set, the req/gnt signals are compliant with the AXI style vld/rdy
+// handshake. Namely, upstream vld (req) must not depend on rdy (gnt), as it can be deasserted
+// again even though vld is asserted. Enabling `AxiVldRdy` leads to a reduction of arbiter
+// delay and area.
 //
 
 module rr_arb_tree #(
   parameter int unsigned NumIn      = 64,
   parameter int unsigned DataWidth  = 32,
+  parameter type         DataType   = logic [DataWidth-1:0],
   parameter bit          ExtPrio    = 1'b0, // set to 1'b1 to enable
+  parameter bit          AxiVldRdy  = 1'b0, // treat req/gnt as vld/rdy
   parameter bit          LockIn     = 1'b0  // set to 1'b1 to enable
 ) (
   input  logic                             clk_i,
@@ -39,11 +46,11 @@ module rr_arb_tree #(
   // input requests and data
   input  logic [NumIn-1:0]                 req_i,
   output logic [NumIn-1:0]                 gnt_o,
-  input  logic [NumIn-1:0][DataWidth-1:0]  data_i,
+  input  DataType [NumIn-1:0]              data_i,
   // arbitrated output
   input  logic                             gnt_i,
   output logic                             req_o,
-  output logic [DataWidth-1:0]             data_o,
+  output DataType                          data_o,
   output logic [$clog2(NumIn)-1:0]         idx_o
 );
   // just pass through in this corner case
@@ -58,7 +65,7 @@ module rr_arb_tree #(
 
     /* verilator lint_off UNOPTFLAT */
     logic [2**NumLevels-2:0][NumLevels-1:0]  index_nodes; // used to propagate the indices
-    logic [2**NumLevels-2:0][DataWidth-1:0]  data_nodes;  // used to propagate the data
+    DataType [2**NumLevels-2:0]              data_nodes;  // used to propagate the data
     logic [2**NumLevels-2:0]                 gnt_nodes;   // used to propagate the grant to masters
     logic [2**NumLevels-2:0]                 req_nodes;   // used to propagate the requests to slave
     /* lint_off */
@@ -94,7 +101,7 @@ module rr_arb_tree #(
           end
         end
       end else begin : gen_no_lock
-        assign req_d      = req_i;
+        assign req_d = req_i;
       end
 
       assign rr_d       = (gnt_i && req_o) ? ((rr_q == NumLevels'(NumIn-1)) ? '0 : rr_q + 1'b1) : rr_q;
@@ -137,15 +144,15 @@ module rr_arb_tree #(
 
             assign index_nodes[idx0] = NumLevels'(sel);
             assign data_nodes[idx0]  = (sel) ? data_i[l*2+1] : data_i[l*2];
-            assign gnt_o[l*2]        = gnt_nodes[idx0] & req_d[l*2]   & ~sel;
-            assign gnt_o[l*2+1]      = gnt_nodes[idx0] & req_d[l*2+1] & sel;
+            assign gnt_o[l*2]        = gnt_nodes[idx0] & (AxiVldRdy | req_d[l*2])   & ~sel;
+            assign gnt_o[l*2+1]      = gnt_nodes[idx0] & (AxiVldRdy | req_d[l*2+1]) & sel;
           end
           // if only the first index is still in the vector...
           if (unsigned'(l) * 2 == NumIn-1) begin
             assign req_nodes[idx0]   = req_d[l*2];
             assign index_nodes[idx0] = '0;// always zero in this case
             assign data_nodes[idx0]  = data_i[l*2];
-            assign gnt_o[l*2]        = gnt_nodes[idx0] & req_d[l*2];
+            assign gnt_o[l*2]        = gnt_nodes[idx0] & (AxiVldRdy | req_d[l*2]);
           end
           // if index is out of range, fill up with zeros (will get pruned)
           if (unsigned'(l) * 2 > NumIn-1) begin
@@ -189,8 +196,12 @@ module rr_arb_tree #(
         else $fatal (1, "Grant out implies grant in.");
 
     gnt1 : assert property(
-      @(posedge clk_i) disable iff (!rst_ni) gnt_i |-> |gnt_o)
-        else $fatal (1, "Grant in implies grant out.");
+      @(posedge clk_i) disable iff (!rst_ni) req_o |-> gnt_i |-> |gnt_o)
+        else $fatal (1, "Req out and grant in implies grant out.");
+
+    gnt_idx : assert property(
+      @(posedge clk_i) disable iff (!rst_ni) req_o |->  gnt_i |-> gnt_o[idx_o])
+        else $fatal (1, "Idx_o / gnt_o do not match.");
 
     req0 : assert property(
       @(posedge clk_i) disable iff (!rst_ni) |req_i |-> req_o)
@@ -199,10 +210,6 @@ module rr_arb_tree #(
     req1 : assert property(
       @(posedge clk_i) disable iff (!rst_ni) |req_o |-> req_i)
         else $fatal (1, "Req out implies req in.");
-
-    gnt_idx : assert property(
-      @(posedge clk_i) disable iff (!rst_ni) gnt_i |-> gnt_o[idx_o])
-        else $fatal (1, "Idx_o / gnt_o do not match.");
 
     lock: assert property(
       @(posedge clk_i) disable iff (!rst_ni) LockIn |-> req_o && !gnt_i |=> idx_o == $past(idx_o))

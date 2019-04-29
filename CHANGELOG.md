@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added exponential backoff window module
 
 ### Changed
+- Parametric payload data type for `rr_arb_tree`
+
+### Deprecated
+- The following arbiter implementations are deprecated and superseded by `rr_arb_tree`:
+  - Priority arbiter `prioarbiter`
+  - Round-robin arbiter `rrarbiter`
+  - Stream arbiter `stream_arbiter`
+  - Flushable stream arbiter `stream_arbiter_flushable`
+
+### Fixed
 
 ## 1.12.0 - 2019-04-09
 
