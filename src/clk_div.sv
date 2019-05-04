@@ -31,6 +31,7 @@ module clk_div #(
             if (en_i) begin
                 if (counter_q == (RATIO[RATIO-1:0] - 1)) begin
                     clk_q <= 1'b1;
+                    counter_q <= 0;
                 end else begin
                     counter_q <= counter_q + 1;
                 end
