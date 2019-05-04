@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Changed
+
+- Fix `clk_div` not resetting propperly
+
 ## 1.13.1 - 2019-06-01
 
 ### Changed
