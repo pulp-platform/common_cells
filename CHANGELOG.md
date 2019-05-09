@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - Added exponential backoff window module
+- Added parametric Galois LFSR module with optional whitening feature
 
 ### Changed
 - Parametric payload data type for `rr_arb_tree`
