@@ -31,9 +31,9 @@ module stream_arbiter #(
 );
 
   stream_arbiter_flushable #(
-    .DATA_T (DATA_T),
-    .N_INP  (N_INP),
-    .ARBITER (ARBITER)
+    .DATA_T   (DATA_T),
+    .N_INP    (N_INP),
+    .ARBITER  (ARBITER)
   ) i_arb (
     .clk_i        (clk_i),
     .rst_ni       (rst_ni),

@@ -62,8 +62,8 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | `prioarbiter`                | Priority arbiter arbiter for req/ack interface with look-ahead                 | *deprecated*   | `rr_arb_tree` |
 | `fall_through_register`      | Fall-through register with ready/valid interface                               | active         |               |
 | `spill_register`             | Register with ready/valid interface to cut all combinational interface paths   | active         |               |
-| `stream_arbiter`             | Round-robin arbiter for ready/valid stream interface                           | *deprecated*   | `rr_arb_tree` |
-| `stream_arbiter_flushable`   | Round-robin arbiter for ready/valid stream interface and flush functionality   | *deprecated*   | `rr_arb_tree` |
+| `stream_arbiter`             | Round-robin arbiter for ready/valid stream interface                           | active         |               |
+| `stream_arbiter_flushable`   | Round-robin arbiter for ready/valid stream interface and flush functionality   | active         |               |
 | `stream_demux`               | Ready/valid interface demultiplexer                                            | active         |               |
 | `stream_mux`                 | Ready/valid interface multiplexer                                              | active         |               |
 | `stream_register`            | Register with ready/valid interface                                            | active         |               |

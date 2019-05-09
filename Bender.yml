@@ -53,7 +53,10 @@ sources:
   - src/stream_delay.sv
   # Level 2
   - src/fall_through_register.sv
+  - src/stream_arbiter_flushable.sv
   - src/stream_register.sv
+  # Level 3
+  - src/stream_arbiter.sv
 
   - target: simulation
     files:
@@ -91,10 +94,6 @@ sources:
   - src/deprecated/rrarbiter.sv
   # Level 1
   - src/deprecated/clock_divider.sv
-  # Level 2
-  - src/deprecated/stream_arbiter_flushable.sv
-  # Level 3
-  - src/deprecated/stream_arbiter.sv
 
   # Depend on deprecated modules
   - src/edge_propagator.sv
