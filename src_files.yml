@@ -33,7 +33,6 @@ common_cells_all:
     - src/stream_delay.sv
     # Level 2
     - src/fall_through_register.sv
-    - src/fifo_v1.sv
     - src/stream_register.sv
 
     # Deprecated modules
@@ -52,6 +51,7 @@ common_cells_all:
     - src/deprecated/rrarbiter.sv
     # Level 2
     - src/deprecated/stream_arbiter_flushable.sv
+    - src/deprecated/fifo_v1.sv
     # Level 3
     - src/deprecated/stream_arbiter.sv
 
