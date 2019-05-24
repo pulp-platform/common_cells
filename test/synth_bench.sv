@@ -44,4 +44,9 @@ module synth_bench (
         .rst_ni (rst_ni)
     );
 
+    stream_arbiter_synth i_stream_arbiter (
+        .clk_i,
+        .rst_ni
+    );
+
 endmodule

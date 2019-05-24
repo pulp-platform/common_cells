@@ -77,6 +77,7 @@ sources:
       # Level 0
       - test/cdc_2phase_synth.sv
       - test/id_queue_synth.sv
+      - test/stream_arbiter_synth.sv
       # Level 1
       - test/synth_bench.sv
 
