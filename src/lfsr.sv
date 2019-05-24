@@ -37,67 +37,67 @@ module lfsr #(
 // Galois LFSR feedback masks
 // Automatically generated with get_lfsr_masks.py
 // Masks are from https://users.ece.cmu.edu/~koopman/lfsr/
-localparam logic [63:0] masks [4:64] = {64'hC,
-                                        64'h1E,
-                                        64'h39,
-                                        64'h7E,
-                                        64'hFA,
-                                        64'h1FD,
-                                        64'h3FC,
-                                        64'h64B,
-                                        64'hD8F,
-                                        64'h1296,
-                                        64'h2496,
-                                        64'h4357,
-                                        64'h8679,
-                                        64'h1030E,
-                                        64'h206CD,
-                                        64'h403FE,
-                                        64'h807B8,
-                                        64'h1004B2,
-                                        64'h2006A8,
-                                        64'h4004B2,
-                                        64'h800B87,
-                                        64'h10004F3,
-                                        64'h200072D,
-                                        64'h40006AE,
-                                        64'h80009E3,
-                                        64'h10000583,
-                                        64'h20000C92,
-                                        64'h400005B6,
-                                        64'h80000EA6,
-                                        64'h1000007A3,
-                                        64'h200000ABF,
-                                        64'h400000842,
-                                        64'h80000123E,
-                                        64'h100000074E,
-                                        64'h2000000AE9,
-                                        64'h400000086A,
-                                        64'h8000001213,
-                                        64'h1000000077E,
-                                        64'h2000000123B,
-                                        64'h40000000877,
-                                        64'h8000000108D,
-                                        64'h100000000AE9,
-                                        64'h200000000E9F,
-                                        64'h4000000008A6,
-                                        64'h80000000191E,
-                                        64'h100000000090E,
-                                        64'h2000000000FB3,
-                                        64'h4000000000D7D,
-                                        64'h80000000016A5,
-                                        64'h10000000000B4B,
-                                        64'h200000000010AF,
-                                        64'h40000000000DDE,
-                                        64'h8000000000181A,
-                                        64'h100000000000B65,
-                                        64'h20000000000102D,
-                                        64'h400000000000CD5,
-                                        64'h8000000000024C1,
-                                        64'h1000000000000EF6,
-                                        64'h2000000000001363,
-                                        64'h4000000000000FCD,
-                                        64'h80000000000019E2};
+localparam logic [63:0] masks [4:64] = '{64'hC,
+                                         64'h1E,
+                                         64'h39,
+                                         64'h7E,
+                                         64'hFA,
+                                         64'h1FD,
+                                         64'h3FC,
+                                         64'h64B,
+                                         64'hD8F,
+                                         64'h1296,
+                                         64'h2496,
+                                         64'h4357,
+                                         64'h8679,
+                                         64'h1030E,
+                                         64'h206CD,
+                                         64'h403FE,
+                                         64'h807B8,
+                                         64'h1004B2,
+                                         64'h2006A8,
+                                         64'h4004B2,
+                                         64'h800B87,
+                                         64'h10004F3,
+                                         64'h200072D,
+                                         64'h40006AE,
+                                         64'h80009E3,
+                                         64'h10000583,
+                                         64'h20000C92,
+                                         64'h400005B6,
+                                         64'h80000EA6,
+                                         64'h1000007A3,
+                                         64'h200000ABF,
+                                         64'h400000842,
+                                         64'h80000123E,
+                                         64'h100000074E,
+                                         64'h2000000AE9,
+                                         64'h400000086A,
+                                         64'h8000001213,
+                                         64'h1000000077E,
+                                         64'h2000000123B,
+                                         64'h40000000877,
+                                         64'h8000000108D,
+                                         64'h100000000AE9,
+                                         64'h200000000E9F,
+                                         64'h4000000008A6,
+                                         64'h80000000191E,
+                                         64'h100000000090E,
+                                         64'h2000000000FB3,
+                                         64'h4000000000D7D,
+                                         64'h80000000016A5,
+                                         64'h10000000000B4B,
+                                         64'h200000000010AF,
+                                         64'h40000000000DDE,
+                                         64'h8000000000181A,
+                                         64'h100000000000B65,
+                                         64'h20000000000102D,
+                                         64'h400000000000CD5,
+                                         64'h8000000000024C1,
+                                         64'h1000000000000EF6,
+                                         64'h2000000000001363,
+                                         64'h4000000000000FCD,
+                                         64'h80000000000019E2};
 
 // this S-box and permutation P has been taken from the Present Cipher,
 // a super lightweight block cipher. use the cipher layers to add additional
@@ -233,7 +233,7 @@ assign lfsr_d = (en_i) ? (lfsr_q>>1) ^ ({LfsrWidth{lfsr_q[0]}} & masks[LfsrWidth
 
 always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
   //$display("%b %h", en_i, lfsr_d);
-  if(!rst_ni) begin
+  if (!rst_ni) begin
     lfsr_q <= LfsrWidth'(RstVal);
   end else begin
     lfsr_q <= lfsr_d;
@@ -244,25 +244,28 @@ end
 // block cipher layers
 ////////////////////////////////////////////////////////////////////////
 
-if (CipherLayers) begin : g_cipher_layers
-  logic [CipherLayers:0][63:0] ciph_layer;
+if (CipherLayers > 0) begin : g_cipher_layers
+  logic [63:0] ciph_layer;
   localparam int unsigned NumRepl = ((64+LfsrWidth)/LfsrWidth);
 
-  assign ciph_layer[0] = 64'({NumRepl{lfsr_q}});
-
-  for(genvar k=1; k<=CipherLayers;k++) begin
-    assign ciph_layer[k] = perm_layer(sbox4_layer(ciph_layer[k-1]));
+  always_comb begin : p_ciph_layer
+    automatic logic [63:0] tmp;
+    tmp = 64'({NumRepl{lfsr_q}});
+    for(int k = 0; k < CipherLayers; k++) begin
+      tmp = perm_layer(sbox4_layer(tmp));
+    end
+    ciph_layer = tmp;
   end
 
   // additiona output reg after cipher
   if (CipherReg) begin : g_cipher_reg
     logic [OutWidth-1:0] out_d, out_q;
 
-    assign out_d = (en_i) ? ciph_layer[CipherLayers][OutWidth-1:0] : out_q;
+    assign out_d = (en_i) ? ciph_layer[OutWidth-1:0] : out_q;
     assign out_o = out_q[OutWidth-1:0];
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : p_p
-      if(!rst_ni) begin
+      if (!rst_ni) begin
         out_q <= '0;
       end else begin
         out_q <= out_d;
@@ -270,7 +273,7 @@ if (CipherLayers) begin : g_cipher_layers
     end
   // no outreg
   end else begin : g_no_out_reg
-    assign out_o  = ciph_layer[CipherLayers][OutWidth-1:0];
+    assign out_o  = ciph_layer[OutWidth-1:0];
   end
 
 // no block cipher
@@ -287,13 +290,13 @@ initial begin
   // these are the LUT limits
   assert(OutWidth <= LfsrWidth) else
     $fatal(1,"OutWidth must be smaller equal the LfsrWidth.");
-  assert(RstVal) else
+  assert(RstVal > 0) else
     $fatal(1,"RstVal must be nonzero.");
-  assert(LfsrWidth>=$low(masks) && LfsrWidth<=$high(masks)) else
+  assert((LfsrWidth >= $low(masks)) && (LfsrWidth <= $high(masks))) else
     $fatal(1,"Unsupported LfsrWidth.");
   assert(masks[LfsrWidth][LfsrWidth-1]) else
     $fatal(1, "LFSR mask is not correct. The MSB must be 1." );
-  assert((CipherLayers>0) && (LfsrWidth==64) || (CipherLayers==0)) else
+  assert((CipherLayers > 0) && (LfsrWidth == 64) || (CipherLayers == 0)) else
     $fatal(1, "Use additional cipher layers only in conjunction with an LFSR width of 64 bit." );
 end
 

@@ -45,7 +45,9 @@ module rr_arb_tree #(
   input  logic [$clog2(NumIn)-1:0]         rr_i,    // external RR prio (needs to be enabled above)
   // input requests and data
   input  logic [NumIn-1:0]                 req_i,
+  /* verilator lint_off UNOPTFLAT */
   output logic [NumIn-1:0]                 gnt_o,
+  /* verilator lint_on UNOPTFLAT */
   input  DataType [NumIn-1:0]              data_i,
   // arbitrated output
   input  logic                             gnt_i,
@@ -90,7 +92,7 @@ module rr_arb_tree #(
         assign req_d      = (lock_q) ? req_q : req_i;
 
         always_ff @(posedge clk_i or negedge rst_ni) begin : p_lock_reg
-          if(!rst_ni) begin
+          if (!rst_ni) begin
             lock_q <= '0;
           end else begin
             if (flush_i) begin
@@ -107,7 +109,7 @@ module rr_arb_tree #(
       assign rr_d       = (gnt_i && req_o) ? ((rr_q == NumLevels'(NumIn-1)) ? '0 : rr_q + 1'b1) : rr_q;
 
       always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
-        if(!rst_ni) begin
+        if (!rst_ni) begin
           rr_q   <= '0;
           req_q  <= '0;
         end else begin
