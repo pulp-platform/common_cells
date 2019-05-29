@@ -44,26 +44,4 @@ package automatic cf_math_pkg;
         end
     endfunction
 
-    // Ceiled Binary Logarithm of a Natural Number
-    //
-    // Returns the binary logarithm (i.e., the logarithm to the base 2) of a natural number
-    // (including 0), rounded towards plus infinity.
-    //
-    // Use this as drop-in replacement for the `$clog2` system function where the latter is not
-    // supported by your toolchain.
-    function integer log2 (input longint val);
-        automatic longint tmp;
-
-        // pragma translate_off
-        if (val < 0) begin
-            $fatal(1, "Argument %0d is not a natural number!", val);
-        end
-        // pragma translate_on
-
-        tmp = val - 1;
-        for (log2 = 0; tmp > 0; log2++) begin
-            tmp = tmp >> 1;
-        end
-    endfunction
-
 endpackage
