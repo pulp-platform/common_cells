@@ -55,7 +55,7 @@ module lzc #(
   end
 
   for (genvar j = 0; unsigned'(j) < WIDTH; j++) begin : g_index_lut
-    assign index_lut[j] = NUM_LEVELS'(j);
+    assign index_lut[j] = NUM_LEVELS'(unsigned'(j));
   end
 
   for (genvar level = 0; unsigned'(level) < NUM_LEVELS; level++) begin : g_levels
@@ -87,7 +87,7 @@ module lzc #(
     end
   end
 
-  assign cnt_o   = NUM_LEVELS > 0 ? index_nodes[0] : '0;
-  assign empty_o = NUM_LEVELS > 0 ? ~sel_nodes[0]  : ~(|in_i);
+  assign cnt_o   = NUM_LEVELS > unsigned'(0) ? index_nodes[0] : $clog2(WIDTH)'(0);
+  assign empty_o = NUM_LEVELS > unsigned'(0) ? ~sel_nodes[0]  : ~(|in_i);
 
 endmodule : lzc
