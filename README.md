@@ -46,7 +46,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | `lfsr_8bit`         | 8-bit linear feedback shift register (LFSR)                       | active       |               |
 | `lfsr_16bit`        | 16-bit linear feedback shift register (LFSR)                      | active       |               |
 | `lfsr`              | 4...64-bit parametric Galois LFSR with optional whitening feature | active       |               |
-| `max_counter`       | Up/down counter with variable delta and maximum latch             | active       |               |
+| `max_counter`       | Up/down counter with variable delta that tracks its maximum value | active       |               |
 | `mv_filter`         | **ZARUBAF ADD DESCRIPTION**                                       | active       |               |
 
 ### Data Path Elements

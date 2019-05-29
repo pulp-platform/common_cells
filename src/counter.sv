@@ -13,7 +13,7 @@
 
 module counter #(
     parameter int unsigned WIDTH = 4,
-    parameter bit LATCH_OVERFLOW = 1'b0
+    parameter bit STICKY_OVERFLOW = 1'b0
 )(
     input  logic             clk_i,
     input  logic             rst_ni,
@@ -27,7 +27,7 @@ module counter #(
 );
     delta_counter #(
         .WIDTH          (WIDTH),
-        .LATCH_OVERFLOW (LATCH_OVERFLOW)
+        .STICKY_OVERFLOW (STICKY_OVERFLOW)
     ) i_counter (
         .clk_i,
         .rst_ni,

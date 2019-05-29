@@ -12,7 +12,7 @@
 
 module delta_counter #(
     parameter int unsigned WIDTH = 4,
-    parameter bit LATCH_OVERFLOW = 1'b0
+    parameter bit STICKY_OVERFLOW = 1'b0
 )(
     input  logic             clk_i,
     input  logic             rst_ni,
@@ -26,7 +26,7 @@ module delta_counter #(
     output logic             overflow_o
 );
     logic [WIDTH:0] counter_q, counter_d;
-    if (LATCH_OVERFLOW) begin : gen_latch_overflow
+    if (STICKY_OVERFLOW) begin : gen_sticky_overflow
         logic overflow_d, overflow_q;
         always_ff @(posedge clk_i or negedge rst_ni) overflow_q <= ~rst_ni ? 1'b0 : overflow_d;
         always_comb begin

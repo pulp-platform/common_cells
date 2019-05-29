@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## Unreleased
 
 ### Added
-- `counter`: Added overflow latch
+- `counter`: Added sticky overflow
 - Added counter with variable delta
-- Added counter with maximum latch
+- Added counter that tracks its maximum value
 
 ## 1.13.1 - 2019-06-01
 
