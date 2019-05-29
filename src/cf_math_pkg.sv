@@ -25,6 +25,7 @@ package automatic cf_math_pkg;
         automatic longint remainder;
 
         // pragma translate_off
+        `ifndef VERILATOR
         if (dividend < 0) begin
             $fatal(1, "Dividend %0d is not a natural number!", dividend);
         end
@@ -36,6 +37,7 @@ package automatic cf_math_pkg;
         if (divisor == 0) begin
             $fatal(1, "Division by zero!");
         end
+        `endif
         // pragma translate_on
 
         remainder = dividend;
