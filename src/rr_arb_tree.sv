@@ -56,7 +56,7 @@ module rr_arb_tree #(
   output logic [$clog2(NumIn)-1:0]         idx_o
 );
   // just pass through in this corner case
-  if (NumIn == 1) begin
+  if (NumIn == unsigned'(1)) begin
     assign req_o    = req_i[0];
     assign gnt_o[0] = gnt_i;
     assign data_o   = data_i[0];
@@ -71,11 +71,8 @@ module rr_arb_tree #(
     logic [2**NumLevels-2:0]                 gnt_nodes;   // used to propagate the grant to masters
     logic [2**NumLevels-2:0]                 req_nodes;   // used to propagate the requests to slave
     /* lint_off */
-    logic [NumLevels-1:0]                    rr_d, rr_q;
-
-    // only used in case of enabled lock feature
-    logic [NumIn-1:0]                        req_d, req_q;
-    logic                                    lock_d, lock_q;
+    logic [NumLevels-1:0]                    rr_q;
+    logic [NumIn-1:0]                        req_d;
 
     // the final arbitration decision can be taken from the root of the tree
     assign req_o        = req_nodes[0];
@@ -86,8 +83,13 @@ module rr_arb_tree #(
       assign rr_q       = rr_i;
       assign req_d      = req_i;
     end else begin : gen_int_rr
+      logic [NumLevels-1:0] rr_d;
+
       // lock arbiter decision in case we got at least one req and no acknowledge
       if (LockIn) begin : gen_lock
+        logic  lock_d, lock_q;
+        logic [NumIn-1:0]     req_q;
+
         assign lock_d     = req_o & ~gnt_i;
         assign req_d      = (lock_q) ? req_q : req_i;
 
@@ -102,23 +104,46 @@ module rr_arb_tree #(
             end
           end
         end
+
+        // pragma translate_off
+        `ifndef VERILATOR
+          lock: assert property(
+            @(posedge clk_i) disable iff (!rst_ni) LockIn |-> req_o && !gnt_i |=> idx_o == $past(idx_o))
+              else $fatal (1, "Lock implies same arbiter decision in next cycle if output is not ready.");
+
+          logic [NumIn-1:0] req_tmp;
+          assign req_tmp = req_q & req_i;
+          lock_req: assert property(
+            @(posedge clk_i) disable iff (!rst_ni) LockIn |-> lock_d |=> req_tmp == req_q)
+              else $fatal (1, "It is disallowed to deassert unserved request signals when LockIn is enabled.");
+        `endif
+        // pragma translate_on
+
+        always_ff @(posedge clk_i or negedge rst_ni) begin : p_req_regs
+          if (!rst_ni) begin
+            req_q  <= '0;
+          end else begin
+            if (flush_i) begin
+              req_q  <= '0;
+            end else begin
+              req_q  <= req_d;
+            end
+          end
+        end
       end else begin : gen_no_lock
         assign req_d = req_i;
       end
 
       assign rr_d       = (gnt_i && req_o) ? ((rr_q == NumLevels'(NumIn-1)) ? '0 : rr_q + 1'b1) : rr_q;
 
-      always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
+      always_ff @(posedge clk_i or negedge rst_ni) begin : p_rr_regs
         if (!rst_ni) begin
           rr_q   <= '0;
-          req_q  <= '0;
         end else begin
           if (flush_i) begin
             rr_q   <= '0;
-            req_q  <= '0;
           end else begin
             rr_q   <= rr_d;
-            req_q  <= req_d;
           end
         end
       end
@@ -170,8 +195,8 @@ module rr_arb_tree #(
           // arbitration: round robin
           assign sel =  ~req_nodes[idx1] | req_nodes[idx1+1] & rr_q[NumLevels-1-level];
 
-          assign index_nodes[idx0] = (sel) ? NumLevels'({1'b1, index_nodes[idx1+1][NumLevels-level-2:0]}) :
-                                             NumLevels'({1'b0, index_nodes[idx1][NumLevels-level-2:0]});
+          assign index_nodes[idx0] = (sel) ? NumLevels'({1'b1, index_nodes[idx1+1][NumLevels-unsigned'(level)-2:0]}) :
+                                             NumLevels'({1'b0, index_nodes[idx1][NumLevels-unsigned'(level)-2:0]});
           assign data_nodes[idx0]  = (sel) ? data_nodes[idx1+1] : data_nodes[idx1];
           assign gnt_nodes[idx1]   = gnt_nodes[idx0] & ~sel;
           assign gnt_nodes[idx1+1] = gnt_nodes[idx0] & sel;
@@ -212,16 +237,6 @@ module rr_arb_tree #(
     req1 : assert property(
       @(posedge clk_i) disable iff (!rst_ni) |req_o |-> req_i)
         else $fatal (1, "Req out implies req in.");
-
-    lock: assert property(
-      @(posedge clk_i) disable iff (!rst_ni) LockIn |-> req_o && !gnt_i |=> idx_o == $past(idx_o))
-        else $fatal (1, "Lock implies same arbiter decision in next cycle if output is not ready.");
-
-    logic [NumIn-1:0] req_tmp;
-    assign req_tmp = req_q & req_i;
-    lock_req: assert property(
-      @(posedge clk_i) disable iff (!rst_ni) LockIn |-> lock_d |=> req_tmp == req_q)
-        else $fatal (1, "It is disallowed to deassert unserved request signals when LockIn is enabled.");
     `endif
     // pragma translate_on
   end

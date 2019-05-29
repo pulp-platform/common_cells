@@ -20,13 +20,13 @@
 // of 64bit, since the block cipher has been designed for that block length.
 
 module lfsr #(
-  parameter int unsigned          LfsrWidth     = 64,  // [4,64]
-  parameter int unsigned          OutWidth      = 8,   // [1,LfsrWidth]
-  parameter logic [LfsrWidth-1:0] RstVal        = '1,  // [1,2^LfsrWidth-1]
+  parameter int unsigned          LfsrWidth     = 64,   // [4,64]
+  parameter int unsigned          OutWidth      = 8,    // [1,LfsrWidth]
+  parameter logic [LfsrWidth-1:0] RstVal        = '1,   // [1,2^LfsrWidth-1]
   // 0: disabled, the present cipher uses 31, but just a few layers (1-3) are enough
   // to break linear shifting patterns
   parameter int unsigned          CipherLayers  = 0,
-  parameter bit                   CipherReg     = 1'b1 // additional output reg after cipher
+  parameter bit                   CipherReg     = 1'b1  // additional output reg after cipher
 ) (
   input  logic                 clk_i,
   input  logic                 rst_ni,
@@ -121,7 +121,7 @@ localparam logic[63:0][5:0] perm = {6'd63, 6'd47, 6'd31, 6'd15, 6'd62, 6'd46, 6'
                                     6'd51, 6'd35, 6'd19, 6'd03, 6'd50, 6'd34, 6'd18, 6'd02, 6'd49, 6'd33, 6'd17, 6'd01, 6'd48, 6'd32, 6'd16, 6'd00};
 
 
-function logic [63:0] sbox4_layer(logic [63:0] in);
+function automatic logic [63:0] sbox4_layer(logic [63:0] in);
   logic [63:0] out;
   //for (logic [4:0] j = '0; j<16; j++) out[j*4 +: 4] = sbox4[in[j*4 +: 4]];
   // this simulates much faster than the loop
@@ -147,7 +147,7 @@ function logic [63:0] sbox4_layer(logic [63:0] in);
   return out;
 endfunction : sbox4_layer
 
-function logic [63:0] perm_layer(logic [63:0] in);
+function automatic logic [63:0] perm_layer(logic [63:0] in);
   logic [63:0] out;
   // for (logic [7:0] j = '0; j<64; j++) out[perm[j]] = in[j];
   // this simulates much faster than the loop
@@ -244,14 +244,14 @@ end
 // block cipher layers
 ////////////////////////////////////////////////////////////////////////
 
-if (CipherLayers > 0) begin : g_cipher_layers
+if (CipherLayers > unsigned'(0)) begin : g_cipher_layers
   logic [63:0] ciph_layer;
   localparam int unsigned NumRepl = ((64+LfsrWidth)/LfsrWidth);
 
   always_comb begin : p_ciph_layer
     automatic logic [63:0] tmp;
     tmp = 64'({NumRepl{lfsr_q}});
-    for(int k = 0; k < CipherLayers; k++) begin
+    for(int unsigned k = 0; k < CipherLayers; k++) begin
       tmp = perm_layer(sbox4_layer(tmp));
     end
     ciph_layer = tmp;
@@ -264,7 +264,7 @@ if (CipherLayers > 0) begin : g_cipher_layers
     assign out_d = (en_i) ? ciph_layer[OutWidth-1:0] : out_q;
     assign out_o = out_q[OutWidth-1:0];
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin : p_p
+    always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
       if (!rst_ni) begin
         out_q <= '0;
       end else begin
@@ -290,7 +290,7 @@ initial begin
   // these are the LUT limits
   assert(OutWidth <= LfsrWidth) else
     $fatal(1,"OutWidth must be smaller equal the LfsrWidth.");
-  assert(RstVal > 0) else
+  assert(RstVal > unsigned'(0)) else
     $fatal(1,"RstVal must be nonzero.");
   assert((LfsrWidth >= $low(masks)) && (LfsrWidth <= $high(masks))) else
     $fatal(1,"Unsupported LfsrWidth.");
