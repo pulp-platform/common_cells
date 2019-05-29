@@ -21,15 +21,17 @@ package automatic cf_math_pkg;
     // Ceiled Division of Two Natural Numbers
     //
     // Returns the quotient of two natural numbers, rounded towards plus infinity.
-    function integer ceil_div(input longint dividend, input longint divisor);
+    function integer ceil_div (input longint dividend, input longint divisor);
         automatic longint remainder;
 
         // pragma translate_off
-        if (dividend < 0)
+        if (dividend < 0) begin
             $fatal(1, "Dividend %0d is not a natural number!", dividend);
+        end
 
-        if (divisor < 0)
+        if (divisor < 0) begin
             $fatal(1, "Divisor %0d is not a natural number!", divisor);
+        end
 
         if (divisor == 0) begin
             $fatal(1, "Division by zero!");
@@ -37,8 +39,9 @@ package automatic cf_math_pkg;
         // pragma translate_on
 
         remainder = dividend;
-        for (ceil_div = 0; remainder > 0; ceil_div = ceil_div+1)
+        for (ceil_div = 0; remainder > 0; ceil_div++) begin
             remainder = remainder - divisor;
+        end
     endfunction
 
     // Ceiled Binary Logarithm of a Natural Number
@@ -52,13 +55,15 @@ package automatic cf_math_pkg;
         automatic longint tmp;
 
         // pragma translate_off
-        if (val < 0)
+        if (val < 0) begin
             $fatal(1, "Argument %0d is not a natural number!", val);
+        end
         // pragma translate_on
 
         tmp = val - 1;
-        for (log2 = 0; tmp > 0; log2 = log2+1)
+        for (log2 = 0; tmp > 0; log2++) begin
             tmp = tmp >> 1;
+        end
     endfunction
 
 endpackage
