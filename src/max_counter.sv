@@ -8,7 +8,7 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-// Up/down counter with maximum latch
+// Up/down counter that tracks its maximum value
 
 module max_counter #(
     parameter int unsigned WIDTH = 4
@@ -31,8 +31,8 @@ module max_counter #(
     logic overflow_max_d, overflow_max_q;
 
     delta_counter #(
-        .WIDTH          (WIDTH),
-        .LATCH_OVERFLOW (1'b1)
+        .WIDTH           (WIDTH),
+        .STICKY_OVERFLOW (1'b1)
     ) i_counter (
         .clk_i,
         .rst_ni,
