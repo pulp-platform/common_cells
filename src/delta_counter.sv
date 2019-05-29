@@ -42,7 +42,7 @@ module delta_counter #(
             end
         end
         assign overflow_o = overflow_q;
-    end else begin
+    end else begin : gen_transient_overflow
         // counter overflowed if the MSB is set
         assign overflow_o = counter_q[WIDTH];
     end
