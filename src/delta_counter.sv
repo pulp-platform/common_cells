@@ -26,7 +26,7 @@ module delta_counter #(
     output logic             overflow_o
 );
     logic [WIDTH:0] counter_q, counter_d;
-    if (LATCH_OVERFLOW) begin: gen_latch_overflow
+    if (LATCH_OVERFLOW) begin : gen_latch_overflow
         logic overflow_d, overflow_q;
         always_ff @(posedge clk_i or negedge rst_ni) overflow_q <= ~rst_ni ? 1'b0 : overflow_d;
         always_comb begin
@@ -65,7 +65,7 @@ module delta_counter #(
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
+        if (!rst_ni) begin
            counter_q <= '0;
         end else begin
            counter_q <= counter_d;

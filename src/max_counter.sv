@@ -12,7 +12,7 @@
 
 module max_counter #(
     parameter int unsigned WIDTH = 4
-)(
+) (
     input  logic             clk_i,
     input  logic             rst_ni,
     input  logic             clear_i,       // synchronous clear for counter
