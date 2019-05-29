@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## 1.13.0 - 2019-05-29
+
 ### Added
 
 - Added exponential backoff window module
@@ -17,8 +19,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Deprecated
 - The following arbiter implementations are deprecated and superseded by `rr_arb_tree`:
-  - Priority arbiter `prioarbiter`
-  - Round-robin arbiter `rrarbiter`
+- Priority arbiter `prioarbiter`
+- Round-robin arbiter `rrarbiter`
 
 ### Fixed
 
