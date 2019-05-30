@@ -33,8 +33,10 @@ common_cells_all:
     - src/stream_delay.sv
     # Level 2
     - src/fall_through_register.sv
+    - src/stream_arbiter_flushable.sv
     - src/stream_register.sv
-
+    # Level 3
+    - src/stream_arbiter.sv
     # Deprecated modules
     # Level 0
     - src/deprecated/clock_divider_counter.sv
@@ -50,10 +52,8 @@ common_cells_all:
     - src/deprecated/prioarbiter.sv
     - src/deprecated/rrarbiter.sv
     # Level 2
-    - src/deprecated/stream_arbiter_flushable.sv
     - src/deprecated/fifo_v1.sv
     # Level 3
-    - src/deprecated/stream_arbiter.sv
 
     # Depend on deprecated modules
     - src/edge_propagator.sv
