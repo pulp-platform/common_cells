@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## 1.13.1 - 2019-06-01
+
 ### Changed
 
 - Fix path in `src_files.yml` for `stream_arbiter` and `stream_arbiter_flushable`
