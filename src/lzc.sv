@@ -87,7 +87,7 @@ module lzc #(
     end
   end
 
-  assign cnt_o   = NUM_LEVELS > unsigned'(0) ? index_nodes[0] : $clog2(WIDTH)'(0);
+  assign cnt_o   = NUM_LEVELS > unsigned'(0) ? index_nodes[0] : {($clog2(WIDTH)){1'b0}};
   assign empty_o = NUM_LEVELS > unsigned'(0) ? ~sel_nodes[0]  : ~(|in_i);
 
 endmodule : lzc
