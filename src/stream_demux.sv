@@ -17,7 +17,7 @@
 module stream_demux #(
   parameter integer N_OUP = 1,
   /// Dependent parameters, DO NOT OVERRIDE!
-  localparam integer LOG_N_OUP = $clog2(N_OUP)
+  parameter integer LOG_N_OUP = $clog2(N_OUP)
 ) (
   input  logic                  inp_valid_i,
   output logic                  inp_ready_o,
