@@ -10,7 +10,10 @@
 
 // Antonio Pullini <pullinia@iis.ee.ethz.ch>
 
-module pulp_sync_wedge 
+module pulp_sync_wedge
+#(
+    parameter int unsigned STAGES = 3
+) 
 (
     input  logic clk_i,
     input  logic rstn_i,
@@ -45,7 +48,7 @@ module pulp_sync_wedge
    
 
 
-    pulp_sync #( .STAGES(2) )  r_bf_synch_1_2
+    pulp_sync #( .STAGES(STAGES-1) )  r_bf_synch_1_2
     (
         .clk_i    ( clk_int     ),
         .rstn_i   ( rstn_i      ),
