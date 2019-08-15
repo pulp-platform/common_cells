@@ -5,3 +5,5 @@
 /Bender.lock
 /Bender.local
 build
+formal/fifo_v3
+*.check
