@@ -15,12 +15,23 @@ YOSYS	?= yosys
 SBY	?= sby
 RM	?= rm
 
-all: fifo_v3.check
+all: fifo_v3.check counter.check
 
 fifo_v3.check: fifo_v3.sby ../src/fifo_v3.sv fifo_v3_properties.sv
 	$(SBY) -f $<
 	touch $@
 
+# delta_counter.check: delta_counter.sby ../src/delta_counter.sv delta_counter_properties.sv
+# 	$(SBY) -f $<
+# 	touch $@
+
+counter.check: counter.sby ../src/counter.sv counter_properties.sv
+	$(SBY) -f $<
+	touch $@
+
+
 .PHONY: clean
 clean:
 	$(RM) -r fifo_v3.check fifo_v3/
+#	$(RM) -r delta_counter.check delta_counter/
+	$(RM) -r counter.check counter/
