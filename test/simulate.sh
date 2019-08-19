@@ -12,12 +12,14 @@
 
 set -e
 
-bender vsim -t test
-
 [ ! -z "$VSIM" ] || VSIM=vsim
 
+bender script vsim -t test > compile.tcl
+
+"$VSIM" -c -do 'source compile.tcl; quit'
+
 call_vsim() {
-	echo "run -all" | $VSIM "$@" | tee vsim.log 2>&1
+	echo "run -all" | "$VSIM" "$@" | tee vsim.log 2>&1
 	grep "Errors: 0," vsim.log
 }
 
