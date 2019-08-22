@@ -10,6 +10,7 @@
 // specific language governing permissions and limitations under the License.
 //
 // Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
+// Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
 /// A four-phase clock domain crossing.
 ///
@@ -17,8 +18,10 @@
 /// the paths async_req, async_ack, async_data.
 /* verilator lint_off DECLFILENAME */
 module cc_cdc_4phase #(
-  parameter type T = logic
-)(
+  parameter type T = logic,
+  /// The number of synchronization registers to insert on the async pointers.
+  parameter int SYNC_STAGES = 2
+) (
   input  logic src_rst_ni,
   input  logic src_clk_i,
   input  T     src_data_i,
@@ -38,7 +41,10 @@ module cc_cdc_4phase #(
   (* dont_touch = "true" *) T async_data;
 
   // The sender in the source domain.
-  cc_cdc_4phase_src #(.T(T)) i_src (
+  cc_cdc_4phase_src #(
+    .T            ( T           ),
+    .SYNC_STAGES  ( SYNC_STAGES )
+  ) i_src (
     .rst_ni       ( src_rst_ni  ),
     .clk_i        ( src_clk_i   ),
     .data_i       ( src_data_i  ),
@@ -50,7 +56,10 @@ module cc_cdc_4phase #(
   );
 
   // The receiver in the destination domain.
-  cc_cdc_4phase_dst #(.T(T)) i_dst (
+  cc_cdc_4phase_dst #(
+    .T            ( T           ),
+    .SYNC_STAGES  ( SYNC_STAGES )
+  ) i_dst (
     .rst_ni       ( dst_rst_ni  ),
     .clk_i        ( dst_clk_i   ),
     .data_o       ( dst_data_o  ),
@@ -66,8 +75,10 @@ endmodule
 
 /// Half of the two-phase clock domain crossing located in the source domain.
 module cc_cdc_4phase_src #(
-  parameter type T = logic
-)(
+  parameter type T = logic,
+  /// The number of synchronization registers to insert on the async pointers.
+  parameter int SYNC_STAGES = 2
+) (
   input  logic rst_ni,
   input  logic clk_i,
   input  T     data_i,
@@ -79,7 +90,7 @@ module cc_cdc_4phase_src #(
 );
 
   (* dont_touch = "true" *)
-  logic req_src_q, ack_src_q, ack_q;
+  logic req_src_q, ack;
   (* dont_touch = "true" *)
   T data_src_q;
 
@@ -94,19 +105,16 @@ module cc_cdc_4phase_src #(
     end
   end
 
-  // The ack_src and ack registers act as synchronization stages.
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      ack_src_q <= 0;
-      ack_q     <= 0;
-    end else begin
-      ack_src_q <= async_ack_i;
-      ack_q     <= ack_src_q;
-    end
-  end
+  cc_sync #(.STAGES(SYNC_STAGES)) i_cc_sync (
+    .clk_i,
+    .rst_ni,
+    .serial_i ( async_ack_i ),
+    .serial_o ( ack         )
+  );
+
 
   // Output assignments.
-  assign ready_o = (req_src_q == ack_q);
+  assign ready_o = (req_src_q == ack);
   assign async_req_o = req_src_q;
   assign async_data_o = data_src_q;
 
@@ -116,8 +124,10 @@ endmodule
 /// Half of the two-phase clock domain crossing located in the destination
 /// domain.
 module cc_cdc_4phase_dst #(
-  parameter type T = logic
-)(
+  parameter type T = logic,
+  /// The number of synchronization registers to insert on the async pointers.
+  parameter int SYNC_STAGES = 2
+) (
   input  logic rst_ni,
   input  logic clk_i,
   output T     data_o,
@@ -130,7 +140,7 @@ module cc_cdc_4phase_dst #(
 
   (* dont_touch = "true" *)
   (* async_reg = "true" *)
-  logic req_dst_q, req_q0, req_q1, ack_dst_q;
+  logic req_q0, req_q1, ack_dst_q;
   (* dont_touch = "true" *)
   T data_dst_q;
 
@@ -156,15 +166,18 @@ module cc_cdc_4phase_dst #(
   // The req_dst and req registers act as synchronization stages.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      req_dst_q <= 0;
-      req_q0    <= 0;
       req_q1    <= 0;
     end else begin
-      req_dst_q <= async_req_i;
-      req_q0    <= req_dst_q;
       req_q1    <= req_q0;
     end
   end
+
+  cc_sync #(.STAGES(SYNC_STAGES)) i_cc_sync (
+    .clk_i,
+    .rst_ni,
+    .serial_i ( async_req_i ),
+    .serial_o ( req_q0      )
+  );
 
   // Output assignments.
   assign valid_o = (ack_dst_q != req_q1);
