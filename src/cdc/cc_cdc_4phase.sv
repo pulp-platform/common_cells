@@ -11,12 +11,12 @@
 //
 // Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
 
-/// A two-phase clock domain crossing.
+/// A four-phase clock domain crossing.
 ///
 /// CONSTRAINT: Requires max_delay of min_period(src_clk_i, dst_clk_i) through
 /// the paths async_req, async_ack, async_data.
 /* verilator lint_off DECLFILENAME */
-module cdc_2phase #(
+module cc_cdc_4phase #(
   parameter type T = logic
 )(
   input  logic src_rst_ni,
@@ -38,7 +38,7 @@ module cdc_2phase #(
   (* dont_touch = "true" *) T async_data;
 
   // The sender in the source domain.
-  cdc_2phase_src #(.T(T)) i_src (
+  cc_cdc_4phase_src #(.T(T)) i_src (
     .rst_ni       ( src_rst_ni  ),
     .clk_i        ( src_clk_i   ),
     .data_i       ( src_data_i  ),
@@ -50,7 +50,7 @@ module cdc_2phase #(
   );
 
   // The receiver in the destination domain.
-  cdc_2phase_dst #(.T(T)) i_dst (
+  cc_cdc_4phase_dst #(.T(T)) i_dst (
     .rst_ni       ( dst_rst_ni  ),
     .clk_i        ( dst_clk_i   ),
     .data_o       ( dst_data_o  ),
@@ -65,7 +65,7 @@ endmodule
 
 
 /// Half of the two-phase clock domain crossing located in the source domain.
-module cdc_2phase_src #(
+module cc_cdc_4phase_src #(
   parameter type T = logic
 )(
   input  logic rst_ni,
@@ -115,7 +115,7 @@ endmodule
 
 /// Half of the two-phase clock domain crossing located in the destination
 /// domain.
-module cdc_2phase_dst #(
+module cc_cdc_4phase_dst #(
   parameter type T = logic
 )(
   input  logic rst_ni,

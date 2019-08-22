@@ -11,7 +11,7 @@
 //
 // Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
 
-module cdc_2phase_synth (
+module cdc_4phase_synth (
   input  logic        src_rst_ni,
   input  logic        src_clk_i,
   input  logic [31:0] src_data_i,
@@ -25,6 +25,6 @@ module cdc_2phase_synth (
   input  logic        dst_ready_i
 );
 
-  cdc_2phase #(logic [31:0]) i_cdc (.*);
+  cdc_4phase #(logic [31:0]) i_cdc (.*);
 
 endmodule

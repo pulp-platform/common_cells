@@ -4,7 +4,7 @@ common_cells_all:
     # package. Files in level 1 only depend on files in level 0, files in level 2 on files in
     # levels 1 and 0, etc. Files within a level are ordered alphabetically.
     # Level 0
-    - src/cdc_2phase.sv
+    - src/cdc_4phase.sv
     - src/clk_div.sv
     - src/delta_counter.sv
     - src/edge_propagator_tx.sv

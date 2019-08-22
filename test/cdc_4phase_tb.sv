@@ -13,7 +13,7 @@
 
 timeunit 0.1ns/1ps;
 
-module cdc_2phase_tb;
+module cdc_4phase_tb;
 
   parameter int UNTIL = 100000;
   parameter bit INJECT_DELAYS = 1;
@@ -41,11 +41,11 @@ module cdc_2phase_tb;
 
   // Instantiate the design under test.
   if (POST_SYNTHESIS) begin : g_dut
-    cdc_2phase_synth i_dut (.*);
+    cc_cdc_4phase_synth i_dut (.*);
   end else if (INJECT_DELAYS) begin : g_dut
-    cdc_2phase_tb_delay_injector #(0.8ns) i_dut (.*);
+    cc_cdc_4phase_tb_delay_injector #(0.8ns) i_dut (.*);
   end else begin : g_dut
-    cdc_2phase #(logic [31:0]) i_dut (.*);
+    cc_cdc_4phase #(logic [31:0]) i_dut (.*);
   end
 
   // Mailbox with expected items on destination side.
@@ -195,7 +195,7 @@ module cdc_2phase_tb;
 endmodule
 
 
-module cdc_2phase_tb_delay_injector #(
+module cdc_4phase_tb_delay_injector #(
   parameter time MAX_DELAY = 0ns
 )(
   input  logic        src_rst_ni,
@@ -232,7 +232,7 @@ module cdc_2phase_tb_delay_injector #(
     end
   end
 
-  cdc_2phase_src #(logic [31:0]) i_src (
+  cdc_4phase_src #(logic [31:0]) i_src (
     .rst_ni       ( src_rst_ni   ),
     .clk_i        ( src_clk_i    ),
     .data_i       ( src_data_i   ),
@@ -243,7 +243,7 @@ module cdc_2phase_tb_delay_injector #(
     .async_data_o ( async_data_o )
   );
 
-  cdc_2phase_dst #(logic [31:0]) i_dst (
+  cdc_4phase_dst #(logic [31:0]) i_dst (
     .rst_ni       ( dst_rst_ni   ),
     .clk_i        ( dst_clk_i    ),
     .data_o       ( dst_data_o   ),

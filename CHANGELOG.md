@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added counter with variable delta
 - Added counter that tracks its maximum value
 
+### Changed
+- `cc_cdc_fifo_gray` from Baikonur
+- Moved CDCs to sub-folder
+- Re-named two-phase to four-phase
+
 ## 1.13.1 - 2019-06-01
 
 ### Changed

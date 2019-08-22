@@ -11,8 +11,8 @@ Please note that cells with status *deprecated* are not to be used for new desig
 
 ### Clocks and Resets
 
-|           Name          |                     Description                     |    Status    | Superseded By |
-|-------------------------|-----------------------------------------------------|--------------|---------------|
+| Name                    | Description                                         | Status       | Superseded By |
+|:------------------------|:----------------------------------------------------|:-------------|:--------------|
 | `clk_div`               | Clock divider with integer divisor                  | active       |               |
 | `clock_divider`         | Clock divider with configuration registers          | *deprecated* | `clk_div`     |
 | `clock_divider_counter` | Clock divider using a counter                       | *deprecated* | `clk_div`     |
@@ -21,25 +21,25 @@ Please note that cells with status *deprecated* are not to be used for new desig
 
 ### Clock Domains and Asynchronous Crossings
 
-|         Name         |                                   Description                                    |    Status    | Superseded By |
-|----------------------|----------------------------------------------------------------------------------|--------------|---------------|
-| `cdc_2phase`         | Clock domain crossing using two-phase handshake, with ready/valid interface      | active       |               |
-| `cdc_fifo_2phase`    | Clock domain crossing FIFO using two-phase handshake, with ready/valid interface | active       |               |
-| `cdc_fifo_gray`      | Clock domain crossing FIFO using a gray-counter, with ready/valid interface      | active       |               |
-| `edge_detect`        | Rising/falling edge detector                                                     | active       |               |
-| `edge_propagator`    | **ANTONIO ADD DESCRIPTION**                                                      | active       |               |
-| `edge_propagator_rx` | **ANTONIO ADD DESCRIPTION**                                                      | active       |               |
-| `edge_propagator_tx` | **ANTONIO ADD DESCRIPTION**                                                      | active       |               |
-| `pulp_sync`          | Serial line synchronizer                                                         | *deprecated* | `sync`        |
-| `pulp_sync_wedge`    | Serial line synchronizer with edge detector                                      | *deprecated* | `sync_wedge`  |
-| `serial_deglitch`    | Serial line deglitcher                                                           | active       |               |
-| `sync`               | Serial line synchronizer                                                         | active       |               |
-| `sync_wedge`         | Serial line synchronizer with edge detector                                      | active       |               |
+| Name                 | Description                                                                       | Status       | Superseded By |
+|:---------------------|:----------------------------------------------------------------------------------|:-------------|:--------------|
+| `cc_cdc_4phase`      | Clock domain crossing using four-phase handshake, with ready/valid interface      | active       |               |
+| `cc_cdc_fifo_4phase` | Clock domain crossing FIFO using four-phase handshake, with ready/valid interface | active       |               |
+| `cc_cdc_fifo_gray`   | Clock domain crossing FIFO using a gray-counter, with ready/valid interface       | active       |               |
+| `edge_detect`        | Rising/falling edge detector                                                      | active       |               |
+| `edge_propagator`    | **ANTONIO ADD DESCRIPTION**                                                       | active       |               |
+| `edge_propagator_rx` | **ANTONIO ADD DESCRIPTION**                                                       | active       |               |
+| `edge_propagator_tx` | **ANTONIO ADD DESCRIPTION**                                                       | active       |               |
+| `pulp_sync`          | Serial line synchronizer                                                          | *deprecated* | `sync`        |
+| `pulp_sync_wedge`    | Serial line synchronizer with edge detector                                       | *deprecated* | `sync_wedge`  |
+| `serial_deglitch`    | Serial line deglitcher                                                            | active       |               |
+| `sync`               | Serial line synchronizer                                                          | active       |               |
+| `sync_wedge`         | Serial line synchronizer with edge detector                                       | active       |               |
 
 ### Counters and Shift Registers
 
-|         Name        |                   Description                                     |    Status    | Superseded By |
-|---------------------|-------------------------------------------------------------------|--------------|---------------|
+| Name                | Description                                                       | Status       | Superseded By |
+|:--------------------|:------------------------------------------------------------------|:-------------|:--------------|
 | `counter`           | Generic up/down counter with overflow detection                   | active       |               |
 | `delta_counter`     | Up/down counter with variable delta and overflow detection        | active       |               |
 | `generic_LFSR_8bit` | 8-bit linear feedback shift register (LFSR)                       | *deprecated* | `lfsr_8bit`   |
@@ -98,8 +98,8 @@ The header file `registers.svh` contains macros that expand to descriptions of r
 To avoid misuse of `always_ff` blocks, only the following macros shall be used to describe sequential behavior.
 The use of linter rules that flag explicit uses of `always_ff` in source code is encouraged.
 
-|         Macro         |                            Arguments                            |                               Description                               |
-|-----------------------|-----------------------------------------------------------------|-------------------------------------------------------------------------|
+| Macro                 | Arguments                                                       | Description                                                             |
+|:----------------------|:----------------------------------------------------------------|:------------------------------------------------------------------------|
 | <code>\`FF</code>     | `q_sig`, `d_sig`, `rst_val`                                     | Flip-flop with asynchronous active-low reset (implicit)                 |
 | <code>\`FFAR</code>   | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `arst_sig`              | Flip-flop with asynchronous active-high reset                           |
 | <code>\`FFARN</code>  | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `arstn_sig`             | Flip-flop with asynchronous active-low reset                            |

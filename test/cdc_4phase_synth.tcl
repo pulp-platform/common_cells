@@ -1,8 +1,8 @@
 set TIME_NS 1000
 
-analyze -format sv $ROOT/src/cdc_2phase.sv
-analyze -format sv $ROOT/test/cdc_2phase_synth.sv
-elaborate cdc_2phase_synth
+analyze -format sv $ROOT/src/cdc/cc_cdc_4phase.sv
+analyze -format sv $ROOT/test/cdc_4phase_synth.sv
+elaborate cc_cdc_4phase_synth
 
 create_clock -name src_clk -period [expr 1 * $TIME_NS]  [get_ports src_clk_i]
 create_clock -name dst_clk -period [expr 1 * $TIME_NS]  [get_ports dst_clk_i]
@@ -18,9 +18,9 @@ set_max_delay -from [get_pins -hierarchical async_*_o] -to [get_pins -hierarchic
 compile_ultra -gate_clock
 
 change_names -hierarchy -rules verilog
-report_clock_gating > cdc_2phase_ckg.rpt
-report_timing > cdc_2phase_timing.rpt
-report_timing -from [get_nets -hierarchical async*_o] -to [get_nets -hierarchical async*_i] > cdc_2phase_falsepaths.rpt
-report_area > cdc_2phase_area.rpt
-write -hierarchy -format verilog -output cdc_2phase_synth.v
-write -hierarchy -format ddc -output cdc_2phase_synth.ddc
+report_clock_gating > cdc_4phase_ckg.rpt
+report_timing > cdc_4phase_timing.rpt
+report_timing -from [get_nets -hierarchical async*_o] -to [get_nets -hierarchical async*_i] > cdc_4phase_falsepaths.rpt
+report_area > cdc_4phase_area.rpt
+write -hierarchy -format verilog -output cdc_4phase_synth.v
+write -hierarchy -format ddc -output cdc_4phase_synth.ddc

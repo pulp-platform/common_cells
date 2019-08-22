@@ -11,15 +11,15 @@
 //
 // Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
 
-/// A clock domain crossing FIFO, using 2-phase hand shakes.
+/// A clock domain crossing FIFO, using 4-phase hand shakes.
 ///
 /// This FIFO has its push and pop ports in two separate clock domains. Its size
 /// can only be powers of two, which is why its depth is given as 2**LOG_DEPTH.
 /// LOG_DEPTH must be at least 1.
 ///
-/// CONSTRAINT: See the constraints for `cdc_2phase`. An additional maximum
+/// CONSTRAINT: See the constraints for `cdc_4phase`. An additional maximum
 /// delay path needs to be specified from fifo_data_q to dst_data_o.
-module cdc_fifo_2phase #(
+module cc_cdc_fifo_4phase #(
   /// The data type of the payload transported by the FIFO.
   parameter type T = logic,
   /// The FIFO's depth given as 2**LOG_DEPTH.
@@ -98,7 +98,7 @@ module cdc_fifo_2phase #(
   assign dst_valid_o = ((dst_rptr_q ^ dst_wptr) != PTR_EMPTY);
 
   // Transport the read and write pointers across the clock domain boundary.
-  cdc_2phase #(pointer_t) i_cdc_wptr (
+  cc_cdc_4phase #(pointer_t) i_cdc_wptr (
     .src_rst_ni  ( src_rst_ni ),
     .src_clk_i   ( src_clk_i  ),
     .src_data_i  ( src_wptr_q ),
@@ -111,7 +111,7 @@ module cdc_fifo_2phase #(
     .dst_ready_i ( 1'b1       )
   );
 
-  cdc_2phase #(pointer_t) i_cdc_rptr (
+  cc_cdc_4phase #(pointer_t) i_cdc_rptr (
     .src_rst_ni  ( dst_rst_ni ),
     .src_clk_i   ( dst_clk_i  ),
     .src_data_i  ( dst_rptr_q ),

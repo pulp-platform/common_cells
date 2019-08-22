@@ -48,9 +48,9 @@ module cdc_fifo_tb;
 
   // Instantiate the design under test.
   if (GRAY)
-    cdc_fifo_gray #(.T(logic [31:0]), .LOG_DEPTH(DEPTH)) i_dut (.*);
+    cc_cdc_fifo_gray #(.T(logic [31:0]), .LOG_DEPTH(DEPTH)) i_dut (.*);
   else
-    cdc_fifo_2phase #(.T(logic [31:0]), .LOG_DEPTH(DEPTH)) i_dut (.*);
+    cc_cdc_fifo_4phase #(.T(logic [31:0]), .LOG_DEPTH(DEPTH)) i_dut (.*);
 
   // Mailbox with expected items on destination side.
   mailbox #(int) dst_mbox = new();
