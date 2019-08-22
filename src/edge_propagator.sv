@@ -37,7 +37,7 @@ module edge_propagator (
         end
     end
 
-    pulp_sync_wedge i_sync_clkb (
+    cc_sync_wedge i_sync_clkb (
         .clk_i    ( clk_rx_i     ),
         .rstn_i   ( rstn_rx_i    ),
         .en_i     ( 1'b1         ),

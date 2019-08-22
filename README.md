@@ -21,20 +21,18 @@ Please note that cells with status *deprecated* are not to be used for new desig
 
 ### Clock Domains and Asynchronous Crossings
 
-| Name                 | Description                                                                       | Status       | Superseded By |
-|:---------------------|:----------------------------------------------------------------------------------|:-------------|:--------------|
-| `cc_cdc_4phase`      | Clock domain crossing using four-phase handshake, with ready/valid interface      | active       |               |
-| `cc_cdc_fifo_4phase` | Clock domain crossing FIFO using four-phase handshake, with ready/valid interface | active       |               |
-| `cc_cdc_fifo_gray`   | Clock domain crossing FIFO using a gray-counter, with ready/valid interface       | active       |               |
-| `edge_detect`        | Rising/falling edge detector                                                      | active       |               |
-| `edge_propagator`    | **ANTONIO ADD DESCRIPTION**                                                       | active       |               |
-| `edge_propagator_rx` | **ANTONIO ADD DESCRIPTION**                                                       | active       |               |
-| `edge_propagator_tx` | **ANTONIO ADD DESCRIPTION**                                                       | active       |               |
-| `pulp_sync`          | Serial line synchronizer                                                          | *deprecated* | `sync`        |
-| `pulp_sync_wedge`    | Serial line synchronizer with edge detector                                       | *deprecated* | `sync_wedge`  |
-| `serial_deglitch`    | Serial line deglitcher                                                            | active       |               |
-| `sync`               | Serial line synchronizer                                                          | active       |               |
-| `sync_wedge`         | Serial line synchronizer with edge detector                                       | active       |               |
+| Name                 | Description                                                                       | Status       | Superseded By   |
+|:---------------------|:----------------------------------------------------------------------------------|:-------------|:----------------|
+| `cc_cdc_4phase`      | Clock domain crossing using four-phase handshake, with ready/valid interface      | active       |                 |
+| `cc_cdc_fifo_4phase` | Clock domain crossing FIFO using four-phase handshake, with ready/valid interface | active       |                 |
+| `cc_cdc_fifo_gray`   | Clock domain crossing FIFO using a gray-counter, with ready/valid interface       | active       |                 |
+| `edge_detect`        | Rising/falling edge detector                                                      | active       |                 |
+| `edge_propagator`    | **ANTONIO ADD DESCRIPTION**                                                       | active       |                 |
+| `edge_propagator_rx` | **ANTONIO ADD DESCRIPTION**                                                       | active       |                 |
+| `edge_propagator_tx` | **ANTONIO ADD DESCRIPTION**                                                       | active       |                 |
+| `serial_deglitch`    | Serial line deglitcher                                                            | active       |                 |
+| `cc_sync`            | Serial line synchronizer                                                          | active       |                 |
+| `cc_sync_wedge`      | Serial line synchronizer with edge detector                                       | active       |                 |
 
 ### Counters and Shift Registers
 

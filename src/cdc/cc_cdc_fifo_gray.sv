@@ -131,7 +131,7 @@ module cc_cdc_fifo_gray_src #(
 
   // Read pointer.
   for (genvar i = 0; i < PTR_WIDTH; i++) begin : gen_sync
-    sync #(.STAGES(SYNC_STAGES)) i_sync (
+    cc_sync #(.STAGES(SYNC_STAGES)) i_sync (
       .clk_i    ( src_clk_i       ),
       .rst_ni   ( src_rst_ni      ),
       .serial_i ( async_rptr_i[i] ),
@@ -192,7 +192,7 @@ module cc_cdc_fifo_gray_dst #(
 
   // Write pointer.
   for (genvar i = 0; i < PTR_WIDTH; i++) begin : gen_sync
-    sync #(.STAGES(SYNC_STAGES)) i_sync (
+    cc_sync #(.STAGES(SYNC_STAGES)) i_sync (
       .clk_i    ( dst_clk_i       ),
       .rst_ni   ( dst_rst_ni      ),
       .serial_i ( async_wptr_i[i] ),

@@ -92,7 +92,7 @@ module clock_divider
 
 
     //handle the handshake with the soc_ctrl. Interface is now async
-    pulp_sync_wedge i_edge_prop
+    cc_sync_wedge i_edge_prop
     (
         .clk_i(clk_i),
         .rstn_i(s_rstn_sync),
