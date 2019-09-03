@@ -58,6 +58,7 @@ module id_queue #(
     input  data_t   exists_data_i,
     input  mask_t   exists_mask_i,
     input  logic    exists_req_i,
+    output data_t   exists_data_o,
     output logic    exists_o,
     output logic    exists_gnt_o,
 
@@ -114,7 +115,8 @@ module id_queue #(
     ht_idx_t                        head_tail_free_idx,
                                     match_idx;
 
-    ld_idx_t                        linked_data_free_idx;
+    ld_idx_t                        exists_idx,
+                                    linked_data_free_idx;
 
     // Find the index in the head-tail table that matches a given ID.
     for (genvar i = 0; i < HT_CAPACITY; i++) begin: gen_idx_match
@@ -237,6 +239,15 @@ module id_queue #(
             exists_o = (|exists_match);
         end
     end
+    lzc #(
+        .WIDTH  (CAPACITY),
+        .MODE   (1'b0)
+    ) i_exists_data_lzc (
+        .in_i   (exists_match),
+        .cnt_o  (exists_idx),
+        .empty_o ()
+    );
+    assign exists_data_o = linked_data_q[exists_idx].data;
 
     // Registers
     for (genvar i = 0; i < CAPACITY; i++) begin: gen_ffs

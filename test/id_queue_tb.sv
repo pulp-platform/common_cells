@@ -84,6 +84,7 @@ module id_queue_tb #(
         .exists_data_i      (exists_inp.data),
         .exists_mask_i      (exists_inp.mask),
         .exists_req_i       (exists_req),
+        .exists_data_o      (),
         .exists_o           (exists),
         .exists_gnt_o       (exists_gnt),
 
