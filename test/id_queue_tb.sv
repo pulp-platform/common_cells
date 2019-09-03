@@ -43,7 +43,8 @@ module id_queue_tb #(
     logic       clk,
                 rst_n;
 
-    data_t      inp_data,
+    data_t      exists_data,
+                inp_data,
                 oup_data;
 
     exists_t    exists_inp;
@@ -84,7 +85,7 @@ module id_queue_tb #(
         .exists_data_i      (exists_inp.data),
         .exists_mask_i      (exists_inp.mask),
         .exists_req_i       (exists_req),
-        .exists_data_o      (),
+        .exists_data_o      (exists_data),
         .exists_o           (exists),
         .exists_gnt_o       (exists_gnt),
 
@@ -181,15 +182,14 @@ module id_queue_tb #(
                 automatic logic match = 1'b0;
                 automatic mask_t mask = exists_inp.mask;
                 automatic data_t masked_exists = exists_inp.data & mask;
+                automatic data_t match_data[$];
                 for (int unsigned id = 0; id < 2**ID_WIDTH; id++) begin
                     for (int unsigned idx = 0; idx < exp_queue.queues[id].size(); idx++) begin
-                        match = ((exp_queue.queues[id][idx] & mask) == masked_exists);
-                        if (match) begin
-                            break;
+                        automatic logic _match = ((exp_queue.queues[id][idx] & mask) == masked_exists);
+                        if (_match) begin
+                            match_data.push_back(exp_queue.queues[id][idx]);
                         end
-                    end
-                    if (match) begin
-                        break;
+                        match |= _match;
                     end
                 end
                 assert (exists == match) else begin
@@ -200,6 +200,18 @@ module id_queue_tb #(
                         $error("Entry with value %0x and mask %0b should NOT exist but ID queue found it!",
                             exists_inp.data, exists_inp.mask);
                     end
+                end
+                if (exists) begin
+                    automatic bit match_exists = 1'b0;
+                    foreach (match_data[i]) begin
+                        if (exists_data == match_data[i]) begin
+                            match_exists = 1'b1;
+                            break;
+                        end
+                    end
+                    assert (match_exists)
+                        else $error("Expected exists data in %p but got %0x!",
+                            match_data, exists_data);
                 end
             end
             if (oup_req && oup_gnt) begin

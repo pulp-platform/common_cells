@@ -11,6 +11,7 @@ add wave -noupdate -expand -group exists /id_queue_tb/dut/exists_gnt_o
 add wave -noupdate -expand -group exists /id_queue_tb/dut/exists_data_i
 add wave -noupdate -expand -group exists /id_queue_tb/dut/exists_mask_i
 add wave -noupdate -expand -group exists /id_queue_tb/dut/exists_o
+add wave -noupdate -expand -group exists /id_queue_tb/dut/exists_data_o
 add wave -noupdate -expand -group oup /id_queue_tb/dut/oup_req_i
 add wave -noupdate -expand -group oup /id_queue_tb/dut/oup_gnt_o
 add wave -noupdate -expand -group oup /id_queue_tb/dut/oup_id_i
@@ -24,6 +25,7 @@ add wave -noupdate -expand -group internals /id_queue_tb/dut/no_id_match
 add wave -noupdate -expand -group internals /id_queue_tb/dut/head_tail_free
 add wave -noupdate -expand -group internals /id_queue_tb/dut/idx_matches_id
 add wave -noupdate -expand -group internals /id_queue_tb/dut/exists_match
+add wave -noupdate -expand -group internals /id_queue_tb/dut/exists_idx
 add wave -noupdate -expand -group internals /id_queue_tb/dut/linked_data_free
 add wave -noupdate -expand -group internals /id_queue_tb/dut/match_id
 add wave -noupdate -expand -group internals /id_queue_tb/dut/head_tail_free_idx
