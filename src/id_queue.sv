@@ -247,7 +247,14 @@ module id_queue #(
         .cnt_o  (exists_idx),
         .empty_o ()
     );
-    assign exists_data_o = linked_data_q[exists_idx].data;
+    // Equivalent of `exists_data_o = linked_data_q[exists_idx].data` that does not induce latching
+    // in ModelSim.
+    always_comb begin
+        exists_data_o = 'x;
+        for (int unsigned i = 0; i < CAPACITY; i++) begin
+            if (i == exists_idx) exists_data_o = linked_data_q[i].data;
+        end
+    end
 
     // Registers
     for (genvar i = 0; i < CAPACITY; i++) begin: gen_ffs
