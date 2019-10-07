@@ -43,9 +43,11 @@ sources:
   - src/stream_filter.sv
   - src/stream_fork.sv
   - src/stream_mux.sv
+  - src/sub_per_hash.sv
   - src/sync.sv
   - src/sync_wedge.sv
   # Level 1
+  - src/cb_filter.sv
   - src/cdc_fifo_2phase.sv
   - src/cdc_fifo_gray.sv
   - src/counter.sv
@@ -67,6 +69,7 @@ sources:
 
   - target: test
     files:
+      - test/cb_filter_tb.sv
       - test/cdc_2phase_tb.sv
       - test/cdc_fifo_tb.sv
       - test/fifo_tb.sv
@@ -74,6 +77,7 @@ sources:
       - test/id_queue_tb.sv
       - test/popcount_tb.sv
       - test/stream_register_tb.sv
+      - test/sub_per_hash_tb.sv
 
   - target: synth_test
     files:
