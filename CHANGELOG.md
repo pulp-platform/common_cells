@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## Unreleased
 
 ### Added
+- Added spubstitution-permutation hash function module
+- Added couning-bloom-filter module
+- `spill_register`: Added Bypass parameter
+
+### Added
 - `counter`: Added sticky overflow
 - Added counter with variable delta
 - Added counter that tracks its maximum value
