@@ -72,12 +72,14 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | `stream_fork`                | Ready/valid fork                                                               | active         |               |
 | `stream_filter`              | Ready/valid filter                                                             | active         |               |
 | `stream_delay`               | Randomize or delay ready/valid interface                                       | active         |               |
+| `sub_per_hash`               | Substitution-permutation hash function                                         | active         |               |
 | `popcount`                   | Combinatorial popcount (hamming weight)                                        | active         |               |
 
 ### Data Structures
 
 | Name                 | Description                                     | Status         | Superseded By |
 | :------------------- | :---------------------------------------------- | :------------- | :------------ |
+| `cb_filter`          | Counting-Bloom-Filter with combinational lookup | active         |               |
 | `fifo`               | FIFO register with upper threshold              | *deprecated*   | `fifo_v3`     |
 | `fifo_v2`            | FIFO register with upper and lower threshold    | *deprecated*   | `fifo_v3`     |
 | `fifo_v3`            | FIFO register with generic fill counts          | active         |               |
