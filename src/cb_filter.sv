@@ -10,7 +10,8 @@
 
 // Author: Wolfgang Roenninger <wroennin@ethz.ch>
 
-// CB FILTER: This module implements a counting bloom filter with parameterizable hash functions.
+// `cb_filter`: This module implements a counting bloom filter with parameterizable hash functions.
+//
 // Functionality: A counting bloom filter is a data structure to efficiently implement
 //                set lookups. It does so by hashing its data inputs onto multiple pointers
 //                which serve as indicators for an array of buckets. For lookups can be
@@ -18,7 +19,8 @@
 // - Seeding:     The pseudo random generators need seeds at elaboration time to generate
 //                different hashes. In principle any combination of seeds can be used.
 //                But one should look that the hash outputs give sufficient different patterns,
-//                such that the resulting collision rate is low.
+//                such that the resulting collision rate is low. The package `cb_filter_pkg`
+//                contains the struct for seeding the PRG's in the hash functions.
 // - Lookup:
 //   - Ports:       `look_data_i`, `look_valid_o`
 //   - Description: Lookup combinational, `look_valid_o` is high, when `look_data_i` was
@@ -59,6 +61,7 @@ module cb_filter #(
   parameter int unsigned HashRounds  =  32'd1,  // Number of permutation substitution rounds
   parameter int unsigned InpWidth    =  32'd32, // Input data width
   parameter int unsigned BucketWidth =  32'd4,  // Width of Bucket counters
+  // the seeds used for seeding the PRG's inside each hash, one `cb_seed_t` per hash function.
   parameter cb_filter_pkg::cb_seed_t [KHashes-1:0] Seeds = cb_filter_pkg::EgSeeds
 ) (
   input  logic                 clk_i,   // Clock
@@ -147,14 +150,9 @@ module cb_filter #(
   // -----------------------------------------
   // Control the incr/decr of buckets
   // -----------------------------------------
+  assign bucket_down = decr_valid_i ? decr_ind : '0;
+
   always_comb begin : proc_bucket_control
-    // default assignments
-    if(decr_valid_i) begin
-      bucket_down = decr_ind;
-    end else begin
-      bucket_down = '0;
-    end
-    // control
     case ({incr_valid_i, decr_valid_i})
       2'b00 : bucket_en = '0;
       2'b10 : bucket_en = incr_ind;

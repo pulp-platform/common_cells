@@ -10,10 +10,18 @@
 
 // Author: Wolfgang Roenninger <wroennin@ethz.ch>
 
-// TB CBF: Test bench for the counting bloom filter
-//         Randomly puts in data items into the filter.
-//         Removes the put in items after some time.
-//         Random lookup in each cycle
+// Test bench for the counting bloom filter
+// Randomly puts in data items into the filter.
+// Removes the put in items after some time.
+// One random lookup in each cycle.
+// The test bench has a `control_array`, which serves as the golden model for the lookups.
+// Each time a value gets put or removed into the filter, the array gets updated.
+// On each lookup in the DUT it gets cross checked with the array.
+// The test bench keeps book for each lookup and prints at the end the number of lookups,
+// and the number of positive, false positive, negative and false negative lookups.
+// The number of false negatives has to be 0 as it would indicate that the lookup was negative,
+// even when the data was put in the filter. False positives are ok, because they are the result
+// of hash-collisions, inherit to a counting bloom filter.
 
 module cb_filter_tb;
   // TB parameters

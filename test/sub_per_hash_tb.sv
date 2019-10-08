@@ -10,8 +10,8 @@
 
 // Author: Wolfgang Roenninger <wroennin@ethz.ch>
 
-// SUB PER HASH TB: This testbench can be used to look at the `sub_per_hash` function outputs.
-//                  The stimuli increment the input per clock cycle up to a max amount of cycles.
+// This testbench can be used to look at the `sub_per_hash` function outputs.
+// The stimuli increment the input per clock cycle up to a max amount of cycles.
 
 module sub_per_hash_tb;
   //---------------------------------------------------------
