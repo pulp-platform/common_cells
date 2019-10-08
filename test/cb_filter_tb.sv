@@ -14,14 +14,14 @@
 // Randomly puts in data items into the filter.
 // Removes the put in items after some time.
 // One random lookup in each cycle.
-// The test bench has a `control_array`, which serves as the golden model for the lookups.
+// The testbench has a `control_array`, which serves as the golden model for the lookups.
 // Each time a value gets put or removed into the filter, the array gets updated.
 // On each lookup in the DUT it gets cross checked with the array.
 // The test bench keeps book for each lookup and prints at the end the number of lookups,
 // and the number of positive, false positive, negative and false negative lookups.
 // The number of false negatives has to be 0 as it would indicate that the lookup was negative,
 // even when the data was put in the filter. False positives are ok, because they are the result
-// of hash-collisions, inherit to a counting bloom filter.
+// of hash-collisions, inherent to a counting bloom filter.
 
 module cb_filter_tb;
   // TB parameters
@@ -51,6 +51,7 @@ module cb_filter_tb;
   logic control_array [*];
   int unsigned max_items;
   int unsigned min_items;
+
 //---------------------------------------------------------
 // Bookkeeping
 //---------------------------------------------------------
@@ -63,7 +64,6 @@ module cb_filter_tb;
 //---------------------------------------------------------
 // DUT signals
 //---------------------------------------------------------
-
   logic  clk;
   logic  rst_n;
   logic  sim_done;

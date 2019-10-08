@@ -9,8 +9,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Added spubstitution-permutation hash function module
 - Added couning-bloom-filter module
-
-### Added
 - `spill_register`: Added Bypass parameter
 
 ### Added

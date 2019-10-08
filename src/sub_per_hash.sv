@@ -62,9 +62,9 @@ module sub_per_hash #(
   logic [NoRounds-1:0][InpWidth-1:0] permuted, xored;
 
   // for each round
-  for (genvar r = 0; r < NoRounds; r++) begin
+  for (genvar r = 0; r < NoRounds; r++) begin : gen_round
     // for each bit
-    for (genvar i = 0; i < InpWidth ; i++) begin
+    for (genvar i = 0; i < InpWidth ; i++) begin : gen_sub_per
 
       // assign the permutation
       if(r == 0) begin
