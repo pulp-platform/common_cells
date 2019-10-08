@@ -4,17 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 1.14.0 - 2019-10-08
 
 ### Added
 - Added spubstitution-permutation hash function module
 - Added couning-bloom-filter module
 - `spill_register`: Added Bypass parameter
-
-### Added
 - `counter`: Added sticky overflow
 - Added counter with variable delta
 - Added counter that tracks its maximum value
+
+### Changed
+- Added formal testbench for `fifo` and `fall_through_regsiter`
 
 ## 1.13.1 - 2019-06-01
 
