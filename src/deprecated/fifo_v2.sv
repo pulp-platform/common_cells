@@ -16,7 +16,7 @@ module fifo_v2 #(
     parameter int unsigned DEPTH        = 8,    // depth can be arbitrary from 0 to 2**32
     parameter int unsigned ALM_EMPTY_TH = 1,    // almost empty threshold (when to assert alm_empty_o)
     parameter int unsigned ALM_FULL_TH  = 1,    // almost full threshold (when to assert alm_full_o)
-    parameter type dtype                = logic [DATA_WIDTH-1:0],
+    parameter int unsigned dtype_w      = DATA_WIDTH,
     // DO NOT OVERWRITE THIS PARAMETER
     parameter int unsigned ADDR_DEPTH   = (DEPTH > 1) ? $clog2(DEPTH) : 1
 )(
@@ -30,16 +30,17 @@ module fifo_v2 #(
     output logic  alm_full_o,       // FIFO fillstate >= the specified threshold
     output logic  alm_empty_o,      // FIFO fillstate <= the specified threshold
     // as long as the queue is not full we can push new data
-    input  dtype  data_i,           // data to push into the queue
+    input  logic[dtype_w-1:0] data_i,  // data to push into the queue
     input  logic  push_i,           // data is valid and can be pushed to the queue
     // as long as the queue is not empty we can pop new elements
-    output dtype  data_o,           // output data
+    output logic[dtype_w-1:0] data_o,  // output data
     input  logic  pop_i             // pop head from queue
 );
 
     logic [ADDR_DEPTH-1:0] usage;
 
     // generate threshold parameters
+    generate
     if (DEPTH == 0) begin
         assign alm_full_o  = 1'b0; // that signal does not make any sense in a FIFO of depth 0
         assign alm_empty_o = 1'b0; // that signal does not make any sense in a FIFO of depth 0
@@ -47,12 +48,13 @@ module fifo_v2 #(
         assign alm_full_o   = (usage >= ALM_FULL_TH[ADDR_DEPTH-1:0]);
         assign alm_empty_o  = (usage <= ALM_EMPTY_TH[ADDR_DEPTH-1:0]);
     end
+    endgenerate
 
     fifo_v3 #(
         .FALL_THROUGH ( FALL_THROUGH ),
         .DATA_WIDTH   ( DATA_WIDTH   ),
         .DEPTH        ( DEPTH        ),
-        .dtype        ( dtype        )
+        .dtype_w      ( dtype_w      )
     ) i_fifo_v3 (
         .clk_i,
         .rst_ni,

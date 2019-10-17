@@ -14,7 +14,7 @@ module fifo_v3 #(
     parameter bit          FALL_THROUGH = 1'b0, // fifo is in fall-through mode
     parameter int unsigned DATA_WIDTH   = 32,   // default data width if the fifo is of type logic
     parameter int unsigned DEPTH        = 8,    // depth can be arbitrary from 0 to 2**32
-    parameter type dtype                = logic [DATA_WIDTH-1:0],
+    parameter int unsigned dtype_w      = DATA_WIDTH,
     // DO NOT OVERWRITE THIS PARAMETER
     parameter int unsigned ADDR_DEPTH   = (DEPTH > 1) ? $clog2(DEPTH) : 1
 )(
@@ -27,12 +27,14 @@ module fifo_v3 #(
     output logic  empty_o,          // queue is empty
     output logic  [ADDR_DEPTH-1:0] usage_o,  // fill pointer
     // as long as the queue is not full we can push new data
-    input  dtype  data_i,           // data to push into the queue
+    input  logic  [dtype_w-1:0] data_i,  // data to push into the queue
     input  logic  push_i,           // data is valid and can be pushed to the queue
     // as long as the queue is not empty we can pop new elements
-    output dtype  data_o,           // output data
+    output logic  [dtype_w-1:0] data_o,  // output data
     input  logic  pop_i             // pop head from queue
 );
+    typedef logic[dtype_w-1:0] dtype;
+
     // local parameter
     // FIFO depth - handle the case of pass-through, synthesizer will do constant propagation
     localparam int unsigned FIFO_DEPTH = (DEPTH > 0) ? DEPTH : 1;
@@ -47,6 +49,7 @@ module fifo_v3 #(
 
     assign usage_o = status_cnt_q[ADDR_DEPTH-1:0];
 
+    generate
     if (DEPTH == 0) begin
         assign empty_o     = ~push_i;
         assign full_o      = ~pop_i;
@@ -54,6 +57,7 @@ module fifo_v3 #(
         assign full_o       = (status_cnt_q == FIFO_DEPTH[ADDR_DEPTH:0]);
         assign empty_o      = (status_cnt_q == 0) & ~(FALL_THROUGH & push_i);
     end
+    endgenerate
     // status flags
 
     // read and write queue logic
