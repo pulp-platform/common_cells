@@ -1,6 +1,6 @@
 common_cells_all:
   incdirs:
-    - include/common_cells
+    - include
 
   files:
     # Source files grouped in levels. Files in level 0 have no dependencies on files in this
