@@ -46,7 +46,7 @@ module lzc #(
 
     // pragma translate_off
     initial begin
-      assert(WIDTH > 0) else $fatal("input must be at least one bit wide");
+      assert(WIDTH > 0) else $fatal(1, "input must be at least one bit wide");
     end
     // pragma translate_on
 
