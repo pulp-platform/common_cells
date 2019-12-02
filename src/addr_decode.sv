@@ -29,7 +29,7 @@
 
 // Assertions: The module checks every time there is a change in the address mapping
 // if the resulting map is valid. It fatals if `start_addr` is higher than `end_addr`
-// or if a mapping targets a port index that is outside the number of masters.
+// or if a mapping targets a port index that is outside the number of allowed indices.
 // It issues warnings if the address regions of any two mappings overlap.
 
 module addr_decode #(
@@ -45,7 +45,7 @@ module addr_decode #(
   output idx_t                idx_o,            // decoded index
   output logic                dec_valid_o,      // decode is valid
   output logic                dec_error_o,      // decode is not valid
-  // Default slave enable
+  // Default index mapping enable
   input  logic                en_default_idx_i, // enable default port mapping
   input  idx_t                default_idx_i     // default port index
 );
@@ -90,7 +90,7 @@ module addr_decode #(
   // effectively ordered. Only one of the rules with the same function is
   // active at a time for a given pair.
   // check_start:        Enforces a smaller start than end address.
-  // check_idx:          Enforces a valid master port index in the rule.
+  // check_idx:          Enforces a valid index in the rule.
   // check_overlap:      Warns if there are overlapping address regions.
   for (genvar i = 0; i < NoRules; i++) begin : gen_assert_0
     check_start : assume final (addr_map_i[i].start_addr < addr_map_i[i].end_addr) else
@@ -101,7 +101,7 @@ module addr_decode #(
           i ,addr_map_i[i].idx, addr_map_i[i].start_addr, addr_map_i[i].end_addr));
     // check the SLV ids
     check_idx : assume final (addr_map_i[i].idx < NoMstPorts) else
-      $fatal(1, $sformatf("This rule has a slave id that is not allowed!!!\n\
+      $fatal(1, $sformatf("This rule has a IDX that is not allowed!!!\n\
           Violating rule %d.\n\
           Rule> IDX: %h START: %h END: %h\n\
           Rule> MAX_IDX: %h\n\
