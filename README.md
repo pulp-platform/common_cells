@@ -53,6 +53,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 
 | Name                         | Description                                                                    | Status         | Superseded By |
 | :--------------------------- | :----------------------------------------------------------------------------- | :------------- | :------------ |
+| `addr_decode   `             | Address map decoder                                                    | active         |               |
 | `binary_to_gray`             | Binary to gray code converter                                                  | active         |               |
 | `find_first_one`             | Leading-one finder / leading-zero counter                                      | *deprecated*   | `lzc`         |
 | `gray_to_binary`             | Gray code to binary converter                                                  | active         |               |
