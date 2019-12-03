@@ -70,6 +70,7 @@ sources:
 
   - target: test
     files:
+      - test/addr_decode_tb.sv
       - test/cb_filter_tb.sv
       - test/cdc_2phase_tb.sv
       - test/cdc_fifo_tb.sv
