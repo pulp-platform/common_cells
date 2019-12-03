@@ -21,7 +21,13 @@ module edge_propagator_rx (
     pulp_sync_wedge i_sync_clkb (
         .clk_i    ( clk_i   ),
         .rstn_i   ( rstn_i  ),
+`ifdef _VCP // PAK2591
+        .en_i     (ariane_pkg::ALDEC_1B1),
+
+`else
         .en_i     ( 1'b1    ),
+
+`endif
         .serial_i ( valid_i ),
         .r_edge_o ( valid_o ),
         .f_edge_o (         ),

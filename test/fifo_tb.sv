@@ -55,7 +55,13 @@ module fifo_inst_tb #(
         .clk_i,
         .rst_ni,
         .flush_i        ( flush         ),
+`ifdef _VCP // PAK2591
+        .testmode_i     (ariane_pkg::ALDEC_1B0),
+
+`else
         .testmode_i     ( 1'b0          ),
+
+`endif
         .full_o         ( full          ),
         .empty_o        ( empty         ),
         .usage_o        (               ),

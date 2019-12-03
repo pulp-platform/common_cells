@@ -111,10 +111,22 @@ module stream_delay #(
         ) i_counter (
             .clk_i      ( clk_i        ),
             .rst_ni     ( rst_ni       ),
+`ifdef _VCP // PAK2591
+            .clear_i    (ariane_pkg::ALDEC_1B0),
+
+`else
             .clear_i    ( 1'b0         ),
+
+`endif
             .en_i       ( en           ),
             .load_i     ( load         ),
+`ifdef _VCP // PAK2591
+            .down_i     (ariane_pkg::ALDEC_1B1),
+
+`else
             .down_i     ( 1'b1         ),
+
+`endif
             .d_i        ( counter_load ),
             .q_o        ( count_out    ),
             .overflow_o (              )

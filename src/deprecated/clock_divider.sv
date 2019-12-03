@@ -96,7 +96,13 @@ module clock_divider
     (
         .clk_i(clk_i),
         .rstn_i(s_rstn_sync),
+`ifdef _VCP // PAK2591
+        .en_i(ariane_pkg::ALDEC_1B1),
+
+`else
         .en_i(1'b1),
+
+`endif
         .serial_i(clk_div_valid_i),
         .serial_o(clk_div_ack_o),
         .r_edge_o(s_clk_div_valid_sync),

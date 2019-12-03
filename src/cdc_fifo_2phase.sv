@@ -102,26 +102,50 @@ module cdc_fifo_2phase #(
     .src_rst_ni  ( src_rst_ni ),
     .src_clk_i   ( src_clk_i  ),
     .src_data_i  ( src_wptr_q ),
+`ifdef _VCP // PAK2591
+    .src_valid_i (ariane_pkg::ALDEC_1B1),
+
+`else
     .src_valid_i ( 1'b1       ),
+
+`endif
     .src_ready_o (            ),
     .dst_rst_ni  ( dst_rst_ni ),
     .dst_clk_i   ( dst_clk_i  ),
     .dst_data_o  ( dst_wptr   ),
     .dst_valid_o (            ),
+`ifdef _VCP // PAK2591
+    .dst_ready_i (ariane_pkg::ALDEC_1B1)
+
+`else
     .dst_ready_i ( 1'b1       )
+
+`endif
   );
 
   cdc_2phase #(pointer_t) i_cdc_rptr (
     .src_rst_ni  ( dst_rst_ni ),
     .src_clk_i   ( dst_clk_i  ),
     .src_data_i  ( dst_rptr_q ),
+`ifdef _VCP // PAK2591
+    .src_valid_i (ariane_pkg::ALDEC_1B1),
+
+`else
     .src_valid_i ( 1'b1       ),
+
+`endif
     .src_ready_o (            ),
     .dst_rst_ni  ( src_rst_ni ),
     .dst_clk_i   ( src_clk_i  ),
     .dst_data_o  ( src_rptr   ),
     .dst_valid_o (            ),
+`ifdef _VCP // PAK2591
+    .dst_ready_i (ariane_pkg::ALDEC_1B1)
+
+`else
     .dst_ready_i ( 1'b1       )
+
+`endif
   );
 
   // Drive the FIFO write and read ports.

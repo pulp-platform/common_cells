@@ -40,7 +40,13 @@ module pulp_sync_wedge #(
     pulp_clock_gating i_pulp_clock_gating (
         .clk_i,
         .en_i,
+`ifdef _VCP // PAK2591
+        .test_en_i (ariane_pkg::ALDEC_1B0),
+
+`else
         .test_en_i ( 1'b0    ),
+
+`endif
         .clk_o     ( clk )
     );
 
