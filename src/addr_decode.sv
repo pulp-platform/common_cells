@@ -46,7 +46,7 @@ module addr_decode #(
   parameter type         addr_t    = logic, // address type
   parameter type         rule_t    = logic, // has to be overridden, see above!
   // DEPENDENT PARAMETERS DO NOT OVERWRITE!
-  parameter type         idx_t     = logic [$clog2(NoMstPorts)-1:0] // index type
+  parameter type         idx_t     = logic [$clog2(NoIndices)-1:0] // index type
 ) (
   input  addr_t               addr_i,           // address to decode
   input  rule_t [NoRules-1:0] addr_map_i,       // address map: rule with the highest position wins
