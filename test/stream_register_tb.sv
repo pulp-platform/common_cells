@@ -30,7 +30,13 @@ module stream_register_tb #(
         .clk_i      (clk),
         .rst_ni     (rst_n),
         .clr_i      (clr),
+`ifdef _VCP // PAK2591
+        .testmode_i (ariane_pkg::ALDEC_1B0),
+
+`else
         .testmode_i (1'b0),
+
+`endif
         .valid_i    (inp_valid),
         .ready_o    (inp_ready),
         .data_i     (inp_data),
