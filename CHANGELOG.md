@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 
 - Handle degenerated `lzc` with `WIDTH == 1`
+- Fix `cdc_fifo_gray` to be a safe clock domain crossing (CDC)
 
 ## 1.14.0 - 2019-10-08
 
