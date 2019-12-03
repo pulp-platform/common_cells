@@ -10,26 +10,34 @@
 
 // Author: Wolfgang Roenninger <wroennin@ethz.ch>
 
-// Address Decoder: Maps the input address combinational to an index.
+// Address Decoder: Maps the input address combinatorially to an index.
 // The Address Map `addr_map_i` is a packed array of rule_t structs.
-// The rule on the MSB position in the array wins if there is an overlap
-// with the ranges.
-
+// The ranges of any two rules may overlap. If so, the rule at the higher (more significant)
+// position in `addr_map_i` prevails.
+//
 // The address decoder expects 3 fields in `rule_t`:
-//  - `idx`:        index of the rule, has to be < `NoIndices`, should be of type `int unsigned`
-//  - `start_addr`: start address of the range the rule describes, is included
-//  - `end_addr`:   end address of the range the rule describes, is NOT included
+//
+// typedef struct packed {
+//   int unsigned idx;
+//   addr_t       start_addr;
+//   addr_t       end_addr;
+// } rule_t;
+//
+//  - `idx`:        index of the rule, has to be < `NoIndices`
+//  - `start_addr`: start address of the range the rule describes, value is included in range
+//  - `end_addr`:   end address of the range the rule describes, value is NOT included in range
+//
 // There can be an arbitrary number of address rules. There can be multiple
-// ranges defined for the same index. The start address has to be <= the end address.
-// There isno default, to enable
-
+// ranges defined for the same index. The start address has to be less than the end address.
+//
+// There is the possibility to add a default mapping:
 // `en_default_idx_i`: Driving this port to `1'b1` maps all input addresses
 // for which no rule in `addr_map_i` exists to the default index specified by
 // `default_idx_i`.  In this case, `dec_error_o` is always `1'b0`.
-
+//
 // Assertions: The module checks every time there is a change in the address mapping
 // if the resulting map is valid. It fatals if `start_addr` is higher than `end_addr`
-// or if a mapping targets a port index that is outside the number of allowed indices.
+// or if a mapping targets an index that is outside the number of allowed indices.
 // It issues warnings if the address regions of any two mappings overlap.
 
 module addr_decode #(
