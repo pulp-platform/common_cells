@@ -11,11 +11,11 @@
 // Author: Wolfgang Roenninger <wroennin@ethz.ch>
 
 // Address Decoder: Maps the input address combinatorially to an index.
-// The Address Map `addr_map_i` is a packed array of rule_t structs.
+// The address map `addr_map_i` is a packed array of rule_t structs.
 // The ranges of any two rules may overlap. If so, the rule at the higher (more significant)
 // position in `addr_map_i` prevails.
 //
-// The address decoder expects 3 fields in `rule_t`:
+// The address decoder expects three fields in `rule_t`:
 //
 // typedef struct packed {
 //   int unsigned idx;
@@ -33,7 +33,7 @@
 // There is the possibility to add a default mapping:
 // `en_default_idx_i`: Driving this port to `1'b1` maps all input addresses
 // for which no rule in `addr_map_i` exists to the default index specified by
-// `default_idx_i`.  In this case, `dec_error_o` is always `1'b0`.
+// `default_idx_i`. In this case, `dec_error_o` is always `1'b0`.
 //
 // Assertions: The module checks every time there is a change in the address mapping
 // if the resulting map is valid. It fatals if `start_addr` is higher than `end_addr`
@@ -108,14 +108,14 @@ module addr_decode #(
           #####################################################",
           i ,addr_map_i[i].idx, addr_map_i[i].start_addr, addr_map_i[i].end_addr));
     // check the SLV ids
-    check_idx : assume final (addr_map_i[i].idx < NoMstPorts) else
+    check_idx : assume final (addr_map_i[i].idx < NoIndices) else
       $fatal(1, $sformatf("This rule has a IDX that is not allowed!!!\n\
           Violating rule %d.\n\
           Rule> IDX: %h START: %h END: %h\n\
           Rule> MAX_IDX: %h\n\
           #####################################################",
           i, addr_map_i[i].idx, addr_map_i[i].start_addr, addr_map_i[i].end_addr,
-          (NoMstPorts-1)));
+          (NoIndices-1)));
     for (genvar j = i + 1; j < NoRules; j++) begin : gen_assert_1
       // overlap check
       check_overlap : assume final ((addr_map_i[j].start_addr < addr_map_i[i].end_addr) &&
