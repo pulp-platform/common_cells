@@ -12,25 +12,67 @@
 // Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
 // Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
-`include "common_cells/registers.svh"
-
 /// A clock domain crossing FIFO, using gray counters.
 ///
-/// This FIFO has its push and pop ports in two separate clock domains. Its size
-/// can only be powers of two, which is why its depth is given as 2**LOG_DEPTH.
-/// LOG_DEPTH must be at least 1.
+/// # Architecture
+///
+/// The design is split into two parts, each one being clocked and reset
+/// separately.
+/// 1. The data to be transferred  over the clock domain boundary is
+///    is stored in a FIFO. The corresponding write pointer is managed
+///    (incremented) in the source clock domain.
+/// 2. The entire FIFO content is exposed over the `async_data` port.
+///    The destination clock domain increments its read pointer
+///    in its destination clock domain.
+///
+/// Read and write pointers are then gray coded, communicated
+/// and synchronized using a classic multi-stage FF synchronizer
+/// in the other clock domain. The gray coding ensures that only
+/// one bit changes at each pointer increment, preventing the
+/// synchronizer to accidentally latch an inconsistent state
+/// on a multi-bit bus.
+///
+/// The not full signal e.g. `src_ready_o` (on the sending side)
+/// is generated using the local write pointer and the pessimistic
+/// read pointer from the destination clock domain (pessimistic
+/// because it is delayed at least two cycles because of the synchronizer
+/// stages). This prevents the FIFO from overflowing.
+///
+/// The not empty signal e.g. `dst_valid_o` is generated using
+/// the pessimistic write pointer and the local read pointer in
+/// the destination clock domain. This means the FIFO content
+/// does not need to be synchronized as we are sure we are reading
+/// data which has been written at least two cycles earlier.
+/// Furthermore, the read select logic into the FIFO is completely
+/// clocked by the destination clock domain which avoids
+/// inefficient data synchronization.
+///
+/// The FIFO size must be powers of two, which is why its depth is
+/// given as 2**LOG_DEPTH. LOG_DEPTH must be at least 1.
 ///
 /// # Constraints
+///
+/// We need to make sure that the propagation delay of the
+/// data, read and write pointer is bound to the minimum of
+/// either the sending or receiving clock period to prevent
+/// an inconsistent state to be latched (if for example the one
+/// bit of the read/write pointer have an excessive delay).
+/// Furthermore, we should deactivate setup and hold checks on
+/// the asynchronous signals.
+///
 /// ```
 /// set_ungroup [get_designs cdc_fifo_gray*] false
 /// set_boundary_optimization [get_designs cdc_fifo_gray*] false
-/// set_max_delay 500 \
+/// set_max_delay min(T_src, T_dst) \
 ///     -through [get_pins -hierarchical -filter async] \
 ///     -through [get_pins -hierarchical -filter async]
 /// set_false_path -hold \
 ///     -through [get_pins -hierarchical -filter async] \
 ///     -through [get_pins -hierarchical -filter async]
 /// ```
+
+`include "common_cells/registers.svh"
+
 (* no_ungroup *)
 (* no_boundary_optimization *)
 module cdc_fifo_gray #(
