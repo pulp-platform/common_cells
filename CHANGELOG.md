@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - Handle degenerated `onehot_to_bin` with `ONEHOT_WIDTH == 1`
 - Handle degenerated `id_queue` with `CAPACITY == 1` or `HT_CAPACITY == 1`
+- Fix `cdc_fifo_gray` to be a safe clock domain crossing (CDC)
 
 ## 1.15.0 - 2019-12-09
 ### Added
@@ -16,7 +17,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 - Handle degenerated `lzc` with `WIDTH == 1`
-- Fix `cdc_fifo_gray` to be a safe clock domain crossing (CDC)
 
 ## 1.14.0 - 2019-10-08
 
