@@ -73,12 +73,14 @@ module id_queue #(
     // indices.
     localparam int N_IDS = 2**ID_WIDTH;
     localparam int HT_CAPACITY = (N_IDS <= CAPACITY) ? N_IDS : CAPACITY;
+    localparam int unsigned HT_IDX_WIDTH = HT_CAPACITY == 1 ? 1 : $clog2(HT_CAPACITY);
+    localparam int unsigned LD_IDX_WIDTH = CAPACITY    == 1 ? 1 : $clog2(CAPACITY);
 
     // Type for indexing the head-tail table.
-    typedef logic [$clog2(HT_CAPACITY)-1:0] ht_idx_t;
+    typedef logic [HT_IDX_WIDTH-1:0] ht_idx_t;
 
     // Type for indexing the lined data table.
-    typedef logic [$clog2(CAPACITY)-1:0] ld_idx_t;
+    typedef logic [LD_IDX_WIDTH-1:0] ld_idx_t;
 
     // Type of an entry in the head-tail table.
     typedef struct packed {
