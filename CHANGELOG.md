@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## Unreleased
 ### Added
 ### Fixed
+- Added missing sources in `Bender.yml` and `src_files.yml`
 
 ## 1.16.0 - 2020-01-13
 ### Fixed
