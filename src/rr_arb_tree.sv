@@ -57,8 +57,10 @@ module rr_arb_tree #(
 );
 
   // pragma translate_off
+  `ifndef VERILATOR
   // Default SVA reset
   default disable iff (!rst_ni || flush_i);
+  `endif
   // pragma translate_on
 
   // just pass through in this corner case
