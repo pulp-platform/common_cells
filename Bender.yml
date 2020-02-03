@@ -7,6 +7,7 @@ package:
     - "Andreas Kurth <akurth@iis.ee.ethz.ch>"
     - "Manuel Eggimann <meggimann@iis.ee.ethz.ch>"
     - "Stefan Mach <smach@iis.ee.ethz.ch>"
+    - "Wolfgang Roenninger" <wroennin@student.ethz.ch>
 
 dependencies:
   common_verification: { git: "https://github.com/pulp-platform/common_verification.git", version: 0.1.1 }
@@ -26,8 +27,10 @@ sources:
   - src/clk_div.sv
   - src/delta_counter.sv
   - src/edge_propagator_tx.sv
+  - src/exp_backoff.sv
   - src/fifo_v3.sv
   - src/graycode.sv
+  - src/lfsr.sv
   - src/lfsr_16bit.sv
   - src/lfsr_8bit.sv
   - src/lzc.sv
@@ -47,6 +50,7 @@ sources:
   - src/sub_per_hash.sv
   - src/sync.sv
   - src/sync_wedge.sv
+  - src/unread.sv
   # Level 1
   - src/cb_filter.sv
   - src/cdc_fifo_2phase.sv
@@ -93,8 +97,6 @@ sources:
   # Deprecated modules
   # Level 0
   - src/deprecated/clock_divider_counter.sv
-  - src/deprecated/fifo_v1.sv
-  - src/deprecated/fifo_v2.sv
   - src/deprecated/find_first_one.sv
   - src/deprecated/generic_LFSR_8bit.sv
   - src/deprecated/generic_fifo.sv
@@ -104,6 +106,9 @@ sources:
   - src/deprecated/rrarbiter.sv
   # Level 1
   - src/deprecated/clock_divider.sv
+  - src/deprecated/fifo_v2.sv
+  # Level 2
+  - src/deprecated/fifo_v1.sv
 
   # Depend on deprecated modules
   - src/edge_propagator.sv
