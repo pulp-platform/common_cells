@@ -7,7 +7,7 @@ package:
     - "Andreas Kurth <akurth@iis.ee.ethz.ch>"
     - "Manuel Eggimann <meggimann@iis.ee.ethz.ch>"
     - "Stefan Mach <smach@iis.ee.ethz.ch>"
-    - "Wolfgang Roenninger" <wroennin@student.ethz.ch>
+    - "Wolfgang Roenninger <wroennin@student.ethz.ch>"
 
 dependencies:
   common_verification: { git: "https://github.com/pulp-platform/common_verification.git", version: 0.1.1 }
