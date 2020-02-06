@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## Unreleased
 ### Added
 ### Fixed
+- Handle degenerated `addr_decode` with `NoIndices == 1`, change default parameters to `32'd0`
 
 ## 1.16.1 - 2020-02-03
 ### Fixed

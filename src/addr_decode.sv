@@ -41,12 +41,13 @@
 // It issues warnings if the address regions of any two mappings overlap.
 
 module addr_decode #(
-  parameter int unsigned NoIndices = 1,     // number indices in rules
-  parameter int unsigned NoRules   = 1,     // total number of rules
+  parameter int unsigned NoIndices = 32'd0, // number indices in rules
+  parameter int unsigned NoRules   = 32'd0, // total number of rules
   parameter type         addr_t    = logic, // address type
   parameter type         rule_t    = logic, // has to be overridden, see above!
   // DEPENDENT PARAMETERS DO NOT OVERWRITE!
-  parameter type         idx_t     = logic [$clog2(NoIndices)-1:0] // index type
+  parameter int unsigned IdxWidth  = (NoIndices > 32'd1) ? $clog2(NoIndices) : 32'd1,
+  parameter type         idx_t     = logic [IdxWidth-1:0]
 ) (
   input  addr_t               addr_i,           // address to decode
   input  rule_t [NoRules-1:0] addr_map_i,       // address map: rule with the highest position wins
@@ -87,6 +88,8 @@ module addr_decode #(
         $bits(addr_i), $bits(addr_map_i[0].start_addr)));
     assume (NoRules > 0) else
       $fatal(1, $sformatf("At least one rule needed"));
+    assume (NoIndices > 0) else
+      $fatal(1, $sformatf("At least one index needed"));
   end
 
   assert final ($onehot0(matched_rules)) else
