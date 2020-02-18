@@ -64,7 +64,7 @@ module lzc #(
     end
 
     for (genvar j = 0; unsigned'(j) < WIDTH; j++) begin : g_index_lut
-      assign index_lut[j] = NUM_LEVELS'(unsigned'(j));
+      assign index_lut[j] = (NUM_LEVELS)'(unsigned'(j));
     end
 
     for (genvar level = 0; unsigned'(level) < NUM_LEVELS; level++) begin : g_levels
