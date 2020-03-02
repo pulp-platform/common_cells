@@ -6,7 +6,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 ### Added
+### Fixed 
+
+## 1.16.4 - 2020-03-02
 ### Fixed
+- id_queue: Fix generation of `head_tail_q` registers
 
 ## 1.16.3 - 2020-02-11
 ### Fixed
