@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - stream_join: Join multiple Ready/Valid handshakes to one common handshake.
 - SECDED (Single Error Correction, Double Error Detection) encoder and decoder
 - SECDED Verilator-based testbench
+- Travis build for SECDED module
 
 ## 1.17.0 - 2020-04-09
 ### Added
