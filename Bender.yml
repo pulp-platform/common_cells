@@ -26,6 +26,7 @@ sources:
   - src/cf_math_pkg.sv
   - src/clk_div.sv
   - src/delta_counter.sv
+  - src/ecc_pkg.sv
   - src/edge_propagator_tx.sv
   - src/exp_backoff.sv
   - src/fifo_v3.sv
@@ -57,6 +58,8 @@ sources:
   - src/cdc_fifo_2phase.sv
   - src/cdc_fifo_gray.sv
   - src/counter.sv
+  - src/ecc_decode.sv
+  - src/ecc_encode.sv
   - src/edge_detect.sv
   - src/id_queue.sv
   - src/max_counter.sv

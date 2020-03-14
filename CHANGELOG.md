@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - stream_fork_dynamic: Wrapper around `stream_fork` for partial forking.
 - stream_join: Join multiple Ready/Valid handshakes to one common handshake.
+- SECDED (Single Error Correction, Double Error Detection) encoder and decoder
+- SECDED Verilator-based testbench
 
 ## 1.17.0 - 2020-04-09
 ### Added
