@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/pulp-platform/common_cells.svg?branch=master)](https://travis-ci.com/pulp-platform/common_cells)
+
 # Common Cells Repository
 
 Maintainer: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
