@@ -49,4 +49,6 @@ module synth_bench (
         .rst_ni
     );
 
+    ecc_synth i_ecc ();
+
 endmodule

@@ -15,6 +15,7 @@ set -e
 [ ! -z "$SYNOPSYS_DC" ] || SYNOPSYS_DC="synopsys dc_shell -64"
 
 echo 'remove_design -all' > ./synth.tcl
+echo 'set link_library []' >> ./synth.tcl
 bender script synopsys -t synth_test >> ./synth.tcl
 echo 'elaborate synth_bench' >> ./synth.tcl
 
