@@ -14,7 +14,7 @@ module stream_fifo #(
     input logic                   testmode_i,   // test_mode to bypass clock gating
     output logic [ADDR_DEPTH-1:0] usage_o,      // fill pointer
     // input interface
-    input                         dtype data_i, // data to push into the queue
+    input dtype                         data_i, // data to push into the fifo
     input logic                   vld_i,        // input data valid
     output logic                  rdy_o,        // queue is not full
     // output interface
