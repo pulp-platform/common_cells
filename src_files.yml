@@ -31,6 +31,7 @@ common_cells_all:
     - src/stream_demux.sv
     - src/stream_filter.sv
     - src/stream_fork.sv
+    - src/stream_fifo.sv
     - src/stream_mux.sv
     - src/sub_per_hash.sv
     - src/sync.sv
