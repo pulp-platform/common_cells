@@ -55,6 +55,7 @@ sources:
   - src/cb_filter.sv
   - src/cdc_fifo_2phase.sv
   - src/cdc_fifo_gray.sv
+  - src/stream_fifo.sv
   - src/counter.sv
   - src/edge_detect.sv
   - src/id_queue.sv

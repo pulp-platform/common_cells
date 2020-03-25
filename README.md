@@ -84,6 +84,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | `fifo`               | FIFO register with upper threshold              | *deprecated*   | `fifo_v3`     |
 | `fifo_v2`            | FIFO register with upper and lower threshold    | *deprecated*   | `fifo_v3`     |
 | `fifo_v3`            | FIFO register with generic fill counts          | active         |               |
+| `stream_fifo`        | FIFO register with ready/valid interface        | active         |               |
 | `generic_fifo`       | FIFO register without thresholds                | *deprecated*   | `fifo_v3`     |
 | `generic_fifo_adv`   | FIFO register without thresholds                | *deprecated*   | `fifo_v3`     |
 | `sram`               | SRAM behavioral model                           | active         |               |
