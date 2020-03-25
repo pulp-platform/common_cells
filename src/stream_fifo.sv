@@ -28,7 +28,7 @@ module stream_fifo #(
   assign push = vld_i & ~full;
   assign pop = rdy_i & ~empty;
   assign rdy_o = ~full;
-  assign vld_o = ~empty;
+  assign valid_o = ~empty;
 
   fifo_v3 #(
             .FALL_THROUGH(FALL_THROUGH),
