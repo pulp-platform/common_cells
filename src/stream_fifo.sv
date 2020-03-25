@@ -21,17 +21,17 @@ module stream_fifo #(
 ) (
 	input  logic                  clk_i,      // Clock
 	input  logic                  rst_ni,     // Asynchronous reset active low
-	input  logic                  flush_i,    // flush the queue
+	input  logic                  flush_i,    // flush the fifo
 	input  logic                  testmode_i, // test_mode to bypass clock gating
 	output logic [ADDR_DEPTH-1:0] usage_o,    // fill pointer
 	// input interface
 	input  T                      data_i,     // data to push into the fifo
 	input  logic                  valid_i,    // input data valid
-	output logic                  ready_o,    // queue is not full
+	output logic                  ready_o,    // fifo is not full
 	// output interface
 	output T                      data_o,     // output data
-	output logic                  valid_o,    // queue is not empty
-	input  logic                  ready_i     // pop head from queue
+	output logic                  valid_o,    // fifo is not empty
+	input  logic                  ready_i     // pop head from fifo
 );
 
 	logic push, pop;
