@@ -10,55 +10,54 @@
 
 // Author: Georg Rutishauser <georgr@iis.ee.ethz.ch>
 
-
 module stream_fifo #(
-	parameter bit          FALL_THROUGH = 1'b0,                            // fifo is in fall-through mode
-	parameter int unsigned DATA_WIDTH   = 32,                              // default data width if the fifo is of type logic
-	parameter int unsigned DEPTH        = 8,                               // depth can be arbitrary from 0 to 2**32
-	parameter type         T            = logic [DATA_WIDTH-1:0],
-	// DO NOT OVERWRITE THIS PARAMETER
-	parameter int unsigned ADDR_DEPTH  = (DEPTH > 1) ? $clog2(DEPTH) : 1
+    parameter bit          FALL_THROUGH = 1'b0,                            // fifo is in fall-through mode
+    parameter int unsigned DATA_WIDTH   = 32,                              // default data width if the fifo is of type logic
+    parameter int unsigned DEPTH        = 8,                               // depth can be arbitrary from 0 to 2**32
+    parameter type         T            = logic [DATA_WIDTH-1:0],
+    // DO NOT OVERWRITE THIS PARAMETER
+    parameter int unsigned ADDR_DEPTH  = (DEPTH > 1) ? $clog2(DEPTH) : 1
 ) (
-	input  logic                  clk_i,      // Clock
-	input  logic                  rst_ni,     // Asynchronous reset active low
-	input  logic                  flush_i,    // flush the fifo
-	input  logic                  testmode_i, // test_mode to bypass clock gating
-	output logic [ADDR_DEPTH-1:0] usage_o,    // fill pointer
-	// input interface
-	input  T                      data_i,     // data to push into the fifo
-	input  logic                  valid_i,    // input data valid
-	output logic                  ready_o,    // fifo is not full
-	// output interface
-	output T                      data_o,     // output data
-	output logic                  valid_o,    // fifo is not empty
-	input  logic                  ready_i     // pop head from fifo
+    input  logic                  clk_i,      // Clock
+    input  logic                  rst_ni,     // Asynchronous reset active low
+    input  logic                  flush_i,    // flush the fifo
+    input  logic                  testmode_i, // test_mode to bypass clock gating
+    output logic [ADDR_DEPTH-1:0] usage_o,    // fill pointer
+    // input interface
+    input  T                      data_i,     // data to push into the fifo
+    input  logic                  valid_i,    // input data valid
+    output logic                  ready_o,    // fifo is not full
+    // output interface
+    output T                      data_o,     // output data
+    output logic                  valid_o,    // fifo is not empty
+    input  logic                  ready_i     // pop head from fifo
 );
 
-	logic push, pop;
-	logic empty, full;
+    logic push, pop;
+    logic empty, full;
 
-	assign push    = valid_i & ~full;
-	assign pop     = ready_i & ~empty;
-	assign ready_o = ~full;
-	assign valid_o = ~empty;
+    assign push    = valid_i & ~full;
+    assign pop     = ready_i & ~empty;
+    assign ready_o = ~full;
+    assign valid_o = ~empty;
 
-	fifo_v3 #(
-		.FALL_THROUGH(FALL_THROUGH),
-		.DATA_WIDTH(DATA_WIDTH),
-		.DEPTH(DEPTH),
-		.dtype(T)
-	) fifo_i (
-		.clk_i,
-		.rst_ni,
-		.flush_i,
-		.testmode_i,
-		.full_o(full),
-		.empty_o(empty),
-		.usage_o,
-		.data_i,
-		.push_i(push),
-		.data_o,
-		.pop_i(pop)
-	);
+    fifo_v3 #(
+        .FALL_THROUGH(FALL_THROUGH),
+        .DATA_WIDTH(DATA_WIDTH),
+        .DEPTH(DEPTH),
+        .dtype(T)
+    ) fifo_i (
+        .clk_i,
+        .rst_ni,
+        .flush_i,
+        .testmode_i,
+        .full_o(full),
+        .empty_o(empty),
+        .usage_o,
+        .data_i,
+        .push_i(push),
+        .data_o,
+        .pop_i(pop)
+    );
 
 endmodule
