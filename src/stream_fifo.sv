@@ -45,22 +45,22 @@ module stream_fifo #(
     assign valid_o = ~empty;
 
     fifo_v3 #(
-        .FALL_THROUGH(FALL_THROUGH),
-        .DATA_WIDTH(DATA_WIDTH),
-        .DEPTH(DEPTH),
+        .FALL_THROUGH   (FALL_THROUGH),
+        .DATA_WIDTH     (DATA_WIDTH),
+        .DEPTH          (DEPTH),
         .dtype(T)
     ) fifo_i (
         .clk_i,
         .rst_ni,
         .flush_i,
         .testmode_i,
-        .full_o(full),
-        .empty_o(empty),
+        .full_o     (full),
+        .empty_o    (empty),
         .usage_o,
         .data_i,
-        .push_i(push),
+        .push_i     (push),
         .data_o,
-        .pop_i(pop)
+        .pop_i      (pop)
     );
 
 endmodule
