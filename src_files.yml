@@ -40,13 +40,13 @@ common_cells_all:
     - src/cb_filter.sv
     - src/cdc_fifo_2phase.sv
     - src/cdc_fifo_gray.sv
-    - src/stream_fifo.sv
     - src/counter.sv
     - src/edge_detect.sv
     - src/id_queue.sv
     - src/max_counter.sv
     - src/rstgen.sv
     - src/stream_delay.sv
+    - src/stream_fifo.sv
     # Level 2
     - src/fall_through_register.sv
     - src/stream_arbiter_flushable.sv
