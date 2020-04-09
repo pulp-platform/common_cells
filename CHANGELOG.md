@@ -5,9 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+
+## 1.17.0 - 2020-04-09
 ### Added
 - stream_fifo: Ready/Valid handshake wrapper around `fifo_v3`
-### Fixed 
 
 ## 1.16.4 - 2020-03-02
 ### Fixed
