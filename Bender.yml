@@ -62,6 +62,7 @@ sources:
   - src/rstgen.sv
   - src/stream_delay.sv
   - src/stream_fifo.sv
+  - src/stream_fork_dynamic.sv
   # Level 2
   - src/fall_through_register.sv
   - src/stream_arbiter_flushable.sv
