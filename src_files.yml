@@ -46,6 +46,7 @@ common_cells_all:
     - src/max_counter.sv
     - src/rstgen.sv
     - src/stream_delay.sv
+    - src/stream_fifo.sv
     # Level 2
     - src/fall_through_register.sv
     - src/stream_arbiter_flushable.sv

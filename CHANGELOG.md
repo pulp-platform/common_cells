@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 ### Added
+- stream_fifo: Ready/Valid handshake wrapper around `fifo_v3`
 ### Fixed 
 
 ## 1.16.4 - 2020-03-02
