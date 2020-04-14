@@ -68,9 +68,11 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | `stream_arbiter`             | Round-robin arbiter for ready/valid stream interface                           | active         |               |
 | `stream_arbiter_flushable`   | Round-robin arbiter for ready/valid stream interface and flush functionality   | active         |               |
 | `stream_demux`               | Ready/valid interface demultiplexer                                            | active         |               |
+| `stream_join`                | Ready/valid handshake join multiple to one common                              | active         |               |
 | `stream_mux`                 | Ready/valid interface multiplexer                                              | active         |               |
 | `stream_register`            | Register with ready/valid interface                                            | active         |               |
 | `stream_fork`                | Ready/valid fork                                                               | active         |               |
+| `stream_fork_dynamic`        | Ready/valid fork, with selection mask for partial forking                      | active         |               |
 | `stream_filter`              | Ready/valid filter                                                             | active         |               |
 | `stream_delay`               | Randomize or delay ready/valid interface                                       | active         |               |
 | `sub_per_hash`               | Substitution-permutation hash function                                         | active         |               |
