@@ -10,7 +10,7 @@
 //
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 //
-// Description: Contains common ECC definitions and helper functions.
+/// Contains common ECC definitions and helper functions.
 
 package ecc_pkg;
 
