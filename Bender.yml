@@ -69,6 +69,7 @@ sources:
   - src/stream_fork_dynamic.sv
   # Level 2
   - src/fall_through_register.sv
+  - src/stream_to_mem.sv
   - src/stream_arbiter_flushable.sv
   - src/stream_register.sv
   # Level 3
