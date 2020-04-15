@@ -10,23 +10,24 @@
 //
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 //
-// ECC Decoder
-//
-// Implements SECDED (Single Error Correction, Double Error Detection) Hamming Code
-// with extended parity bit [1].
-// The module receives a data word including parity bit and decodes it according to the
-// number of data and parity bit.
-//
-// 1. If no error has been detected the syndrome will be zero and all flags will be zero.
-// 2. If a single error has been detected, the syndrome is non-zero, and `single-error` will be
-//    asserted. The output word contains the corrected data.
-// 3. If the parity bit contained an error, the module will assert `parity_error_o`.
-// 4. In case of a double fault the syndrome is non-zero, `double_error_o` will be asserted.
-//    All other status flags will be de-asserted.
-//
-// [1] https://en.wikipedia.org/wiki/Hamming_code
+/// # ECC Decoder
+///
+/// Implements SECDED (Single Error Correction, Double Error Detection) Hamming Code
+/// with extended parity bit [1].
+/// The module receives a data word including parity bit and decodes it according to the
+/// number of data and parity bit.
+///
+/// 1. If no error has been detected, the syndrome will be zero and all flags will be zero.
+/// 2. If a single error has been detected, the syndrome is non-zero, and `single_error_o` will be
+///    asserted. The output word contains the corrected data.
+/// 3. If the parity bit contained an error, the module will assert `parity_error_o`.
+/// 4. In case of a double fault the syndrome is non-zero, `double_error_o` will be asserted.
+///    All other status flags will be de-asserted.
+///
+/// [1] https://en.wikipedia.org/wiki/Hamming_code
 
 module ecc_decode import ecc_pkg::*; #(
+  /// Data width of unencoded word.
   parameter  int unsigned DataWidth   = 64,
   // Do not change
   parameter type data_t         = logic [DataWidth-1:0],
@@ -37,11 +38,17 @@ module ecc_decode import ecc_pkg::*; #(
                                     code_word_t code_word;
                                   }
   ) (
+  /// Encoded data in
   input  encoded_data_t data_i,
+  /// Corrected data out
   output data_t         data_o,
-  output parity_t       syndrome_o, // indicates the erroneous bit position
+  /// Error syndrome indicates the erroneous bit position
+  output parity_t       syndrome_o,
+  /// A single error occurred
   output logic          single_error_o,
-  output logic          parity_error_o, // error received in parity bit (MSB)
+  /// Error received in parity bit (MSB)
+  output logic          parity_error_o,
+  /// A double error occurred
   output logic          double_error_o
 );
 
@@ -54,24 +61,24 @@ module ecc_decode import ecc_pkg::*; #(
   // Check parity bit. 0 = parity equal, 1 = different parity
   assign parity = data_i.parity ^ (^data_i.code_word);
 
-  //    | 0  1  2  3  4  5  6  7  8  9 10 11 12  13  14
-  //    |p1 p2 d1 p4 d2 d3 d4 p8 d5 d6 d7 d8 d9 d10 d11
-  // ---|----------------------------------------------
-  // p1 | x     x     x     x     x     x     x       x
-  // p2 |    x  x        x  x        x  x         x   x
-  // p4 |          x  x  x  x              x  x   x   x
-  // p8 |                      x  x  x  x  x  x   x   x
+  ///!    | 0  1  2  3  4  5  6  7  8  9 10 11 12  13  14
+  ///!    |p1 p2 d1 p4 d2 d3 d4 p8 d5 d6 d7 d8 d9 d10 d11
+  ///! ---|----------------------------------------------
+  ///! p1 | x     x     x     x     x     x     x       x
+  ///! p2 |    x  x        x  x        x  x         x   x
+  ///! p4 |          x  x  x  x              x  x   x   x
+  ///! p8 |                      x  x  x  x  x  x   x   x
 
-  // 1. Parity bit 1 covers all bit positions which have the least significant bit
-  //    set: bit 1 (the parity bit itself), 3, 5, 7, 9, etc.
-  // 2. Parity bit 2 covers all bit positions which have the second least
-  //    significant bit set: bit 2 (the parity bit itself), 3, 6, 7, 10, 11, etc.
-  // 3. Parity bit 4 covers all bit positions which have the third least
-  //    significant bit set: bits 4–7, 12–15, 20–23, etc.
-  // 4. Parity bit 8 covers all bit positions which have the fourth least
-  //    significant bit set: bits 8–15, 24–31, 40–47, etc.
-  // 5. In general each parity bit covers all bits where the bitwise AND of the
-  //    parity position and the bit position is non-zero.
+  ///! 1. Parity bit 1 covers all bit positions which have the least significant bit
+  ///!    set: bit 1 (the parity bit itself), 3, 5, 7, 9, etc.
+  ///! 2. Parity bit 2 covers all bit positions which have the second least
+  ///!    significant bit set: bit 2 (the parity bit itself), 3, 6, 7, 10, 11, etc.
+  ///! 3. Parity bit 4 covers all bit positions which have the third least
+  ///!    significant bit set: bits 4–7, 12–15, 20–23, etc.
+  ///! 4. Parity bit 8 covers all bit positions which have the fourth least
+  ///!    significant bit set: bits 8–15, 24–31, 40–47, etc.
+  ///! 5. In general each parity bit covers all bits where the bitwise AND of the
+  ///!    parity position and the bit position is non-zero.
   always_comb begin : calculate_syndrome
     syndrome = 0;
     for (int unsigned i = 0; i < unsigned'($bits(parity_t)); i++) begin
@@ -91,12 +98,12 @@ module ecc_decode import ecc_pkg::*; #(
     end
   end
 
-  // Syndrome | Overall Parity (MSB) | Error Type   | Notes
-  // --------------------------------------------------------
-  // 0        | 0                    | No Error     |
-  // /=0      | 1                    | Single Error | Correctable. Syndrome holds incorrect bit position.
-  // 0        | 1                    | Parity Error | Overall parity, MSB is in error and can be corrected.
-  // /=0      | 0                    | Double Error | Not correctable.
+  ///! Syndrome | Overall Parity (MSB) | Error Type   | Notes
+  ///! --------------------------------------------------------
+  ///! 0        | 0                    | No Error     |
+  ///! /=0      | 1                    | Single Error | Correctable. Syndrome holds incorrect bit position.
+  ///! 0        | 1                    | Parity Error | Overall parity, MSB is in error and can be corrected.
+  ///! /=0      | 0                    | Double Error | Not correctable.
   assign single_error_o = parity & syndrome_not_zero;
   assign parity_error_o = parity & ~syndrome_not_zero;
   assign double_error_o = ~parity & syndrome_not_zero;

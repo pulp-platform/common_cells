@@ -9,17 +9,18 @@
 // specific language governing permissions and limitations under the License.
 //
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
-// ECC Encoder
-//
-// Implements SECDED (Single Error Correction, Double Error Detection) Hamming Code
-// with extended parity bit [1].
-// The module receives a data word and encodes it using above mentioned error
-// detection and correction code. The corresponding decode module
-// can be found in `ecc_decode.sv`
-//
-// [1] https://en.wikipedia.org/wiki/Hamming_code
+/// # ECC Encoder
+///
+/// Implements SECDED (Single Error Correction, Double Error Detection) Hamming Code
+/// with extended parity bit [1].
+/// The module receives a data word and encodes it using above mentioned error
+/// detection and correction code. The corresponding decode module
+/// can be found in `ecc_decode.sv`
+///
+/// [1] https://en.wikipedia.org/wiki/Hamming_code
 
 module ecc_encode import ecc_pkg::*; #(
+  /// Data width of unencoded word.
   parameter  int unsigned DataWidth   = 64,
   // Do not change
   parameter type data_t         = logic [DataWidth-1:0],
@@ -30,7 +31,9 @@ module ecc_encode import ecc_pkg::*; #(
                                     code_word_t code_word;
                                   }
 ) (
+  /// Unencoded data in
   input  data_t         data_i,
+  /// Encoded data out
   output encoded_data_t data_o
 );
 
