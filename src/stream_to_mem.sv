@@ -105,8 +105,8 @@ module stream_to_mem #(
   end else begin : gen_no_buf
     // Control request, memory request, and response interface handshakes.
     assign mem_req_valid_o = req_valid_i;
-    assign resp_valid_o = mem_req_valid_o & mem_req_ready_i & mem_resp_valid_i;
-    assign req_ready_o = resp_ready_i;
+    assign resp_valid_o    = mem_req_valid_o & mem_req_ready_i & mem_resp_valid_i;
+    assign req_ready_o     = resp_ready_i    & resp_valid_o;
 
     // Forward responses.
     assign resp_o = mem_resp_i;
