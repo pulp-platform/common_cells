@@ -11,10 +11,11 @@
 // Authors:
 // - Andreas Kurth <akurth@iis.ee.ethz.ch>
 
-/// Stream-to-Mem: Allows to use memories with flow control (req/gnt) for requests but without flow
+/// `stream_to_mem`: Allows to use memories with flow control (`valid`/`ready`) for requests but without flow
 /// control for output data to be used in streams.
+`include "common_cells/registers.svh"
 module stream_to_mem #(
-  /// Memory request payload type, usually write enable, write data, etc
+  /// Memory request payload type, usually write enable, write data, etc.
   parameter type         mem_req_t  = logic,
   /// Memory response payload type, usually read data
   parameter type         mem_resp_t = logic,
@@ -99,13 +100,7 @@ module stream_to_mem #(
     );
 
     // Register
-    always_ff @(posedge clk_i, negedge rst_ni) begin
-      if (!rst_ni) begin
-        cnt_q <= '0;
-      end else begin
-        cnt_q <= cnt_d;
-      end
-    end
+    `FFARN(cnt_q, cnt_d, '0, clk_i, rst_ni)
 
   end else begin : gen_no_buf
     // Control request, memory request, and response interface handshakes.
