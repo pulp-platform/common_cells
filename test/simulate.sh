@@ -27,3 +27,7 @@ call_vsim() {
 for tb in cdc_2phase_tb fifo_tb graycode_tb id_queue_tb popcount_tb stream_register_tb; do
     call_vsim $tb
 done
+
+for depth in 0 1 2; do
+	call_vsim stream_to_mem_tb -GBufDepth=$depth -coverage -voptargs="+acc +cover=bcesfx"
+done

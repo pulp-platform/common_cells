@@ -90,6 +90,7 @@ sources:
       - test/id_queue_tb.sv
       - test/popcount_tb.sv
       - test/stream_register_tb.sv
+      - test/stream_to_mem_tb.sv
       - test/sub_per_hash_tb.sv
 
   - target: synth_test
