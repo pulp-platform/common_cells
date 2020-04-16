@@ -217,7 +217,7 @@ module rr_arb_tree #(
     `ifndef VERILATOR
     initial begin : p_assert
       assert(NumIn)
-        else $fatal("Input must be at least one element wide.");
+        else $fatal(1, "Input must be at least one element wide.");
       assert(!(LockIn && ExtPrio))
         else $fatal(1,"Cannot use LockIn feature together with external ExtPrio.");
     end
