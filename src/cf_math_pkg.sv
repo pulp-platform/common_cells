@@ -21,7 +21,7 @@ package cf_math_pkg;
     // Ceiled Division of Two Natural Numbers
     //
     // Returns the quotient of two natural numbers, rounded towards plus infinity.
-    function integer ceil_div (input longint dividend, input longint divisor);
+    function automatic integer ceil_div (input longint dividend, input longint divisor);
         automatic longint remainder;
 
         // pragma translate_off

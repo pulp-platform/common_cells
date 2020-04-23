@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - stream_to_mem: Allows to use memories with flow control (req/gnt) for requests but
   without flow control for output data to be used in streams.
 
+### Fixed
+- Improve tool compatibility.
+
 ## 1.18.0 - 2020-04-15
 ### Added
 - stream_fork_dynamic: Wrapper around `stream_fork` for partial forking.

@@ -250,9 +250,11 @@ module hash_block #(
   end
 
   // assertions
+  // pragma translate_off
   initial begin
     hash_conf: assume (InpWidth > HashWidth) else
       $fatal(1, "%m:\nA Hash Function reduces the width of the input>\nInpWidth: %s\nOUT_WIDTH: %s",
           InpWidth, HashWidth);
   end
+  // pragma translate_on
 endmodule
