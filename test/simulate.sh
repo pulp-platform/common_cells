@@ -31,3 +31,7 @@ done
 for depth in 0 1 2; do
 	call_vsim stream_to_mem_tb -GBufDepth=$depth -coverage -voptargs="+acc +cover=bcesfx"
 done
+
+for num in 1 4 7; do
+  call_vsim rr_arb_tree_tb -GNumInp=$num -coverage -voptargs="+acc +cover=bcesfx"
+done
