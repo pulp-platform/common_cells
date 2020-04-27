@@ -11,33 +11,37 @@
 // Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
 // Date: 02.04.2019
 // Description: logarithmic arbitration tree with round robin arbitration scheme.
-//
-// The rr_arb_tree employs fair round robin arbitration - i.e. the priorities
-// rotate each cycle.
-//
-// The `LockIn` option prevents the arbiter from changing the arbitration
-// decision when the arbiter is disabled. I.e., the index of the first request
-// that wins the arbitration will be locked in case the destination is not
-// able to grant the request in the same cycle.
-//
-// The `ExtPrio` option allows to override the internal round robin counter via the
-// `rr_i` signal. This can be useful in case multiple arbiters need to have
-// rotating priorities that are operating in lock-step. If static priority arbitration
-// is needed, just connect `rr_i` to '0.
-//
-// If `AxiVldRdy` is set, the req/gnt signals are compliant with the AXI style vld/rdy
-// handshake. Namely, upstream vld (req) must not depend on rdy (gnt), as it can be deasserted
-// again even though vld is asserted. Enabling `AxiVldRdy` leads to a reduction of arbiter
-// delay and area.
-//
 
+/// The rr_arb_tree employs non starving round robin arbitration - i.e. the priorities
+/// rotate each cycle.
 module rr_arb_tree #(
+  /// Number of handshaked inputs which get arbitrated.
   parameter int unsigned NumIn      = 64,
+  /// Data width of the payload in bits. Not needed if `DataType` is overwritten.
   parameter int unsigned DataWidth  = 32,
+  /// Data type of the payload, can be overwritten with custom type.
   parameter type         DataType   = logic [DataWidth-1:0],
-  parameter bit          ExtPrio    = 1'b0, // set to 1'b1 to enable
-  parameter bit          AxiVldRdy  = 1'b0, // treat req/gnt as vld/rdy
-  parameter bit          LockIn     = 1'b0  // set to 1'b1 to enable
+  /// The `ExtPrio` option allows to override the internal round robin counter via the
+  /// `rr_i` signal. This can be useful in case multiple arbiters need to have
+  /// rotating priorities that are operating in lock-step. If static priority arbitration
+  /// is needed, just connect `rr_i` to '0.
+  /// Set to 1'b1 to enable.
+  parameter bit          ExtPrio    = 1'b0,
+  /// If `AxiVldRdy` is set, the req/gnt signals are compliant with the AXI style vld/rdy
+  /// handshake. Namely, upstream vld (req) must not depend on rdy (gnt), as it can be deasserted
+  /// again even though vld is asserted. Enabling `AxiVldRdy` leads to a reduction of arbiter
+  /// delay and area.
+  /// Set to `1'b1` to treat req/gnt as vld/rdy.
+  parameter bit          AxiVldRdy  = 1'b0,
+  /// The `LockIn` option prevents the arbiter from changing the arbitration
+  /// decision when the arbiter is disabled. I.e., the index of the first request
+  /// that wins the arbitration will be locked in case the destination is not
+  /// able to grant the request in the same cycle.
+  /// Set to `1'b1` to enable.
+  parameter bit          LockIn     = 1'b0,
+  /// When set, ensures that throughput gets distributed evenly between all inputs.
+  /// Set to `1'b0` to disable.
+  parameter bit          FairArb    = 1'b1
 ) (
   input  logic                             clk_i,
   input  logic                             rst_ni,
@@ -142,8 +146,42 @@ module rr_arb_tree #(
         assign req_d = req_i;
       end
 
-      assign rr_d       = (gnt_i && req_o) ? ((rr_q == NumLevels'(NumIn-1)) ? '0 : rr_q + 1'b1) : rr_q;
+      if (FairArb) begin : gen_fair_arb
+        logic [NumIn-1:0]     upper_mask,  lower_mask;
+        logic [NumLevels-1:0] upper_idx,   lower_idx,   next_idx;
+        logic                 upper_empty, lower_empty;
 
+        for (genvar i = 0; i < NumIn; i++) begin : gen_mask
+          assign upper_mask[i] = (i >  rr_q) ? req_d[i] : 1'b0;
+          assign lower_mask[i] = (i <= rr_q) ? req_d[i] : 1'b0;
+        end
+
+        lzc #(
+          .WIDTH ( NumIn ),
+          .MODE  ( 1'b0  )
+        ) i_lzc_upper (
+          .in_i    ( upper_mask  ),
+          .cnt_o   ( upper_idx   ),
+          .empty_o ( upper_empty )
+        );
+
+        lzc #(
+          .WIDTH ( NumIn ),
+          .MODE  ( 1'b0  )
+        ) i_lzc_lower (
+          .in_i    ( lower_mask  ),
+          .cnt_o   ( lower_idx   ),
+          .empty_o ( /*unused*/  )
+        );
+
+        assign next_idx = upper_empty      ? lower_idx : upper_idx;
+        assign rr_d     = (gnt_i && req_o) ? next_idx  : rr_q;
+
+      end else begin : gen_unfair_arb
+        assign rr_d = (gnt_i && req_o) ? ((rr_q == NumLevels'(NumIn-1)) ? '0 : rr_q + 1'b1) : rr_q;
+      end
+
+      // this holds the highest priority
       always_ff @(posedge clk_i or negedge rst_ni) begin : p_rr_regs
         if (!rst_ni) begin
           rr_q   <= '0;
