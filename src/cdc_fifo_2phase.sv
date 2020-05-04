@@ -98,7 +98,7 @@ module cdc_fifo_2phase #(
   assign dst_valid_o = ((dst_rptr_q ^ dst_wptr) != PTR_EMPTY);
 
   // Transport the read and write pointers across the clock domain boundary.
-  cdc_2phase #(pointer_t) i_cdc_wptr (
+  cdc_2phase #( .T(pointer_t) ) i_cdc_wptr (
     .src_rst_ni  ( src_rst_ni ),
     .src_clk_i   ( src_clk_i  ),
     .src_data_i  ( src_wptr_q ),
@@ -111,7 +111,7 @@ module cdc_fifo_2phase #(
     .dst_ready_i ( 1'b1       )
   );
 
-  cdc_2phase #(pointer_t) i_cdc_rptr (
+  cdc_2phase #( .T(pointer_t) ) i_cdc_rptr (
     .src_rst_ni  ( dst_rst_ni ),
     .src_clk_i   ( dst_clk_i  ),
     .src_data_i  ( dst_rptr_q ),
