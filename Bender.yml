@@ -31,6 +31,7 @@ sources:
   - src/exp_backoff.sv
   - src/fifo_v3.sv
   - src/graycode.sv
+  - src/isochronous_spill_register.sv
   - src/lfsr.sv
   - src/lfsr_16bit.sv
   - src/lfsr_8bit.sv
@@ -95,6 +96,8 @@ sources:
       - test/stream_register_tb.sv
       - test/stream_to_mem_tb.sv
       - test/sub_per_hash_tb.sv
+      # Level 1
+      - test/isochronous_spill_register_tb.sv
 
   - target: synth_test
     files:
