@@ -47,6 +47,7 @@ sources:
   - src/stream_demux.sv
   - src/stream_filter.sv
   - src/stream_fork.sv
+  - src/stream_intf.sv
   - src/stream_join.sv
   - src/stream_mux.sv
   - src/sub_per_hash.sv
@@ -81,6 +82,7 @@ sources:
 
   - target: test
     files:
+      # Level 0
       - test/addr_decode_tb.sv
       - test/cb_filter_tb.sv
       - test/cdc_2phase_tb.sv
@@ -89,6 +91,7 @@ sources:
       - test/graycode_tb.sv
       - test/id_queue_tb.sv
       - test/popcount_tb.sv
+      - test/stream_test.sv
       - test/stream_register_tb.sv
       - test/stream_to_mem_tb.sv
       - test/sub_per_hash_tb.sv
