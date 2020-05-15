@@ -149,7 +149,7 @@ module rr_arb_tree #(
       // lock arbiter decision in case we got at least one req and no acknowledge
       if (LockIn) begin : gen_lock
         logic  lock_d, lock_q;
-        logic [NumIn-1:0]     req_q;
+        logic [NumIn-1:0] req_q;
 
         assign lock_d     = req_o & ~gnt_i;
         assign req_d      = (lock_q) ? req_q : req_i;
