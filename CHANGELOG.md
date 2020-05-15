@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   without flow control for output data to be used in streams.
 - isochronous_spill_register: Isochronous clock domain crossing cutting all paths.
 - `rr_arb_tree_tb`: Systemverilog testbench for `rr_arb_tree`, which checks for fair throughput.
+- `stream_xbar`: Fully connected stream bassed interconnect with variable number of inputs and outputs.
 
 ### Fixed
 - Improve tool compatibility.

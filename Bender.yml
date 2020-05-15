@@ -69,6 +69,7 @@ sources:
   - src/stream_delay.sv
   - src/stream_fifo.sv
   - src/stream_fork_dynamic.sv
+  - src/stream_xbar.sv
   # Level 2
   - src/fall_through_register.sv
   - src/stream_to_mem.sv
@@ -96,6 +97,7 @@ sources:
       - test/stream_test.sv
       - test/stream_register_tb.sv
       - test/stream_to_mem_tb.sv
+      - test/stream_xbar_tb.sv
       - test/sub_per_hash_tb.sv
       # Level 1
       - test/isochronous_spill_register_tb.sv

@@ -84,6 +84,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | `stream_filter`              | Ready/valid filter                                                             | active         |               |
 | `stream_delay`               | Randomize or delay ready/valid interface                                       | active         |               |
 | `stream_to_mem`              | Use memories without flow control for output data in streams.                  | active         |               |
+| `stream_xbar`                | Fully connected crossbar with ready/valid interface.                           | active         |               |
 | `sub_per_hash`               | Substitution-permutation hash function                                         | active         |               |
 | `popcount`                   | Combinatorial popcount (hamming weight)                                        | active         |               |
 
