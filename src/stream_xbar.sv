@@ -34,7 +34,7 @@ module stream_xbar #(
   parameter type sel_oup_t = logic[SelWidth-1:0],
   /// Dependent parameter, do **not** overwrite!
   ///
-  /// Width of the output selection signal.
+  /// Width of the input index signal.
   parameter int unsigned IdxWidth = (NumInp > 32'd1) ? unsigned'($clog2(NumInp)) : 32'd1,
   /// Dependent parameter, do **not** overwrite!
   ///
