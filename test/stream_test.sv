@@ -43,16 +43,16 @@ package stream_test;
       stream.ready = 1'b0;
     endfunction
 
-    task cycle_start;
+    task automatic cycle_start;
       #TT;
     endtask
 
-    task cycle_end;
+    task automatic cycle_end;
       @(posedge stream.clk_i);
     endtask
 
     /// Send a packet on the stream interface.
-    task send (input payload_t data);
+    task automatic send (input payload_t data);
       stream.data  <= #TA data;
       stream.valid <= #TA 1'b1;
       cycle_start();
@@ -62,7 +62,7 @@ package stream_test;
     endtask
 
     /// Receive a packet on the stream interface.
-    task recv(output payload_t data);
+    task automatic recv(output payload_t data);
       stream.ready <= #TA 1'b1;
       cycle_start();
       while (stream.valid != 1) begin cycle_end(); cycle_start(); end
