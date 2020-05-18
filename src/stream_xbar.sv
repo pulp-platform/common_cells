@@ -12,44 +12,44 @@
 
 /// Fully connected stream crossbar.
 ///
-/// Handshaking rules as defined by the `AMBA AXI` standard.
+/// Handshaking rules as defined by the `AMBA AXI` standard on default.
 module stream_xbar #(
-  /// Number of inputs into the crossbar. Must be higher than zero.
-  parameter int unsigned NumInp    = 32'd0,
-  /// Number of outputs from the crossbar. Must be higher than zero.
-  parameter int unsigned NumOut    = 32'd0,
+  /// Number of inputs into the crossbar (`> 0`).
+  parameter int unsigned NumInp      = 32'd0,
+  /// Number of outputs from the crossbar (`> 0`).
+  parameter int unsigned NumOut      = 32'd0,
   /// Data width of the stream. Can be overwritten by defining the type parameter `payload_t`.
-  parameter int unsigned DataWidth = 32'd1,
+  parameter int unsigned DataWidth   = 32'd1,
   /// Payload type of the data ports, only usage of parameter `DataWidth`.
-  parameter type         payload_t = logic[DataWidth-1:0],
+  parameter type         payload_t   = logic [DataWidth-1:0],
   /// Adds a spill register stage at each output.
-  parameter bit          SpillReg  = 1'b0,
+  parameter bit          OutSpillReg = 1'b0,
   /// Use external priority for the individual `rr_arb_trees`.
-  parameter int unsigned ExtPrio   = 1'b0,
+  parameter int unsigned ExtPrio     = 1'b0,
   /// Use strict AXI valid ready handshaking.
   /// To be protocol conform also the parameter `LockIn` has to be set.
-  parameter int unsigned AxiVldRdy = 1'b1,
+  parameter int unsigned AxiVldRdy   = 1'b1,
   /// Lock in the arbitration decision of the `rr_arb_tree`.
   /// When this is set, valids have to be asserted until the corresponding transaction is indicated
   /// by ready.
-  parameter int unsigned LockIn    = 1'b1,
-  /// Dependent parameter, do **not** overwrite!
+  parameter int unsigned LockIn      = 1'b1,
+  /// Derived parameter, do **not** overwrite!
   ///
   /// Width of the output selection signal.
   parameter int unsigned SelWidth = (NumOut > 32'd1) ? unsigned'($clog2(NumOut)) : 32'd1,
-  /// Dependent parameter, do **not** overwrite!
+  /// Derived parameter, do **not** overwrite!
   ///
   /// Signal type definition for selecting the output at the inputs.
   parameter type sel_oup_t = logic[SelWidth-1:0],
-  /// Dependent parameter, do **not** overwrite!
+  /// Derived parameter, do **not** overwrite!
   ///
   /// Width of the input index signal.
   parameter int unsigned IdxWidth = (NumInp > 32'd1) ? unsigned'($clog2(NumInp)) : 32'd1,
-  /// Dependent parameter, do **not** overwrite!
+  /// Derived parameter, do **not** overwrite!
   ///
-  /// Signal type definition for indicating from which input the output came.
+  /// Signal type definition indicating from which input the output came.
   parameter type idx_inp_t = logic[IdxWidth-1:0]
-)(
+) (
   /// Clock, positive edge triggered.
   input  logic                  clk_i,
   /// Asynchronous reset, active low.
@@ -144,7 +144,7 @@ module stream_xbar #(
 
     spill_register #(
       .T      ( spill_data_t ),
-      .Bypass ( !SpillReg    )
+      .Bypass ( !OutSpillReg )
     ) i_spill_register (
       .clk_i,
       .rst_ni,
@@ -182,7 +182,7 @@ module stream_xbar #(
       assert property (@(posedge clk_i) (valid_o[i] && !ready_i[i] |=> $stable(idx_o[i]))) else
           $error("idx_o is unstable at output: %0d Check that parameter LockIn is set.", i);
       assert property (@(posedge clk_i) (valid_o[i] && !ready_i[i] |=> valid_o[i])) else
-          $error("valid_o at output %0d has been taken away without a ready.");
+          $error("valid_o at output %0d has been taken away without a ready.", i);
     end
   end
 

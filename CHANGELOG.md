@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - `lzc`: Use `cf_math_pkg::idx_width` for computing the index width, inline documentation.
 - `Bender`: Change levels of modules affected by depending on `cf_math_pkg::idx_width()`.
 - `stream_xbar`: Fully connected stream bassed interconnect with variable number of inputs and outputs.
+- `stream_xbar`: Fully connected stream-bassed interconnect with a variable number of inputs and outputs.
 
 ### Fixed
 - Improve tool compatibility.

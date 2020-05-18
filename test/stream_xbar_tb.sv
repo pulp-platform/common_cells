@@ -144,14 +144,18 @@ module stream_xbar_tb #(
 
   // Dut instantiation
   stream_xbar #(
-    .NumInp    ( NumInp-1  ),
-    .NumOut    ( NumOut-1  ),
-    .payload_t ( payload_t ),
-    .SpillReg  ( SpillReg  )
+    .NumInp       ( NumInp    ),
+    .NumOut       ( NumOut    ),
+    .payload_t    ( payload_t ),
+    .OutSpillReg  ( SpillReg  ),
+    .ExtPrio      ( 1'b0      ),
+    .AxiVldRdy    ( 1'b1      ),
+    .LockIn       ( 1'b1      )
   ) i_stream_xbar_dut (
     .clk_i   ( clk       ),
     .rst_ni  ( rst_n     ),
     .flush_i ( flush     ),
+    .rr_i    ( '0        ),
     .data_i  ( inp_data  ),
     .sel_i   ( out_sel   ),
     .valid_i ( inp_valid ),
