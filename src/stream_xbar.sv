@@ -165,6 +165,11 @@ module stream_xbar #(
   // pragma translate_off
   `ifndef VERILATOR
   default disable iff rst_ni;
+  for (genvar i = 0; unsigned'(i) < NumInp; i++) begin : gen_sel_assertions
+    assert property (@(posedge clk_i) (valid_i[i] |-> sel_i[i] < sel_oup_t'(NumOut))) else
+        $fatal(1, "Non-existing output is selected!");
+  end
+
   if (AxiVldRdy) begin : gen_handshake_assertions
     for (genvar i = 0; unsigned'(i) < NumInp; i++) begin : gen_inp_assertions
       assert property (@(posedge clk_i) (valid_i[i] && !ready_o[i] |=> $stable(data_i[i]))) else
@@ -173,8 +178,6 @@ module stream_xbar #(
           $error("sel_i is unstable at input: %0d", i);
       assert property (@(posedge clk_i) (valid_i[i] && !ready_o[i] |=> valid_i[i])) else
           $error("valid_i at input %0d has been taken away without a ready.");
-      assert property (@(posedge clk_i) (valid_i[i] |-> sel_i[i] < sel_oup_t'(NumOut))) else
-          $fatal(1, "Non-existing output is selected!");
     end
     for (genvar i = 0; unsigned'(i) < NumOut; i++) begin : gen_out_assertions
       assert property (@(posedge clk_i) (valid_o[i] && !ready_i[i] |=> $stable(data_o[i]))) else
