@@ -177,7 +177,7 @@ module stream_xbar #(
       assert property (@(posedge clk_i) (valid_i[i] && !ready_o[i] |=> $stable(sel_i[i]))) else
           $error("sel_i is unstable at input: %0d", i);
       assert property (@(posedge clk_i) (valid_i[i] && !ready_o[i] |=> valid_i[i])) else
-          $error("valid_i at input %0d has been taken away without a ready.");
+          $error("valid_i at input %0d has been taken away without a ready.", i);
     end
     for (genvar i = 0; unsigned'(i) < NumOut; i++) begin : gen_out_assertions
       assert property (@(posedge clk_i) (valid_o[i] && !ready_i[i] |=> $stable(data_o[i]))) else
@@ -185,7 +185,7 @@ module stream_xbar #(
       assert property (@(posedge clk_i) (valid_o[i] && !ready_i[i] |=> $stable(idx_o[i]))) else
           $error("idx_o is unstable at output: %0d Check that parameter LockIn is set.", i);
       assert property (@(posedge clk_i) (valid_o[i] && !ready_i[i] |=> valid_o[i])) else
-          $error("valid_o at output %0d has been taken away without a ready.");
+          $error("valid_o at output %0d has been taken away without a ready.", i);
     end
   end
 
