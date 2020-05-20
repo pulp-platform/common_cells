@@ -9,10 +9,11 @@
 // specific language governing permissions and limitations under the License.
 //
 // Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
+//         Wolfgang Roenninger <wroennin@iis.ee.ethz.ch>, ETH Zurich
 // Date: 02.04.2019
 // Description: logarithmic arbitration tree with round robin arbitration scheme.
 
-/// The rr_arb_tree employs non starving round robin arbitration - i.e. the priorities
+/// The rr_arb_tree employs non-starving round robin-arbitration - i.e., the priorities
 /// rotate each cycle.
 ///
 /// ## Fair vs. unfair Arbitration
@@ -24,26 +25,25 @@
 /// request. Otherwise a *random* other active input is selected. The parameter `FairArb` is used
 /// to distinguish between two methods of calculating the next state.
 /// * `1'b0`: The next state is calculated by advancing the current state by one. This leads to the
-///           state be being calculated without context of the active request. Leading to
+///           state being calculated without the context of the active request. Leading to an
 ///           unfair throughput distribution if not all inputs have active requests.
 /// * `1'b1`: The next state jumps to the next unserved request with higher index.
 ///           This is achieved by using two trailing-zero-counters (`lzc`). The upper has the masked
-///           `req_i` signal with all indicies which will have a higher priority in the next state.
+///           `req_i` signal with all indices which will have a higher priority in the next state.
 ///           The trailing zero count defines the input index with the next highest priority after
 ///           the current one is served. When the upper is empty the lower `lzc` provides the
 ///           wrapped index if there are outstanding requests with lower or same priority.
 /// The implication of throughput fairness on the module timing are:
 /// * The trailing zero counter (`lzc`) has a loglog relation of input to output timing. This means
-///   that in this module the input to register path scales also with Log(Log(O)) in relation to
-///   the number of inputs.
+///   that in this module the input to register path scales with Log(Log(`NumIn`)).
 /// * The `rr_arb_tree` data multiplexing scales with Log(O). This means that the input to output
 ///   timing path of this module also scales scales with Log(O).
 /// This implies that in this module the input to output path is always longer than the input to
 /// register path. As the output data usually also terminates in a register the parameter `FairArb`
-/// only has implications on the area. When it is `1'b0`a static plus one adder is instantiated.
+/// only has implications on the area. When it is `1'b0` a static plus one adder is instantiated.
 /// If it is `1'b1` two `lzc`, a masking logic stage and a two input multiplexer are instantiated.
 /// However these are small in respect of the data multiplexers needed, as the width of the `req_i`
-/// signal is usually less as the `DataWidth`.
+/// signal is usually less as than `DataWidth`.
 module rr_arb_tree #(
   /// Number of inputs to be arbitrated.
   parameter int unsigned NumIn      = 64,
