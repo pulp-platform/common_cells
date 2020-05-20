@@ -10,8 +10,6 @@
 
 // Author: Wolfgang Roennigner <wroennin@iis.ee.ethz.ch>
 
-timeunit 1ns/1ps;
-
 /// Testbench for the module `rr_arb_tree`
 module rr_arb_tree_tb #(
   /// Number of input streams to the DUT
@@ -212,7 +210,8 @@ module rr_arb_tree_tb #(
           exp_through = real'(1)/real'(j);
           error       = throughput - exp_through;
           if (FairArb && LockIn) begin
-            assert(error < error_threshold && error > -error_threshold);
+            assert(error < error_threshold && error > -error_threshold) else
+                $warning("Line: %0d is unfair!");
           end
           $display("Line: %0d, TotActice: %0d Throughput: %0f Ideal: %0f Diff: %0f",
               i, j, throughput, exp_through, error);        end
