@@ -43,3 +43,5 @@ for spill_reg in 0 1; do
     done
   done
 done
+
+call_vsim stream_omega_net_tb -coverage -voptargs="+acc +cover=bcesfx"
