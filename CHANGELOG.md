@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 - Improve tool compatibility.
+- `rr_arb_tree`: Properly degenerate `rr_i` and `idx_o` signals.
 - `rr_arb_tree`: Add parameter `FairArb` to distribute throughput of input requests evenly when
   not all inputs have requests active.
 

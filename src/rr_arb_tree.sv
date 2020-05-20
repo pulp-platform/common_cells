@@ -15,11 +15,11 @@
 /// The rr_arb_tree employs non starving round robin arbitration - i.e. the priorities
 /// rotate each cycle.
 module rr_arb_tree #(
-  /// Number of handshaked inputs which get arbitrated.
+  /// Number of inputs to be arbitrated.
   parameter int unsigned NumIn      = 64,
   /// Data width of the payload in bits. Not needed if `DataType` is overwritten.
   parameter int unsigned DataWidth  = 32,
-  /// Data type of the payload, can be overwritten with custom type.
+  /// Data type of the payload, can be overwritten with custom type. Only use of `DataWidth`.
   parameter type         DataType   = logic [DataWidth-1:0],
   /// The `ExtPrio` option allows to override the internal round robin counter via the
   /// `rr_i` signal. This can be useful in case multiple arbiters need to have
@@ -41,23 +41,38 @@ module rr_arb_tree #(
   parameter bit          LockIn     = 1'b0,
   /// When set, ensures that throughput gets distributed evenly between all inputs.
   /// Set to `1'b0` to disable.
-  parameter bit          FairArb    = 1'b1
+  parameter bit          FairArb    = 1'b1,
+  /// Dependent parameter, do **not** overwrite.
+  /// Width of the arbitration priority signal and the arbitrated index.
+  parameter int unsigned IdxWidth   = (NumIn > 32'd1) ? unsigned'($clog2(NumIn)) : 32'd1,
+  /// Dependent parameter, do **not** overwrite.
+  /// Type for defining the arbitration priority and arbitrated index signal.
+  parameter type         idx_t      = logic [IdxWidth-1:0]
 ) (
-  input  logic                             clk_i,
-  input  logic                             rst_ni,
-  input  logic                             flush_i, // clears the arbiter state
-  input  logic [$clog2(NumIn)-1:0]         rr_i,    // external RR prio (needs to be enabled above)
-  // input requests and data
-  input  logic [NumIn-1:0]                 req_i,
+  /// Clock, positive edge triggered.
+  input  logic                clk_i,
+  /// Asynchronous reset, active low.
+  input  logic                rst_ni,
+  /// Clears the arbiter state. Only used if `ExtPrio` is `1'b0` or `LockIn` is `1'b1`.
+  input  logic                flush_i,
+  /// External round-robin priority. Only used if `ExtPrio` is `1'b1.`
+  input  idx_t                rr_i,
+  /// Input requests arbitration.
+  input  logic    [NumIn-1:0] req_i,
   /* verilator lint_off UNOPTFLAT */
-  output logic [NumIn-1:0]                 gnt_o,
+  /// Input request is granted.
+  output logic    [NumIn-1:0] gnt_o,
   /* verilator lint_on UNOPTFLAT */
-  input  DataType [NumIn-1:0]              data_i,
-  // arbitrated output
-  input  logic                             gnt_i,
-  output logic                             req_o,
-  output DataType                          data_o,
-  output logic [$clog2(NumIn)-1:0]         idx_o
+  /// Input data for arbitration.
+  input  DataType [NumIn-1:0] data_i,
+  /// Output request is valid.
+  output logic                req_o,
+  /// Output request is granted.
+  input  logic                gnt_i,
+  /// Output data.
+  output DataType             data_o,
+  /// Index from which input the data came from.
+  output idx_t                idx_o
 );
 
   // pragma translate_off
@@ -75,16 +90,16 @@ module rr_arb_tree #(
     assign idx_o    = '0;
   // non-degenerate cases
   end else begin
-    localparam int unsigned NumLevels = $clog2(NumIn);
+    localparam int unsigned NumLevels = unsigned'($clog2(NumIn));
 
     /* verilator lint_off UNOPTFLAT */
-    logic [2**NumLevels-2:0][NumLevels-1:0]  index_nodes; // used to propagate the indices
-    DataType [2**NumLevels-2:0]              data_nodes;  // used to propagate the data
-    logic [2**NumLevels-2:0]                 gnt_nodes;   // used to propagate the grant to masters
-    logic [2**NumLevels-2:0]                 req_nodes;   // used to propagate the requests to slave
+    idx_t    [2**NumLevels-2:0] index_nodes; // used to propagate the indices
+    DataType [2**NumLevels-2:0] data_nodes;  // used to propagate the data
+    logic    [2**NumLevels-2:0] gnt_nodes;   // used to propagate the grant to masters
+    logic    [2**NumLevels-2:0] req_nodes;   // used to propagate the requests to slave
     /* lint_off */
-    logic [NumLevels-1:0]                    rr_q;
-    logic [NumIn-1:0]                        req_d;
+    idx_t                       rr_q;
+    logic [NumIn-1:0]           req_d;
 
     // the final arbitration decision can be taken from the root of the tree
     assign req_o        = req_nodes[0];
@@ -95,7 +110,7 @@ module rr_arb_tree #(
       assign rr_q       = rr_i;
       assign req_d      = req_i;
     end else begin : gen_int_rr
-      logic [NumLevels-1:0] rr_d;
+      idx_t rr_d;
 
       // lock arbiter decision in case we got at least one req and no acknowledge
       if (LockIn) begin : gen_lock
@@ -120,14 +135,16 @@ module rr_arb_tree #(
         // pragma translate_off
         `ifndef VERILATOR
           lock: assert property(
-            @(posedge clk_i) LockIn |-> req_o && !gnt_i |=> idx_o == $past(idx_o))
-              else $fatal (1, "Lock implies same arbiter decision in next cycle if output is not ready.");
+            @(posedge clk_i) LockIn |-> req_o && !gnt_i |=> idx_o == $past(idx_o)) else
+                $fatal (1, "Lock implies same arbiter decision in next cycle if output is not \
+                            ready.");
 
           logic [NumIn-1:0] req_tmp;
           assign req_tmp = req_q & req_i;
           lock_req: assume property(
-            @(posedge clk_i) LockIn |-> lock_d |=> req_tmp == req_q)
-              else $fatal (1, "It is disallowed to deassert unserved request signals when LockIn is enabled.");
+            @(posedge clk_i) LockIn |-> lock_d |=> req_tmp == req_q) else
+                $fatal (1, "It is disallowed to deassert unserved request signals when LockIn is \
+                            enabled.");
         `endif
         // pragma translate_on
 
@@ -147,9 +164,9 @@ module rr_arb_tree #(
       end
 
       if (FairArb) begin : gen_fair_arb
-        logic [NumIn-1:0]     upper_mask,  lower_mask;
-        logic [NumLevels-1:0] upper_idx,   lower_idx,   next_idx;
-        logic                 upper_empty, lower_empty;
+        logic [NumIn-1:0] upper_mask,  lower_mask;
+        idx_t             upper_idx,   lower_idx,   next_idx;
+        logic             upper_empty, lower_empty;
 
         for (genvar i = 0; i < NumIn; i++) begin : gen_mask
           assign upper_mask[i] = (i >  rr_q) ? req_d[i] : 1'b0;
@@ -178,7 +195,7 @@ module rr_arb_tree #(
         assign rr_d     = (gnt_i && req_o) ? next_idx  : rr_q;
 
       end else begin : gen_unfair_arb
-        assign rr_d = (gnt_i && req_o) ? ((rr_q == NumLevels'(NumIn-1)) ? '0 : rr_q + 1'b1) : rr_q;
+        assign rr_d = (gnt_i && req_o) ? ((rr_q == idx_t'(NumIn-1)) ? '0 : rr_q + 1'b1) : rr_q;
       end
 
       // this holds the highest priority
@@ -215,7 +232,7 @@ module rr_arb_tree #(
             // arbitration: round robin
             assign sel =  ~req_d[l*2] | req_d[l*2+1] & rr_q[NumLevels-1-level];
 
-            assign index_nodes[idx0] = NumLevels'(sel);
+            assign index_nodes[idx0] = idx_t'(sel);
             assign data_nodes[idx0]  = (sel) ? data_i[l*2+1] : data_i[l*2];
             assign gnt_o[l*2]        = gnt_nodes[idx0] & (AxiVldRdy | req_d[l*2])   & ~sel;
             assign gnt_o[l*2+1]      = gnt_nodes[idx0] & (AxiVldRdy | req_d[l*2+1]) & sel;
@@ -241,8 +258,8 @@ module rr_arb_tree #(
           // arbitration: round robin
           assign sel =  ~req_nodes[idx1] | req_nodes[idx1+1] & rr_q[NumLevels-1-level];
 
-          assign index_nodes[idx0] = (sel) ? NumLevels'({1'b1, index_nodes[idx1+1][NumLevels-unsigned'(level)-2:0]}) :
-                                             NumLevels'({1'b0, index_nodes[idx1][NumLevels-unsigned'(level)-2:0]});
+          assign index_nodes[idx0] = (sel) ? idx_t'({1'b1, index_nodes[idx1+1][NumLevels-unsigned'(level)-2:0]}) :
+                                             idx_t'({1'b0, index_nodes[idx1][NumLevels-unsigned'(level)-2:0]});
           assign data_nodes[idx0]  = (sel) ? data_nodes[idx1+1] : data_nodes[idx1];
           assign gnt_nodes[idx1]   = gnt_nodes[idx0] & ~sel;
           assign gnt_nodes[idx1+1] = gnt_nodes[idx0] & sel;

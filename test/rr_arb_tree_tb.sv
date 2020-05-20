@@ -34,7 +34,7 @@ module rr_arb_tree_tb #(
   // more than this value
   localparam real error_threshold = 0.1;
 
-  localparam int unsigned IdxWidth  = $clog2(NumInp);
+  localparam int unsigned IdxWidth  = (NumInp > 32'd1) ? unsigned'($clog2(NumInp)) : 32'd1;
   localparam int unsigned DataWidth = 32'd45;
   typedef logic [IdxWidth-1:0]  idx_t;
   typedef logic [DataWidth-1:0] data_t;
