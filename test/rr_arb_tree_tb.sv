@@ -10,8 +10,6 @@
 
 // Author: Wolfgang Roennigner <wroennin@iis.ee.ethz.ch>
 
-timeunit 1ns/1ps;
-
 /// Testbench for the module `rr_arb_tree`
 module rr_arb_tree_tb #(
   /// Number of input streams to the DUT
@@ -34,7 +32,7 @@ module rr_arb_tree_tb #(
   // more than this value
   localparam real error_threshold = 0.1;
 
-  localparam int unsigned IdxWidth  = $clog2(NumInp);
+  localparam int unsigned IdxWidth  = (NumInp > 32'd1) ? unsigned'($clog2(NumInp)) : 32'd1;
   localparam int unsigned DataWidth = 32'd45;
   typedef logic [IdxWidth-1:0]  idx_t;
   typedef logic [DataWidth-1:0] data_t;
@@ -212,7 +210,8 @@ module rr_arb_tree_tb #(
           exp_through = real'(1)/real'(j);
           error       = throughput - exp_through;
           if (FairArb && LockIn) begin
-            assert(error < error_threshold && error > -error_threshold);
+            assert(error < error_threshold && error > -error_threshold) else
+                $warning("Line: %0d is unfair!");
           end
           $display("Line: %0d, TotActice: %0d Throughput: %0f Ideal: %0f Diff: %0f",
               i, j, throughput, exp_through, error);        end
