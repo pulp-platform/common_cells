@@ -10,53 +10,73 @@
 
 // Author: Wolfgang Roenninger <wroennin@ethz.ch>
 
-// Address Decoder: Maps the input address combinatorially to an index.
-// The address map `addr_map_i` is a packed array of rule_t structs.
-// The ranges of any two rules may overlap. If so, the rule at the higher (more significant)
-// position in `addr_map_i` prevails.
-//
-// The address decoder expects three fields in `rule_t`:
-//
-// typedef struct packed {
-//   int unsigned idx;
-//   addr_t       start_addr;
-//   addr_t       end_addr;
-// } rule_t;
-//
-//  - `idx`:        index of the rule, has to be < `NoIndices`
-//  - `start_addr`: start address of the range the rule describes, value is included in range
-//  - `end_addr`:   end address of the range the rule describes, value is NOT included in range
-//
-// There can be an arbitrary number of address rules. There can be multiple
-// ranges defined for the same index. The start address has to be less than the end address.
-//
-// There is the possibility to add a default mapping:
-// `en_default_idx_i`: Driving this port to `1'b1` maps all input addresses
-// for which no rule in `addr_map_i` exists to the default index specified by
-// `default_idx_i`. In this case, `dec_error_o` is always `1'b0`.
-//
-// Assertions: The module checks every time there is a change in the address mapping
-// if the resulting map is valid. It fatals if `start_addr` is higher than `end_addr`
-// or if a mapping targets an index that is outside the number of allowed indices.
-// It issues warnings if the address regions of any two mappings overlap.
-
+/// Address Decoder: Maps the input address combinatorially to an index.
+/// The address map `addr_map_i` is a packed array of rule_t structs.
+/// The ranges of any two rules may overlap. If so, the rule at the higher (more significant)
+/// position in `addr_map_i` prevails.
+///
+/// The address decoder expects three fields in `rule_t`:
+///
+/// typedef struct packed {
+///   int unsigned idx;
+///   addr_t       start_addr;
+///   addr_t       end_addr;
+/// } rule_t;
+///
+///  - `idx`:        index of the rule, has to be < `NoIndices`
+///  - `start_addr`: start address of the range the rule describes, value is included in range
+///  - `end_addr`:   end address of the range the rule describes, value is NOT included in range
+///
+/// There can be an arbitrary number of address rules. There can be multiple
+/// ranges defined for the same index. The start address has to be less than the end address.
+///
+/// There is the possibility to add a default mapping:
+/// `en_default_idx_i`: Driving this port to `1'b1` maps all input addresses
+/// for which no rule in `addr_map_i` exists to the default index specified by
+/// `default_idx_i`. In this case, `dec_error_o` is always `1'b0`.
+///
+/// Assertions: The module checks every time there is a change in the address mapping
+/// if the resulting map is valid. It fatals if `start_addr` is higher than `end_addr`
+/// or if a mapping targets an index that is outside the number of allowed indices.
+/// It issues warnings if the address regions of any two mappings overlap.
 module addr_decode #(
-  parameter int unsigned NoIndices = 32'd0, // number indices in rules
-  parameter int unsigned NoRules   = 32'd0, // total number of rules
-  parameter type         addr_t    = logic, // address type
-  parameter type         rule_t    = logic, // has to be overridden, see above!
-  // DEPENDENT PARAMETERS DO NOT OVERWRITE!
-  parameter int unsigned IdxWidth  = (NoIndices > 32'd1) ? $clog2(NoIndices) : 32'd1,
+  /// Highest index which can happen in a rule.
+  parameter int unsigned NoIndices = 32'd0,
+  /// Total number of rules.
+  parameter int unsigned NoRules   = 32'd0,
+  /// Address type inside the rules and to decode.
+  parameter type         addr_t    = logic,
+  /// Rule packed struct type, see above!
+  parameter type         rule_t    = logic,
+  /// Dependent parameter, do **not** overwite!
+  ///
+  /// Width of the `idx_o` output port.
+  parameter int unsigned IdxWidth  = cf_math_pkg::idx_width(NoIndices),
+  /// Dependent parameter, do **not** overwite!
+  ///
+  /// Type of the `idx_o` output port.
   parameter type         idx_t     = logic [IdxWidth-1:0]
 ) (
-  input  addr_t               addr_i,           // address to decode
-  input  rule_t [NoRules-1:0] addr_map_i,       // address map: rule with the highest position wins
-  output idx_t                idx_o,            // decoded index
-  output logic                dec_valid_o,      // decode is valid
-  output logic                dec_error_o,      // decode is not valid
-  // Default index mapping enable
-  input  logic                en_default_idx_i, // enable default port mapping
-  input  idx_t                default_idx_i     // default port index
+  /// Address to decode
+  input  addr_t               addr_i,
+  /// Address map: rule with the highest array position wins on collision
+  input  rule_t [NoRules-1:0] addr_map_i,
+  /// Decoded index
+  output idx_t                idx_o,
+  /// Decode is valid
+  output logic                dec_valid_o,
+  /// Decode is not valid, no matching rule found
+  output logic                dec_error_o,
+  /// Enable default port mapping.
+  ///
+  /// When not used, tie to `0`.
+  input  logic                en_default_idx_i,
+  /// Default port index.
+  ///
+  /// When `en_default_idx_i` is `1`, this will be the index when no rule matches.
+  ///
+  /// When not used, tie to `0`.
+  input  idx_t                default_idx_i
 );
 
   logic [NoRules-1:0] matched_rules; // purely for address map debugging
