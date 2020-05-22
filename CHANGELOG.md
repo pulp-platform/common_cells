@@ -31,6 +31,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - `Bender`: Change levels of modules affected by depending on `cf_math_pkg::idx_width()`.
 - `stream_xbar`: Fully connected stream bassed interconnect with variable number of inputs and outputs.
 - `stream_xbar`: Fully connected stream-bassed interconnect with a variable number of inputs and outputs.
+- `stream_omega_net`: Stream-based network implementing an omega topology. Variable number of inputs,
+  outputs and radix. Topology is isomorphic to a butterfly network.
 
 ### Fixed
 - Improve tool compatibility.

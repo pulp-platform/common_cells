@@ -88,7 +88,7 @@ module stream_omega_net #(
 );
   if (NumInp <= Radix && NumOut <= Radix) begin : gen_degenerate_omega_net
     // If both Number of inputs and number of outputs are smaller or the same as the radix
-    // instantiate just a `stream_xbar`.
+    // just instantiate a `stream_xbar`.
     stream_xbar #(
       .NumInp      ( NumInp    ),
       .NumOut      ( NumOut    ),
@@ -114,7 +114,7 @@ module stream_omega_net #(
   end else begin : gen_omega_net
     // Find the next power of radix of either the number of inputs or number of outputs.
     // This normalizes the network to a power of the radix. Unused inputs and outputs are tied off.
-    // If the radix is poorly chosen in respect to the number of input/outputs ports
+    // If the radix is poorly chosen with respect to the number of input/outputs ports
     // will lead to an explosion of tied off lanes, which will be removed during optimization.
     // Can lead however to RTL simulation overhead.
     // Dividing through the log base 2 of `Radix` leads to a change of base.
@@ -131,7 +131,7 @@ module stream_omega_net #(
 
     // Define the type of sel signal to send through the network. It has to be sliced for the
     // individual sel signals of a stage. This slicing has to align with `$clog2(Radix)`.
-    // Eg: `Radix = 4`, `NumOut = 17` will lead to the sel signal of an individual stage to
+    // For example `Radix = 4`, `NumOut = 17` will lead to the sel signal of an individual stage to
     // be 2 bit wide, whereas signal `sel_i` of the module will be 5 bit wide.
     // To prevent slicing into an undefined field the overall sel signal is then defined with
     // width 6.
