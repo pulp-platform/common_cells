@@ -97,14 +97,14 @@ sources:
       - test/id_queue_tb.sv
       - test/popcount_tb.sv
       - test/rr_arb_tree_tb.sv
-      - test/stream_omega_net_tb.sv
       - test/stream_test.sv
       - test/stream_register_tb.sv
       - test/stream_to_mem_tb.sv
-      - test/stream_xbar_tb.sv
       - test/sub_per_hash_tb.sv
       # Level 1
       - test/isochronous_spill_register_tb.sv
+      - test/stream_omega_net_tb.sv
+      - test/stream_xbar_tb.sv
 
   - target: synth_test
     files:
