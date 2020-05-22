@@ -15,18 +15,6 @@
 /// The ranges of any two rules may overlap. If so, the rule at the higher (more significant)
 /// position in `addr_map_i` prevails.
 ///
-/// The address decoder expects three fields in `rule_t`:
-///
-/// typedef struct packed {
-///   int unsigned idx;
-///   addr_t       start_addr;
-///   addr_t       end_addr;
-/// } rule_t;
-///
-///  - `idx`:        index of the rule, has to be < `NoIndices`
-///  - `start_addr`: start address of the range the rule describes, value is included in range
-///  - `end_addr`:   end address of the range the rule describes, value is NOT included in range
-///
 /// There can be an arbitrary number of address rules. There can be multiple
 /// ranges defined for the same index. The start address has to be less than the end address.
 ///
@@ -46,7 +34,18 @@ module addr_decode #(
   parameter int unsigned NoRules   = 32'd0,
   /// Address type inside the rules and to decode.
   parameter type         addr_t    = logic,
-  /// Rule packed struct type, see above!
+  /// Rule packed struct type.
+  /// The address decoder expects three fields in `rule_t`:
+  ///
+  /// typedef struct packed {
+  ///   int unsigned idx;
+  ///   addr_t       start_addr;
+  ///   addr_t       end_addr;
+  /// } rule_t;
+  ///
+  ///  - `idx`:        index of the rule, has to be < `NoIndices`
+  ///  - `start_addr`: start address of the range the rule describes, value is included in range
+  ///  - `end_addr`:   end address of the range the rule describes, value is NOT included in range
   parameter type         rule_t    = logic,
   /// Dependent parameter, do **not** overwite!
   ///
@@ -57,15 +56,15 @@ module addr_decode #(
   /// Type of the `idx_o` output port.
   parameter type         idx_t     = logic [IdxWidth-1:0]
 ) (
-  /// Address to decode
+  /// Address to decode.
   input  addr_t               addr_i,
   /// Address map: rule with the highest array position wins on collision
   input  rule_t [NoRules-1:0] addr_map_i,
-  /// Decoded index
+  /// Decoded index.
   output idx_t                idx_o,
-  /// Decode is valid
+  /// Decode is valid.
   output logic                dec_valid_o,
-  /// Decode is not valid, no matching rule found
+  /// Decode is not valid, no matching rule found.
   output logic                dec_error_o,
   /// Enable default port mapping.
   ///
