@@ -58,7 +58,6 @@ Please note that cells with status *deprecated* are not to be used for new desig
 
 | Name                         | Description                                                                    | Status         | Superseded By |
 |------------------------------|--------------------------------------------------------------------------------|----------------|---------------|
-| :--------------------------- | :----------------------------------------------------------------------------- | :------------- | :------------ |
 | `addr_decode   `             | Address map decoder                                                            | active         |               |
 | `ecc_decode`                 | SECDED Decoder (Single Error Correction, Double Error Detection)               | active         |               |
 | `ecc_encode`                 | SECDED Encoder (Single Error Correction, Double Error Detection)               | active         |               |
@@ -92,7 +91,6 @@ Please note that cells with status *deprecated* are not to be used for new desig
 
 | Name                 | Description                                     | Status         | Superseded By |
 |----------------------|-------------------------------------------------|----------------|---------------|
-| :------------------- | :---------------------------------------------- | :------------- | :------------ |
 | `cb_filter`          | Counting-Bloom-Filter with combinational lookup | active         |               |
 | `fifo`               | FIFO register with upper threshold              | *deprecated*   | `fifo_v3`     |
 | `fifo_v2`            | FIFO register with upper and lower threshold    | *deprecated*   | `fifo_v3`     |

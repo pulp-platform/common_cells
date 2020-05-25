@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+
+## 1.19.0 - 2020-05-25
 ### Added
 - stream_to_mem: Allows to use memories with flow control (req/gnt) for requests but
   without flow control for output data to be used in streams.
