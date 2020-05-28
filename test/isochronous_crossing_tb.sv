@@ -11,17 +11,19 @@
 
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
-/// Testbench for the isochronous spill register.
+/// Testbench for the isochronous spill register and 4-phase handshake.
 /// ## Compilation
 ///
 /// This module needs to be compile with `-timescale "1 ns / 1 ps"` as
 /// it doesn't specify an internal timescale.
-module isochronous_spill_register_tb #(
+module isochronous_crossing_tb #(
   parameter int unsigned NumReq   = 32'd10000,
-  parameter time SrcCyclTime      = 20ns,
-  /// Make sure that the clocks are an integer multiple of each other.
-  parameter time DstCyclTime      = SrcCyclTime*2
+  parameter string DUT            = "spill_register",
+  parameter int unsigned TCK_SRC_MULT = 2,
+  parameter int unsigned TCK_DST_MULT = 6
 );
+
+  localparam time CyclTime = 10ns; // smallest possible cycle time
 
   logic src_clk, dst_clk;
   logic src_rst_n, dst_rst_n;
@@ -30,6 +32,7 @@ module isochronous_spill_register_tb #(
   typedef logic [15:0] payload_t;
   // check FIFO
   payload_t data_fifo[$];
+  mailbox #(payload_t) data_mbx = new();
 
   STREAM_DV #(
     .payload_t (payload_t)
@@ -45,18 +48,21 @@ module isochronous_spill_register_tb #(
 
   typedef stream_test::stream_driver #(
     .payload_t (payload_t),
-    .TA (SrcCyclTime*0.2),
-    .TT (SrcCyclTime*0.8)
+    .TA (TCK_SRC_MULT*CyclTime*0.2),
+    .TT (TCK_SRC_MULT*CyclTime*0.8)
   ) stream_driver_in_t;
 
   typedef stream_test::stream_driver #(
     .payload_t (payload_t),
-    .TA (DstCyclTime*0.2),
-    .TT (DstCyclTime*0.8)
+    .TA (TCK_DST_MULT*CyclTime*0.2),
+    .TT (TCK_DST_MULT*CyclTime*0.8)
   ) stream_driver_out_t;
 
   stream_driver_in_t in_driver = new(dut_in);
   stream_driver_out_t out_driver = new(dut_out);
+
+  int unsigned handshake_mst = 0;
+  int unsigned handshake_slv = 0;
 
   // Generate Stream data
   initial begin : proc_stream_master
@@ -68,9 +74,10 @@ module isochronous_spill_register_tb #(
     for (int unsigned i = 0; i < NumReq; i++) begin
       test_data = payload_t'($urandom());
       stall_cycles = $urandom_range(0, 5);
-      data_fifo.push_back(test_data);
+      handshake_mst++;
       repeat (stall_cycles) @(posedge src_clk);
       in_driver.send(test_data);
+      data_mbx.put(test_data);
     end
   end
 
@@ -87,12 +94,14 @@ module isochronous_spill_register_tb #(
       stall_cycles = $urandom_range(0, 5);
       repeat (stall_cycles) @(posedge dst_clk);
       out_driver.recv(actual);
-      expected = data_fifo.pop_front();
+      data_mbx.get(expected);
+      handshake_slv++;
       assert(expected === actual) else $error("expected: %h, actual: %0h", expected, actual);
       num_tested++;
     end
     repeat (50) @(posedge dst_clk);
     sim_done = 1'b1;
+    assert(handshake_mst == handshake_slv) else $error("Amount of handshakes differed.");
   end
 
   // stop the simulation
@@ -104,18 +113,20 @@ module isochronous_spill_register_tb #(
 
   // Clock Generation
   initial begin
+    $display("Simulating %d", DUT);
     src_clk = 1'b0;
-    forever begin
-      src_clk = ~src_clk;
-      #(SrcCyclTime / 2);
-    end
-  end
-
-  initial begin
     dst_clk = 1'b0;
     forever begin
-      dst_clk = ~dst_clk;
-      #(DstCyclTime / 2);
+      fork
+        forever begin
+          src_clk = ~src_clk;
+          #((CyclTime * TCK_SRC_MULT) / 2);
+        end
+        forever begin
+          dst_clk = ~dst_clk;
+          #((CyclTime * TCK_DST_MULT) / 2);
+        end
+      join
     end
   end
 
@@ -140,19 +151,36 @@ module isochronous_spill_register_tb #(
     dst_rst_n = 1'b1;
   end
 
-  isochronous_spill_register #(
-    .T (payload_t)
-  ) i_isochronous_spill_register (
-    .src_clk_i (dut_in.clk_i),
-    .src_rst_ni (src_rst_n),
-    .src_valid_i (dut_in.valid),
-    .src_ready_o (dut_in.ready),
-    .src_data_i (dut_in.data),
-    .dst_clk_i (dut_out.clk_i),
-    .dst_rst_ni (dst_rst_n),
-    .dst_valid_o (dut_out.valid),
-    .dst_ready_i (dut_out.ready),
-    .dst_data_o (dut_out.data)
-  );
+  if (DUT == "spill_register") begin
+    isochronous_spill_register #(
+      .T (payload_t)
+    ) i_isochronous_spill_register (
+      .src_clk_i (dut_in.clk_i),
+      .src_rst_ni (src_rst_n),
+      .src_valid_i (dut_in.valid),
+      .src_ready_o (dut_in.ready),
+      .src_data_i (dut_in.data),
+      .dst_clk_i (dut_out.clk_i),
+      .dst_rst_ni (dst_rst_n),
+      .dst_valid_o (dut_out.valid),
+      .dst_ready_i (dut_out.ready),
+      .dst_data_o (dut_out.data)
+    );
+  end if (DUT == "4phase_handshake") begin
+    isochronous_4phase_handshake
+    isochronous_4phase_handshake (
+      .src_clk_i (dut_in.clk_i),
+      .src_rst_ni (src_rst_n),
+      .src_valid_i (dut_in.valid),
+      .src_ready_o (dut_in.ready),
+      .dst_clk_i (dut_out.clk_i),
+      .dst_rst_ni (dst_rst_n),
+      .dst_valid_o (dut_out.valid),
+      .dst_ready_i (dut_out.ready)
+    );
 
+    always_ff @(posedge dut_in.clk_i)
+      if (dut_in.valid & dut_in.ready)
+        dut_out.data <= dut_in.data;
+  end
 endmodule

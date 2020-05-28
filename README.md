@@ -25,21 +25,22 @@ Please note that cells with status *deprecated* are not to be used for new desig
 
 ### Clock Domains and Asynchronous Crossings
 
-| Name                         | Description                                                                      | Status       | Superseded By |
-| ---------------------------- | -------------------------------------------------------------------------------- | ------------ | ------------- |
-| `cdc_2phase`                 | Clock domain crossing using two-phase handshake, with ready/valid interface      | active       |               |
-| `cdc_fifo_2phase`            | Clock domain crossing FIFO using two-phase handshake, with ready/valid interface | active       |               |
-| `cdc_fifo_gray`              | Clock domain crossing FIFO using a gray-counter, with ready/valid interface      | active       |               |
-| `edge_detect`                | Rising/falling edge detector                                                     | active       |               |
-| `edge_propagator`            | **ANTONIO ADD DESCRIPTION**                                                      | active       |               |
-| `edge_propagator_rx`         | **ANTONIO ADD DESCRIPTION**                                                      | active       |               |
-| `edge_propagator_tx`         | **ANTONIO ADD DESCRIPTION**                                                      | active       |               |
-| `isochronous_spill_register` | Isochronous clock domain crossing and full handshake (like `spill_register`)     | active       |               |
-| `pulp_sync`                  | Serial line synchronizer                                                         | *deprecated* | `sync`        |
-| `pulp_sync_wedge`            | Serial line synchronizer with edge detector                                      | *deprecated* | `sync_wedge`  |
-| `serial_deglitch`            | Serial line deglitcher                                                           | active       |               |
-| `sync`                       | Serial line synchronizer                                                         | active       |               |
-| `sync_wedge`                 | Serial line synchronizer with edge detector                                      | active       |               |
+| Name                           | Description                                                                      | Status       | Superseded By |
+|--------------------------------|----------------------------------------------------------------------------------|--------------|---------------|
+| `cdc_2phase`                   | Clock domain crossing using two-phase handshake, with ready/valid interface      | active       |               |
+| `cdc_fifo_2phase`              | Clock domain crossing FIFO using two-phase handshake, with ready/valid interface | active       |               |
+| `cdc_fifo_gray`                | Clock domain crossing FIFO using a gray-counter, with ready/valid interface      | active       |               |
+| `edge_detect`                  | Rising/falling edge detector                                                     | active       |               |
+| `edge_propagator`              | **ANTONIO ADD DESCRIPTION**                                                      | active       |               |
+| `edge_propagator_rx`           | **ANTONIO ADD DESCRIPTION**                                                      | active       |               |
+| `edge_propagator_tx`           | **ANTONIO ADD DESCRIPTION**                                                      | active       |               |
+| `isochronous_spill_register`   | Isochronous clock domain crossing and full handshake (like `spill_register`)     | active       |               |
+| `isochronous_4phase_handshake` | Isochronous four-phase handshake.                                                | active       |               |
+| `pulp_sync`                    | Serial line synchronizer                                                         | *deprecated* | `sync`        |
+| `pulp_sync_wedge`              | Serial line synchronizer with edge detector                                      | *deprecated* | `sync_wedge`  |
+| `serial_deglitch`              | Serial line deglitcher                                                           | active       |               |
+| `sync`                         | Serial line synchronizer                                                         | active       |               |
+| `sync_wedge`                   | Serial line synchronizer with edge detector                                      | active       |               |
 
 ### Counters and Shift Registers
 
