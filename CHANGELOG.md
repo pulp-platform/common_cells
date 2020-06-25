@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Fixed
+- `stream_xbar`: Add missing argument in assertion error string.
+
 ## 1.19.0 - 2020-05-25
 ### Added
 - stream_to_mem: Allows to use memories with flow control (req/gnt) for requests but
