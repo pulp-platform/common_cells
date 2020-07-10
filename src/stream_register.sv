@@ -33,7 +33,7 @@ module stream_register #(
 
     fifo_v2 #(
         .FALL_THROUGH   (1'b0),
-        .DATA_WIDTH     ($size(T)),
+        .DATA_WIDTH     ($bits(T)),
         .DEPTH          (1),
         .dtype          (T)
     ) i_fifo (
