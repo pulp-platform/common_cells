@@ -281,7 +281,7 @@ module rr_arb_tree #(
           // if index is out of range, fill up with zeros (will get pruned)
           if (unsigned'(l) * 2 > NumIn-1) begin
             assign req_nodes[idx0]   = 1'b0;
-            assign index_nodes[idx0] = DataType'('0);
+            assign index_nodes[idx0] = idx_t'('0);
             assign data_nodes[idx0]  = DataType'('0);
           end
         //////////////////////////////////////////////////////////////
