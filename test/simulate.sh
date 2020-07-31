@@ -43,3 +43,11 @@ for spill_reg in 0 1; do
     done
   done
 done
+
+for right in 0 1; do
+  for num_inp in 1 8 11 16; do
+    for byte_w in 1 5 8; do
+      call_vsim barrel_shift_tb -GTbNumInputs=$num_inp -GTbShiftRight=$right -GTbByteWidth=$byte_w -coverage -voptargs="+acc +cover=bcesfx"
+    done
+  done
+done

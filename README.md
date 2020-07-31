@@ -59,6 +59,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | Name                         | Description                                                                    | Status         | Superseded By |
 |------------------------------|--------------------------------------------------------------------------------|----------------|---------------|
 | `addr_decode   `             | Address map decoder                                                            | active         |               |
+| `barrel_shift`               | Logarithmic barrel shifter                                                     | active         |               |
 | `ecc_decode`                 | SECDED Decoder (Single Error Correction, Double Error Detection)               | active         |               |
 | `ecc_encode`                 | SECDED Encoder (Single Error Correction, Double Error Detection)               | active         |               |
 | `binary_to_gray`             | Binary to gray code converter                                                  | active         |               |

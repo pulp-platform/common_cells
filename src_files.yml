@@ -38,6 +38,7 @@ common_cells_all:
     - src/sync_wedge.sv
     - src/unread.sv
     # Level 1
+    - src/barrel_shift.sv
     - src/cb_filter.sv
     - src/cdc_fifo_2phase.sv
     - src/cdc_fifo_gray.sv
