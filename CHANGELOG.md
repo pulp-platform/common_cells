@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 ### Added
-- assertions: Assertion include header with macros
+- assertions: Assertion include header with macros (from lowrisc)
 
 ### Fixed
 - `stream_register`: Fix `DATA_WIDTH` of instantiated FIFO.

@@ -1,113 +1,199 @@
-// Copyright 2020 ETH Zurich and University of Bologna.
-//
-// Copyright and related rights are licensed under the Solderpad Hardware
-// License, Version 0.51 (the "License"); you may not use this file except in
-// compliance with the License. You may obtain a copy of the License at
-// http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
-// or agreed to in writing, software, hardware and materials distributed under
-// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-// CONDITIONS OF ANY KIND, either express or implied. See the License for the
-// specific language governing permissions and limitations under the License.
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
 
-// Author: Stefan Mach <smach@iis.ee.ethz.ch>
+// Macros and helper code for using assertions.
+//  - Provides default clk and rst options to simplify code
+//  - Provides boiler plate template for common assertions
 
-// Common assertion and coverage defines for RTL designs
-`ifndef COMMON_CELLS_ASSERTIONS_SVH_
-`define COMMON_CELLS_ASSERTIONS_SVH_
+`ifndef PRIM_ASSERT_SV
+`define PRIM_ASSERT_SV
 
-// Abridged Summary of available assertion and coverage macros:
-// `ASSERT:         immediate
-// `ASSERT_ERR:     immediate with custom error message
-// `ASSERTC:        concurrent clocked with implicit clock and reset
-// `ASSERTC_ERR:    concurrent clocked with implicit clock and reset and custom error message
-// `ASSERTC_CR:     concurrent clocked
-// `ASSERTC_CRERR:  concurrent clocked with custom error message
-
-
-// Immediate assertion
-// __cond: Boolean expression that is asserted
-// __label: Label to give this assertion
-`define ASSERT(__cond, __label) \
-  /``* pragma translate_off *``/ \
-`ifndef VERILATOR \
-  initial begin \
-    __label : assert (__cond) else $error(`"__cond`"); \
-  end \
-`endif \
-  /``* pragma translate_on *``/
-
-// Immediate assertion with custom error message
-// __cond: Boolean expression that is asserted
-// __err: String containing the error message
-// __label: Label to give this assertion
-`define ASSERT_ERR(__cond, __err, __label) \
-  /``* pragma translate_off *``/ \
-`ifndef VERILATOR \
-  initial begin \
-    __label : assert (__cond) else $error(`"__err`"); \
-  end \
-`endif \
-  /``* pragma translate_on *``/
-
-// Concurrent clocked assertion with implicit clock and reset
-// __prop: Property expression
-// __label: Label to give this assertion
-// Implicit:
-// clk_i: clock signal
-// rst_ni: reset signal (active low)
-`define ASSERTC(__prop, __label) \
-  /``* pragma translate_off *``/ \
-`ifndef VERILATOR \
-  __label : assert property (@(posedge clk_i) disable iff (!rst_ni) \
-                             __prop) \
-      else $error(`"__prop`"); \
-`endif \
-  /``* pragma translate_on *``/
-
-// Concurrent clocked assertion with implicit clock and reset and custom error message
-// __prop: Property expression
-// __err: String containing the error message
-// __label: Label to give this assertion
-// Implicit:
-// clk_i: clock signal
-// rst_ni: reset signal (active low)
-`define ASSERTC_ERR(__prop, __err, __label) \
-  /``* pragma translate_off *``/ \
-`ifndef VERILATOR \
-  __label : assert property (@(posedge clk_i) disable iff (!rst_ni) \
-                             __prop) \
-      else $error(`"__err`"); \
-`endif \
-  /``* pragma translate_on *``/
-
-// Concurrent clocked assertion
-// __prop: Property expression
-// __clk: clock signal
-// __rstn: reset signal (active low)
-// __label: Label to give this assertion
-`define ASSERTC_CR(__prop, __clk, __rstn, __label) \
-  /``* pragma translate_off *``/ \
-`ifndef VERILATOR \
-  __label : assert property (@(posedge __clk) disable iff (!__rstn) \
-                             __prop) \
-      else $error(`"__prop`"); \
-`endif \
-  /``* pragma translate_on *``/
-
-// Concurrent clocked assertion with custom error message
-// __prop: Property expression
-// __err: String containing the error message
-// __clk: clock signal
-// __rstn: reset signal (active low)
-// __label: Label to give this assertion
-`define ASSERTC_CRERR(__prop, __clk, __rstn, __err, __label) \
-  /``* pragma translate_off *``/ \
-`ifndef VERILATOR \
-  __label : assert property (@(posedge __clk) disable iff (!__rstn) \
-                             __prop) \
-      else $error(`"__err`"); \
-`endif \
-  /``* pragma translate_on *``/
-
+`ifdef UVM
+  // report assertion error with UVM if compiled
+  package assert_rpt_pkg;
+    import uvm_pkg::*;
+    `include "uvm_macros.svh"
+    function void assert_rpt(string msg);
+      `uvm_error("ASSERT FAILED", msg)
+    endfunction
+  endpackage
 `endif
 
+///////////////////
+// Helper macros //
+///////////////////
+
+// local helper macro to reduce code clutter. undefined at the end of this file
+`ifndef VERILATOR
+`ifndef SYNTHESIS
+`define INC_ASSERT
+`endif
+`endif
+
+// Converts an arbitrary block of code into a Verilog string
+`define PRIM_STRINGIFY(__x) `"__x`"
+
+// ASSERT_RPT is available to change the reporting mechanism when an assert fails
+`define ASSERT_RPT(__name)                                                  \
+`ifdef UVM                                                                  \
+  assert_rpt_pkg::assert_rpt($sformatf("[%m] %s (%s:%0d)",                  \
+                             __name, `__FILE__, `__LINE__));                \
+`else                                                                       \
+  $error("[ASSERT FAILED] [%m] %s (%s:%0d)", __name, `__FILE__, `__LINE__); \
+`endif
+
+///////////////////////////////////////
+// Simple assertion and cover macros //
+///////////////////////////////////////
+
+// Default clk and reset signals used by assertion macros below.
+`define ASSERT_DEFAULT_CLK clk_i
+`define ASSERT_DEFAULT_RST !rst_ni
+
+// Immediate assertion
+// Note that immediate assertions are sensitive to simulation glitches.
+`define ASSERT_I(__name, __prop)           \
+`ifdef INC_ASSERT                          \
+  __name: assert (__prop)                  \
+    else begin                             \
+      `ASSERT_RPT(`PRIM_STRINGIFY(__name)) \
+    end                                    \
+`endif
+
+// Assertion in initial block. Can be used for things like parameter checking.
+`define ASSERT_INIT(__name, __prop)          \
+`ifdef INC_ASSERT                            \
+  initial begin                              \
+    __name: assert (__prop)                  \
+      else begin                             \
+        `ASSERT_RPT(`PRIM_STRINGIFY(__name)) \
+      end                                    \
+  end                                        \
+`endif
+
+// Assertion in final block. Can be used for things like queues being empty
+// at end of sim, all credits returned at end of sim, state machines in idle
+// at end of sim.
+`define ASSERT_FINAL(__name, __prop)                                         \
+`ifdef INC_ASSERT                                                            \
+  final begin                                                                \
+    __name: assert (__prop || $test$plusargs("disable_assert_final_checks")) \
+      else begin                                                             \
+        `ASSERT_RPT(`PRIM_STRINGIFY(__name))                                 \
+      end                                                                    \
+  end                                                                        \
+`endif
+
+// Assert a concurrent property directly.
+// It can be called as a module (or interface) body item.
+`define ASSERT(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`ifdef INC_ASSERT                                                                        \
+  __name: assert property (@(posedge __clk) disable iff ((__rst) !== '0) (__prop))       \
+    else begin                                                                           \
+      `ASSERT_RPT(`PRIM_STRINGIFY(__name))                                               \
+    end                                                                                  \
+`endif
+// Note: Above we use (__rst !== '0) in the disable iff statements instead of
+// (__rst == '1).  This properly disables the assertion in cases when reset is X at
+// the beginning of a simulation. For that case, (reset == '1) does not disable the
+// assertion.
+
+// Assert a concurrent property NEVER happens
+`define ASSERT_NEVER(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`ifdef INC_ASSERT                                                                              \
+  __name: assert property (@(posedge __clk) disable iff ((__rst) !== '0) not (__prop))         \
+    else begin                                                                                 \
+      `ASSERT_RPT(`PRIM_STRINGIFY(__name))                                                     \
+    end                                                                                        \
+`endif
+
+// Assert that signal has a known value (each bit is either '0' or '1') after reset.
+// It can be called as a module (or interface) body item.
+`define ASSERT_KNOWN(__name, __sig, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`ifdef INC_ASSERT                                                                             \
+  `ASSERT(__name, !$isunknown(__sig), __clk, __rst)                                           \
+`endif
+
+//  Cover a concurrent property
+`define COVER(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`ifdef INC_ASSERT                                                                       \
+  __name: cover property (@(posedge __clk) disable iff ((__rst) !== '0) (__prop));      \
+`endif
+
+//////////////////////////////
+// Complex assertion macros //
+//////////////////////////////
+
+// Assert that signal is an active-high pulse with pulse length of 1 clock cycle
+`define ASSERT_PULSE(__name, __sig, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`ifdef INC_ASSERT                                                                             \
+  `ASSERT(__name, $rose(__sig) |=> !(__sig), __clk, __rst)                                    \
+`endif
+
+// Assert that a property is true only when an enable signal is set.  It can be called as a module
+// (or interface) body item.
+`define ASSERT_IF(__name, __prop, __enable, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`ifdef INC_ASSERT                                                                                     \
+  `ASSERT(__name, (__enable) |-> (__prop), __clk, __rst)                                              \
+`endif
+
+// Assert that signal has a known value (each bit is either '0' or '1') after reset if enable is
+// set.  It can be called as a module (or interface) body item.
+`define ASSERT_KNOWN_IF(__name, __sig, __enable, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`ifdef INC_ASSERT                                                                                          \
+  `ASSERT_KNOWN(__name``KnownEnable, __enable, __clk, __rst)                                               \
+  `ASSERT_IF(__name, !$isunknown(__sig), __enable, __clk, __rst)                                           \
+`endif
+
+///////////////////////
+// Assumption macros //
+///////////////////////
+
+// Assume a concurrent property
+`define ASSUME(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`ifdef INC_ASSERT                                                                        \
+  __name: assume property (@(posedge __clk) disable iff ((__rst) !== '0) (__prop))       \
+    else begin                                                                           \
+      `ASSERT_RPT(`PRIM_STRINGIFY(__name))                                               \
+    end                                                                                  \
+`endif
+
+// Assume an immediate property
+`define ASSUME_I(__name, __prop)           \
+`ifdef INC_ASSERT                          \
+  __name: assume (__prop)                  \
+    else begin                             \
+      `ASSERT_RPT(`PRIM_STRINGIFY(__name)) \
+    end                                    \
+`endif
+
+//////////////////////////////////
+// For formal verification only //
+//////////////////////////////////
+
+// Note that the existing set of ASSERT macros specified above shall be used for FPV,
+// thereby ensuring that the assertions are evaluated during DV simulations as well.
+
+// ASSUME_FPV
+// Assume a concurrent property during formal verification only.
+`define ASSUME_FPV(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`ifdef FPV_ON                                                                                \
+   `ASSUME(__name, __prop, __clk, __rst)                                                     \
+`endif
+
+// ASSUME_I_FPV
+// Assume a concurrent property during formal verification only.
+`define ASSUME_I_FPV(__name, __prop) \
+`ifdef FPV_ON                        \
+   `ASSUME_I(__name, __prop)         \
+`endif
+
+// COVER_FPV
+// Cover a concurrent property during formal verification
+`define COVER_FPV(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`ifdef FPV_ON                                                                               \
+   `COVER(__name, __prop, __clk, __rst)                                                     \
+`endif
+
+`endif // PRIM_ASSERT_SV

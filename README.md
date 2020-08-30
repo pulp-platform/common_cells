@@ -113,8 +113,8 @@ The header file `registers.svh` contains macros that expand to descriptions of r
 To avoid misuse of `always_ff` blocks, only the following macros shall be used to describe sequential behavior.
 The use of linter rules that flag explicit uses of `always_ff` in source code is encouraged.
 
-|    Macro     |                            Arguments                            |                               Description                               |
-| ------------ | --------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Macro        | Arguments                                                       | Description                                                             |
+|--------------|-----------------------------------------------------------------|-------------------------------------------------------------------------|
 | `` `FF``     | `q_sig`, `d_sig`, `rst_val`                                     | Flip-flop with asynchronous active-low reset (implicit)                 |
 | `` `FFAR``   | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `arst_sig`              | Flip-flop with asynchronous active-high reset                           |
 | `` `FFARN``  | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `arstn_sig`             | Flip-flop with asynchronous active-low reset                            |
@@ -137,14 +137,42 @@ The use of linter rules that flag explicit uses of `always_ff` in source code is
 
 The header file `assertions.svh` contains macros that expand to assertion blocks.
 These macros should recduce the effort in writing many assertions and make it
-easier to use them.
+easier to use them. They are identical with the macros used by [lowrisc](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_assert.sv)
+and just re-implemented here for the sake of easier use in PULP projects (the same include guard is used so they should not clash).
 
-|        Macro        |                    Arguments                    |                                     Description                                     |
-| ------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `` `ASSERT``        | `__cond`, `__label`                             | Immediate assertion                                                                 |
-| `` `ASSERT_ERR``    | `__cond`, `__err`, `__label`                    | Immediate assertion with custom error message                                       |
-| `` `ASSERTC``       | `__prop`, `__label`                             | Concurrent clocked assertion with implicit clock and reset                          |
-| `` `ASSERTC_ERR``   | `__prop`, `__err`, `__label`                    | Concurrent clocked assertion with implicit clock and reset and custom error message |
-| `` `ASSERTC_CR``    | `__prop`, `__clk`, `__rstn`, `__label`          | Concurrent clocked assertion                                                        |
-| `` `ASSERTC_CRERR`` | `__prop`, `__clk`, `__rstn`, `__err`, `__label` | Concurrent clocked assertion with custom error message                              |
+#### Simple Assertion and Cover Macros
+| Macro              | Arguments                              | Description                                                                |
+|--------------------|----------------------------------------|----------------------------------------------------------------------------|
+| `` `ASSERT_I``     | `__name`, `__prop`                     | Immediate assertion                                                        |
+| `` `ASSERT_INIT``  | `__name`, `__prop`                     | Assertion in initial block. Can be used for things like parameter checking |
+| `` `ASSERT_FINAL`` | `__name`, `__prop`                     | Assertion in final block                                                   |
+| `` `ASSERT``       | `__name`, `__prop`, (`__clk`, `__rst`) | Assert a concurrent property directly                                      |
+| `` `ASSERT_NEVER`` | `__name`, `__prop`, (`__clk`, `__rst`) | Assert a concurrent property NEVER happens                                 |
+| `` `ASSERT_KNOWN`` | `__name`, `__sig`, (`__clk`, `__rst`)  | Concurrent clocked assertion with custom error message                     |
+| `` `COVER``        | `__name`, `__prop`, (`__clk`, `__rst`) | Cover a concurrent property                                                |
+- *The name of the clock and reset signals for implicit variants is `clk_i` and `rst_ni`, respectively.*
+
+#### Complex Assertion Macros
+| Macro                 | Arguments                                          | Description                                                                                       |
+|-----------------------|----------------------------------------------------|---------------------------------------------------------------------------------------------------|
+| `` `ASSERT_PULSE``    | `__name`, `__sig`, (`__clk`, `__rst`)              | Assert that signal is an active-high pulse with pulse length of 1 clock cycle                     |
+| `` `ASSERT_IF``       | `__name`, `__prop`, `__enable`, (`__clk`, `__rst`) | Assert that a property is true only when an enable signal is set                                  |
+| `` `ASSERT_KNOWN_IF`` | `__name`, `__sig`, `__enable`, (`__clk`, `__rst`)  | Assert that signal has a known value (each bit is either '0' or '1') after reset if enable is set |
+- *The name of the clock and reset signals for implicit variants is `clk_i` and `rst_ni`, respectively.*
+
+#### Assumption Macros
+
+| Macro          | Arguments                              | Description                  |
+|----------------|----------------------------------------|------------------------------|
+| `` `ASSUME``   | `__name`, `__prop`, (`__clk`, `__rst`) | Assume a concurrent property |
+| `` `ASSUME_I`` | `__name`, `__prop`                     | Assume an immediate property |
+- *The name of the clock and reset signals for implicit variants is `clk_i` and `rst_ni`, respectively.*
+
+#### Formal Verification Macros
+
+| Macro              | Arguments                              | Description                                                  |
+|--------------------|----------------------------------------|--------------------------------------------------------------|
+| `` `ASSUME_FPV``   | `__name`, `__prop`, (`__clk`, `__rst`) | Assume a concurrent property during formal verification only |
+| `` `ASSUME_I_FPV`` | `__name`, `__prop`                     | Assume a concurrent property during formal verification only |
+| `` `COVER_FPV``    | `__name`, `__prop`, (`__clk`, `__rst`) | Cover a concurrent property during formal verification       |
 - *The name of the clock and reset signals for implicit variants is `clk_i` and `rst_ni`, respectively.*
