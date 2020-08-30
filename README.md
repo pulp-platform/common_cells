@@ -15,7 +15,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 
 ### Clocks and Resets
 
-| Name                    | Description                                         | Status       | Superseded By |
+|           Name          |                     Description                     |    Status    | Superseded By |
 |-------------------------|-----------------------------------------------------|--------------|---------------|
 | `clk_div`               | Clock divider with integer divisor                  | active       |               |
 | `clock_divider`         | Clock divider with configuration registers          | *deprecated* | `clk_div`     |
@@ -43,7 +43,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 
 ### Counters and Shift Registers
 
-| Name                | Description                                                       | Status       | Superseded By |
+|         Name        |                   Description                                     |    Status    | Superseded By |
 |---------------------|-------------------------------------------------------------------|--------------|---------------|
 | `counter`           | Generic up/down counter with overflow detection                   | active       |               |
 | `delta_counter`     | Up/down counter with variable delta and overflow detection        | active       |               |
@@ -113,8 +113,8 @@ The header file `registers.svh` contains macros that expand to descriptions of r
 To avoid misuse of `always_ff` blocks, only the following macros shall be used to describe sequential behavior.
 The use of linter rules that flag explicit uses of `always_ff` in source code is encouraged.
 
-| Macro        | Arguments                                                       | Description                                                             |
-|--------------|-----------------------------------------------------------------|-------------------------------------------------------------------------|
+|    Macro     |                            Arguments                            |                               Description                               |
+| ------------ | --------------------------------------------------------------- | ----------------------------------------------------------------------- |
 | `` `FF``     | `q_sig`, `d_sig`, `rst_val`                                     | Flip-flop with asynchronous active-low reset (implicit)                 |
 | `` `FFAR``   | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `arst_sig`              | Flip-flop with asynchronous active-high reset                           |
 | `` `FFARN``  | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `arstn_sig`             | Flip-flop with asynchronous active-low reset                            |
