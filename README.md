@@ -15,7 +15,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 
 ### Clocks and Resets
 
-| Name                    | Description                                         | Status       | Superseded By |
+|           Name          |                     Description                     |    Status    | Superseded By |
 |-------------------------|-----------------------------------------------------|--------------|---------------|
 | `clk_div`               | Clock divider with integer divisor                  | active       |               |
 | `clock_divider`         | Clock divider with configuration registers          | *deprecated* | `clk_div`     |
@@ -43,7 +43,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 
 ### Counters and Shift Registers
 
-| Name                | Description                                                       | Status       | Superseded By |
+|         Name        |                   Description                                     |    Status    | Superseded By |
 |---------------------|-------------------------------------------------------------------|--------------|---------------|
 | `counter`           | Generic up/down counter with overflow detection                   | active       |               |
 | `delta_counter`     | Up/down counter with variable delta and overflow detection        | active       |               |
@@ -113,22 +113,66 @@ The header file `registers.svh` contains macros that expand to descriptions of r
 To avoid misuse of `always_ff` blocks, only the following macros shall be used to describe sequential behavior.
 The use of linter rules that flag explicit uses of `always_ff` in source code is encouraged.
 
-| Macro                 | Arguments                                                       | Description                                                             |
-|-----------------------|-----------------------------------------------------------------|-------------------------------------------------------------------------|
-| <code>\`FF</code>     | `q_sig`, `d_sig`, `rst_val`                                     | Flip-flop with asynchronous active-low reset (implicit)                 |
-| <code>\`FFAR</code>   | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `arst_sig`              | Flip-flop with asynchronous active-high reset                           |
-| <code>\`FFARN</code>  | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `arstn_sig`             | Flip-flop with asynchronous active-low reset                            |
-| <code>\`FFSR</code>   | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `rst_sig`               | Flip-flop with synchronous active-high reset                            |
-| <code>\`FFSRN</code>  | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `rstn_sig`              | Flip-flop with synchronous active-low reset                             |
-| <code>\`FFNR</code>   | `q_sig`, `d_sig`, `clk_sig`                                     | Flip-flop without reset                                                 |
-|                       |                                                                 |                                                                         |
-| <code>\`FFL</code>    | `q_sig`, `d_sig`, `load_ena`, `rst_val`                         | Flip-flop with load-enable and asynchronous active-low reset (implicit) |
-| <code>\`FFLAR</code>  | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `arst_sig`  | Flip-flop with load-enable and asynchronous active-high reset           |
-| <code>\`FFLARN</code> | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `arstn_sig` | Flip-flop with load-enable and asynchronous active-low reset            |
-| <code>\`FFLSR</code>  | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `rst_sig`   | Flip-flop with load-enable and synchronous active-high reset            |
-| <code>\`FFLSRN</code> | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `rstn_sig`  | Flip-flop with load-enable and synchronous active-low reset             |
-| <code>\`FFLNR</code>  | `q_sig`, `d_sig`, `load_ena`, `clk_sig`                         | Flip-flop with load-enable without reset                                |
+|    Macro     |                            Arguments                            |                               Description                               |
+| ------------ | --------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `` `FF``     | `q_sig`, `d_sig`, `rst_val`                                     | Flip-flop with asynchronous active-low reset (implicit)                 |
+| `` `FFAR``   | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `arst_sig`              | Flip-flop with asynchronous active-high reset                           |
+| `` `FFARN``  | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `arstn_sig`             | Flip-flop with asynchronous active-low reset                            |
+| `` `FFSR``   | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `rst_sig`               | Flip-flop with synchronous active-high reset                            |
+| `` `FFSRN``  | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `rstn_sig`              | Flip-flop with synchronous active-low reset                             |
+| `` `FFNR``   | `q_sig`, `d_sig`, `clk_sig`                                     | Flip-flop without reset                                                 |
+|              |                                                                 |                                                                         |
+| `` `FFL``    | `q_sig`, `d_sig`, `load_ena`, `rst_val`                         | Flip-flop with load-enable and asynchronous active-low reset (implicit) |
+| `` `FFLAR``  | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `arst_sig`  | Flip-flop with load-enable and asynchronous active-high reset           |
+| `` `FFLARN`` | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `arstn_sig` | Flip-flop with load-enable and asynchronous active-low reset            |
+| `` `FFLSR``  | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `rst_sig`   | Flip-flop with load-enable and synchronous active-high reset            |
+| `` `FFLSRN`` | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `rstn_sig`  | Flip-flop with load-enable and synchronous active-low reset             |
+| `` `FFLNR``  | `q_sig`, `d_sig`, `load_ena`, `clk_sig`                         | Flip-flop with load-enable without reset                                |
 - *The name of the clock and reset signals for implicit variants is `clk_i` and `rst_ni`, respectively.*
 - *Argument suffix `_sig` indicates signal names for present and next state as well as clocks and resets.*
 - *Argument `rst_val` specifies the value literal to be assigned upon reset.*
 - *Argument `load_ena` specifies the boolean expression that forms the load enable of the register.*
+
+### SystemVerilog Assertion Macros
+
+The header file `assertions.svh` contains macros that expand to assertion blocks.
+These macros should recduce the effort in writing many assertions and make it
+easier to use them. They are identical with the macros used by [lowrisc](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_assert.sv)
+and just re-implemented here for the sake of easier use in PULP projects (the same include guard is used so they should not clash).
+
+#### Simple Assertion and Cover Macros
+| Macro              | Arguments                              | Description                                                                |
+|--------------------|----------------------------------------|----------------------------------------------------------------------------|
+| `` `ASSERT_I``     | `__name`, `__prop`                     | Immediate assertion                                                        |
+| `` `ASSERT_INIT``  | `__name`, `__prop`                     | Assertion in initial block. Can be used for things like parameter checking |
+| `` `ASSERT_FINAL`` | `__name`, `__prop`                     | Assertion in final block                                                   |
+| `` `ASSERT``       | `__name`, `__prop`, (`__clk`, `__rst`) | Assert a concurrent property directly                                      |
+| `` `ASSERT_NEVER`` | `__name`, `__prop`, (`__clk`, `__rst`) | Assert a concurrent property NEVER happens                                 |
+| `` `ASSERT_KNOWN`` | `__name`, `__sig`, (`__clk`, `__rst`)  | Concurrent clocked assertion with custom error message                     |
+| `` `COVER``        | `__name`, `__prop`, (`__clk`, `__rst`) | Cover a concurrent property                                                |
+- *The name of the clock and reset signals for implicit variants is `clk_i` and `rst_ni`, respectively.*
+
+#### Complex Assertion Macros
+| Macro                 | Arguments                                          | Description                                                                                       |
+|-----------------------|----------------------------------------------------|---------------------------------------------------------------------------------------------------|
+| `` `ASSERT_PULSE``    | `__name`, `__sig`, (`__clk`, `__rst`)              | Assert that signal is an active-high pulse with pulse length of 1 clock cycle                     |
+| `` `ASSERT_IF``       | `__name`, `__prop`, `__enable`, (`__clk`, `__rst`) | Assert that a property is true only when an enable signal is set                                  |
+| `` `ASSERT_KNOWN_IF`` | `__name`, `__sig`, `__enable`, (`__clk`, `__rst`)  | Assert that signal has a known value (each bit is either '0' or '1') after reset if enable is set |
+- *The name of the clock and reset signals for implicit variants is `clk_i` and `rst_ni`, respectively.*
+
+#### Assumption Macros
+
+| Macro          | Arguments                              | Description                  |
+|----------------|----------------------------------------|------------------------------|
+| `` `ASSUME``   | `__name`, `__prop`, (`__clk`, `__rst`) | Assume a concurrent property |
+| `` `ASSUME_I`` | `__name`, `__prop`                     | Assume an immediate property |
+- *The name of the clock and reset signals for implicit variants is `clk_i` and `rst_ni`, respectively.*
+
+#### Formal Verification Macros
+
+| Macro              | Arguments                              | Description                                                  |
+|--------------------|----------------------------------------|--------------------------------------------------------------|
+| `` `ASSUME_FPV``   | `__name`, `__prop`, (`__clk`, `__rst`) | Assume a concurrent property during formal verification only |
+| `` `ASSUME_I_FPV`` | `__name`, `__prop`                     | Assume a concurrent property during formal verification only |
+| `` `COVER_FPV``    | `__name`, `__prop`, (`__clk`, `__rst`) | Cover a concurrent property during formal verification       |
+- *The name of the clock and reset signals for implicit variants is `clk_i` and `rst_ni`, respectively.*
