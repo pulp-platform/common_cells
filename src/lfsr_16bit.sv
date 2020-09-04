@@ -29,7 +29,7 @@ module lfsr_16bit #(
     output logic [$clog2(WIDTH)-1:0]  refill_way_bin
 );
 
-    localparam int unsigned LOG_WIDTH = $clog2(WIDTH);
+    localparam int unsigned LogWidth = $clog2(WIDTH);
 
     logic [15:0] shift_d, shift_q;
 
@@ -46,7 +46,7 @@ module lfsr_16bit #(
 
         // output assignment
         refill_way_oh = 'b0;
-        refill_way_oh[shift_q[LOG_WIDTH-1:0]] = 1'b1;
+        refill_way_oh[shift_q[LogWidth-1:0]] = 1'b1;
         refill_way_bin = shift_q;
     end
 
@@ -60,7 +60,8 @@ module lfsr_16bit #(
 
     //pragma translate_off
     initial begin
-        assert (WIDTH <= 16) else $fatal(1, "WIDTH needs to be less than 16 because of the 16-bit LFSR");
+        assert (WIDTH <= 16)
+            else $fatal(1, "WIDTH needs to be less than 16 because of the 16-bit LFSR");
     end
     //pragma translate_on
 

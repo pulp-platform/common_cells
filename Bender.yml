@@ -21,6 +21,8 @@ sources:
   # Files in level 1 only depend on files in level 0, files in level 2 on files in levels 1 and 0,
   # etc. Files within a level are ordered alphabetically.
   # Level 0
+  - src/binary_to_gray.sv
+  - src/cb_filter_pkg.sv
   - src/cdc_2phase.sv
   - src/cf_math_pkg.sv
   - src/clk_div.sv
@@ -29,7 +31,7 @@ sources:
   - src/edge_propagator_tx.sv
   - src/exp_backoff.sv
   - src/fifo_v3.sv
-  - src/graycode.sv
+  - src/gray_to_binary.sv
   - src/isochronous_spill_register.sv
   - src/lfsr.sv
   - src/lfsr_16bit.sv
@@ -80,7 +82,7 @@ sources:
 
   - target: simulation
     files:
-      - src/sram.sv
+      - src/deprecated/sram.sv
 
   - target: test
     files:

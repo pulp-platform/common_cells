@@ -211,7 +211,7 @@ module rr_arb_tree_tb #(
           error       = throughput - exp_through;
           if (FairArb && LockIn) begin
             assert(error < error_threshold && error > -error_threshold) else
-                $warning("Line: %0d is unfair!");
+                $warning("Line: %0d is unfair!", i);
           end
           $display("Line: %0d, TotActice: %0d Throughput: %0f Ideal: %0f Diff: %0f",
               i, j, throughput, exp_through, error);        end

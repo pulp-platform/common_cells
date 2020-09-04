@@ -39,22 +39,7 @@
 //   - `filter_empty_o`:  Filter is empty.
 //   - `filter_error_o`:  One of the internal counters or buckets overflowed.
 
-// package with the struct definition for the seeds and an example
-package cb_filter_pkg;
-  typedef struct packed {
-    int unsigned PermuteSeed;
-    int unsigned XorSeed;
-  } cb_seed_t;
-
-  // example seeding struct
-  localparam cb_seed_t [2:0] EgSeeds = '{
-    '{PermuteSeed: 32'd299034753, XorSeed: 32'd4094834  },
-    '{PermuteSeed: 32'd19921030,  XorSeed: 32'd995713   },
-    '{PermuteSeed: 32'd294388,    XorSeed: 32'd65146511 }
-  };
-endpackage
-
-// This is a counting bloom filter
+/// This is a counting bloom filter
 module cb_filter #(
   parameter int unsigned KHashes     =  32'd3,  // Number of hash functions
   parameter int unsigned HashWidth   =  32'd4,  // Number of counters is 2**HashWidth
@@ -158,6 +143,7 @@ module cb_filter #(
       2'b10 : bucket_en = incr_ind;
       2'b01 : bucket_en = decr_ind;
       2'b11 : bucket_en = incr_ind ^ decr_ind;
+      default: bucket_en = '0; // unreachable
     endcase
   end
 

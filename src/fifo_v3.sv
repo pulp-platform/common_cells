@@ -35,23 +35,24 @@ module fifo_v3 #(
 );
     // local parameter
     // FIFO depth - handle the case of pass-through, synthesizer will do constant propagation
-    localparam int unsigned FIFO_DEPTH = (DEPTH > 0) ? DEPTH : 1;
+    localparam int unsigned FifoDepth = (DEPTH > 0) ? DEPTH : 1;
     // clock gating control
     logic gate_clock;
     // pointer to the read and write section of the queue
     logic [ADDR_DEPTH - 1:0] read_pointer_n, read_pointer_q, write_pointer_n, write_pointer_q;
     // keep a counter to keep track of the current queue status
-    logic [ADDR_DEPTH:0] status_cnt_n, status_cnt_q; // this integer will be truncated by the synthesis tool
+    // this integer will be truncated by the synthesis tool
+    logic [ADDR_DEPTH:0] status_cnt_n, status_cnt_q;
     // actual memory
-    dtype [FIFO_DEPTH - 1:0] mem_n, mem_q;
+    dtype [FifoDepth - 1:0] mem_n, mem_q;
 
     assign usage_o = status_cnt_q[ADDR_DEPTH-1:0];
 
-    if (DEPTH == 0) begin
+    if (DEPTH == 0) begin : gen_pass_through
         assign empty_o     = ~push_i;
         assign full_o      = ~pop_i;
-    end else begin
-        assign full_o       = (status_cnt_q == FIFO_DEPTH[ADDR_DEPTH:0]);
+    end else begin : gen_fifo
+        assign full_o       = (status_cnt_q == FifoDepth[ADDR_DEPTH:0]);
         assign empty_o      = (status_cnt_q == 0) & ~(FALL_THROUGH & push_i);
     end
     // status flags
@@ -73,7 +74,7 @@ module fifo_v3 #(
             // un-gate the clock, we want to write something
             gate_clock = 1'b0;
             // increment the write counter
-            if (write_pointer_q == FIFO_DEPTH[ADDR_DEPTH-1:0] - 1)
+            if (write_pointer_q == FifoDepth[ADDR_DEPTH-1:0] - 1)
                 write_pointer_n = '0;
             else
                 write_pointer_n = write_pointer_q + 1;
@@ -84,7 +85,7 @@ module fifo_v3 #(
         if (pop_i && ~empty_o) begin
             // read from the queue is a default assignment
             // but increment the read pointer...
-            if (read_pointer_n == FIFO_DEPTH[ADDR_DEPTH-1:0] - 1)
+            if (read_pointer_n == FifoDepth[ADDR_DEPTH-1:0] - 1)
                 read_pointer_n = '0;
             else
                 read_pointer_n = read_pointer_q + 1;

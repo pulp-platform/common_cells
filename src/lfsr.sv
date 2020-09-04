@@ -37,7 +37,7 @@ module lfsr #(
 // Galois LFSR feedback masks
 // Automatically generated with get_lfsr_masks.py
 // Masks are from https://users.ece.cmu.edu/~koopman/lfsr/
-localparam logic [63:0] masks [4:64] = '{64'hC,
+localparam logic [63:0] Masks [4:64] = '{64'hC,
                                          64'h1E,
                                          64'h39,
                                          64'h7E,
@@ -109,41 +109,45 @@ localparam logic [63:0] masks [4:64] = '{64'hC,
 // http://www.lightweightcrypto.org/present/present_ches2007.pdf
 
 // this is the sbox from the present cipher
-localparam logic[15:0][3:0] sbox4 = {4'h2, 4'h1, 4'h7, 4'h4,
+localparam logic[15:0][3:0] Sbox4 = {4'h2, 4'h1, 4'h7, 4'h4,
                                      4'h8, 4'hF, 4'hE, 4'h3,
                                      4'hD, 4'hA, 4'h0, 4'h9,
                                      4'hB, 4'h6, 4'h5, 4'hC };
 
 // these are the permutation indices of the present cipher
-localparam logic[63:0][5:0] perm = {6'd63, 6'd47, 6'd31, 6'd15, 6'd62, 6'd46, 6'd30, 6'd14, 6'd61, 6'd45, 6'd29, 6'd13, 6'd60, 6'd44, 6'd28, 6'd12,
-                                    6'd59, 6'd43, 6'd27, 6'd11, 6'd58, 6'd42, 6'd26, 6'd10, 6'd57, 6'd41, 6'd25, 6'd09, 6'd56, 6'd40, 6'd24, 6'd08,
-                                    6'd55, 6'd39, 6'd23, 6'd07, 6'd54, 6'd38, 6'd22, 6'd06, 6'd53, 6'd37, 6'd21, 6'd05, 6'd52, 6'd36, 6'd20, 6'd04,
-                                    6'd51, 6'd35, 6'd19, 6'd03, 6'd50, 6'd34, 6'd18, 6'd02, 6'd49, 6'd33, 6'd17, 6'd01, 6'd48, 6'd32, 6'd16, 6'd00};
+localparam logic[63:0][5:0] Perm = {6'd63, 6'd47, 6'd31, 6'd15, 6'd62, 6'd46, 6'd30, 6'd14,
+                                    6'd61, 6'd45, 6'd29, 6'd13, 6'd60, 6'd44, 6'd28, 6'd12,
+                                    6'd59, 6'd43, 6'd27, 6'd11, 6'd58, 6'd42, 6'd26, 6'd10,
+                                    6'd57, 6'd41, 6'd25, 6'd09, 6'd56, 6'd40, 6'd24, 6'd08,
+                                    6'd55, 6'd39, 6'd23, 6'd07, 6'd54, 6'd38, 6'd22, 6'd06,
+                                    6'd53, 6'd37, 6'd21, 6'd05, 6'd52, 6'd36, 6'd20, 6'd04,
+                                    6'd51, 6'd35, 6'd19, 6'd03, 6'd50, 6'd34, 6'd18, 6'd02,
+                                    6'd49, 6'd33, 6'd17, 6'd01, 6'd48, 6'd32, 6'd16, 6'd00};
 
 
 function automatic logic [63:0] sbox4_layer(logic [63:0] in);
   logic [63:0] out;
   //for (logic [4:0] j = '0; j<16; j++) out[j*4 +: 4] = sbox4[in[j*4 +: 4]];
   // this simulates much faster than the loop
-  out[0*4  +: 4] = sbox4[in[0*4  +: 4]];
-  out[1*4  +: 4] = sbox4[in[1*4  +: 4]];
-  out[2*4  +: 4] = sbox4[in[2*4  +: 4]];
-  out[3*4  +: 4] = sbox4[in[3*4  +: 4]];
+  out[0*4  +: 4] = Sbox4[in[0*4  +: 4]];
+  out[1*4  +: 4] = Sbox4[in[1*4  +: 4]];
+  out[2*4  +: 4] = Sbox4[in[2*4  +: 4]];
+  out[3*4  +: 4] = Sbox4[in[3*4  +: 4]];
 
-  out[4*4  +: 4] = sbox4[in[4*4  +: 4]];
-  out[5*4  +: 4] = sbox4[in[5*4  +: 4]];
-  out[6*4  +: 4] = sbox4[in[6*4  +: 4]];
-  out[7*4  +: 4] = sbox4[in[7*4  +: 4]];
+  out[4*4  +: 4] = Sbox4[in[4*4  +: 4]];
+  out[5*4  +: 4] = Sbox4[in[5*4  +: 4]];
+  out[6*4  +: 4] = Sbox4[in[6*4  +: 4]];
+  out[7*4  +: 4] = Sbox4[in[7*4  +: 4]];
 
-  out[8*4  +: 4] = sbox4[in[8*4  +: 4]];
-  out[9*4  +: 4] = sbox4[in[9*4  +: 4]];
-  out[10*4 +: 4] = sbox4[in[10*4 +: 4]];
-  out[11*4 +: 4] = sbox4[in[11*4 +: 4]];
+  out[8*4  +: 4] = Sbox4[in[8*4  +: 4]];
+  out[9*4  +: 4] = Sbox4[in[9*4  +: 4]];
+  out[10*4 +: 4] = Sbox4[in[10*4 +: 4]];
+  out[11*4 +: 4] = Sbox4[in[11*4 +: 4]];
 
-  out[12*4 +: 4] = sbox4[in[12*4 +: 4]];
-  out[13*4 +: 4] = sbox4[in[13*4 +: 4]];
-  out[14*4 +: 4] = sbox4[in[14*4 +: 4]];
-  out[15*4 +: 4] = sbox4[in[15*4 +: 4]];
+  out[12*4 +: 4] = Sbox4[in[12*4 +: 4]];
+  out[13*4 +: 4] = Sbox4[in[13*4 +: 4]];
+  out[14*4 +: 4] = Sbox4[in[14*4 +: 4]];
+  out[15*4 +: 4] = Sbox4[in[15*4 +: 4]];
   return out;
 endfunction : sbox4_layer
 
@@ -151,76 +155,76 @@ function automatic logic [63:0] perm_layer(logic [63:0] in);
   logic [63:0] out;
   // for (logic [7:0] j = '0; j<64; j++) out[perm[j]] = in[j];
   // this simulates much faster than the loop
-  out[perm[0]] = in[0];
-  out[perm[1]] = in[1];
-  out[perm[2]] = in[2];
-  out[perm[3]] = in[3];
-  out[perm[4]] = in[4];
-  out[perm[5]] = in[5];
-  out[perm[6]] = in[6];
-  out[perm[7]] = in[7];
-  out[perm[8]] = in[8];
-  out[perm[9]] = in[9];
+  out[Perm[0]] = in[0];
+  out[Perm[1]] = in[1];
+  out[Perm[2]] = in[2];
+  out[Perm[3]] = in[3];
+  out[Perm[4]] = in[4];
+  out[Perm[5]] = in[5];
+  out[Perm[6]] = in[6];
+  out[Perm[7]] = in[7];
+  out[Perm[8]] = in[8];
+  out[Perm[9]] = in[9];
 
-  out[perm[10]] = in[10];
-  out[perm[11]] = in[11];
-  out[perm[12]] = in[12];
-  out[perm[13]] = in[13];
-  out[perm[14]] = in[14];
-  out[perm[15]] = in[15];
-  out[perm[16]] = in[16];
-  out[perm[17]] = in[17];
-  out[perm[18]] = in[18];
-  out[perm[19]] = in[19];
+  out[Perm[10]] = in[10];
+  out[Perm[11]] = in[11];
+  out[Perm[12]] = in[12];
+  out[Perm[13]] = in[13];
+  out[Perm[14]] = in[14];
+  out[Perm[15]] = in[15];
+  out[Perm[16]] = in[16];
+  out[Perm[17]] = in[17];
+  out[Perm[18]] = in[18];
+  out[Perm[19]] = in[19];
 
-  out[perm[20]] = in[20];
-  out[perm[21]] = in[21];
-  out[perm[22]] = in[22];
-  out[perm[23]] = in[23];
-  out[perm[24]] = in[24];
-  out[perm[25]] = in[25];
-  out[perm[26]] = in[26];
-  out[perm[27]] = in[27];
-  out[perm[28]] = in[28];
-  out[perm[29]] = in[29];
+  out[Perm[20]] = in[20];
+  out[Perm[21]] = in[21];
+  out[Perm[22]] = in[22];
+  out[Perm[23]] = in[23];
+  out[Perm[24]] = in[24];
+  out[Perm[25]] = in[25];
+  out[Perm[26]] = in[26];
+  out[Perm[27]] = in[27];
+  out[Perm[28]] = in[28];
+  out[Perm[29]] = in[29];
 
-  out[perm[30]] = in[30];
-  out[perm[31]] = in[31];
-  out[perm[32]] = in[32];
-  out[perm[33]] = in[33];
-  out[perm[34]] = in[34];
-  out[perm[35]] = in[35];
-  out[perm[36]] = in[36];
-  out[perm[37]] = in[37];
-  out[perm[38]] = in[38];
-  out[perm[39]] = in[39];
+  out[Perm[30]] = in[30];
+  out[Perm[31]] = in[31];
+  out[Perm[32]] = in[32];
+  out[Perm[33]] = in[33];
+  out[Perm[34]] = in[34];
+  out[Perm[35]] = in[35];
+  out[Perm[36]] = in[36];
+  out[Perm[37]] = in[37];
+  out[Perm[38]] = in[38];
+  out[Perm[39]] = in[39];
 
-  out[perm[40]] = in[40];
-  out[perm[41]] = in[41];
-  out[perm[42]] = in[42];
-  out[perm[43]] = in[43];
-  out[perm[44]] = in[44];
-  out[perm[45]] = in[45];
-  out[perm[46]] = in[46];
-  out[perm[47]] = in[47];
-  out[perm[48]] = in[48];
-  out[perm[49]] = in[49];
+  out[Perm[40]] = in[40];
+  out[Perm[41]] = in[41];
+  out[Perm[42]] = in[42];
+  out[Perm[43]] = in[43];
+  out[Perm[44]] = in[44];
+  out[Perm[45]] = in[45];
+  out[Perm[46]] = in[46];
+  out[Perm[47]] = in[47];
+  out[Perm[48]] = in[48];
+  out[Perm[49]] = in[49];
 
-  out[perm[50]] = in[50];
-  out[perm[51]] = in[51];
-  out[perm[52]] = in[52];
-  out[perm[53]] = in[53];
-  out[perm[54]] = in[54];
-  out[perm[55]] = in[55];
-  out[perm[56]] = in[56];
-  out[perm[57]] = in[57];
-  out[perm[58]] = in[58];
-  out[perm[59]] = in[59];
+  out[Perm[50]] = in[50];
+  out[Perm[51]] = in[51];
+  out[Perm[52]] = in[52];
+  out[Perm[53]] = in[53];
+  out[Perm[54]] = in[54];
+  out[Perm[55]] = in[55];
+  out[Perm[56]] = in[56];
+  out[Perm[57]] = in[57];
+  out[Perm[58]] = in[58];
+  out[Perm[59]] = in[59];
 
-  out[perm[60]] = in[60];
-  out[perm[61]] = in[61];
-  out[perm[62]] = in[62];
-  out[perm[63]] = in[63];
+  out[Perm[60]] = in[60];
+  out[Perm[61]] = in[61];
+  out[Perm[62]] = in[62];
+  out[Perm[63]] = in[63];
   return out;
 endfunction : perm_layer
 
@@ -229,7 +233,8 @@ endfunction : perm_layer
 ////////////////////////////////////////////////////////////////////////
 
 logic [LfsrWidth-1:0] lfsr_d, lfsr_q;
-assign lfsr_d = (en_i) ? (lfsr_q>>1) ^ ({LfsrWidth{lfsr_q[0]}} & masks[LfsrWidth][LfsrWidth-1:0]) : lfsr_q;
+assign lfsr_d =
+  (en_i) ? (lfsr_q>>1) ^ ({LfsrWidth{lfsr_q[0]}} & Masks[LfsrWidth][LfsrWidth-1:0]) : lfsr_q;
 
 always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
   //$display("%b %h", en_i, lfsr_d);
@@ -292,9 +297,9 @@ initial begin
     $fatal(1,"OutWidth must be smaller equal the LfsrWidth.");
   assert(RstVal > unsigned'(0)) else
     $fatal(1,"RstVal must be nonzero.");
-  assert((LfsrWidth >= $low(masks)) && (LfsrWidth <= $high(masks))) else
+  assert((LfsrWidth >= $low(Masks)) && (LfsrWidth <= $high(Masks))) else
     $fatal(1,"Unsupported LfsrWidth.");
-  assert(masks[LfsrWidth][LfsrWidth-1]) else
+  assert(Masks[LfsrWidth][LfsrWidth-1]) else
     $fatal(1, "LFSR mask is not correct. The MSB must be 1." );
   assert((CipherLayers > 0) && (LfsrWidth == 64) || (CipherLayers == 0)) else
     $fatal(1, "Use additional cipher layers only in conjunction with an LFSR width of 64 bit." );

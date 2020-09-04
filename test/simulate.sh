@@ -33,7 +33,7 @@ for depth in 0 1 2; do
 done
 
 for num in 1 4 7; do
-  call_vsim rr_arb_tree_tb -GNumInp=$num -coverage -voptargs="+acc +cover=bcesfx"
+  call_vsim rr_arb_tree_tb -GNumInp=$num -coverage -voptargs="+acc +cover=bcesfx" -suppress vsim-3009
 done
 
 for spill_reg in 0 1; do

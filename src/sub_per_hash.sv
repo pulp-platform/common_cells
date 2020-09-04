@@ -56,7 +56,7 @@ module sub_per_hash #(
   // position 0 indicates the number of inputs, 2 or 3
   // the other positions 1 - 3 indicate the inputs
   typedef int unsigned xor_stages_t [NoRounds][InpWidth][3];
-  localparam xor_stages_t XOR_STAGES = get_xor_stages(XorKey);
+  localparam xor_stages_t XorStages = get_xor_stages(XorKey);
 
   // stage signals
   logic [NoRounds-1:0][InpWidth-1:0] permuted, xored;
@@ -67,16 +67,16 @@ module sub_per_hash #(
     for (genvar i = 0; i < InpWidth ; i++) begin : gen_sub_per
 
       // assign the permutation
-      if(r == 0) begin
+      if (r == 0) begin : gen_input
         assign permuted[r][i] = data_i[PERMUTATIONS[r][i]];
-      end else begin
+      end else begin : gen_permutation
         assign permuted[r][i] = permuted[r-1][PERMUTATIONS[r][i]];
       end
 
       // assign the xor substitution
-      assign xored[r][i] = permuted[r][XOR_STAGES[r][i][0]] ^
-                           permuted[r][XOR_STAGES[r][i][1]] ^
-                           permuted[r][XOR_STAGES[r][i][2]];
+      assign xored[r][i] = permuted[r][XorStages[r][i][0]] ^
+                           permuted[r][XorStages[r][i][1]] ^
+                           permuted[r][XorStages[r][i][2]];
     end
   end
 

@@ -28,13 +28,13 @@ module stream_delay #(
     output logic     valid_o
 );
 
-    if (FixedDelay == 0 && !StallRandom) begin : pass_through
+    if (FixedDelay == 0 && !StallRandom) begin : gen_pass_through
         assign ready_o = ready_i;
         assign valid_o = valid_i;
         assign payload_o = payload_i;
-    end else begin
+    end else begin : gen_delay
 
-        localparam COUNTER_BITS = 4;
+        localparam int unsigned CounterBits = 4;
 
         typedef enum logic [1:0] {
             Idle, Valid, Ready
@@ -46,7 +46,7 @@ module stream_delay #(
         logic [3:0] count_out;
         logic       en;
 
-        logic [COUNTER_BITS-1:0] counter_load;
+        logic [CounterBits-1:0] counter_load;
 
         assign payload_o = payload_i;
 
@@ -92,7 +92,7 @@ module stream_delay #(
 
         end
 
-        if (StallRandom) begin : random_stall
+        if (StallRandom) begin : gen_random_stall
             lfsr_16bit #(
               .WIDTH ( 16 )
             ) i_lfsr_16bit (
@@ -102,12 +102,12 @@ module stream_delay #(
                 .refill_way_oh  (              ),
                 .refill_way_bin ( counter_load )
             );
-        end else begin
+        end else begin : gen_fixed_delay
             assign counter_load = FixedDelay;
         end
 
         counter #(
-            .WIDTH      ( COUNTER_BITS )
+            .WIDTH      ( CounterBits )
         ) i_counter (
             .clk_i      ( clk_i        ),
             .rst_ni     ( rst_ni       ),

@@ -13,7 +13,7 @@
 // Pro Tip: The wise Dr. Schaffner recommends at least 4 registers!
 
 module rstgen_bypass #(
-    parameter NumRegs = 4
+    parameter int unsigned NumRegs = 4
 ) (
     input  logic clk_i,
     input  logic rst_ni,

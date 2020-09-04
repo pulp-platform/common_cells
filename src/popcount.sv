@@ -18,16 +18,16 @@
 
 module popcount #(
     parameter int unsigned INPUT_WIDTH = 256,
-    localparam POPCOUNT_WIDTH          = $clog2(INPUT_WIDTH)+1
+    localparam int unsigned PopcountWidth = $clog2(INPUT_WIDTH)+1
 ) (
     input logic [INPUT_WIDTH-1:0]     data_i,
-    output logic [POPCOUNT_WIDTH-1:0] popcount_o
+    output logic [PopcountWidth-1:0] popcount_o
 );
 
-   localparam int unsigned PADDED_WIDTH = 1 << $clog2(INPUT_WIDTH);
+   localparam int unsigned PaddedWidth = 1 << $clog2(INPUT_WIDTH);
 
-   logic [PADDED_WIDTH-1:0]           padded_input;
-   logic [POPCOUNT_WIDTH-2:0]         left_child_result, right_child_result;
+   logic [PaddedWidth-1:0]           padded_input;
+   logic [PopcountWidth-2:0]         left_child_result, right_child_result;
 
    //Zero pad the input to next power of two
    always_comb begin
@@ -43,14 +43,14 @@ module popcount #(
      assign left_child_result  = padded_input[1];
      assign right_child_result = padded_input[0];
    end else begin : non_leaf_node
-     popcount #(.INPUT_WIDTH(PADDED_WIDTH / 2))
+     popcount #(.INPUT_WIDTH(PaddedWidth / 2))
          left_child(
-                    .data_i(padded_input[PADDED_WIDTH-1:PADDED_WIDTH/2]),
+                    .data_i(padded_input[PaddedWidth-1:PaddedWidth/2]),
                     .popcount_o(left_child_result));
 
-     popcount #(.INPUT_WIDTH(PADDED_WIDTH / 2))
+     popcount #(.INPUT_WIDTH(PaddedWidth / 2))
          right_child(
-                     .data_i(padded_input[PADDED_WIDTH/2-1:0]),
+                     .data_i(padded_input[PaddedWidth/2-1:0]),
                      .popcount_o(right_child_result));
    end
 

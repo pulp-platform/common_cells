@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 - `stream_register`: Fix `DATA_WIDTH` of instantiated FIFO.
 - `stream_xbar`: Add missing argument in assertion error string.
+- Lint style fixes
 
 ## 1.19.0 - 2020-05-25
 ### Added

@@ -71,16 +71,16 @@ module id_queue #(
 
     // Capacity of the head-tail table, which associates an ID with corresponding head and tail
     // indices.
-    localparam int N_IDS = 2**ID_WIDTH;
-    localparam int HT_CAPACITY = (N_IDS <= CAPACITY) ? N_IDS : CAPACITY;
-    localparam int unsigned HT_IDX_WIDTH = HT_CAPACITY == 1 ? 1 : $clog2(HT_CAPACITY);
-    localparam int unsigned LD_IDX_WIDTH = CAPACITY    == 1 ? 1 : $clog2(CAPACITY);
+    localparam int NIds = 2**ID_WIDTH;
+    localparam int HtCapacity = (NIds <= CAPACITY) ? NIds : CAPACITY;
+    localparam int unsigned HtIdxWidth = HtCapacity == 1 ? 1 : $clog2(HtCapacity);
+    localparam int unsigned LdIdxWidth = CAPACITY    == 1 ? 1 : $clog2(CAPACITY);
 
     // Type for indexing the head-tail table.
-    typedef logic [HT_IDX_WIDTH-1:0] ht_idx_t;
+    typedef logic [HtIdxWidth-1:0] ht_idx_t;
 
     // Type for indexing the lined data table.
-    typedef logic [LD_IDX_WIDTH-1:0] ld_idx_t;
+    typedef logic [LdIdxWidth-1:0] ld_idx_t;
 
     // Type of an entry in the head-tail table.
     typedef struct packed {
@@ -97,7 +97,7 @@ module id_queue #(
         logic       free;
     } linked_data_t;
 
-    head_tail_t [HT_CAPACITY-1:0]   head_tail_d,    head_tail_q;
+    head_tail_t [HtCapacity-1:0]   head_tail_d,    head_tail_q;
 
     linked_data_t [CAPACITY-1:0]    linked_data_d,  linked_data_q;
 
@@ -105,7 +105,7 @@ module id_queue #(
                                     match_id_valid,
                                     no_id_match;
 
-    logic [HT_CAPACITY-1:0]         head_tail_free,
+    logic [HtCapacity-1:0]         head_tail_free,
                                     idx_matches_id;
 
     logic [CAPACITY-1:0]            exists_match,
@@ -119,24 +119,24 @@ module id_queue #(
     ld_idx_t                        linked_data_free_idx;
 
     // Find the index in the head-tail table that matches a given ID.
-    for (genvar i = 0; i < HT_CAPACITY; i++) begin: gen_idx_match
+    for (genvar i = 0; i < HtCapacity; i++) begin: gen_idx_match
         assign idx_matches_id[i] = match_id_valid && (head_tail_q[i].id == match_id) &&
                 !head_tail_q[i].free;
     end
     assign no_id_match = !(|idx_matches_id);
     onehot_to_bin #(
-        .ONEHOT_WIDTH (HT_CAPACITY)
+        .ONEHOT_WIDTH (HtCapacity)
     ) i_id_ohb (
         .onehot (idx_matches_id),
         .bin    (match_idx)
     );
 
     // Find the first free index in the head-tail table.
-    for (genvar i = 0; i < HT_CAPACITY; i++) begin: gen_head_tail_free
+    for (genvar i = 0; i < HtCapacity; i++) begin: gen_head_tail_free
         assign head_tail_free[i] = head_tail_q[i].free;
     end
     lzc #(
-        .WIDTH  (HT_CAPACITY),
+        .WIDTH  (HtCapacity),
         .MODE   (0)         // Start at index 0.
     ) i_ht_free_lzc (
         .in_i       (head_tail_free),
@@ -174,7 +174,7 @@ module id_queue #(
             match_id_valid = 1'b1;
             // If the ID does not yet exist in the queue, add a new ID entry.
             if (no_id_match) begin
-                head_tail_d[head_tail_free_idx] = head_tail_t'{
+                head_tail_d[head_tail_free_idx] = '{
                     id: inp_id_i,
                     head: linked_data_free_idx,
                     tail: linked_data_free_idx,
@@ -185,7 +185,7 @@ module id_queue #(
                 linked_data_d[head_tail_q[match_idx].tail].next = linked_data_free_idx;
                 head_tail_d[match_idx].tail = linked_data_free_idx;
             end
-            linked_data_d[linked_data_free_idx] = linked_data_t'{
+            linked_data_d[linked_data_free_idx] = '{
                 data: inp_data_i,
                 next: 'x,
                 free: 1'b0
@@ -201,9 +201,10 @@ module id_queue #(
                     linked_data_d[head_tail_q[match_idx].head]      = 'x;
                     linked_data_d[head_tail_q[match_idx].head][0]   = 1'b1;
                     if (head_tail_q[match_idx].head == head_tail_q[match_idx].tail) begin
-                        head_tail_d[match_idx] = head_tail_t'{free: 1'b1, default: 'x};
+                        head_tail_d[match_idx] = '{free: 1'b1, default: 'x};
                     end else begin
-                        head_tail_d[match_idx].head = linked_data_q[head_tail_q[match_idx].head].next;
+                        head_tail_d[match_idx].head =
+                                linked_data_q[head_tail_q[match_idx].head].next;
                     end
                 end
             end
@@ -241,10 +242,10 @@ module id_queue #(
     end
 
     // Registers
-    for (genvar i = 0; i < HT_CAPACITY; i++) begin: gen_ht_ffs
+    for (genvar i = 0; i < HtCapacity; i++) begin: gen_ht_ffs
         always_ff @(posedge clk_i, negedge rst_ni) begin
             if (!rst_ni) begin
-                head_tail_q[i] <= head_tail_t'{free: 1'b1, default: 'x};
+                head_tail_q[i] <= '{free: 1'b1, default: 'x};
             end else begin
                 head_tail_q[i] <= head_tail_d[i];
             end

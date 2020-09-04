@@ -117,13 +117,13 @@ module rr_arb_tree #(
   // pragma translate_on
 
   // just pass through in this corner case
-  if (NumIn == unsigned'(1)) begin
+  if (NumIn == unsigned'(1)) begin : gen_pass_through
     assign req_o    = req_i[0];
     assign gnt_o[0] = gnt_i;
     assign data_o   = data_i[0];
     assign idx_o    = '0;
   // non-degenerate cases
-  end else begin
+  end else begin : gen_arbiter
     localparam int unsigned NumLevels = unsigned'($clog2(NumIn));
 
     /* verilator lint_off UNOPTFLAT */
@@ -254,49 +254,51 @@ module rr_arb_tree #(
         // local select signal
         logic sel;
         // index calcs
-        localparam int unsigned idx0 = 2**level-1+l;// current node
-        localparam int unsigned idx1 = 2**(level+1)-1+l*2;
+        localparam int unsigned Idx0 = 2**level-1+l;// current node
+        localparam int unsigned Idx1 = 2**(level+1)-1+l*2;
         //////////////////////////////////////////////////////////////
         // uppermost level where data is fed in from the inputs
         if (unsigned'(level) == NumLevels-1) begin : gen_first_level
           // if two successive indices are still in the vector...
-          if (unsigned'(l) * 2 < NumIn-1) begin
-            assign req_nodes[idx0]   = req_d[l*2] | req_d[l*2+1];
+          if (unsigned'(l) * 2 < NumIn-1) begin : gen_reduce
+            assign req_nodes[Idx0]   = req_d[l*2] | req_d[l*2+1];
 
             // arbitration: round robin
             assign sel =  ~req_d[l*2] | req_d[l*2+1] & rr_q[NumLevels-1-level];
 
-            assign index_nodes[idx0] = idx_t'(sel);
-            assign data_nodes[idx0]  = (sel) ? data_i[l*2+1] : data_i[l*2];
-            assign gnt_o[l*2]        = gnt_nodes[idx0] & (AxiVldRdy | req_d[l*2])   & ~sel;
-            assign gnt_o[l*2+1]      = gnt_nodes[idx0] & (AxiVldRdy | req_d[l*2+1]) & sel;
+            assign index_nodes[Idx0] = idx_t'(sel);
+            assign data_nodes[Idx0]  = (sel) ? data_i[l*2+1] : data_i[l*2];
+            assign gnt_o[l*2]        = gnt_nodes[Idx0] & (AxiVldRdy | req_d[l*2])   & ~sel;
+            assign gnt_o[l*2+1]      = gnt_nodes[Idx0] & (AxiVldRdy | req_d[l*2+1]) & sel;
           end
           // if only the first index is still in the vector...
-          if (unsigned'(l) * 2 == NumIn-1) begin
-            assign req_nodes[idx0]   = req_d[l*2];
-            assign index_nodes[idx0] = '0;// always zero in this case
-            assign data_nodes[idx0]  = data_i[l*2];
-            assign gnt_o[l*2]        = gnt_nodes[idx0] & (AxiVldRdy | req_d[l*2]);
+          if (unsigned'(l) * 2 == NumIn-1) begin : gen_first
+            assign req_nodes[Idx0]   = req_d[l*2];
+            assign index_nodes[Idx0] = '0;// always zero in this case
+            assign data_nodes[Idx0]  = data_i[l*2];
+            assign gnt_o[l*2]        = gnt_nodes[Idx0] & (AxiVldRdy | req_d[l*2]);
           end
           // if index is out of range, fill up with zeros (will get pruned)
-          if (unsigned'(l) * 2 > NumIn-1) begin
-            assign req_nodes[idx0]   = 1'b0;
-            assign index_nodes[idx0] = idx_t'('0);
-            assign data_nodes[idx0]  = DataType'('0);
+          if (unsigned'(l) * 2 > NumIn-1) begin : gen_out_of_range
+            assign req_nodes[Idx0]   = 1'b0;
+            assign index_nodes[Idx0] = idx_t'('0);
+            assign data_nodes[Idx0]  = DataType'('0);
           end
         //////////////////////////////////////////////////////////////
         // general case for other levels within the tree
         end else begin : gen_other_levels
-          assign req_nodes[idx0]   = req_nodes[idx1] | req_nodes[idx1+1];
+          assign req_nodes[Idx0]   = req_nodes[Idx1] | req_nodes[Idx1+1];
 
           // arbitration: round robin
-          assign sel =  ~req_nodes[idx1] | req_nodes[idx1+1] & rr_q[NumLevels-1-level];
+          assign sel =  ~req_nodes[Idx1] | req_nodes[Idx1+1] & rr_q[NumLevels-1-level];
 
-          assign index_nodes[idx0] = (sel) ? idx_t'({1'b1, index_nodes[idx1+1][NumLevels-unsigned'(level)-2:0]}) :
-                                             idx_t'({1'b0, index_nodes[idx1][NumLevels-unsigned'(level)-2:0]});
-          assign data_nodes[idx0]  = (sel) ? data_nodes[idx1+1] : data_nodes[idx1];
-          assign gnt_nodes[idx1]   = gnt_nodes[idx0] & ~sel;
-          assign gnt_nodes[idx1+1] = gnt_nodes[idx0] & sel;
+          assign index_nodes[Idx0] = (sel) ?
+            idx_t'({1'b1, index_nodes[Idx1+1][NumLevels-unsigned'(level)-2:0]}) :
+            idx_t'({1'b0, index_nodes[Idx1][NumLevels-unsigned'(level)-2:0]});
+
+          assign data_nodes[Idx0]  = (sel) ? data_nodes[Idx1+1] : data_nodes[Idx1];
+          assign gnt_nodes[Idx1]   = gnt_nodes[Idx0] & ~sel;
+          assign gnt_nodes[Idx1+1] = gnt_nodes[Idx0] & sel;
         end
         //////////////////////////////////////////////////////////////
       end

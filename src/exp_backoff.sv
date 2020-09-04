@@ -21,19 +21,23 @@
 //
 
 module exp_backoff #(
-  parameter int unsigned Seed   = 'hffff, // seed for 16bit lfsr
-  parameter int unsigned MaxExp = 16      // 2**MaxExp-1 determines the maximum range from which random wait counts are drawn
+  /// Seed for 16bit LFSR
+  parameter int unsigned Seed   = 'hffff,
+  /// 2**MaxExp-1 determines the maximum range from which random wait counts are drawn
+  parameter int unsigned MaxExp = 16
 ) (
   input  logic clk_i,
   input  logic rst_ni,
-  //
-  input  logic set_i,     // sets the backoff counter (pulse) -> use when trial did not succeed
-  input  logic clr_i,     // clears the backoff counter (pulse) -> use when trial succeeded
-  output logic is_zero_o  // indicates whether the backoff counter is equal to zero and a new trial can be launched
+  /// Sets the backoff counter (pulse) -> use when trial did not succeed
+  input  logic set_i,
+  /// Clears the backoff counter (pulse) -> use when trial succeeded
+  input  logic clr_i,
+  /// Indicates whether the backoff counter is equal to zero and a new trial can be launched
+  output logic is_zero_o
 );
 
   // leave this constant
-  localparam WIDTH = 16;
+  localparam int unsigned WIDTH = 16;
 
   logic [WIDTH-1:0] lfsr_d, lfsr_q, cnt_d, cnt_q, mask_d, mask_q;
   logic lfsr;
