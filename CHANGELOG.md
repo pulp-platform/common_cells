@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - assertions: Assertion include header with macros (from lowrisc)
 
+### Changed
+- `sram.sv`: Deprecated as it has been moved to `tech_cells_generic`
+
 ### Fixed
 - `stream_register`: Fix `DATA_WIDTH` of instantiated FIFO.
 - `stream_xbar`: Add missing argument in assertion error string.
