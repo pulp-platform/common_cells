@@ -96,6 +96,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Added formal testbench for `fifo` and `fall_through_regsiter`
 
+### Changed
+
+- Fix `clk_div` not resetting propperly
+
 ## 1.13.1 - 2019-06-01
 
 ### Changed

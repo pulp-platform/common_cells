@@ -23,14 +23,15 @@ module clk_div #(
     logic clk_q;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            clk_q       <= 1'b0;
+        if (!rst_ni) begin
+            clk_q     <= 1'b0;
             counter_q <= '0;
         end else begin
             clk_q <= 1'b0;
             if (en_i) begin
                 if (counter_q == (RATIO[RATIO-1:0] - 1)) begin
                     clk_q <= 1'b1;
+                    counter_q <= 0;
                 end else begin
                     counter_q <= counter_q + 1;
                 end
