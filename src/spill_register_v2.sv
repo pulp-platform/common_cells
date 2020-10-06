@@ -14,13 +14,15 @@
 
 /// A register with handshakes that completely cuts any combinational paths
 /// between the input and output.
-module spill_register #(
-  parameter type T      = logic,
-  parameter bit  Bypass = 1'b0   // make this spill register transparent
+module spill_register_v2 #(
+  parameter type T           = logic,
+  parameter bit  Bypass      = 1'b0,   // make this spill register transparent
+  parameter bit  EnableFlush = 1'b0
 ) (
   input  logic clk_i   ,
   input  logic rst_ni  ,
   input  logic valid_i ,
+  input  logic flush_i ,
   output logic ready_o ,
   input  T     data_i  ,
   output logic valid_o ,
@@ -72,17 +74,19 @@ module spill_register #(
     end
 
     // Fill the A register when the A or B register is empty. Drain the A register
-    // whenever it is full and being filled.
-    assign a_fill = valid_i && ready_o;
-    assign a_drain = a_full_q && !b_full_q;
+    // whenever it is full and being filled, or if a flush is requested.
+    assign a_fill = valid_i && ready_o && !flush_i;
+    assign a_drain = (a_full_q && !b_full_q) || flush_i;
 
     // Fill the B register whenever the A register is drained, but the downstream
     // circuit is not ready. Drain the B register whenever it is full and the
-    // downstream circuit is ready.
-    assign b_fill = a_drain && !ready_i;
-    assign b_drain = b_full_q && ready_i;
+    // downstream circuit is ready, or if a flush is requested.
+    assign b_fill = a_drain && !ready_i && !flush_i;
+    assign b_drain = (b_full_q && ready_i) || flush_i;
 
     // We can accept input as long as register B is not full.
+    // Note: flush_i and valid_i must not be high at the same time,
+    // otherwise an invalid handshake may occur
     assign ready_o = !a_full_q || !b_full_q;
 
     // The unit provides output as long as one of the registers is filled.
@@ -90,5 +94,13 @@ module spill_register #(
 
     // We empty the spill register before the slice register.
     assign data_o = b_full_q ? b_data_q : a_data_q;
+
+    // pragma translate_off
+    `ifndef VERILATOR
+        flush_valid : assert property(
+            @(posedge clk_i) disable iff (~rst_ni) (flush_i |-> ~valid_i))
+            else $warning("Trying to flush and feed the spill register at the same time. You will lose data!");
+   `endif
+     // pragma translate_on
   end
 endmodule

@@ -45,6 +45,7 @@ sources:
   - src/serial_deglitch.sv
   - src/shift_reg.sv
   - src/spill_register.sv
+  - src/spill_register_v2.sv
   - src/stream_demux.sv
   - src/stream_filter.sv
   - src/stream_fork.sv
