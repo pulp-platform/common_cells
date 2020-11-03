@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 - `sram.sv`: Deprecated as it has been moved to `tech_cells_generic`
+- Compile order in `src_files.yml`.
 
 ### Fixed
 - `stream_register`: Fix `DATA_WIDTH` of instantiated FIFO.
