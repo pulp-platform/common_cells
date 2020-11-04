@@ -181,8 +181,7 @@ module stream_omega_net #(
             // Reverse the order of the input ports
             if ((NumLanes-IdxLane) <= NumInp) begin : gen_inp_ports
               localparam int unsigned IdxInp = NumLanes - IdxLane - 32'd1;
-              assign inp_router_data[0][IdxLane%NumRouters][IdxLane/NumRouters] =
-                  omega_data_t'{
+              assign inp_router_data[0][IdxLane%NumRouters][IdxLane/NumRouters] = '{
                     sel_oup: sel_dst_t'(sel_i[IdxInp]),
                     payload: data_i[IdxInp],
                     idx_inp: idx_inp_t'(IdxInp)
@@ -192,8 +191,7 @@ module stream_omega_net #(
               assign ready_o[IdxInp] = inp_router_ready[0][IdxLane%NumRouters][IdxLane/NumRouters];
 
             end else begin : gen_tie_off
-              assign inp_router_data[0][IdxLane%NumRouters][IdxLane/NumRouters] =
-                  omega_data_t'{ default: '0};
+              assign inp_router_data[0][IdxLane%NumRouters][IdxLane/NumRouters] = '{ default: '0};
               assign inp_router_valid[0][IdxLane%NumRouters][IdxLane/NumRouters] = 1'b0;
             end
           end
