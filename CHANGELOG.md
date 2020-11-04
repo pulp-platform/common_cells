@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+
+## 1.20.0 - 2020-11-04
 ### Added
 - assertions: Assertion include header with macros (from lowrisc)
 
@@ -16,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - `stream_xbar`: Add missing argument in assertion error string.
 - Lint style fixes
 - `stream_omega`: Fix parse issue with verible.
+- `src_files.yml`: Fix compile order and missing modules.
 
 ## 1.19.0 - 2020-05-25
 ### Added
