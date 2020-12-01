@@ -14,11 +14,17 @@
 // queue preserves FIFO order.
 //
 // This ID queue implementation allows to either push (through the `inp_*` signals) or pop (through
-// the `oup_*` signals) one element per clock cycle. The `inp_` port has priority and grants a
-// request iff the queue is not full. The `oup_` port dequeues an element iff `oup_pop_i` is
-// asserted during an `oup_` handshake; otherwise, it performs a non-destructive read. `oup_data_o`
-// is valid iff `oup_data_valid_o` is asserted during an `oup_` handshake. If `oup_data_valid_o` is
-// not asserted, the queue did not contain an element with the provided ID.
+// the `oup_*` signals) one element per clock cycle (depending on the _FULL_BW_ operating mode
+// descibed below). The `inp_` port has priority and grants a request iff the queue is not full. The
+// `oup_` port dequeues an element iff `oup_pop_i` is asserted during an `oup_` handshake;
+// otherwise, it performs a non-destructive read. `oup_data_o` is valid iff `oup_data_valid_o` is
+// asserted during an `oup_` handshake. If `oup_data_valid_o` is not asserted, the queue did not
+// contain an element with the provided ID.
+//
+// The queue can work in two bandwidth modes:
+//  * !FULL_BW: Input and output cannot be performed simultaneously (max bandwidth: 50%).
+//  *  FULL_BW: Input and output can be performed simultaneously and a popped cell can be reused
+//    immediately in the same clock cycle. Area increase typically 5-10%.
 //
 // This ID queue additionally provides the `exists_` port, which searches for an element anywhere in
 // the queue. The comparison performed during the search can be masked: for every bit that is
@@ -42,6 +48,7 @@
 module id_queue #(
     parameter int ID_WIDTH  = 0,
     parameter int CAPACITY  = 0,
+    parameter bit FULL_BW   = 1,
     parameter type data_t   = logic,
     // Dependent parameters, DO NOT OVERRIDE!
     localparam type id_t    = logic[ID_WIDTH-1:0],
@@ -102,33 +109,50 @@ module id_queue #(
     linked_data_t [CAPACITY-1:0]    linked_data_d,  linked_data_q;
 
     logic                           full,
-                                    match_id_valid,
-                                    no_id_match;
+                                    match_in_id_valid,
+                                    match_out_id_valid,
+                                    no_in_id_match,
+                                    no_out_id_match;
 
     logic [HtCapacity-1:0]          head_tail_free,
-                                    idx_matches_id;
+                                    idx_matches_in_id,
+                                    idx_matches_out_id;
 
     logic [CAPACITY-1:0]            exists_match,
                                     linked_data_free;
 
-    id_t                            match_id;
+    id_t                            match_in_id, match_out_id;
 
     ht_idx_t                        head_tail_free_idx,
-                                    match_idx;
+                                    match_in_idx,
+                                    match_out_idx;
 
-    ld_idx_t                        linked_data_free_idx;
+    ld_idx_t                        linked_data_free_idx,
+                                    oup_data_free_idx;
+
+    logic                           oup_data_popped,
+                                    oup_ht_popped;
 
     // Find the index in the head-tail table that matches a given ID.
     for (genvar i = 0; i < HtCapacity; i++) begin: gen_idx_match
-        assign idx_matches_id[i] = match_id_valid && (head_tail_q[i].id == match_id) &&
+        assign idx_matches_in_id[i] = match_in_id_valid && (head_tail_q[i].id == match_in_id) &&
+                !head_tail_q[i].free;
+        assign idx_matches_out_id[i] = match_out_id_valid && (head_tail_q[i].id == match_out_id) &&
                 !head_tail_q[i].free;
     end
-    assign no_id_match = !(|idx_matches_id);
+    assign no_in_id_match = !(|idx_matches_in_id);
+    assign no_out_id_match = !(|idx_matches_out_id);
     onehot_to_bin #(
-        .ONEHOT_WIDTH (HtCapacity)
-    ) i_id_ohb (
-        .onehot (idx_matches_id),
-        .bin    (match_idx)
+        .ONEHOT_WIDTH ( HtCapacity )
+    ) i_id_ohb_in (
+        .onehot ( idx_matches_in_id ),
+        .bin    ( match_in_idx      )
+    );
+    onehot_to_bin #(
+        .ONEHOT_WIDTH ( HtCapacity )
+    ) i_id_ohb_out (
+        .onehot ( idx_matches_out_id ),
+        .bin    ( match_out_idx      )
     );
 
     // Find the first free index in the head-tail table.
@@ -136,12 +160,12 @@ module id_queue #(
         assign head_tail_free[i] = head_tail_q[i].free;
     end
     lzc #(
-        .WIDTH  (HtCapacity),
-        .MODE   (0)         // Start at index 0.
+        .WIDTH ( HtCapacity ),
+        .MODE  ( 0          ) // Start at index 0.
     ) i_ht_free_lzc (
-        .in_i       (head_tail_free),
-        .cnt_o      (head_tail_free_idx),
-        .empty_o    ()
+        .in_i    ( head_tail_free     ),
+        .cnt_o   ( head_tail_free_idx ),
+        .empty_o (                    )
     );
 
     // Find the first free index in the linked data table.
@@ -149,68 +173,158 @@ module id_queue #(
         assign linked_data_free[i] = linked_data_q[i].free;
     end
     lzc #(
-        .WIDTH  (CAPACITY),
-        .MODE   (0)         // Start at index 0.
+        .WIDTH ( CAPACITY ),
+        .MODE  ( 0        ) // Start at index 0.
     ) i_ld_free_lzc (
-        .in_i       (linked_data_free),
-        .cnt_o      (linked_data_free_idx),
-        .empty_o    ()
+        .in_i    ( linked_data_free     ),
+        .cnt_o   ( linked_data_free_idx ),
+        .empty_o (                      )
     );
 
     // The queue is full if and only if there are no free items in the linked data structure.
     assign full = !(|linked_data_free);
 
-    assign inp_gnt_o = ~full;
+    // Data can be accepted if the linked list pool is not full, or some data is simultaneously.
+    assign inp_gnt_o = ~full || (oup_data_popped && FULL_BW);
     always_comb begin
-        match_id            = '0;
-        match_id_valid      = 1'b0;
+        match_in_id         = '0;
+        match_out_id        = '0;
+        match_in_id_valid   = 1'b0;
+        match_out_id_valid  = 1'b0;
         head_tail_d         = head_tail_q;
         linked_data_d       = linked_data_q;
         oup_gnt_o           = 1'b0;
         oup_data_o          = data_t'('0);
         oup_data_valid_o    = 1'b0;
-        if (inp_req_i && !full) begin
-            match_id = inp_id_i;
-            match_id_valid = 1'b1;
-            // If the ID does not yet exist in the queue, add a new ID entry.
-            if (no_id_match) begin
-                head_tail_d[head_tail_free_idx] = '{
-                    id: inp_id_i,
-                    head: linked_data_free_idx,
-                    tail: linked_data_free_idx,
+        oup_data_popped     = 1'b0;
+        oup_ht_popped       = 1'b0;
+        oup_data_free_idx   = head_tail_q[match_out_idx].head;
+
+        if (!FULL_BW) begin
+            if (inp_req_i && !full) begin
+                match_in_id = inp_id_i;
+                match_in_id_valid = 1'b1;
+                // If the ID does not yet exist in the queue, add a new ID entry.
+                if (no_in_id_match) begin
+                    head_tail_d[head_tail_free_idx] = '{
+                        id: inp_id_i,
+                        head: linked_data_free_idx,
+                        tail: linked_data_free_idx,
+                        free: 1'b0
+                    };
+                // Otherwise append it to the existing ID subqueue.
+                end else begin
+                    linked_data_d[head_tail_q[match_in_idx].tail].next = linked_data_free_idx;
+                    head_tail_d[match_in_idx].tail = linked_data_free_idx;
+                end
+                linked_data_d[linked_data_free_idx] = '{
+                    data: inp_data_i,
+                    next: '0,
                     free: 1'b0
                 };
-            // Otherwise append it to the existing ID subqueue.
-            end else begin
-                linked_data_d[head_tail_q[match_idx].tail].next = linked_data_free_idx;
-                head_tail_d[match_idx].tail = linked_data_free_idx;
-            end
-            linked_data_d[linked_data_free_idx] = '{
-                data: inp_data_i,
-                next: '0,
-                free: 1'b0
-            };
-        end else if (oup_req_i) begin
-            match_id = oup_id_i;
-            match_id_valid = 1'b1;
-            if (!no_id_match) begin
-                oup_data_o = data_t'(linked_data_q[head_tail_q[match_idx].head].data);
-                oup_data_valid_o = 1'b1;
-                if (oup_pop_i) begin
-                    // Set free bit of linked data entry, all other bits are don't care.
-                    linked_data_d[head_tail_q[match_idx].head]      = '0;
-                    linked_data_d[head_tail_q[match_idx].head][0]   = 1'b1;
-                    if (head_tail_q[match_idx].head == head_tail_q[match_idx].tail) begin
-                        head_tail_d[match_idx] = '{free: 1'b1, default: '0};
-                    end else begin
-                        head_tail_d[match_idx].head =
-                                linked_data_q[head_tail_q[match_idx].head].next;
+            end else if (oup_req_i) begin
+                match_in_id = oup_id_i;
+                match_in_id_valid = 1'b1;
+                if (!no_in_id_match) begin
+                    oup_data_o = data_t'(linked_data_q[head_tail_q[match_in_idx].head].data);
+                    oup_data_valid_o = 1'b1;
+                    if (oup_pop_i) begin
+                        // Set free bit of linked data entry, all other bits are don't care.
+                        linked_data_d[head_tail_q[match_in_idx].head]      = '0;
+                        linked_data_d[head_tail_q[match_in_idx].head][0]   = 1'b1;
+                        if (head_tail_q[match_in_idx].head == head_tail_q[match_in_idx].tail) begin
+                            head_tail_d[match_in_idx] = '{free: 1'b1, default: '0};
+                        end else begin
+                            head_tail_d[match_in_idx].head =
+                                    linked_data_q[head_tail_q[match_in_idx].head].next;
+                        end
                     end
                 end
+                // Always grant the output request.  If there was no match, the default, invalid entry
+                // will be returned.
+                oup_gnt_o = 1'b1;
             end
-            // Always grant the output request.  If there was no match, the default, invalid entry
-            // will be returned.
-            oup_gnt_o = 1'b1;
+        end else begin
+            // FULL_BW
+            if (oup_req_i) begin
+                match_out_id = oup_id_i;
+                match_out_id_valid = 1'b1;
+                if (!no_out_id_match) begin
+                    oup_data_o = data_t'(linked_data_q[head_tail_q[match_out_idx].head].data);
+                    oup_data_valid_o = 1'b1;
+                    if (oup_pop_i) begin
+                        oup_data_popped = 1'b1;
+                        // Set free bit of linked data entry, all other bits are don't care.
+                        linked_data_d[head_tail_q[match_out_idx].head]      = '0;
+                        linked_data_d[head_tail_q[match_out_idx].head][0]   = 1'b1;
+                        if (head_tail_q[match_out_idx].head == head_tail_q[match_out_idx].tail) begin
+                            oup_ht_popped = 1'b1;
+                            head_tail_d[match_out_idx] = '{free: 1'b1, default: '0};
+                        end else begin
+                            head_tail_d[match_out_idx].head =
+                                    linked_data_q[head_tail_q[match_out_idx].head].next;
+                        end
+                    end
+                end
+                // Always grant the output request.  If there was no match, the default, invalid entry
+                // will be returned.
+                oup_gnt_o = 1'b1;
+            end
+            if (inp_req_i && (~full || oup_data_popped)) begin
+                match_in_id = inp_id_i;
+                match_in_id_valid = 1'b1;
+                // If the ID does not yet exist in the queue or was just popped, add a new ID entry.
+                if (oup_ht_popped && (oup_id_i==inp_id_i)) begin
+                    // If output data was popped for this ID, which lead the head_tail to be popped,
+                    // then repopulate this head_tail immediately.
+                    head_tail_d[match_out_idx] = '{
+                        id: inp_id_i,
+                        head: oup_data_free_idx,
+                        tail: oup_data_free_idx,
+                        free: 1'b0
+                    };
+                end else if (no_in_id_match) begin
+                    // Else, if no head_tail corresponds to the input id.
+                    if (oup_data_popped) begin
+                        head_tail_d[head_tail_free_idx] = '{
+                            id: inp_id_i,
+                            head: oup_data_free_idx,
+                            tail: oup_data_free_idx,
+                            free: 1'b0
+                        };
+                    end else begin
+                        head_tail_d[head_tail_free_idx] = '{
+                            id: inp_id_i,
+                            head: linked_data_free_idx,
+                            tail: linked_data_free_idx,
+                            free: 1'b0
+                        };
+                    end
+                end else begin
+                    // Otherwise append it to the existing ID subqueue.
+                    if (oup_data_popped) begin
+                        linked_data_d[head_tail_q[match_in_idx].tail].next = oup_data_free_idx;
+                        head_tail_d[match_in_idx].tail = oup_data_free_idx;
+                    end else begin
+                        linked_data_d[head_tail_q[match_in_idx].tail].next = linked_data_free_idx;
+                        head_tail_d[match_in_idx].tail = linked_data_free_idx;
+                    end
+                end
+
+                if (oup_data_popped) begin
+                    linked_data_d[oup_data_free_idx] = '{
+                        data: inp_data_i,
+                        next: '0,
+                        free: 1'b0
+                    };
+                end else begin
+                    linked_data_d[linked_data_free_idx] = '{
+                        data: inp_data_i,
+                        next: '0,
+                        free: 1'b0
+                    };
+                end
+            end
         end
     end
 
