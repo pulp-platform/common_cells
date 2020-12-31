@@ -27,9 +27,6 @@
 /// if the resulting map is valid. It fatals if `start_addr` is higher than `end_addr`
 /// or if a mapping targets an index that is outside the number of allowed indices.
 /// It issues warnings if the address regions of any two mappings overlap.
-`ifdef VERILATOR
- `define NDEBUG 1
-`endif
 module addr_decode #(
   /// Highest index which can happen in a rule.
   parameter int unsigned NoIndices = 32'd0,
@@ -102,7 +99,8 @@ module addr_decode #(
   end
 
   // Assumptions and assertions
-  `ifndef NDEBUG
+  `ifndef VERILATOR
+  `ifndef XSIM
   // pragma translate_off
   initial begin : proc_check_parameters
     assume ($bits(addr_i) == $bits(addr_map_i[0].start_addr)) else
@@ -158,5 +156,6 @@ module addr_decode #(
     end
   end
   // pragma translate_on
+  `endif
   `endif
 endmodule

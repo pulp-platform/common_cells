@@ -44,9 +44,6 @@
 /// If it is `1'b1` two `lzc`, a masking logic stage and a two input multiplexer are instantiated.
 /// However these are small in respect of the data multiplexers needed, as the width of the `req_i`
 /// signal is usually less as than `DataWidth`.
-`ifdef VERILATOR
- `define NDEBUG 1
-`endif
 module rr_arb_tree #(
   /// Number of inputs to be arbitrated.
   parameter int unsigned NumIn      = 64,
@@ -113,9 +110,11 @@ module rr_arb_tree #(
 );
 
   // pragma translate_off
-  `ifndef NDEBUG
+  `ifndef VERILATOR
+  `ifndef XSIM
   // Default SVA reset
   default disable iff (!rst_ni || flush_i);
+  `endif
   `endif
   // pragma translate_on
 
@@ -308,7 +307,8 @@ module rr_arb_tree #(
     end
 
     // pragma translate_off
-    `ifndef NDEBUG
+    `ifndef VERILATOR
+    `ifndef XSIM
     initial begin : p_assert
       assert(NumIn)
         else $fatal(1, "Input must be at least one element wide.");
@@ -339,6 +339,7 @@ module rr_arb_tree #(
     req1 : assert property(
       @(posedge clk_i) req_o |-> |req_i)
         else $fatal (1, "Req out implies req in.");
+    `endif
     `endif
     // pragma translate_on
   end

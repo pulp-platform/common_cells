@@ -97,10 +97,3 @@ filesets:
 targets:
   default:
     filesets : [rtl, deprecated]
-    parameters : [NDEBUG]
-
-parameters:
-  NDEBUG:
-    datatype  : bool
-    description : Disable axi formal checks
-    paramtype : vlogdefine
