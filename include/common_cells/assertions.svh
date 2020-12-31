@@ -27,7 +27,7 @@
 // local helper macro to reduce code clutter. undefined at the end of this file
 `ifndef VERILATOR
 `ifndef SYNTHESIS
-`ifndef NDEBUG
+`ifndef XSIM
 `define INC_ASSERT
 `endif   
 `endif
