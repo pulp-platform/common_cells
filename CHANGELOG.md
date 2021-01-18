@@ -10,6 +10,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Use `tc_clk_mux` as glitch-free muxes in `rstgen_bypass` to avoid combinational glitches.
 - Avoid program blocks in testbenches for simulator compatibility.
 
+## Unreleased
+### Added
+- Add `addr_decode_napot`: variant of `addr_decode` which uses a base address and mask instead of a start and end address.
+
+### Fixed
+- Remove program blocks in testbenches for VCS compatibility.
+- Remove derived parameter mask type in id_queue for VCS compatibility.
+- Remove `cb_filter` and `cb_filter_pkg` from from Vivado IP packager project sources due to compatibility issues.
+
+### Changed
+- Use `tc_clk_mux` as glitch-free muxes in `rstgen_bypass` to avoid combinational glitches.
+
 ## 1.24.1 - 2022-04-13
 ### Fixed
 - Fix typos in `Bender.yml` and `src_files.yml`
