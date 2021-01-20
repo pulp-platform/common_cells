@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 ### Changed
-- `id_queue`: Specify default/reset values as `0`.
+- `id_queue`: Replace default or reset value of signals that were assigned `'x` with `'0`.
 - `id_queue`: Use `cf_math_pkg::idx_width()` for computation of localparams.
 
 ## 1.20.0 - 2020-11-04
