@@ -19,9 +19,9 @@ module onehot_to_bin #(
     output logic [BIN_WIDTH-1:0]    bin
 );
 
-    for (genvar j = 0; j < BIN_WIDTH; j++) begin : jl
+    for (genvar j = 0; j < BIN_WIDTH; j++) begin : gen_bin_width
         logic [ONEHOT_WIDTH-1:0] tmp_mask;
-            for (genvar i = 0; i < ONEHOT_WIDTH; i++) begin : il
+            for (genvar i = 0; i < ONEHOT_WIDTH; i++) begin : gen_onehot_width
                 logic [BIN_WIDTH-1:0] tmp_i;
                 assign tmp_i = i;
                 assign tmp_mask[i] = tmp_i[j];
