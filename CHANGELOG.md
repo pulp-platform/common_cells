@@ -6,7 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 ### Changed
-- updated `common_verification` and `tech_cells_generic` dependency versions
+- Remove `timeprecision/timeunit` arguments
+- Update `common_verification` to `0.2.0`
+- Update `tech_cells_generic` to `0.2.3`
 
 ## 1.20.1 - 2021-01-21
 ### Changed

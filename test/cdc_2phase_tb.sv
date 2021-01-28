@@ -11,8 +11,6 @@
 //
 // Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
 
-timeunit 0.1ns/1ps;
-
 module cdc_2phase_tb;
 
   parameter int UNTIL = 100000;
