@@ -29,8 +29,6 @@ do begin \
 end while (0)
 
 module popcount_tb;
-   timeunit 1ns;
-   timeprecision 1ps;
 
    //---------------- Signals connecting to MUT ----------------
    logic [4:0] data_w5;
