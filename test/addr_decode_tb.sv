@@ -12,8 +12,6 @@
 
 // test bench for addr_decode module
 
-timeunit 1ns/1ns;
-
 module addr_decode_tb;
   localparam int unsigned NoIndices =  2;
   localparam int unsigned NoRules   =  3;

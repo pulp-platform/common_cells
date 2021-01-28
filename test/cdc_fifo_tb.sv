@@ -11,8 +11,6 @@
 //
 // Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
 
-timeunit 0.1ns/1ps;
-
 module cdc_fifo_tb;
 
   parameter bit INJECT_SRC_STALLS = 0;

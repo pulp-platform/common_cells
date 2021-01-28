@@ -20,9 +20,6 @@ module id_queue_tb #(
     parameter type data_t = logic[3:0]
 );
 
-    timeunit 1ns;
-    timeprecision 10ps;
-
     localparam time TCLK = 10ns;
     localparam time TA = TCLK * 1/4;
     localparam time TT = TCLK * 3/4;
