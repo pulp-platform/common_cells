@@ -49,8 +49,8 @@ module sub_per_hash_tb;
   // Clock generator
   // -------------
   clk_rst_gen #(
-    .CLK_PERIOD     ( TCycle ),
-    .RST_CLK_CYCLES (      1 )
+    .ClkPeriod    ( TCycle ),
+    .RstClkCycles (      1 )
   ) i_clk_gen (
     .clk_o  (   clk ),
     .rst_no ( rst_n )
