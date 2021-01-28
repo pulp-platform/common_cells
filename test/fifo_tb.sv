@@ -176,7 +176,7 @@ module fifo_tb #(
 
     logic [3:0] done;
 
-    clk_rst_gen #(.CLK_PERIOD(TCLK), .RST_CLK_CYCLES(10)) i_clk_rst_gen (
+    clk_rst_gen #(.ClkPeriod(TCLK), .RstClkCycles(10)) i_clk_rst_gen (
         .clk_o    (clk),
         .rst_no   (rst_n)
     );

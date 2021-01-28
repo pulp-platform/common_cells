@@ -83,8 +83,8 @@ module cb_filter_tb;
   // Clock generator
   // -------------
   clk_rst_gen #(
-    .CLK_PERIOD     ( TCycle ),
-    .RST_CLK_CYCLES (       5 )
+    .ClkPeriod     ( TCycle ),
+    .RstClkCycles  (      5 )
   ) i_clk_gen (
     .clk_o  (   clk ),
     .rst_no ( rst_n )

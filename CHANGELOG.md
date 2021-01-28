@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+### Changed
+- updated `common_verification` and `tech_cells_generic` dependency versions
 
 ## 1.20.1 - 2021-01-21
 ### Changed

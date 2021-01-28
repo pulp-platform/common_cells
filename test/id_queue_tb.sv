@@ -61,8 +61,8 @@ module id_queue_tb #(
                 oup_data_valid;
 
     clk_rst_gen #(
-        .CLK_PERIOD     (TCLK),
-        .RST_CLK_CYCLES (5)
+        .ClkPeriod    (TCLK),
+        .RstClkCycles (5)
     ) i_clk_rst_gen (
         .clk_o  (clk),
         .rst_no (rst_n)
@@ -98,10 +98,10 @@ module id_queue_tb #(
     // Random Input Driver
     rand_stream_mst #(
         .data_t             (queue_t),
-        .MIN_WAIT_CYCLES    (INP_MIN_WAIT_CYCLES),
-        .MAX_WAIT_CYCLES    (INP_MAX_WAIT_CYCLES),
-        .APPL_DELAY         (TA),
-        .ACQ_DELAY          (TT)
+        .MinWaitCycles      (INP_MIN_WAIT_CYCLES),
+        .MaxWaitCycles      (INP_MAX_WAIT_CYCLES),
+        .ApplDelay          (TA),
+        .AcqDelay           (TT)
     ) i_inp_mst (
         .clk_i      (clk),
         .rst_ni     (rst_n),
@@ -116,10 +116,10 @@ module id_queue_tb #(
     // Random Output Driver
     rand_stream_mst #(
         .data_t             (logic),
-        .MIN_WAIT_CYCLES    (OUP_MIN_WAIT_CYCLES),
-        .MAX_WAIT_CYCLES    (OUP_MAX_WAIT_CYCLES),
-        .APPL_DELAY         (TA),
-        .ACQ_DELAY          (TT)
+        .MinWaitCycles      (OUP_MIN_WAIT_CYCLES),
+        .MaxWaitCycles      (OUP_MAX_WAIT_CYCLES),
+        .ApplDelay          (TA),
+        .AcqDelay           (TT)
     ) i_oup_mst (
         .clk_i      (clk),
         .rst_ni     (rst_n),
@@ -132,10 +132,10 @@ module id_queue_tb #(
     // Random Exists Driver
     rand_stream_mst #(
         .data_t             (exists_t),
-        .MIN_WAIT_CYCLES    (OUP_MIN_WAIT_CYCLES),
-        .MAX_WAIT_CYCLES    (OUP_MAX_WAIT_CYCLES),
-        .APPL_DELAY         (TA),
-        .ACQ_DELAY          (TT)
+        .MinWaitCycles      (OUP_MIN_WAIT_CYCLES),
+        .MaxWaitCycles      (OUP_MAX_WAIT_CYCLES),
+        .ApplDelay          (TA),
+        .AcqDelay           (TT)
     ) i_exists_mst (
         .clk_i      (clk),
         .rst_ni     (rst_n),
