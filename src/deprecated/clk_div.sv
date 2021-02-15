@@ -20,7 +20,7 @@ module clk_div #(
     input  logic en_i,       // enable clock divider
     output logic clk_o       // divided clock out
 );
-    logic [RATIO-1:0] counter_q;
+    logic [$clog2(RATIO)-1:0] counter_q;
     logic clk_q;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -30,8 +30,9 @@ module clk_div #(
         end else begin
             clk_q <= 1'b0;
             if (en_i) begin
-                if (counter_q == (RATIO[RATIO-1:0] - 1)) begin
+                if (counter_q == (RATIO-1)) begin
                     clk_q <= 1'b1;
+                    counter_q <= '0;
                 end else begin
                     counter_q <= counter_q + 1;
                 end
