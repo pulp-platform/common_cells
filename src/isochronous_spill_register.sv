@@ -27,6 +27,16 @@
 /// in different clock domains. As we know the static timing relationship between the
 /// clock domains we can rely on static timing analysis (STA) to get the sampling windows
 /// right and therefore don't need any synchronization.
+///
+/// # Restrictions
+///
+/// Source and destination clock domains must be an integer multiple of each other and
+/// all timing-paths need to be covered by STA. For example a recommended SDC would be:
+///
+/// `create_generated_clock dst_clk_i -name dst_clk  -source src_clk_i -divide_by 2
+///
+/// There are _no_ restrictions on which clock domain should be the faster, any integer
+/// ratio will work.
 module isochronous_spill_register #(
   /// Data type of spill register.
   parameter type T      = logic,
@@ -84,4 +94,19 @@ module isochronous_spill_register #(
     assign dst_valid_o = (rd_pointer_q ^ wr_pointer_q) != '0;
     assign dst_data_o = mem_q[rd_pointer_q[0]];
   end
+
+  // pragma translate_off
+  // stability guarantees
+  `ifndef VERILATOR
+  default disable iff src_rst_ni;
+  assert property (@(posedge src_clk_i) disable iff (src_rst_ni) (src_valid_i && !src_ready_o |=> $stable(src_valid_i))) else
+      $error("src_valid_i is unstable");
+  assert property (@(posedge src_clk_i) disable iff (src_rst_ni) (src_valid_i && !src_ready_o |=> $stable(src_data_i))) else
+      $error("src_data_i is unstable");
+  assert property (@(posedge dst_clk_i) disable iff (dst_rst_ni) (dst_valid_o && !dst_ready_i |=> $stable(dst_valid_o))) else
+      $error("dst_valid_o is unstable");
+  assert property (@(posedge dst_clk_i) disable iff (dst_rst_ni) (dst_valid_o && !dst_ready_i |=> $stable(dst_data_o))) else
+      $error("dst_data_o is unstable");
+  `endif
+  // pragma translate_on
 endmodule

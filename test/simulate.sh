@@ -16,7 +16,7 @@ set -e
 
 bender script vsim -t test > compile.tcl
 
-"$VSIM" -c -do 'source compile.tcl; quit'
+"$VSIM" -c -quiet -do 'source compile.tcl; quit'
 
 call_vsim() {
 	echo "run -all" | "$VSIM" "$@" | tee vsim.log 2>&1
@@ -29,7 +29,7 @@ for tb in cdc_2phase_tb fifo_tb graycode_tb id_queue_tb popcount_tb stream_regis
 done
 
 for depth in 0 1 2; do
-	call_vsim stream_to_mem_tb -GBufDepth=$depth -coverage -voptargs="+acc +cover=bcesfx"
+	call_vsim stream_to_mem_tb -gBufDepth=$depth -coverage -voptargs="+acc +cover=bcesfx"
 done
 
 for num in 1 4 7; do
@@ -49,5 +49,12 @@ for radix in 2 4 8; do
     for num_out in 1 2 4 16 17 64; do
       call_vsim stream_omega_net_tb -gDutNumInp=$num_inp -gDutNumOut=$num_out -gDutRadix=$radix -coverage -voptargs="+acc +cover=bcesfx"
     done
+  done
+done
+
+for dut in "spill_register" "4phase_handshake"; do
+  for clk in 1,1 1,2 2,1 1,4 5,1 3,6 8,4; do
+    IFS=',' read src_clk dst_clk <<< "${clk}"
+    call_vsim isochronous_crossing_tb -gDUT=$dut -gTCK_SRC_MULT=$src_clk -gTCK_DST_MULT=$dst_clk
   done
 done
