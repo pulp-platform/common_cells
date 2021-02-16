@@ -268,9 +268,9 @@ module id_queue #(
 `ifndef VERILATOR
     initial begin: validate_params
         assert (ID_WIDTH >= 1)
-            else $fatal("The ID must at least be one bit wide!");
+            else $fatal(1,"The ID must at least be one bit wide!");
         assert (CAPACITY >= 1)
-            else $fatal("The queue must have capacity of at least one entry!");
+            else $fatal(1,"The queue must have capacity of at least one entry!");
     end
 `endif
 // pragma translate_on
