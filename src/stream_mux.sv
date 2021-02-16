@@ -38,7 +38,7 @@ module stream_mux #(
 // pragma translate_off
 `ifndef VERILATOR
   initial begin: p_assertions
-    assert (N_INP >= 1) else $fatal (1,"The number of inputs must be at least 1!");
+    assert (N_INP >= 1) else $fatal (1, "The number of inputs must be at least 1!");
   end
 `endif
 // pragma translate_on
