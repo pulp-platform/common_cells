@@ -270,7 +270,7 @@ module id_queue #(
         assert (ID_WIDTH >= 1)
             else $fatal(1, "The ID must at least be one bit wide!");
         assert (CAPACITY >= 1)
-            else $fatal(1,"The queue must have capacity of at least one entry!");
+            else $fatal(1, "The queue must have capacity of at least one entry!");
     end
 `endif
 // pragma translate_on
