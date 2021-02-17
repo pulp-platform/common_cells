@@ -171,7 +171,8 @@ module rr_arb_tree #(
         // pragma translate_off
         `ifndef VERILATOR
           lock: assert property(
-            @(posedge clk_i) LockIn |-> req_o && !gnt_i |=> idx_o == $past(idx_o)) else
+            @(posedge clk_i) LockIn |-> req_o &&
+                             (!gnt_i && !flush_i) |=> idx_o == $past(idx_o)) else
                 $fatal (1, "Lock implies same arbiter decision in next cycle if output is not \
                             ready.");
 
