@@ -14,10 +14,9 @@
 
 /// A register with handshakes that completely cuts any combinational paths
 /// between the input and output.
-module spill_register_v2 #(
+module spill_register_flushable #(
   parameter type T           = logic,
-  parameter bit  Bypass      = 1'b0,   // make this spill register transparent
-  parameter bit  EnableFlush = 1'b0
+  parameter bit  Bypass      = 1'b0   // make this spill register transparent
 ) (
   input  logic clk_i   ,
   input  logic rst_ni  ,
@@ -75,13 +74,13 @@ module spill_register_v2 #(
 
     // Fill the A register when the A or B register is empty. Drain the A register
     // whenever it is full and being filled, or if a flush is requested.
-    assign a_fill = valid_i && ready_o && !flush_i;
+    assign a_fill = valid_i && ready_o && (!flush_i);
     assign a_drain = (a_full_q && !b_full_q) || flush_i;
 
     // Fill the B register whenever the A register is drained, but the downstream
     // circuit is not ready. Drain the B register whenever it is full and the
     // downstream circuit is ready, or if a flush is requested.
-    assign b_fill = a_drain && !ready_i && !flush_i;
+    assign b_fill = a_drain && (!ready_i) && (!flush_i);
     assign b_drain = (b_full_q && ready_i) || flush_i;
 
     // We can accept input as long as register B is not full.

@@ -16,11 +16,13 @@
 /// between the input and output.
 module spill_register #(
   parameter type T      = logic,
-  parameter bit  Bypass = 1'b0   // make this spill register transparent
+  parameter bit  Bypass = 1'b0,     // make this spill register transparent
+  parameter bit  EnableFlush = 1'b0 // enable flushing functionality
 ) (
   input  logic clk_i   ,
   input  logic rst_ni  ,
   input  logic valid_i ,
+  input  logic flush_i ,
   output logic ready_o ,
   input  T     data_i  ,
   output logic valid_o ,
@@ -28,67 +30,27 @@ module spill_register #(
   output T     data_o
 );
 
-  if (Bypass) begin : gen_bypass
-    assign valid_o = valid_i;
-    assign ready_o = ready_i;
-    assign data_o  = data_i;
-  end else begin : gen_spill_reg
-    // The A register.
-    T a_data_q;
-    logic a_full_q;
-    logic a_fill, a_drain;
+  logic  flush;
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin : ps_a_data
-      if (!rst_ni)
-        a_data_q <= '0;
-      else if (a_fill)
-        a_data_q <= data_i;
-    end
-
-    always_ff @(posedge clk_i or negedge rst_ni) begin : ps_a_full
-      if (!rst_ni)
-        a_full_q <= 0;
-      else if (a_fill || a_drain)
-        a_full_q <= a_fill;
-    end
-
-    // The B register.
-    T b_data_q;
-    logic b_full_q;
-    logic b_fill, b_drain;
-
-    always_ff @(posedge clk_i or negedge rst_ni) begin : ps_b_data
-      if (!rst_ni)
-        b_data_q <= '0;
-      else if (b_fill)
-        b_data_q <= a_data_q;
-    end
-
-    always_ff @(posedge clk_i or negedge rst_ni) begin : ps_b_full
-      if (!rst_ni)
-        b_full_q <= 0;
-      else if (b_fill || b_drain)
-        b_full_q <= b_fill;
-    end
-
-    // Fill the A register when the A or B register is empty. Drain the A register
-    // whenever it is full and being filled.
-    assign a_fill = valid_i && ready_o;
-    assign a_drain = a_full_q && !b_full_q;
-
-    // Fill the B register whenever the A register is drained, but the downstream
-    // circuit is not ready. Drain the B register whenever it is full and the
-    // downstream circuit is ready.
-    assign b_fill = a_drain && !ready_i;
-    assign b_drain = b_full_q && ready_i;
-
-    // We can accept input as long as register B is not full.
-    assign ready_o = !a_full_q || !b_full_q;
-
-    // The unit provides output as long as one of the registers is filled.
-    assign valid_o = a_full_q | b_full_q;
-
-    // We empty the spill register before the slice register.
-    assign data_o = b_full_q ? b_data_q : a_data_q;
+  if (EnableFlush) begin : flush_assign_input
+    assign flush = flush_i;
+  end else begin : flush_assign_zero
+    assign flush = 1'b0;
   end
+
+  spill_register_flushable #(
+                             .T(T),
+                             .Bypass(Bypass)
+                             )
+  spill_register_i (
+                    .clk_i,
+                    .rst_ni,
+                    .valid_i,
+                    .flush_i(flush),
+                    .ready_o,
+                    .data_i,
+                    .valid_o,
+                    .ready_i,
+                    .data_o
+                    );
 endmodule
