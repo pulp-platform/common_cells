@@ -11,8 +11,6 @@
 //
 // Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
 
-timeunit 1ns/1ns;
-
 module graycode_tb #(
     parameter int N = 9
 );

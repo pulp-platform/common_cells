@@ -100,6 +100,7 @@ module addr_decode #(
 
   // Assumptions and assertions
   `ifndef VERILATOR
+  `ifndef XSIM
   // pragma translate_off
   initial begin : proc_check_parameters
     assume ($bits(addr_i) == $bits(addr_map_i[0].start_addr)) else
@@ -155,5 +156,6 @@ module addr_decode #(
     end
   end
   // pragma translate_on
+  `endif
   `endif
 endmodule

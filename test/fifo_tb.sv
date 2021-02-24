@@ -24,9 +24,6 @@ module fifo_inst_tb #(
     output logic    done_o
 );
 
-    timeunit 1ns;
-    timeprecision 10ps;
-
     import rand_verif_pkg::rand_wait;
 
     typedef logic [DATA_WIDTH-1:0] data_t;
@@ -168,15 +165,12 @@ module fifo_tb #(
     parameter time          TT              = TCLK * 3/4
 );
 
-    timeunit 1ns;
-    timeprecision 10ps;
-
     logic       clk,
                 rst_n;
 
     logic [3:0] done;
 
-    clk_rst_gen #(.CLK_PERIOD(TCLK), .RST_CLK_CYCLES(10)) i_clk_rst_gen (
+    clk_rst_gen #(.ClkPeriod(TCLK), .RstClkCycles(10)) i_clk_rst_gen (
         .clk_o    (clk),
         .rst_no   (rst_n)
     );

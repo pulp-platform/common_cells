@@ -16,8 +16,6 @@ module stream_to_mem_tb #(
   parameter int unsigned NumReq   = 32'd10000,
   parameter int unsigned BufDepth = 32'd1
 );
-  timeunit 1ns;
-  timeprecision 10ps;
 
   localparam time CyclTime = 10ns;
   localparam time ApplTime = 2ns;
@@ -124,8 +122,8 @@ module stream_to_mem_tb #(
 
   // CLK generator
   clk_rst_gen #(
-    .CLK_PERIOD     ( CyclTime ),
-    .RST_CLK_CYCLES ( 10       )
+    .ClkPeriod    ( CyclTime ),
+    .RstClkCycles ( 10       )
   ) i_clk_rst_gen (
     .clk_o  ( clk   ),
     .rst_no ( rst_n )

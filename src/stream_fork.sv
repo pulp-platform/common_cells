@@ -125,7 +125,7 @@ module stream_fork #(
 // pragma translate_off
 `ifndef VERILATOR
     initial begin: p_assertions
-        assert (N_OUP >= 1) else $fatal("Number of outputs must be at least 1!");
+        assert (N_OUP >= 1) else $fatal(1, "Number of outputs must be at least 1!");
     end
 `endif
 // pragma translate_on
