@@ -29,8 +29,7 @@ common_cells_all:
     - src/rstgen_bypass.sv
     - src/serial_deglitch.sv
     - src/shift_reg.sv
-    - src/spill_register.sv
-    - src/spill_register_v2.sv
+    - src/spill_register_flushable.sv
     - src/stream_demux.sv
     - src/stream_filter.sv
     - src/stream_fork.sv
@@ -45,7 +44,6 @@ common_cells_all:
     - src/addr_decode.sv
     - src/cb_filter.sv
     - src/cdc_fifo_2phase.sv
-    - src/cdc_fifo_gray.sv
     - src/counter.sv
     - src/ecc_decode.sv
     - src/ecc_encode.sv
@@ -53,19 +51,21 @@ common_cells_all:
     - src/lzc.sv
     - src/max_counter.sv
     - src/rstgen.sv
+    - src/spill_register.sv
     - src/stream_delay.sv
     - src/stream_fifo.sv
     - src/stream_fork_dynamic.sv
-    - src/stream_xbar.sv
     # Level 2
+    - src/cdc_fifo_gray.sv
     - src/fall_through_register.sv
     - src/id_queue.sv
     - src/stream_to_mem.sv
     - src/stream_arbiter_flushable.sv
-    - src/stream_omega_net.sv
     - src/stream_register.sv
+    - src/stream_xbar.sv
     # Level 3
     - src/stream_arbiter.sv
+    - src/stream_omega_net.sv
     # Deprecated modules
     # Level 0
     - src/deprecated/clock_divider_counter.sv
