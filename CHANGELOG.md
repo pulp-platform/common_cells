@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## Unreleased
 ### Fixed
 - Correct reset polarity in assertions in `isochronous_4phase_handshake` and `isochronous_spill_register`
+- Fix compatibility of `sub_per_hash` constructs with Verilator
 
 ## 1.23.0 - 2021-09-05
 ### Added
