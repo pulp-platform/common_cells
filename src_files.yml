@@ -68,6 +68,7 @@ common_cells_all:
     - src/stream_omega_net.sv
     # Deprecated modules
     # Level 0
+    - src/deprecated/clock_divider.sv
     - src/deprecated/clock_divider_counter.sv
     - src/deprecated/find_first_one.sv
     - src/deprecated/generic_LFSR_8bit.sv
@@ -75,7 +76,7 @@ common_cells_all:
     - src/deprecated/generic_fifo_adv.sv
     - src/deprecated/pulp_sync.sv
     - src/deprecated/pulp_sync_wedge.sv
-    - src/deprecated/clock_divider.sv
+    - src/deprecated/sram.sv
     # Level 1
     - src/deprecated/fifo_v2.sv
     - src/deprecated/prioarbiter.sv
