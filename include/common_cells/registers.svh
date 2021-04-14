@@ -83,7 +83,9 @@
 // __reset_clk: reset input
 `define FFSR(__q, __d, __reset_value, __clk, __reset_clk) \
   `ifndef VERILATOR                       \
+  `ifndef NO_SYNOPSYS_FF                  \
   /``* synopsys sync_set_reset `"__reset_clk`" *``/       \
+    `endif                        \
     `endif                        \
   always_ff @(posedge (__clk)) begin                      \
     __q <= (__reset_clk) ? (__reset_value) : (__d);       \
@@ -97,7 +99,9 @@
 // __reset_n_clk: reset input
 `define FFSRN(__q, __d, __reset_value, __clk, __reset_n_clk) \
     `ifndef VERILATOR                       \
+    `ifndef NO_SYNOPSYS_FF                  \
   /``* synopsys sync_set_reset `"__reset_n_clk`" *``/        \
+    `endif                        \
     `endif                        \
   always_ff @(posedge (__clk)) begin                         \
     __q <= (!__reset_n_clk) ? (__reset_value) : (__d);       \
@@ -170,7 +174,9 @@
 // __reset_clk: reset input
 `define FFLSR(__q, __d, __load, __reset_value, __clk, __reset_clk)       \
     `ifndef VERILATOR                       \
+    `ifndef NO_SYNOPSYS_FF                  \
   /``* synopsys sync_set_reset `"__reset_clk`" *``/                      \
+    `endif                        \
     `endif                        \
   always_ff @(posedge (__clk)) begin                                     \
     __q <= (__reset_clk) ? (__reset_value) : ((__load) ? (__d) : (__q)); \
@@ -185,7 +191,9 @@
 // __reset_n_clk: reset input
 `define FFLSRN(__q, __d, __load, __reset_value, __clk, __reset_n_clk)       \
     `ifndef VERILATOR                       \
+    `ifndef NO_SYNOPSYS_FF                  \
   /``* synopsys sync_set_reset `"__reset_n_clk`" *``/                       \
+    `endif                        \
     `endif                        \
   always_ff @(posedge (__clk)) begin                                        \
     __q <= (!__reset_n_clk) ? (__reset_value) : ((__load) ? (__d) : (__q)); \
@@ -201,7 +209,9 @@
 // __arst_n: asynchronous reset
 `define FFLARNC(__q, __d, __load, __clear, __reset_value, __clk, __arst_n) \
     `ifndef VERILATOR                       \
+    `ifndef NO_SYNOPSYS_FF                  \
   /``* synopsys sync_set_reset `"__clear`" *``/                       \
+    `endif                        \
     `endif                        \
   always_ff @(posedge (__clk) or negedge (__arst_n)) begin                 \
     if (!__arst_n) begin                                                   \
