@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+### Changed
+- `registers.svh`: Merge explicit and implicit register variants into `` `FF `` and `` `FFL `` macros
 
 ## 1.21.0 - 2021-01-28
 ### Changed
