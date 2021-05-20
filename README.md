@@ -114,21 +114,21 @@ The header file `registers.svh` contains macros that expand to descriptions of r
 To avoid misuse of `always_ff` blocks, only the following macros shall be used to describe sequential behavior.
 The use of linter rules that flag explicit uses of `always_ff` in source code is encouraged.
 
-|    Macro     |                            Arguments                            |                               Description                               |
-| ------------ | --------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| `` `FF``     | `q_sig`, `d_sig`, `rst_val`                                     | Flip-flop with asynchronous active-low reset (implicit)                 |
-| `` `FFAR``   | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `arst_sig`              | Flip-flop with asynchronous active-high reset                           |
-| `` `FFARN``  | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `arstn_sig`             | Flip-flop with asynchronous active-low reset                            |
-| `` `FFSR``   | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `rst_sig`               | Flip-flop with synchronous active-high reset                            |
-| `` `FFSRN``  | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `rstn_sig`              | Flip-flop with synchronous active-low reset                             |
-| `` `FFNR``   | `q_sig`, `d_sig`, `clk_sig`                                     | Flip-flop without reset                                                 |
-|              |                                                                 |                                                                         |
-| `` `FFL``    | `q_sig`, `d_sig`, `load_ena`, `rst_val`                         | Flip-flop with load-enable and asynchronous active-low reset (implicit) |
-| `` `FFLAR``  | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `arst_sig`  | Flip-flop with load-enable and asynchronous active-high reset           |
-| `` `FFLARN`` | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `arstn_sig` | Flip-flop with load-enable and asynchronous active-low reset            |
-| `` `FFLSR``  | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `rst_sig`   | Flip-flop with load-enable and synchronous active-high reset            |
-| `` `FFLSRN`` | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `rstn_sig`  | Flip-flop with load-enable and synchronous active-low reset             |
-| `` `FFLNR``  | `q_sig`, `d_sig`, `load_ena`, `clk_sig`                         | Flip-flop with load-enable without reset                                |
+|    Macro     |                             Arguments                             |                                Description                                |
+| ------------ | ----------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `` `FF``     | `q_sig`, `d_sig`, `rst_val`, (`clk_sig`, `arstn_sig`)             | Flip-flop with asynchronous active-low reset                              |
+| `` `FFAR``   | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `arst_sig`                | Flip-flop with asynchronous active-high reset                             |
+| `` `FFARN``  | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `arstn_sig`               | *deprecated* Flip-flop with asynchronous active-low reset                 |
+| `` `FFSR``   | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `rst_sig`                 | Flip-flop with synchronous active-high reset                              |
+| `` `FFSRN``  | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `rstn_sig`                | Flip-flop with synchronous active-low reset                               |
+| `` `FFNR``   | `q_sig`, `d_sig`, `clk_sig`                                       | Flip-flop without reset                                                   |
+|              |                                                                   |                                                                           |
+| `` `FFL``    | `q_sig`, `d_sig`, `load_ena`, `rst_val`, (`clk_sig`, `arstn_sig`) | Flip-flop with load-enable and asynchronous active-low reset              |
+| `` `FFLAR``  | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `arst_sig`    | Flip-flop with load-enable and asynchronous active-high reset             |
+| `` `FFLARN`` | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `arstn_sig`   | *deprecated* Flip-flop with load-enable and asynchronous active-low reset |
+| `` `FFLSR``  | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `rst_sig`     | Flip-flop with load-enable and synchronous active-high reset              |
+| `` `FFLSRN`` | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `rstn_sig`    | Flip-flop with load-enable and synchronous active-low reset               |
+| `` `FFLNR``  | `q_sig`, `d_sig`, `load_ena`, `clk_sig`                           | Flip-flop with load-enable without reset                                  |
 - *The name of the clock and reset signals for implicit variants is `clk_i` and `rst_ni`, respectively.*
 - *Argument suffix `_sig` indicates signal names for present and next state as well as clocks and resets.*
 - *Argument `rst_val` specifies the value literal to be assigned upon reset.*
