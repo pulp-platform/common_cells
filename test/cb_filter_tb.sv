@@ -93,192 +93,190 @@ module cb_filter_tb;
   // ------------------------
   // Test Bench
   // ------------------------
-  program test_cbf;
-    initial begin : stimulus
-      sim_done = 1'b0;
-      no_tests           = 64'd0;
-      no_positives       = 64'd0;
-      no_false_positives = 64'd0;
-      no_negatives       = 64'd0;
-      no_false_negatives = 64'd0;
-      init_signals();
-      fork
-        begin
-          // simulation control branch
-          max_items = 10;
-          min_items =  3;
-          @(posedge rst_n);
-          repeat (RunCycles) @(posedge clk);
-          sim_done = 1'b1;
-        end
-        begin
-          @(posedge rst_n);
-          run_lookup(sim_done);
-        end
-        begin
-          @(posedge rst_n);
-          run_increment(sim_done, decr_valid);
-        end
-        begin
-          @(posedge rst_n);
-          run_decrement(sim_done);
-        end
-      join
-      print_result(no_tests, no_positives, no_false_positives, no_negatives, no_false_negatives);
-      empty_filter();
-      $stop();
-    end
+  initial begin : stimulus
+    sim_done = 1'b0;
+    no_tests           = 64'd0;
+    no_positives       = 64'd0;
+    no_false_positives = 64'd0;
+    no_negatives       = 64'd0;
+    no_false_negatives = 64'd0;
+    init_signals();
+    fork
+      begin
+        // simulation control branch
+        max_items = 10;
+        min_items =  3;
+        @(posedge rst_n);
+        repeat (RunCycles) @(posedge clk);
+        sim_done = 1'b1;
+      end
+      begin
+        @(posedge rst_n);
+        run_lookup(sim_done);
+      end
+      begin
+        @(posedge rst_n);
+        run_increment(sim_done, decr_valid);
+      end
+      begin
+        @(posedge rst_n);
+        run_decrement(sim_done);
+      end
+    join
+    print_result(no_tests, no_positives, no_false_positives, no_negatives, no_false_negatives);
+    empty_filter();
+    $stop();
+  end
 
-    task cycle_start();
-      #TTest;
-    endtask : cycle_start
+  task cycle_start();
+    #TTest;
+  endtask : cycle_start
 
-    task cycle_end();
-      @(posedge clk);
-    endtask : cycle_end
+  task cycle_end();
+    @(posedge clk);
+  endtask : cycle_end
 
-    task reset_filter();
-      filter_clear <= #TAppli '1;
-      cycle_end();
-      filter_clear <= #TAppli '0;
-    endtask : reset_filter
+  task reset_filter();
+    filter_clear <= #TAppli '1;
+    cycle_end();
+    filter_clear <= #TAppli '0;
+  endtask : reset_filter
 
-    task init_signals();
-      look_data    <= #TAppli '0;
-      incr_data    <= #TAppli '0;
-      incr_valid   <= #TAppli '0;
-      decr_data    <= #TAppli '0;
-      decr_valid   <= #TAppli '0;
-      filter_clear <= #TAppli '0;
-    endtask : init_signals
+  task init_signals();
+    look_data    <= #TAppli '0;
+    incr_data    <= #TAppli '0;
+    incr_valid   <= #TAppli '0;
+    decr_data    <= #TAppli '0;
+    decr_valid   <= #TAppli '0;
+    filter_clear <= #TAppli '0;
+  endtask : init_signals
 
-    // runs each cycle a lookup and tests if the output is expected
-    task automatic run_lookup(ref logic sim_done);
-      while (!sim_done) begin
-        logic [DataWidth-1:0] lookup = $urandom_range(0,2**DataWidth-1);;
-        rand_wait(0,6);
-        look_data    <= #TAppli lookup;
-        cycle_start();
-        no_tests++;
-        // check the result
-        if(control_array.exists(lookup)) begin
-          // the result has to be right
-          if(!look_valid) begin
-            $warning(1, "Had a false negative!!!\nIndex: %d", lookup);
-            no_false_negatives++;
-          end else begin
-            no_positives++;
-          end
+  // runs each cycle a lookup and tests if the output is expected
+  task automatic run_lookup(ref logic sim_done);
+    while (!sim_done) begin
+      logic [DataWidth-1:0] lookup = $urandom_range(0,2**DataWidth-1);;
+      rand_wait(0,6);
+      look_data    <= #TAppli lookup;
+      cycle_start();
+      no_tests++;
+      // check the result
+      if(control_array.exists(lookup)) begin
+        // the result has to be right
+        if(!look_valid) begin
+          $warning(1, "Had a false negative!!!\nIndex: %d", lookup);
+          no_false_negatives++;
         end else begin
-          // here we can check for false positives
-          if(look_valid) begin
-            //$display("Had a false positive!\nIndex: %d", lookup);
-            no_false_positives++;
-          end else begin
-            //$display("Item correctly not in Set.\nIndex: %d", lookup);
-            no_negatives++;
-          end
+          no_positives++;
         end
+      end else begin
+        // here we can check for false positives
+        if(look_valid) begin
+          //$display("Had a false positive!\nIndex: %d", lookup);
+          no_false_positives++;
+        end else begin
+          //$display("Item correctly not in Set.\nIndex: %d", lookup);
+          no_negatives++;
+        end
+      end
+      cycle_end();
+    end
+  endtask : run_lookup
+
+  // randomly put data into the filter
+  task automatic run_increment(ref logic sim_done, ref logic decr_valid);
+    while (!sim_done) begin
+      logic [DataWidth-1:0] data = $urandom_range(0,2**DataWidth-1);
+      if(!control_array.exists(data)) begin
+        rand_wait(0,5);
+        incr_data <= #TAppli data;
+        while (filter_full | (control_array.num() > max_items))
+            begin if (sim_done | decr_valid) break; cycle_end(); end
+        incr_valid <= #TAppli 1'b1;
+        cycle_end();
+        control_array[data] = 1'b1;
+        incr_data  <= #TAppli '0;
+        incr_valid <= #TAppli '0;
+      end else begin
         cycle_end();
       end
-    endtask : run_lookup
+    end
+  endtask : run_increment
 
-    // randomly put data into the filter
-    task automatic run_increment(ref logic sim_done, ref logic decr_valid);
-      while (!sim_done) begin
-        logic [DataWidth-1:0] data = $urandom_range(0,2**DataWidth-1);
-        if(!control_array.exists(data)) begin
+  // remove randomly an item from the filter
+  task automatic run_decrement(ref logic sim_done);
+    int unsigned nb_tryes = 0;
+    while (!sim_done) begin
+      logic [DataWidth-1:0] data = $urandom_range(0,2**DataWidth-1);;
+      if(control_array.exists(data)) begin
+        if(control_array.num() > min_items) begin
           rand_wait(0,5);
-          incr_data <= #TAppli data;
-          while (filter_full | (control_array.num() > max_items))
-              begin if (sim_done | decr_valid) break; cycle_end(); end
-          incr_valid <= #TAppli 1'b1;
-          cycle_end();
-          control_array[data] = 1'b1;
-          incr_data  <= #TAppli '0;
-          incr_valid <= #TAppli '0;
-        end else begin
-          cycle_end();
-        end
-      end
-    endtask : run_increment
-
-    // remove randomly an item from the filter
-    task automatic run_decrement(ref logic sim_done);
-      int unsigned nb_tryes = 0;
-      while (!sim_done) begin
-        logic [DataWidth-1:0] data = $urandom_range(0,2**DataWidth-1);;
-        if(control_array.exists(data)) begin
-          if(control_array.num() > min_items) begin
-            rand_wait(0,5);
-            decr_data  <= #TAppli data;
-            decr_valid <= #TAppli 1'b1;
-            cycle_start();
-            control_array.delete(data);
-            cycle_end();
-            decr_data  <= #TAppli '0;
-            decr_valid <= #TAppli 1'b0;
-          end else begin
-            cycle_end();
-          end
-        end else begin
-          if(nb_tryes < 100) begin
-            nb_tryes++;
-          end else begin
-            nb_tryes = 0;
-            cycle_end();
-          end
-        end
-      end
-    endtask : run_decrement
-
-    // clear the filter from all items
-    task empty_filter();
-      rand_wait(10,15);
-      for (int unsigned i = 0; i < 2**DataWidth; i++) begin
-        if(control_array.exists(i)) begin
-          decr_data  <= #TAppli i;
+          decr_data  <= #TAppli data;
           decr_valid <= #TAppli 1'b1;
           cycle_start();
-          control_array.delete(i);
+          control_array.delete(data);
+          cycle_end();
+          decr_data  <= #TAppli '0;
+          decr_valid <= #TAppli 1'b0;
+        end else begin
+          cycle_end();
+        end
+      end else begin
+        if(nb_tryes < 100) begin
+          nb_tryes++;
+        end else begin
+          nb_tryes = 0;
           cycle_end();
         end
       end
-      // check empty flag
-      decr_data  <= #TAppli '0;
-      decr_valid <= #TAppli 1'b0;
-      cycle_start();
-      cycle_end();
-      $display("Filter empty is: %b", filter_empty);
-    endtask : empty_filter
+    end
+  endtask : run_decrement
 
-    task print_result(input longint unsigned n_test, n_pos, n_f_pos, n_neg, n_f_neg);
-      $info(   "######################################################");
-      if (n_f_neg == 64'h0) begin
-        $display("***SUCCESS***");
-      end else begin
-        $display("!!!FAILED!!!");
+  // clear the filter from all items
+  task empty_filter();
+    rand_wait(10,15);
+    for (int unsigned i = 0; i < 2**DataWidth; i++) begin
+      if(control_array.exists(i)) begin
+        decr_data  <= #TAppli i;
+        decr_valid <= #TAppli 1'b1;
+        cycle_start();
+        control_array.delete(i);
+        cycle_end();
       end
-      $display("Finished Tests");
-      $display("NO Testes:    %d", n_test);
-      $display("NO Positive:  %d", n_pos);
-      $display("NO False Pos: %d", n_f_pos);
-      $display("NO Negatives: %d", n_neg);
-      $display("NO False Neg: %d <--- Success if this is 0!", n_f_neg);
-      $display("######################################################");
-    endtask : print_result
+    end
+    // check empty flag
+    decr_data  <= #TAppli '0;
+    decr_valid <= #TAppli 1'b0;
+    cycle_start();
+    cycle_end();
+    $display("Filter empty is: %b", filter_empty);
+  endtask : empty_filter
 
-    task automatic rand_wait(input int unsigned min, max);
-      int unsigned rand_success, cycles;
-      rand_success = std::randomize(cycles) with {
-        cycles >= min;
-        cycles <= max;
-      };
-      assert (rand_success) else $error("Failed to randomize wait cycles!");
-      repeat (cycles) @(posedge clk);
-    endtask : rand_wait
+  task print_result(input longint unsigned n_test, n_pos, n_f_pos, n_neg, n_f_neg);
+    $info(   "######################################################");
+    if (n_f_neg == 64'h0) begin
+      $display("***SUCCESS***");
+    end else begin
+      $display("!!!FAILED!!!");
+    end
+    $display("Finished Tests");
+    $display("NO Testes:    %d", n_test);
+    $display("NO Positive:  %d", n_pos);
+    $display("NO False Pos: %d", n_f_pos);
+    $display("NO Negatives: %d", n_neg);
+    $display("NO False Neg: %d <--- Success if this is 0!", n_f_neg);
+    $display("######################################################");
+  endtask : print_result
 
-  endprogram
+  task automatic rand_wait(input int unsigned min, max);
+    int unsigned rand_success, cycles;
+    rand_success = std::randomize(cycles) with {
+      cycles >= min;
+      cycles <= max;
+    };
+    assert (rand_success) else $error("Failed to randomize wait cycles!");
+    repeat (cycles) @(posedge clk);
+  endtask : rand_wait
+
 
   cb_filter #(
     .KHashes       ( NoHashes    ), // Number of hash functions
