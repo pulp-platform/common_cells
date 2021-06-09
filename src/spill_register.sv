@@ -16,8 +16,7 @@
 /// between the input and output.
 module spill_register #(
   parameter type T      = logic,
-  parameter bit  Bypass = 1'b0,     // make this spill register transparent
-  parameter bit  EnableFlush = 1'b0 // enable flushing functionality
+  parameter bit  Bypass = 1'b0     // make this spill register transparent
 ) (
   input  logic clk_i   ,
   input  logic rst_ni  ,
@@ -30,14 +29,6 @@ module spill_register #(
   output T     data_o
 );
 
-  logic  flush;
-
-  if (EnableFlush) begin : flush_assign_input
-    assign flush = flush_i;
-  end else begin : flush_assign_zero
-    assign flush = 1'b0;
-  end
-
   spill_register_flushable #(
                              .T(T),
                              .Bypass(Bypass)
@@ -46,7 +37,7 @@ module spill_register #(
                     .clk_i,
                     .rst_ni,
                     .valid_i,
-                    .flush_i(flush),
+                    .flush_i(1'b0),
                     .ready_o,
                     .data_i,
                     .valid_o,
