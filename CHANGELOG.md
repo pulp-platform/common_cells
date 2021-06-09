@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - `registers.svh`: Merge explicit and implicit register variants into `` `FF `` and `` `FFL `` macros
 
+## 1.22.0 - 2021-06-09
+### Added
+- Add `spill_register_flushable`
+
+### Changed
+- `rr_arb_tree`: Allow flushing locked decision
+- Improved `verific` compatibility
+
 ## 1.21.0 - 2021-01-28
 ### Changed
 - Remove `timeprecision/timeunit` arguments

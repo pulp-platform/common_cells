@@ -1,4 +1,4 @@
-// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright 2021 ETH Zurich and University of Bologna.
 //
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
@@ -13,7 +13,7 @@
 
 
 /// A register with handshakes that completely cuts any combinational paths
-/// between the input and output.
+/// between the input and output. This spill register can be flushed.
 module spill_register_flushable #(
   parameter type T           = logic,
   parameter bit  Bypass      = 1'b0   // make this spill register transparent
@@ -96,9 +96,9 @@ module spill_register_flushable #(
 
     // pragma translate_off
     `ifndef VERILATOR
-        flush_valid : assert property(
-            @(posedge clk_i) disable iff (~rst_ni) (flush_i |-> ~valid_i))
-            else $warning("Trying to flush and feed the spill register at the same time. You will lose data!");
+    flush_valid : assert property (
+      @(posedge clk_i) disable iff (~rst_ni) (flush_i |-> ~valid_i)) else
+      $warning("Trying to flush and feed the spill register simultaneously. You will lose data!");
    `endif
      // pragma translate_on
   end

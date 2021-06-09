@@ -12,12 +12,11 @@
 // Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
 
 
-/// A register with handshakes that completely cuts any combinational paths
-/// between the input and output.
+/// Wrapper around the flushable spill register to maintain back-ward
+/// compatibility.
 module spill_register #(
   parameter type T      = logic,
-  parameter bit  Bypass = 1'b0,     // make this spill register transparent
-  parameter bit  EnableFlush = 1'b0 // enable flushing functionality
+  parameter bit  Bypass = 1'b0     // make this spill register transparent
 ) (
   input  logic clk_i   ,
   input  logic rst_ni  ,
@@ -30,27 +29,19 @@ module spill_register #(
   output T     data_o
 );
 
-  logic  flush;
-
-  if (EnableFlush) begin : flush_assign_input
-    assign flush = flush_i;
-  end else begin : flush_assign_zero
-    assign flush = 1'b0;
-  end
-
   spill_register_flushable #(
-                             .T(T),
-                             .Bypass(Bypass)
-                             )
-  spill_register_i (
-                    .clk_i,
-                    .rst_ni,
-                    .valid_i,
-                    .flush_i(flush),
-                    .ready_o,
-                    .data_i,
-                    .valid_o,
-                    .ready_i,
-                    .data_o
-                    );
+    .T(T),
+    .Bypass(Bypass)
+  ) spill_register_flushable_i (
+    .clk_i,
+    .rst_ni,
+    .valid_i,
+    .flush_i(1'b0),
+    .ready_o,
+    .data_i,
+    .valid_o,
+    .ready_i,
+    .data_o
+  );
+
 endmodule
