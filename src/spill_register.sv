@@ -21,7 +21,6 @@ module spill_register #(
   input  logic clk_i   ,
   input  logic rst_ni  ,
   input  logic valid_i ,
-  input  logic flush_i ,
   output logic ready_o ,
   input  T     data_i  ,
   output logic valid_o ,
