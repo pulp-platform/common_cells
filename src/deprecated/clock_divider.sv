@@ -53,6 +53,7 @@ module clock_divider
     input  logic [7:0] clk_div_data_i,
     input  logic       clk_div_valid_i,
     output logic       clk_div_ack_o,
+    output logic [7:0] clk_div_data_o,
     output logic       clk_o
 );
 
@@ -161,6 +162,8 @@ module clock_divider
         end
         endcase
     end
+
+    assign clk_div_data_o = reg_clk_div;
 
     always_ff @(posedge clk_i or negedge s_rstn_sync)
     begin
