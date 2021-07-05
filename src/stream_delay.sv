@@ -35,7 +35,7 @@ module stream_delay #(
         assign payload_o = payload_i;
     end else begin : gen_delay
 
-        localparam int unsigned CounterBits = 4;
+        localparam int unsigned CounterBits = 32;
 
         typedef enum logic [1:0] {
             Idle, Valid, Ready
@@ -44,7 +44,7 @@ module stream_delay #(
         state_e state_d, state_q;
 
         logic       load;
-        logic [3:0] count_out;
+        logic [CounterBits:0] count_out;
         logic       en;
 
         logic [CounterBits-1:0] counter_load;
