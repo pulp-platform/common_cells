@@ -35,14 +35,14 @@ module cc_onehot #(
 
     // generate half adders for each lvl
     // lvl 0 is the input level
-    for (genvar i = 1; i < LVLS; i++) begin
-      localparam LVL_WIDTH = 2**LVLS / 2**i;
-      for (genvar j = 0; j < LVL_WIDTH; j+=2) begin
+    for (genvar i = 1; i < LVLS; i++) begin : gen_lvl
+      localparam int unsigned LVLWidth = 2**LVLS / 2**i;
+      for (genvar j = 0; j < LVLWidth; j+=2) begin : gen_width
         assign sum[i][j/2] = sum[i-1][j] ^ sum[i-1][j+1];
         assign carry[i][j/2] = sum[i-1][j] & sum[i-1][j+1];
       end
       // generate carry tree
-      assign carry_array[i-1] = |carry[i][LVL_WIDTH/2-1:0];
+      assign carry_array[i-1] = |carry[i][LVLWidth/2-1:0];
     end
     assign is_onehot_o = sum[LVLS-1][0] & ~|carry_array;
   end
