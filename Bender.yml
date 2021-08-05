@@ -23,6 +23,7 @@ sources:
   # Level 0
   - src/binary_to_gray.sv
   - src/cb_filter_pkg.sv
+  - src/cc_onehot.sv
   - src/cdc_2phase.sv
   - src/cf_math_pkg.sv
   - src/clk_div.sv

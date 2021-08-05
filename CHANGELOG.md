@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+### Added
+- Add `cc_onehot`
+
 ## 1.22.1 - 2021-06-14
 ### Fixed
 - Remove breaking change of `spill_register`
