@@ -71,7 +71,6 @@ module isochronous_4phase_handshake (
  // pragma translate_off
  // stability guarantees
   `ifndef VERILATOR
-  default disable iff src_rst_ni;
   assert property (@(posedge src_clk_i) disable iff (src_rst_ni) (src_valid_i && !src_ready_o |=> $stable(src_valid_i))) else
       $error("src_valid_i is unstable");
   assert property (@(posedge dst_clk_i) disable iff (dst_rst_ni) (dst_valid_o && !dst_ready_i |=> $stable(dst_valid_o))) else

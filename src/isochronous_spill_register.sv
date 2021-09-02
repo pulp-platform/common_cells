@@ -98,7 +98,6 @@ module isochronous_spill_register #(
   // pragma translate_off
   // stability guarantees
   `ifndef VERILATOR
-  default disable iff src_rst_ni;
   assert property (@(posedge src_clk_i) disable iff (src_rst_ni) (src_valid_i && !src_ready_o |=> $stable(src_valid_i))) else
       $error("src_valid_i is unstable");
   assert property (@(posedge src_clk_i) disable iff (src_rst_ni) (src_valid_i && !src_ready_o |=> $stable(src_data_i))) else
