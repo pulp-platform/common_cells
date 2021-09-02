@@ -33,6 +33,7 @@ sources:
   - src/exp_backoff.sv
   - src/fifo_v3.sv
   - src/gray_to_binary.sv
+  - src/isochronous_4phase_handshake.sv
   - src/isochronous_spill_register.sv
   - src/lfsr.sv
   - src/lfsr_16bit.sv
@@ -104,7 +105,7 @@ sources:
       - test/stream_to_mem_tb.sv
       - test/sub_per_hash_tb.sv
       # Level 1
-      - test/isochronous_spill_register_tb.sv
+      - test/isochronous_crossing_tb.sv
       - test/stream_omega_net_tb.sv
       - test/stream_xbar_tb.sv
 
