@@ -11,7 +11,8 @@
 // Antonio Pullini <pullinia@iis.ee.ethz.ch>
 
 module sync #(
-    parameter int unsigned STAGES = 2
+    parameter int unsigned STAGES = 2,
+    parameter bit ResetValue = 1'b0
 ) (
     input  logic clk_i,
     input  logic rst_ni,
@@ -23,7 +24,7 @@ module sync #(
 
     always_ff @(posedge clk_i, negedge rst_ni) begin
         if (!rst_ni) begin
-            reg_q <= 'h0;
+            reg_q <= {STAGES{ResetValue}};
         end else begin
             reg_q <= {reg_q[STAGES-2:0], serial_i};
         end
