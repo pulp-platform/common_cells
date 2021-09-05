@@ -6,12 +6,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## 1.23.0 - 2021-09-05
 ### Added
 - Add `cc_onehot`
 - `isochronous_4phase_handshake`: Isochronous clock domain crossing cutting all paths using a 4-phase handshake.
 - Changed `isochronous_spill_register_tb` to `isochronous_crossing_tb` also covering the `isochronous_4phase_handshake`
   module.
 - Make reset value of `sync` module parameterizable.
+
+### Changed
+- `id_queue`: Allow simultaneous input and output requests in `FULL_BW` mode
 
 ## 1.22.1 - 2021-06-14
 ### Fixed
