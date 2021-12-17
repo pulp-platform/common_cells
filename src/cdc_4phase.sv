@@ -15,8 +15,7 @@
 /// CDC, it doesn't suffer from the same issues during one sided resets since
 /// the IDLE state doesn't alternate with every transaction.
 ///
-/// Parameters:
-/// T - The type of the data to transmit through the CDC.
+/// Parameters: T - The type of the data to transmit through the CDC.
 ///
 /// Decoupled - If decoupled is disabled, the 4phase cdc will not consume the
 /// src item until the handshake with the other side is completed. This
@@ -26,10 +25,10 @@
 /// CDC.
 ///
 /// SEND_RESET_MSG - If send reset msg is enabled, the 4phase cdc starts sending
-/// the RESET_MSG as the asynchronous reset state. This can be usefull if we
-/// need to transmit a message to the other side of the CDC immediately during
-/// an async reset even if there is no clock available. This mode is required
-/// for proper functionality of the cdc_clear_sync module.
+/// the RESET_MSG within its' asynchronous reset state. This can be usefull if
+/// we need to transmit a message to the other side of the CDC immediately
+/// during an async reset even if there is no clock available. This mode is
+/// required for proper functionality of the cdc_reset_ctrlr module.
 ///
 /// CONSTRAINT: Requires max_delay of min_period(src_clk_i, dst_clk_i) through
 /// the paths async_req, async_ack, async_data.
@@ -299,7 +298,7 @@ module cdc_4phase_dst #(
     end
   end
 
-  if (DECOUPLED) begin
+  if (DECOUPLED) begin : gen_decoupled
     // Decouple the output from the asynchronous data bus without introducing
     // additional latency by inserting a spill register
     spill_register #(
@@ -315,7 +314,7 @@ module cdc_4phase_dst #(
       .ready_i,
       .data_o
     );
-  end else begin
+  end else begin : gen_not_decoupled
     assign valid_o      = data_valid;
     assign output_ready = ready_i;
     assign data_o       = async_data_i;
