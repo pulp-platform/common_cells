@@ -49,7 +49,8 @@ module rr_distributor # (
         idx_t rr_d, rr_q;
         logic one_ready;
 
-        assign rr_d = (valid_i & one_ready) ? ((rr_q == idx_t'(NumOut-1)) ? '0 : rr_q + 1'b1) : rr_q;
+        assign rr_d = (valid_i & one_ready) ?
+            ((rr_q == idx_t'(NumOut-1)) ? '0 : rr_q + 1'b1) : rr_q;
 
         assign one_ready = |ready_i;
 
