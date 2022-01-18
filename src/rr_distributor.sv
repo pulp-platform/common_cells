@@ -12,19 +12,27 @@
 // Date: 12.01.2021
 // Description: round robin distributor
 
+/// The rr_distributor forwards requests to individual outputs in a round robin fashion.
 module rr_distributor # (
-    parameter int unsigned NumOut   = 1,
-    parameter int unsigned Width    = 1,
-    parameter type payload_t        = logic [Width-1:0],
-    parameter int unsigned IdxWidth = (NumOut > 32'd1) ? unsigned'($clog2(NumOut)) : 32'd1,
-    parameter type         idx_t    = logic [IdxWidth-1:0]
+    /// Number of outputs to distribute to.
+    parameter int unsigned NumOut    = 1,
+    /// Data width of the payload in bits. Not needed if `payload_t` is overwritten.
+    parameter int unsigned Width     = 1,
+    /// Data type of the payload, can be overwritten with a custom type. Only use of `Width`.
+    parameter type         payload_t = logic [Width-1:0],
+    /// Dependent parameter, do **not** overwrite.
+    /// Width of the selected index
+    parameter int unsigned IdxWidth  = (NumOut > 32'd1) ? unsigned'($clog2(NumOut)) : 32'd1,
+    /// Dependent parameter, do **not** overwrite.
+    /// type of the selected index
+    parameter type         idx_t     = logic [IdxWidth-1:0]
 ) (
+    input  logic                  clk_i,
+    input  logic                  rst_ni,
     // input stream
-    input  logic     clk_i,
-    input  logic     rst_ni,
-    input  logic     valid_i,
-    output logic     ready_o,
-    input  payload_t payload_i,
+    input  logic                  valid_i,
+    output logic                  ready_o,
+    input  payload_t              payload_i,
     // output stream
     output logic     [NumOut-1:0] valid_o,
     input  logic     [NumOut-1:0] ready_i,
