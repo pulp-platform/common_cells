@@ -19,7 +19,16 @@ module rr_distributor # (
     /// Data width of the payload in bits. Not needed if `data_t` is overwritten.
     parameter int unsigned Width     = 1,
     /// Data type of the payload, can be overwritten with a custom type. Only use of `Width`.
-    parameter type         data_t = logic [Width-1:0],
+    parameter type         data_t    = logic [Width-1:0],
+    /// Setting StrictRR enforces a strict round-robin distribution
+    /// If set to 1'b1, the rr_distributor will distribute the requests to the next output
+    ///   in line, irrespective if this output is ready or not, irrespective if another
+    ///   output could accept the request. The transaction will wait until the next one in
+    ///   line accepts the handshake.
+    /// If set to 1'b0, the rr_distributor will step through the outputs if one is ready
+    ///   but the current one is not. This can reduce wait time for the input.
+    ///   **THIS IS NOT COMPLIANT AS IT MAY DE-ASSERT VALID WITHOUT A PROPER HANDSHAKE**
+    parameter bit          StrictRR  = 1'b0,
     /// Dependent parameter, do **not** overwrite.
     /// Width of the selected index
     parameter int unsigned IdxWidth  = cf_math_pkg::idx_width(NumOut),
@@ -51,7 +60,7 @@ module rr_distributor # (
 
         always_comb begin : rr_next
             rr_d = rr_q;
-            if (valid_i && one_ready) begin
+            if (valid_i && ( ready_i[rr_q] || (one_ready && !StrictRR))) begin
                 if (rr_q == idx_t'(NumOut - 1)) begin
                     rr_d = '0;
                 end else begin
@@ -64,12 +73,9 @@ module rr_distributor # (
 
         always_comb begin : proc_arbitration
             valid_o = '0;
-            ready_o = 1'b0;
-            if (ready_i[rr_q]) begin
-                valid_o[rr_q] = valid_i;
-                ready_o = 1'b1;
-            end
+            valid_o[rr_q] = valid_i;
         end
+        assign ready_o = ready_i[rr_q];
 
         always_ff @(posedge clk_i or negedge rst_ni) begin : proc_prio_regs
             if(~rst_ni) begin
