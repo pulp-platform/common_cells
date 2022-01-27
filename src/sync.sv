@@ -11,16 +11,17 @@
 // Antonio Pullini <pullinia@iis.ee.ethz.ch>
 
 module sync #(
+    parameter type T = logic,
     parameter int unsigned STAGES = 2,
-    parameter bit ResetValue = 1'b0
+    parameter T ResetValue = '0
 ) (
     input  logic clk_i,
     input  logic rst_ni,
-    input  logic serial_i,
-    output logic serial_o
+    input  T     serial_i,
+    output T     serial_o
 );
 
-   logic [STAGES-1:0] reg_q;
+    T [STAGES-1:0] reg_q;
 
     always_ff @(posedge clk_i, negedge rst_ni) begin
         if (!rst_ni) begin

@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+### Added
+- `sync`: Add data type parameter, so this module can be used on any signal instead of just
+  single-bit `logic`s.
 
 ## 1.23.0 - 2021-09-05
 ### Added
