@@ -28,7 +28,7 @@ module rr_distributor # (
     /// If set to 1'b0, the rr_distributor will step through the outputs if one is ready
     ///   but the current one is not. This can reduce wait time for the input.
     ///   **THIS IS NOT COMPLIANT AS IT MAY DE-ASSERT VALID WITHOUT A PROPER HANDSHAKE**
-    parameter bit          StrictRR  = 1'b0,
+    parameter bit          StrictRR  = 1'b1,
     /// Dependent parameter, do **not** overwrite.
     /// Width of the selected index
     parameter int unsigned IdxWidth  = cf_math_pkg::idx_width(NumOut),
