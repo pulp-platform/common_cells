@@ -51,12 +51,14 @@ module sub_per_hash #(
 
   // typedefs and respective localparams
   typedef int unsigned perm_lists_t [NoRounds][InpWidth];
-  localparam perm_lists_t PERMUTATIONS = get_permutations(PermuteKey);
+  perm_lists_t Permutations;
+  assign Permutations = get_permutations(PermuteKey);
   // encoding for inner most array:
   // position 0 indicates the number of inputs, 2 or 3
   // the other positions 1 - 3 indicate the inputs
   typedef int unsigned xor_stages_t [NoRounds][InpWidth][3];
-  localparam xor_stages_t XorStages = get_xor_stages(XorKey);
+  xor_stages_t XorStages;
+  assign XorStages = get_xor_stages(XorKey);
 
   // stage signals
   logic [NoRounds-1:0][InpWidth-1:0] permuted, xored;
@@ -68,9 +70,9 @@ module sub_per_hash #(
 
       // assign the permutation
       if (r == 0) begin : gen_input
-        assign permuted[r][i] = data_i[PERMUTATIONS[r][i]];
+        assign permuted[r][i] = data_i[Permutations[r][i]];
       end else begin : gen_permutation
-        assign permuted[r][i] = permuted[r-1][PERMUTATIONS[r][i]];
+        assign permuted[r][i] = permuted[r-1][Permutations[r][i]];
       end
 
       // assign the xor substitution
