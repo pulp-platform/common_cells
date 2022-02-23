@@ -22,7 +22,9 @@ sources:
   # etc. Files within a level are ordered alphabetically.
   # Level 0
   - src/binary_to_gray.sv
-  - src/cb_filter_pkg.sv
+  - target: not(all(xilinx,vivado_ipx))
+    files:
+    - src/cb_filter_pkg.sv
   - src/cc_onehot.sv
   - src/cf_math_pkg.sv
   - src/clk_int_div.sv
@@ -61,7 +63,9 @@ sources:
   - src/cdc_2phase.sv
   - src/cdc_4phase.sv
   - src/addr_decode.sv
-  - src/cb_filter.sv
+  - target: not(all(xilinx,vivado_ipx))
+    files:
+    - src/cb_filter.sv
   - src/cdc_fifo_2phase.sv
   - src/counter.sv
   - src/ecc_decode.sv
