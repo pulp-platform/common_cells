@@ -31,9 +31,9 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | `cdc_fifo_2phase`              | Clock domain crossing FIFO using two-phase handshake, with ready/valid interface | active       |               |
 | `cdc_fifo_gray`                | Clock domain crossing FIFO using a gray-counter, with ready/valid interface      | active       |               |
 | `edge_detect`                  | Rising/falling edge detector                                                     | active       |               |
-| `edge_propagator`              | **ANTONIO ADD DESCRIPTION**                                                      | active       |               |
-| `edge_propagator_rx`           | **ANTONIO ADD DESCRIPTION**                                                      | active       |               |
-| `edge_propagator_tx`           | **ANTONIO ADD DESCRIPTION**                                                      | active       |               |
+| `edge_propagator`              | Propagates a single-cycle pulse across an asynchronous clock domain crossing     | active       |               |
+| `edge_propagator_tx`           | Transmit slice of `edge_propagator`, requires only the sender clock              | active       |               |
+| `edge_propagator_rx`           | Receive slice of `edge_propagator`, requires only the receiver clock             | active       |               |
 | `isochronous_spill_register`   | Isochronous clock domain crossing and full handshake (like `spill_register`)     | active       |               |
 | `isochronous_4phase_handshake` | Isochronous four-phase handshake.                                                | active       |               |
 | `pulp_sync`                    | Serial line synchronizer                                                         | *deprecated* | `sync`        |
