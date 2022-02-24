@@ -32,6 +32,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | `cdc_fifo_gray`                | Clock domain crossing FIFO using a gray-counter, with ready/valid interface      | active       |               |
 | `edge_detect`                  | Rising/falling edge detector                                                     | active       |               |
 | `edge_propagator`              | Propagates a single-cycle pulse across an asynchronous clock domain crossing     | active       |               |
+| `edge_propagator_ack`          | `edge_propagator` with sender-synchronous acknowledge pin (flags received pulse) | active       |               |
 | `edge_propagator_tx`           | Transmit slice of `edge_propagator`, requires only the sender clock              | active       |               |
 | `edge_propagator_rx`           | Receive slice of `edge_propagator`, requires only the receiver clock             | active       |               |
 | `isochronous_spill_register`   | Isochronous clock domain crossing and full handshake (like `spill_register`)     | active       |               |

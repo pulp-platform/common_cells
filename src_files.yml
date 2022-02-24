@@ -86,5 +86,6 @@ common_cells_all:
     # Level 3
 
     # Depend on deprecated modules
+    - src/edge_propagator_ack.sv
     - src/edge_propagator.sv
     - src/edge_propagator_rx.sv
