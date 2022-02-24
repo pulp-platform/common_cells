@@ -136,5 +136,6 @@ sources:
   - src/deprecated/fifo_v1.sv
 
   # Depend on deprecated modules
+  - src/edge_propagator_ack.sv
   - src/edge_propagator.sv
   - src/edge_propagator_rx.sv

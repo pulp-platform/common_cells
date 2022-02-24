@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+### Added
+- Add `edge_propagator_ack`: Edge/pulse propagator with sender-synchronous receive-acknowledge
+  output.  `edge_propagator` is now implemented by instantiating `edge_propagator_ack`.
+
 ### Fixed
 - Correct reset polarity in assertions in `isochronous_4phase_handshake` and `isochronous_spill_register`
 - Fix compatibility of `sub_per_hash` constructs with Verilator
