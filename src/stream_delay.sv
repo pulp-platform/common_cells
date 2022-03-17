@@ -14,7 +14,8 @@
 module stream_delay #(
     parameter bit   StallRandom = 0,
     parameter int   FixedDelay  = 1,
-    parameter type  payload_t  = logic
+    parameter type  payload_t  = logic,
+    parameter logic [15:0] Seed = '0
 )(
     input  logic     clk_i,
     input  logic     rst_ni,
@@ -94,13 +95,14 @@ module stream_delay #(
 
         if (StallRandom) begin : gen_random_stall
             lfsr_16bit #(
-              .WIDTH ( 16 )
+              .WIDTH ( 16   ),
+              .SEED  ( Seed )
             ) i_lfsr_16bit (
-                .clk_i          ( clk_i        ),
-                .rst_ni         ( rst_ni       ),
-                .en_i           ( load         ),
-                .refill_way_oh  (              ),
-                .refill_way_bin ( counter_load )
+              .clk_i          ( clk_i        ),
+              .rst_ni         ( rst_ni       ),
+              .en_i           ( load         ),
+              .refill_way_oh  (              ),
+              .refill_way_bin ( counter_load )
             );
         end else begin : gen_fixed_delay
             assign counter_load = FixedDelay;
