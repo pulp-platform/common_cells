@@ -33,7 +33,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | `cdc_fifo_2phase`              | Clock domain crossing FIFO using two-phase handshake, with ready/valid interface              | active       |               |
 | `cdc_fifo_gray`                | Clock domain crossing FIFO using a gray-counter, with ready/valid interface                   | active       |               |
 | `cdc_fifo_gray_clearable`      | Identical to `cdc_fifo_gray` but supports one-sided async/sync resetting of either src or dst | active       |               |
-| `cdc_reset_ctrlr`               | Lock-step reset sequencer accross clock domains (internally used by clearable CDCs)           | active       |               |
+| `cdc_reset_ctrlr`              | Lock-step reset sequencer accross clock domains (internally used by clearable CDCs)           | active       |               |
 | `edge_detect`                  | Rising/falling edge detector                                                                  | active       |               |
 | `edge_propagator`              | Propagates a single-cycle pulse across an asynchronous clock domain crossing                  | active       |               |
 | `edge_propagator_ack`          | `edge_propagator` with sender-synchronous acknowledge pin (flags received pulse)              | active       |               |
