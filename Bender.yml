@@ -58,6 +58,7 @@ sources:
   - src/sync_wedge.sv
   - src/unread.sv
   # Level 1
+  - src/cdc_4phase.sv
   - src/addr_decode.sv
   - src/cb_filter.sv
   - src/cdc_fifo_2phase.sv
