@@ -25,7 +25,6 @@ sources:
   - src/cb_filter_pkg.sv
   - src/cc_onehot.sv
   - src/cf_math_pkg.sv
-  - src/clk_div.sv
   - src/clk_int_div.sv
   - src/delta_counter.sv
   - src/ecc_pkg.sv
@@ -132,6 +131,7 @@ sources:
   # Deprecated modules
   # Level 0
   - src/deprecated/clock_divider_counter.sv
+  - src/deprecated/clk_div.s
   - src/deprecated/find_first_one.sv
   - src/deprecated/generic_LFSR_8bit.sv
   - src/deprecated/generic_fifo.sv
