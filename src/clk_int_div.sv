@@ -40,6 +40,7 @@ module clk_even_int_div #(
 ) (
   input logic                       clk_i,
   input logic                       rst_ni,
+  input logic                       en_i,
   /// If asserted (active-high) bypass the clock divider and drive clk_o directly with clk_i.
   input logic                       test_mode_en_i,
   /// Divider select value. The output clock has a frequency of f_clk_i/div_i.
@@ -59,25 +60,71 @@ module clk_even_int_div #(
   logic                       t_ff2_en;
 
   logic [DIV_VALUE_WIDTH:0]   	cycle_cntr_d, cycle_cntr_q; // +1 bit because div_i has to be multiplied by 2
-  logic                         clk_div_bypass_en;
+  logic                         clk_div_bypass_en_d, clk_div_bypass_en_q;
   logic                         odd_clk;
   logic                         even_clk;
   logic                         generated_clock;
-  logic                         ungated_output_clok;
-  logic                         use_odd_division;
-  logic                         gate_en;
+  logic                         ungated_output_clock;
+  logic                         use_odd_division_d, use_odd_division_q;
+  logic                         gate_en_d, gate_en_q;
 
-  typedef enum logic[1:0] {IDLE, WAIT_START_PERIOD, WAIT_END_PERIOD} clk_gate_state_e;
+  typedef enum logic[1:0] {IDLE, LOAD_DIV, WAIT_START_PERIOD, WAIT_END_PERIOD} clk_gate_state_e;
   clk_gate_state_e clk_gate_state_d, clk_gate_state_q;
 
-  //-------------------- Divider selection --------------------
+  //-------------------- Divider Load FSM --------------------
   always_comb begin
-    div_d       = div_q;
-    div_ready_o = 1'b0;
+    div_d               = div_q;
+    div_ready_o         = 1'b0;
+    clk_div_bypass_en_d = clk_div_bypass_en_q;
+    use_odd_division_d  = use_odd_division_q;
+    clk_gate_state_d    = clk_gate_state_q;
+
+    gate_en_d           = 1'b0;
+    clk_gate_state_d    = clk_gate_state_q;
+    case (clk_gate_state_q)
+      IDLE: begin
+        gate_en_d = 1'b1;
+        if (!en_i) begin
+          gate_en_d = 1'b0;
+        end else if (div_valid_i) begin
+          clk_gate_state_d = LOAD_DIV;
+          gate_en_d = 1'b0;
+        end
+      end
+
+      LOAD_DIV: begin
+        gate_en_d = 1'b0;
+        // Wait until the ouptut clock is currently deasserted. This ensures
+        // that the clock gate disable (gate_en) was latched and changing the
+        // div_q and the cycle_counter_q value cannot affect the output clock
+        // any longer.
+        if ((ungated_output_clock == 1'b0) || clk_div_bypass_en_q) begin
+          div_d               = div_i;
+          div_ready_o         = 1'b1;
+          use_odd_division_d  = div_i[0];
+          clk_div_bypass_en_d = (div_i == 0) || (div_i == 1);
+          clk_gate_state_d    = WAIT_START_PERIOD;
+        end
+      end
+
+      WAIT_START_PERIOD: begin
+        gate_en_d        = 1'b0;
+        if (cycle_cntr_q == '0) begin
+          clk_gate_state_d = WAIT_END_PERIOD;
+        end
+      end
+
+      WAIT_END_PERIOD: begin
+        gate_en_d        = 1'b0;
+        if (cycle_cntr_q == div_q -1 || clk_div_bypass_en_q) begin
+          clk_gate_state_d = IDLE;
+        end
+      end
+    endcase
+
     if (div_valid_i) begin
-      if (clk_gate_state_q == IDLE) begin
-        div_d = div_i;
-        div_ready_o = 1'b1;
+      if (clk_gate_state_q == LOAD_DIV) begin
+
       end else begin
         div_ready_o = 1'b0;
       end
@@ -86,9 +133,17 @@ module clk_even_int_div #(
 
   always_ff @(posedge clk_i, negedge rst_ni) begin
     if (!rst_ni) begin
-      div_q <= DEFAULT_DIV_VALUE;
+      use_odd_division_q  <= 1'b0;
+      clk_div_bypass_en_q <= 1'b1;
+      div_q               <= DEFAULT_DIV_VALUE;
+      clk_gate_state_q    <= IDLE;
+      gate_en_q           <= 1'b0;
     end else begin
-      div_q <= div_d;
+      use_odd_division_q  <= use_odd_division_d;
+      clk_div_bypass_en_q <= clk_div_bypass_en_d;
+      div_q               <= div_d;
+      clk_gate_state_q    <= clk_gate_state_d;
+      gate_en_q           <= gate_en_d;
     end
   end
 
@@ -103,7 +158,7 @@ module clk_even_int_div #(
       // During normal operation, reset the counter whenver it reaches
       // <target_count>-1. In bypass mode (div == 0 or div == 1) disable the
       // counter to save power.
-      if (clk_div_bypass_en || (cycle_cntr_q == div_q-1)) begin
+      if (clk_div_bypass_en_q || (cycle_cntr_q == div_q-1)) begin
         cycle_cntr_d = '0;
       end else begin
         cycle_cntr_d = cycle_cntr_q + 1;
@@ -154,14 +209,12 @@ module clk_even_int_div #(
   end
 
   //----- FSM to control T-FF enable and clk_div_bypass_en -----
-  assign clk_div_bypass_en = (div_q == '0 || div_q == 1 || test_mode_en_i);
-  assign use_odd_division = div_q[0];
 
   always_comb begin
     t_ff1_en = 1'b0;
     t_ff2_en = 1'b0;
-    if (!clk_div_bypass_en) begin
-      if (use_odd_division) begin
+    if (!clk_div_bypass_en_q) begin
+      if (use_odd_division_q) begin
         t_ff1_en = (cycle_cntr_q == 0)? 1'b1: 1'b0;
         t_ff2_en = (cycle_cntr_q == (div_q+1)/2)? 1'b1: 1'b0;
       end else begin
@@ -181,66 +234,31 @@ module clk_even_int_div #(
 
   //---- Clock MUX to select between odd and even div logic ----
   tc_clk_mux2 i_clk_mux (
-    .clk0_i    ( even_clk         ),
-    .clk1_i    ( odd_clk          ),
-    .clk_sel_i ( use_odd_division ),
-    .clk_o     ( generated_clock  )
+    .clk0_i    ( even_clk           ),
+    .clk1_i    ( odd_clk            ),
+    .clk_sel_i ( use_odd_division_q ),
+    .clk_o     ( generated_clock    )
   );
 
   //-------------------- clock mux to bypass clock if divide-by-1  --------------------
   tc_clk_mux2 i_clk_bypass_mux (
-    .clk0_i    ( generated_clock     ),
-    .clk1_i    ( clk_i               ),
-    .clk_sel_i ( clk_div_bypass_en   ),
-    .clk_o     ( ungated_output_clok )
+    .clk0_i    ( generated_clock                       ),
+    .clk1_i    ( clk_i                                 ),
+    .clk_sel_i ( clk_div_bypass_en_q || test_mode_en_i ),
+    .clk_o     ( ungated_output_clock                  )
   );
 
   //--------------------- Clock gate logic ---------------------
   // During the transitioning phase, we gate the clock to prevent clock glitches
-
-  always_comb begin
-    gate_en = 1'b0;
-    clk_gate_state_d = clk_gate_state_q;
-    case (clk_gate_state_q)
-      IDLE: begin
-        gate_en = 1'b1;
-        if (div_valid_i && div_ready_o) begin
-          clk_gate_state_d = WAIT_START_PERIOD;
-        end
-      end
-
-      WAIT_START_PERIOD: begin
-        gate_en = 1'b0;
-        if (cycle_cntr_q == div_q-1) begin
-          clk_gate_state_d = WAIT_END_PERIOD;
-        end
-      end
-
-      WAIT_END_PERIOD: begin
-        gate_en = 1'b0;
-        if (cycle_cntr_q == '0) begin
-          clk_gate_state_d = IDLE;
-        end
-      end
-    endcase
-  end
-
-  always_ff @(posedge clk_i, negedge rst_ni) begin
-    if (!rst_ni) begin
-      clk_gate_state_q <= IDLE;
-    end else begin
-      clk_gate_state_q <= clk_gate_state_d;
-    end
-  end
 
   tc_clk_gating #(
     .IS_FUNCTIONAL(1) // The gate is required to prevent glitches during
                       // transitioning. Target specific implementations must not
                       // remove it to save ICGs (e.g. in FPGAs).
   ) i_clk_gate (
-    .clk_i     ( generated_clock ),
-    .en_i      ( gate_en         ),
-    .test_en_i ( test_mode_en_i  ),
+    .clk_i     ( ungated_output_clock        ),
+    .en_i      ( gate_en_q || test_mode_en_i ),
+    .test_en_i ( test_mode_en_i              ),
     .clk_o
   );
 

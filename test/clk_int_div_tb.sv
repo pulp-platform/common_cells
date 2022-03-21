@@ -18,30 +18,37 @@
 //-----------------------------------------------------------------------------
 
 module clk_int_div_tb;
+  import stream_test::*;
   parameter int unsigned NumTests = 10000;
   parameter time TClkIn = 10ns;
-  parameter int  DivWidth = 8;
-  parameter int  MaxWaitCycles = 2**(DivWidth+1);
+  parameter int  DivWidth = 3;
+  parameter int  MaxWaitCycles = 20;
 
-  localparam time t_delta = 50ps;
+  localparam time t_delta = 1ns;
   localparam int unsigned RstClkCycles = 10;
   localparam time         TA = TClkIn*0.2;
   localparam time         TT = TClkIn*0.8;
 
   logic clk, rstn;
   logic test_mode_en;
-  logic [DivWidth-1:0] div;
-  logic        valid,ready;
+  logic enable;
   logic        clk_out;
+  semaphore semphr_is_transitioning;
+  bit is_transitioning = 1'b0;
 
-  time         target_tclk_half;
-  int unsigned target_div_value;
-  time         last_rising_edge;
-  time         last_falling_edge;
+  int                  wait_cycl;
+  time                 target_tclk_half_max;
+  time                 target_tclk_half_min;
+  logic [DivWidth-1:0] current_div_value;
+  logic [DivWidth-1:0] next_div_value;
+  time                 last_rising_edge;
+  time                 last_falling_edge;
 
   int          error_count = 0;
 
   typedef logic [DivWidth-1:0] payload_t;
+  let max(a,b) = (a > b) ? a : b;
+  let min(a,b) = (a < b) ? a : b;
 
   typedef stream_test::stream_driver #(
     .payload_t (payload_t),
@@ -71,6 +78,7 @@ module clk_int_div_tb;
   ) i_dut(
     .clk_i          ( clk          ),
     .rst_ni         ( rstn         ),
+    .en_i           ( enable       ),
     .test_mode_en_i ( test_mode_en ),
     .div_i          ( dut_in.data  ),
     .div_valid_i    ( dut_in.valid ),
@@ -79,56 +87,71 @@ module clk_int_div_tb;
   );
 
   initial begin : apply_stimuli
-    test_mode_en = 1'b0;
-    valid        = 1'b0;
+    semphr_is_transitioning = new();
+    test_mode_en      = 1'b0;
+    enable            = 1'b1;
+    next_div_value    = 1;
+    current_div_value = 1;
     $info("Resetting clock divider...");
     @(posedge rstn);
     in_driver.reset_in();
     for (int i = 0; i < NumTests; i++) begin
-      int wait_cycl;
-      assert(std::randomize(target_div_value)) else
-        $error("Randomization failure");
-      $info("Dividing input clock by %0d", target_div_value);
-      in_driver.send(target_div_value);
+      do begin
+        assert(std::randomize(next_div_value)) else
+          $error("Randomization failure");
+      end while (next_div_value == 0);
+      $info("Setting clock divider value to %0d", next_div_value);
+      in_driver.send(next_div_value);
+      semphr_is_transitioning.put(1);
+      current_div_value = next_div_value;
       wait_cycl = $urandom_range(0, MaxWaitCycles);
-      repeat(wait_cycl) @(posedge clk);
+      repeat(wait_cycl) @(posedge clk_out);
     end
     $info("Test finished");
+    $info("Total error count: %0d", error_count);
+    $stop();
   end
 
-  assign target_tclk_half = TClkIn/target_div_value/2;
-
   initial begin : check_clock
-    last_rising_edge = $realtime();
-    last_falling_edge = $realtime();
+    last_rising_edge     = $realtime();
+    last_falling_edge    = $realtime();
+    target_tclk_half_max = TClkIn+t_delta;
+    target_tclk_half_min = TClkIn-t_delta;
     @(posedge rstn);
     forever begin
-      automatic bit clock_transitioning = 0;
-      @(posedge clk);
-      assert($realtime()-last_falling_edge > target_tclk_half - t_delta) else begin
-        $error("Detected rising edge glitch. Previous falling edge was %0t ago.", $realtime()-last_falling_edge);
-        error_count++;
-      end
-      if (!clock_transitioning) begin
-        assert($realtime()-last_falling_edge < target_tclk_half + t_delta) else begin
-          $error("Detected wrong duty cycle. Target t_low period should be %0t but was %0t", target_tclk_half, $realtime()-last_falling_edge);
+      // Set target clock period boundaries. During the transition phase after
+      // reprogramming we have relaxed boundaries since we might still get one
+      // clock cycle with the old divider settings.
+      @(posedge clk_out);
+      // Ignore low period lenght during transition phase since the clock is
+      // gated for ~ 1 output clock cycles
+      is_transitioning =  semphr_is_transitioning.try_get(1);
+      if (is_transitioning) begin
+        target_tclk_half_max = TClkIn*max(current_div_value, next_div_value)/2+t_delta;
+        target_tclk_half_min = TClkIn*min(current_div_value, next_div_value)/2-t_delta;
+      end else begin
+        target_tclk_half_max = TClkIn*current_div_value/2+t_delta;
+        target_tclk_half_min = TClkIn*current_div_value/2-t_delta;
+        assert($realtime()-last_falling_edge < target_tclk_half_max) else begin
+          $error("Detected wrong duty cycle. Target t_low period should be lower than %0t ns but was %0t ns", target_tclk_half_max, $realtime()-last_falling_edge);
           error_count++;
         end
+      end
+      assert($realtime()-last_falling_edge > target_tclk_half_min) else begin
+        $error("Detected clock glitch. Last low period was to short (%0t ns < %0t ns).", $realtime()-last_falling_edge, target_tclk_half_min);
+        error_count++;
       end
       last_rising_edge = $realtime();
-      @(negedge clk);
-      if (dut_in.valid && dut_in.ready) begin
-        clock_transitioning = 1'b1;
-      end else begin
-        assert($realtime()-last_rising_edge > target_tclk_half - t_delta) else begin
-          $error("Detected wrong duty cycle. Last high period was to short (%0t instead of %0t).", $realtime()-last_rising_edge, target_tclk_half);
-          error_count++;
-        end
-      end
-      assert($realtime()-last_rising_edge < target_tclk_half + t_delta) else begin
-        $error("Detected wrong duty cycle. Lat high period was to long (%0t instead of %0t).", $realtime()-last_rising_edge, target_tclk_half);
+      @(negedge clk_out);
+      assert($realtime()-last_rising_edge > target_tclk_half_min) else begin
+        $error("Detected wrong duty cycle. Last high period was to short (%0t ns < %0t ns).", $realtime()-last_rising_edge, target_tclk_half_min);
         error_count++;
       end
+      assert($realtime()-last_rising_edge < target_tclk_half_max) else begin
+        $error("Detected wrong duty cycle. Last high period was to long (%0t ns >  %0t ns).", $realtime()-last_rising_edge, target_tclk_half_max);
+        error_count++;
+      end
+      last_falling_edge = $realtime();
     end
   end
 
