@@ -28,6 +28,9 @@ module clk_int_div_tb;
   localparam int unsigned RstClkCycles = 10;
   localparam time         TA = TClkIn*0.2;
   localparam time         TT = TClkIn*0.8;
+  localparam clock_disable_probability = 5; // 5% of the tested div settings the
+                                            // clock is randomly disabled for a
+                                            // couple of cycles
 
   logic clk, rstn;
   logic test_mode_en;
@@ -73,7 +76,7 @@ module clk_int_div_tb;
     .rst_no ( rstn )
   );
 
-  clk_even_int_div #(
+  clk_int_div #(
     .DIV_VALUE_WIDTH(DivWidth)
   ) i_dut(
     .clk_i          ( clk          ),
@@ -95,6 +98,13 @@ module clk_int_div_tb;
     $info("Resetting clock divider...");
     @(posedge rstn);
     in_driver.reset_in();
+
+    // Verify test bypass mode
+    test_mode_en = 1'b1;
+    semphr_is_transitioning.put();
+    repeat (100) @(clk);
+    test_mode_en = 1'b0;
+
     for (int i = 0; i < NumTests; i++) begin
       do begin
         assert(std::randomize(next_div_value)) else
@@ -106,6 +116,20 @@ module clk_int_div_tb;
       current_div_value = next_div_value;
       wait_cycl = $urandom_range(0, MaxWaitCycles);
       repeat(wait_cycl) @(posedge clk_out);
+      if ($urandom_range(0, 100) < clock_disable_probability) begin
+        repeat(4) @(posedge clk_out);
+        enable = 1'b0;
+        // Wait until the clock is gated (usually 1 output clock cycle unless
+        // the clock division factor is 1)
+        @(negedge clk_out);
+        if (current_div_value < 2)
+          @(negedge clk_out);
+        semphr_is_transitioning.put(1);
+        wait_cycl = $urandom_range(5*current_div_value, MaxWaitCycles*current_div_value);
+        repeat(wait_cycl) @(posedge clk);
+        enable = 1'b1;
+        @(posedge clk_out);
+      end
     end
     $info("Test finished");
     $info("Total error count: %0d", error_count);

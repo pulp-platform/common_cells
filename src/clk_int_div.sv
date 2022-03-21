@@ -34,7 +34,7 @@
 // SPDX-License-Identifier: SHL-0.51
 // -----------------------------------------------------------------------------
 
-module clk_even_int_div #(
+module clk_int_div #(
   parameter int unsigned DIV_VALUE_WIDTH = 4,
   parameter int unsigned DEFAULT_DIV_VALUE = 0
 ) (
@@ -256,9 +256,9 @@ module clk_even_int_div #(
                       // transitioning. Target specific implementations must not
                       // remove it to save ICGs (e.g. in FPGAs).
   ) i_clk_gate (
-    .clk_i     ( ungated_output_clock        ),
-    .en_i      ( gate_en_q || test_mode_en_i ),
-    .test_en_i ( test_mode_en_i              ),
+    .clk_i     ( ungated_output_clock ),
+    .en_i      ( gate_en_q            ),
+    .test_en_i ( test_mode_en_i       ),
     .clk_o
   );
 
