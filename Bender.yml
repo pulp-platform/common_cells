@@ -58,9 +58,7 @@ sources:
   - src/unread.sv
   - src/cdc_reset_ctrlr_pkg.sv
   # Level 1
-  - src/cdc_4phase.sv
-  - src/cdc_reset_ctrlr.sv
-  - src/cdc_2phase_clearable.sv
+  - src/cdc_2phase.sv
   - src/cdc_4phase.sv
   - src/addr_decode.sv
   - src/cb_filter.sv
@@ -77,8 +75,7 @@ sources:
   - src/stream_fifo.sv
   - src/stream_fork_dynamic.sv
   # Level 2
-  - src/cdc_2phase.sv
-  - src/cdc_fifo_gray_clearable.sv
+  - src/cdc_reset_ctrlr.sv
   - src/cdc_fifo_gray.sv
   - src/fall_through_register.sv
   - src/id_queue.sv
@@ -87,6 +84,8 @@ sources:
   - src/stream_register.sv
   - src/stream_xbar.sv
   # Level 3
+  - src/cdc_fifo_gray_clearable.sv
+  - src/cdc_2phase_clearable.sv
   - src/stream_arbiter.sv
   - src/stream_omega_net.sv
 
