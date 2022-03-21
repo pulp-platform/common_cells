@@ -80,7 +80,10 @@ module clk_int_div #(
   /// reconfiguration, the output clock is gated with its next falling edge and
   /// remains gated (idle-low) for at least one period of the new target output
   /// period to filter out any glitches during the config transition.
-  output logic                      clk_o
+  output logic                      clk_o,
+  /// Current value of the internal cycle counter. Might be usefull if you need
+  /// to do some phase shifting relative to the generated clock.
+  output logic [DIV_VALUE_WIDTH-1:0] cycl_count_o
 );
 
   if ($clog2(DEFAULT_DIV_VALUE+1) > DIV_VALUE_WIDTH) begin : gen_elab_error
@@ -217,6 +220,8 @@ module clk_int_div #(
       cycle_cntr_q <= cycle_cntr_d;
     end
   end
+
+  assign cycl_count_o = cycle_cntr_q;
 
   //----------------------- T-Flip-Flops -----------------------
 
