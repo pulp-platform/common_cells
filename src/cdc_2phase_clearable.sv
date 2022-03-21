@@ -26,7 +26,7 @@
 /// module. To summarize a synchronous clear request i.e. src/dst_clear_i will
 /// cause the respective other clock domain to reset as well without introducing
 /// any spurious transactions. This is acomplished by an internal module
-/// (cdc_reset_ctrlr) the starts a reset sequence on both sides of the CDC in
+/// (cdc_reset_ctrlr) that starts a reset sequence on both sides of the CDC in
 /// lock-step that first isolates the CDC from the outside world and then resets
 /// it. The reset sequencer provides the following behavior:
 /// 1. There are no spurious invalid or duplicated transactions regardless how

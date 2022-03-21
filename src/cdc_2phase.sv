@@ -30,7 +30,7 @@
 /// be deasserted synchronously to the src_clk_i and dst_rst_ni must be
 /// deasserted synchronously to dst_clk_i.) You can use the rstgen cell in the
 /// common_cells library to achieve this (synchronization of only the
-/// de-assertion). However be carefull about reset domain crossings; If you
+/// de-assertion). However, be careful about reset domain crossings; If you
 /// reset both domain asynchronously in their entirety (i.e. POR) you are fine.
 /// However, if you use this strategy for warm resets (some parts of the circuit
 /// are not reset) you might introduce metastability in this separate

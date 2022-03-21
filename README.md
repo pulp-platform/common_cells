@@ -26,7 +26,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 ### Clock Domains and Asynchronous Crossings
 
 | Name                           | Description                                                                                   | Status       | Superseded By |
-|--------------------------------+-----------------------------------------------------------------------------------------------+--------------+---------------|
+|--------------------------------|-----------------------------------------------------------------------------------------------|--------------|---------------|
 | `cdc_4phase`                   | Clock domain crossing using 4-phase handshake, with ready/valid interface                     | active       |               |
 | `cdc_2phase`                   | Clock domain crossing using two-phase handshake, with ready/valid interface                   | active       |               |
 | `cdc_2phase_clearable`         | Identical to `cdc_2phase` but supports one-sided async/sync resetting of either src or dst    | active       |               |
