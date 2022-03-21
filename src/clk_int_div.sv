@@ -11,8 +11,14 @@
 // changes are handshaked and during the transitioning phase between clk_div
 // value changes, the output clock is gated to prevent clock glitches and no
 // other clk_div change request is accepted. Clk_o remains gated for at most
-// 2x<new clk period> clk_i cycles. The `en_i` signal can be used to enable or
-// disable the output clock in a safe manner.
+// 2x<new clk period> clk_i cycles. If the new div_i value equals the currently
+// configured value, the clock is not gated and the handshake is immediately
+// granted. It is thus safe to statically tie the valid signal to logic high if
+// we can guarantee, that the div_i value remains stable long enough (upper
+// limit 2 output clock cycles).
+//
+// The `en_i` signal can be used to enable or disable the output clock in a safe
+// manner.
 //
 // If a div value of 0 or 1 is requested, the input clock is feed through to the
 // output clock. However, the same gating rules apply (again to prevent
@@ -22,9 +28,8 @@
 // clk_o will always be directly driven by clk_i. Use this mode for DFT of the
 // downstream logic.
 //
-// Parameters:
-// DIV_VALUE_WIDTH: The number of bits to use for the internal counter. Defines
-// the maximum division factor.
+// Parameters: DIV_VALUE_WIDTH: The number of bits to use for the internal
+// counter. Defines the maximum division factor.
 //
 // DEFAULT_DIV_VALUE: The default division factor to use after reset. Use this
 // parameter and tie div_valid_i to zero if you don't need at runtime
@@ -107,6 +112,7 @@ module clk_int_div #(
   logic                         ungated_output_clock;
   logic                         use_odd_division_d, use_odd_division_q;
   logic                         gate_en_d, gate_en_q;
+  logic                         clear_cycle_counter;
 
   typedef enum logic[1:0] {IDLE, LOAD_DIV, WAIT_START_PERIOD, WAIT_END_PERIOD} clk_gate_state_e;
   clk_gate_state_e clk_gate_state_d, clk_gate_state_q;
@@ -118,6 +124,7 @@ module clk_int_div #(
     clk_div_bypass_en_d = clk_div_bypass_en_q;
     use_odd_division_d  = use_odd_division_q;
     clk_gate_state_d    = clk_gate_state_q;
+    clear_cycle_counter = 1'b0;
 
     gate_en_d           = 1'b0;
     clk_gate_state_d    = clk_gate_state_q;
@@ -125,8 +132,12 @@ module clk_int_div #(
       IDLE: begin
         gate_en_d = 1'b1;
         if (div_valid_i) begin
-          clk_gate_state_d = LOAD_DIV;
-          gate_en_d = 1'b0;
+          if (div_i == div_q) begin
+            div_ready_o      = 1'b1;
+          end else begin
+            clk_gate_state_d = LOAD_DIV;
+            gate_en_d        = 1'b0;
+          end
         end
       end
 
@@ -139,6 +150,7 @@ module clk_int_div #(
         if ((ungated_output_clock == 1'b0) || clk_div_bypass_en_q) begin
           div_d               = div_i;
           div_ready_o         = 1'b1;
+          clear_cycle_counter = 1'b1;
           use_odd_division_d  = div_i[0];
           clk_div_bypass_en_d = (div_i == 0) || (div_i == 1);
           clk_gate_state_d    = WAIT_START_PERIOD;
@@ -163,14 +175,6 @@ module clk_int_div #(
         clk_gate_state_d = IDLE;
       end
     endcase
-
-    if (div_valid_i) begin
-      if (clk_gate_state_q == LOAD_DIV) begin
-
-      end else begin
-        div_ready_o = 1'b0;
-      end
-    end
   end
 
   localparam logic UseOddDivisionResetValue = DEFAULT_DIV_VALUE[0];
@@ -197,7 +201,7 @@ module clk_int_div #(
   // Cycle Counter
   always_comb begin
     // Reset the counter if we load a new divider value.
-    if (div_valid_i && div_ready_o) begin
+    if (clear_cycle_counter) begin
       cycle_cntr_d = '0;
     end else begin
       // During normal operation, reset the counter whenver it reaches

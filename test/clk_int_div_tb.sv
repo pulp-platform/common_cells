@@ -119,11 +119,6 @@ module clk_int_div_tb;
       if ($urandom_range(0, 100) < clock_disable_probability) begin
         repeat(4) @(posedge clk_out);
         enable = 1'b0;
-        // Wait until the clock is gated (usually 1 output clock cycle unless
-        // the clock division factor is 1)
-        @(negedge clk_out);
-        if (current_div_value < 2)
-          @(negedge clk_out);
         semphr_is_transitioning.put(1);
         wait_cycl = $urandom_range(5*current_div_value, MaxWaitCycles*current_div_value);
         repeat(wait_cycl) @(posedge clk);
