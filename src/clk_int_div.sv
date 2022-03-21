@@ -35,8 +35,12 @@
 // -----------------------------------------------------------------------------
 
 module clk_int_div #(
+  /// The with
   parameter int unsigned DIV_VALUE_WIDTH = 4,
-  parameter int unsigned DEFAULT_DIV_VALUE = 0
+  /// The default divider value which is used right after reset
+  parameter int unsigned DEFAULT_DIV_VALUE = 0,
+  /// If 1'b1, the output clock is enabled during async reset assertion
+  parameter bit          ENABLE_CLOCK_IN_RESET = 1'b0
 ) (
   input logic                       clk_i,
   input logic                       rst_ni,
@@ -51,6 +55,9 @@ module clk_int_div #(
   output logic                      div_ready_o,
   output logic                      clk_o
 );
+
+  if ($clog2(DEFAULT_DIV_VALUE+1) > DIV_VALUE_WIDTH)
+    $error("Default divider value %0d is not representable with the configured div value width of %0d bits.", DEFAULT_DIV_VALUE, DIV_VALUE_WIDTH);
 
   logic [DIV_VALUE_WIDTH-1:0]	div_d, div_q;
   logic                       t_ff1_d, t_ff1_q;
@@ -131,13 +138,16 @@ module clk_int_div #(
     end
   end
 
+  localparam logic USE_ODD_DIVISION_RESET_VALUE = DEFAULT_DIV_VALUE[0];
+  localparam logic CLK_DIV_BYPASS_EN_RESET_VALUE = (DEFAULT_DIV_VALUE < 2)? 1'b1: 1'b0;
+
   always_ff @(posedge clk_i, negedge rst_ni) begin
     if (!rst_ni) begin
-      use_odd_division_q  <= 1'b0;
-      clk_div_bypass_en_q <= 1'b1;
+      use_odd_division_q  <= USE_ODD_DIVISION_RESET_VALUE;
+      clk_div_bypass_en_q <= CLK_DIV_BYPASS_EN_RESET_VALUE;
       div_q               <= DEFAULT_DIV_VALUE;
       clk_gate_state_q    <= IDLE;
-      gate_en_q           <= 1'b0;
+      gate_en_q           <= ENABLE_CLOCK_IN_RESET;
     end else begin
       use_odd_division_q  <= use_odd_division_d;
       clk_div_bypass_en_q <= clk_div_bypass_en_d;
