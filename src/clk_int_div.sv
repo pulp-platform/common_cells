@@ -124,9 +124,7 @@ module clk_int_div #(
     case (clk_gate_state_q)
       IDLE: begin
         gate_en_d = 1'b1;
-        if (!en_i) begin
-          gate_en_d = 1'b0;
-        end else if (div_valid_i) begin
+        if (div_valid_i) begin
           clk_gate_state_d = LOAD_DIV;
           gate_en_d = 1'b0;
         end
@@ -306,7 +304,7 @@ module clk_int_div #(
                       // remove it to save ICGs (e.g. in FPGAs).
   ) i_clk_gate (
     .clk_i     ( ungated_output_clock ),
-    .en_i      ( gate_en_q            ),
+    .en_i      ( gate_en_q & en_i     ),
     .test_en_i ( test_mode_en_i       ),
     .clk_o
   );
