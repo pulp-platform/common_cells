@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add `4phase_cdc`: A 4 phase handshaking CDC that allows glitch-free resetting (used internally in the new clearable CDC IPs).
 - Add one-sided clearable and/or async resettable flavors of 2phase CDC (`cdc_2phase_clearable`) and gray-counting FIFO CDCs (`cdc_fifo_gray_clearable`).
 - Add reset CDC controller `cdc_reset_ctrl` that supports reset/synchronous clear sequencing accross clock domain crossings (used internally in clearable CDC IPs).
+- Add `clk_int_div` arbitrary integer clock divider with *at-runtime*
+  configurable divider selection and glitch-free, 50%duty cycle output clock.
 
 ### Fixed
 - Correct reset polarity in assertions in `isochronous_4phase_handshake` and `isochronous_spill_register`
@@ -19,6 +21,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Add `dont_touch` and `async_reg` attribute to FFs in `sync` cell.
 - Improved reset behavior documentation (in module header) of existing CDC IPs.
+- Deprecated flawed `clk_div` module and add elaboration warning message that
+  will be shown for existing designs (can be disabled with optional
+  instantiation parameter).
 
 ## 1.23.0 - 2021-09-05
 ### Added
