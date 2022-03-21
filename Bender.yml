@@ -103,7 +103,6 @@ sources:
       - test/cdc_2phase_clearable_tb.sv
       - test/cdc_fifo_tb.sv
       - test/cdc_fifo_clearable_tb.sv
-      - test/clk_int_div_tb.sv
       - test/fifo_tb.sv
       - test/graycode_tb.sv
       - test/id_queue_tb.sv
@@ -117,6 +116,8 @@ sources:
       - test/isochronous_crossing_tb.sv
       - test/stream_omega_net_tb.sv
       - test/stream_xbar_tb.sv
+      - test/clk_int_div_tb.sv
+
 
   - target: synth_test
     files:
