@@ -58,29 +58,45 @@ module clk_int_div #(
 ) (
   input logic                       clk_i,
   input logic                       rst_ni,
+  /// Active-high output clock enable. Controls a glitch-free clock gate so the
+  /// enable signal may be driven by combinational logic without introducing
+  /// glitches.
   input logic                       en_i,
-  /// If asserted (active-high) bypass the clock divider and drive clk_o directly with clk_i.
+  /// If asserted (active-high) bypass the clock divider and drive clk_o
+  /// directly with clk_i.
   input logic                       test_mode_en_i,
   /// Divider select value. The output clock has a frequency of f_clk_i/div_i.
   /// For div_i == 0 or  div_i == 1, the output clock has the same frequency as
   /// th input clock.
-  input logic [DIV_VALUE_WIDTH-1:0] div_i, // divider selection, the actual division value is div_i*2
+  input logic [DIV_VALUE_WIDTH-1:0] div_i,
+  /// Valid handshake signal. Must not combinationally depend on `div_ready_o`.
+  /// Once asserted, the valid signal must not be deasserted until it is
+  /// accepted with `div_ready_o`.
   input logic                       div_valid_i,
   output logic                      div_ready_o,
+  /// Generated output clock. Given a glitch free input clock, the output clock
+  /// is guaranteed to be glitch free with 50% duty cycle, regardless the timing
+  /// of reconfiguration requests or en_i de/assetion. During the
+  /// reconfiguration, the output clock is gated with its next falling edge and
+  /// remains gated (idle-low) for at least one period of the new target output
+  /// period to filter out any glitches during the config transition.
   output logic                      clk_o
 );
 
-  if ($clog2(DEFAULT_DIV_VALUE+1) > DIV_VALUE_WIDTH)
-    $error("Default divider value %0d is not representable with the configured div value width of %0d bits.", DEFAULT_DIV_VALUE, DIV_VALUE_WIDTH);
+  if ($clog2(DEFAULT_DIV_VALUE+1) > DIV_VALUE_WIDTH) begin : gen_elab_error
+    $error("Default divider value %0d is not representable with the configured",
+            "div value width of %0d bits.",
+           DEFAULT_DIV_VALUE, DIV_VALUE_WIDTH);
+  end
 
-  logic [DIV_VALUE_WIDTH-1:0]	div_d, div_q;
+  logic [DIV_VALUE_WIDTH-1:0] div_d, div_q;
   logic                       t_ff1_d, t_ff1_q;
   logic                       t_ff1_en;
 
   logic                       t_ff2_d, t_ff2_q;
   logic                       t_ff2_en;
 
-  logic [DIV_VALUE_WIDTH:0]   	cycle_cntr_d, cycle_cntr_q; // +1 bit because div_i has to be multiplied by 2
+  logic [DIV_VALUE_WIDTH-1:0]   cycle_cntr_d, cycle_cntr_q;
   logic                         clk_div_bypass_en_d, clk_div_bypass_en_q;
   logic                         odd_clk;
   logic                         even_clk;
@@ -141,6 +157,10 @@ module clk_int_div #(
           clk_gate_state_d = IDLE;
         end
       end
+
+      default: begin
+        clk_gate_state_d = IDLE;
+      end
     endcase
 
     if (div_valid_i) begin
@@ -152,13 +172,13 @@ module clk_int_div #(
     end
   end
 
-  localparam logic USE_ODD_DIVISION_RESET_VALUE = DEFAULT_DIV_VALUE[0];
-  localparam logic CLK_DIV_BYPASS_EN_RESET_VALUE = (DEFAULT_DIV_VALUE < 2)? 1'b1: 1'b0;
+  localparam logic UseOddDivisionResetValue = DEFAULT_DIV_VALUE[0];
+  localparam logic ClkDivBypassEnResetValue = (DEFAULT_DIV_VALUE < 2)? 1'b1: 1'b0;
 
   always_ff @(posedge clk_i, negedge rst_ni) begin
     if (!rst_ni) begin
-      use_odd_division_q  <= USE_ODD_DIVISION_RESET_VALUE;
-      clk_div_bypass_en_q <= CLK_DIV_BYPASS_EN_RESET_VALUE;
+      use_odd_division_q  <= UseOddDivisionResetValue;
+      clk_div_bypass_en_q <= ClkDivBypassEnResetValue;
       div_q               <= DEFAULT_DIV_VALUE;
       clk_gate_state_q    <= IDLE;
       gate_en_q           <= ENABLE_CLOCK_IN_RESET;
