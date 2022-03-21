@@ -10,8 +10,9 @@
 // always generates clean 50% duty cycle output clock. Clock divider setting
 // changes are handshaked and during the transitioning phase between clk_div
 // value changes, the output clock is gated to prevent clock glitches and no
-// other clk_div change request is accepted. Clk_o remains gated for at least
-// 2x<new clk period> clk_i cycles.
+// other clk_div change request is accepted. Clk_o remains gated for at most
+// 2x<new clk period> clk_i cycles. The `en_i` signal can be used to enable or
+// disable the output clock in a safe manner.
 //
 // If a div value of 0 or 1 is requested, the input clock is feed through to the
 // output clock. However, the same gating rules apply (again to prevent
@@ -20,6 +21,19 @@
 // If test_mode_en_i is asserted, the output clock gate is bypassed entirely and
 // clk_o will always be directly driven by clk_i. Use this mode for DFT of the
 // downstream logic.
+//
+// Parameters:
+// DIV_VALUE_WIDTH: The number of bits to use for the internal counter. Defines
+// the maximum division factor.
+//
+// DEFAULT_DIV_VALUE: The default division factor to use after reset. Use this
+// parameter and tie div_valid_i to zero if you don't need at runtime
+// configurability. An elaboration time error will be issued if the supplied
+// default div value is not repressentable with DIV_VALUE_WIDTH bits.
+//
+// ENABLE_CLOCK_IN_RESET: If 1'b1, clk_o will not be gated during reset and will
+// immediately start clocking with the configured DEFAULT_DIV_VALUE. (Disabled
+// by default).
 //
 //-----------------------------------------------------------------------------
 // Copyright (C) 2022 ETH Zurich, University of Bologna Copyright and related
