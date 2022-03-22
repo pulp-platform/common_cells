@@ -11,7 +11,7 @@
 // changes are handshaked and during the transitioning phase between clk_div
 // value changes, the output clock is gated to prevent clock glitches and no
 // other clk_div change request is accepted. Clk_o remains gated for at most
-// 2x<new clk period> clk_i cycles. If the new div_i value equals the currently
+// 3x<new clk period> clk_i cycles. If the new div_i value equals the currently
 // configured value, the clock is not gated and the handshake is immediately
 // granted. It is thus safe to statically tie the valid signal to logic high if
 // we can guarantee, that the div_i value remains stable long enough (upper
@@ -61,31 +61,31 @@ module clk_int_div #(
   /// If 1'b1, the output clock is enabled during async reset assertion
   parameter bit          ENABLE_CLOCK_IN_RESET = 1'b0
 ) (
-  input logic                       clk_i,
-  input logic                       rst_ni,
+  input logic                        clk_i,
+  input logic                        rst_ni,
   /// Active-high output clock enable. Controls a glitch-free clock gate so the
   /// enable signal may be driven by combinational logic without introducing
   /// glitches.
-  input logic                       en_i,
+  input logic                        en_i,
   /// If asserted (active-high) bypass the clock divider and drive clk_o
   /// directly with clk_i.
-  input logic                       test_mode_en_i,
+  input logic                        test_mode_en_i,
   /// Divider select value. The output clock has a frequency of f_clk_i/div_i.
   /// For div_i == 0 or  div_i == 1, the output clock has the same frequency as
   /// th input clock.
-  input logic [DIV_VALUE_WIDTH-1:0] div_i,
+  input logic [DIV_VALUE_WIDTH-1:0]  div_i,
   /// Valid handshake signal. Must not combinationally depend on `div_ready_o`.
   /// Once asserted, the valid signal must not be deasserted until it is
   /// accepted with `div_ready_o`.
-  input logic                       div_valid_i,
-  output logic                      div_ready_o,
+  input logic                        div_valid_i,
+  output logic                       div_ready_o,
   /// Generated output clock. Given a glitch free input clock, the output clock
   /// is guaranteed to be glitch free with 50% duty cycle, regardless the timing
   /// of reconfiguration requests or en_i de/assetion. During the
   /// reconfiguration, the output clock is gated with its next falling edge and
   /// remains gated (idle-low) for at least one period of the new target output
   /// period to filter out any glitches during the config transition.
-  output logic                      clk_o,
+  output logic                       clk_o,
   /// Current value of the internal cycle counter. Might be usefull if you need
   /// to do some phase shifting relative to the generated clock.
   output logic [DIV_VALUE_WIDTH-1:0] cycl_count_o
@@ -98,6 +98,7 @@ module clk_int_div #(
   end
 
   logic [DIV_VALUE_WIDTH-1:0] div_d, div_q;
+  logic                       toggle_ffs_en;
   logic                       t_ff1_d, t_ff1_q;
   logic                       t_ff1_en;
 
@@ -110,11 +111,12 @@ module clk_int_div #(
   logic                         even_clk;
   logic                         generated_clock;
   logic                         ungated_output_clock;
+
   logic                         use_odd_division_d, use_odd_division_q;
   logic                         gate_en_d, gate_en_q;
   logic                         clear_cycle_counter;
 
-  typedef enum logic[1:0] {IDLE, LOAD_DIV, WAIT_START_PERIOD, WAIT_END_PERIOD} clk_gate_state_e;
+  typedef enum logic[1:0] {IDLE, LOAD_DIV, WAIT_END_PERIOD} clk_gate_state_e;
   clk_gate_state_e clk_gate_state_d, clk_gate_state_q;
 
   //-------------------- Divider Load FSM --------------------
@@ -125,12 +127,14 @@ module clk_int_div #(
     use_odd_division_d  = use_odd_division_q;
     clk_gate_state_d    = clk_gate_state_q;
     clear_cycle_counter = 1'b0;
+    toggle_ffs_en       = 1'b1;
 
     gate_en_d           = 1'b0;
     clk_gate_state_d    = clk_gate_state_q;
     case (clk_gate_state_q)
       IDLE: begin
-        gate_en_d = 1'b1;
+        gate_en_d     = 1'b1;
+        toggle_ffs_en = 1'b1;
         if (div_valid_i) begin
           if (div_i == div_q) begin
             div_ready_o      = 1'b1;
@@ -142,31 +146,27 @@ module clk_int_div #(
       end
 
       LOAD_DIV: begin
-        gate_en_d = 1'b0;
+        gate_en_d     = 1'b0;
+        toggle_ffs_en = 1'b1;
         // Wait until the ouptut clock is currently deasserted. This ensures
         // that the clock gate disable (gate_en) was latched and changing the
         // div_q and the cycle_counter_q value cannot affect the output clock
         // any longer.
         if ((ungated_output_clock == 1'b0) || clk_div_bypass_en_q) begin
+          toggle_ffs_en       = 1'b0;
           div_d               = div_i;
           div_ready_o         = 1'b1;
           clear_cycle_counter = 1'b1;
           use_odd_division_d  = div_i[0];
           clk_div_bypass_en_d = (div_i == 0) || (div_i == 1);
-          clk_gate_state_d    = WAIT_START_PERIOD;
-        end
-      end
-
-      WAIT_START_PERIOD: begin
-        gate_en_d        = 1'b0;
-        if (cycle_cntr_q == '0) begin
-          clk_gate_state_d = WAIT_END_PERIOD;
+          clk_gate_state_d    = WAIT_END_PERIOD;
         end
       end
 
       WAIT_END_PERIOD: begin
-        gate_en_d        = 1'b0;
-        if (cycle_cntr_q == div_q -1 || clk_div_bypass_en_q) begin
+        gate_en_d     = 1'b0;
+        toggle_ffs_en = 1'b0;
+        if (cycle_cntr_q == div_q - 1) begin
           clk_gate_state_d = IDLE;
         end
       end
@@ -264,7 +264,7 @@ module clk_int_div #(
   always_comb begin
     t_ff1_en = 1'b0;
     t_ff2_en = 1'b0;
-    if (!clk_div_bypass_en_q) begin
+    if (!clk_div_bypass_en_q && toggle_ffs_en) begin
       if (use_odd_division_q) begin
         t_ff1_en = (cycle_cntr_q == 0)? 1'b1: 1'b0;
         t_ff2_en = (cycle_cntr_q == (div_q+1)/2)? 1'b1: 1'b0;
