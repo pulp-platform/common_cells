@@ -123,7 +123,7 @@ module clk_int_div_tb;
         wait_cycl = $urandom_range(5*current_div_value, MaxWaitCycles*current_div_value);
         repeat(wait_cycl) @(posedge clk);
         enable = 1'b1;
-        @(posedge clk_out);
+        repeat(wait_cycl) @(posedge clk_out);
       end
     end
     $info("Test finished");
