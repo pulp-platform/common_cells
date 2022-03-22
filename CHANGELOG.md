@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add reset CDC controller `cdc_reset_ctrl` that supports reset/synchronous clear sequencing across clock domain crossings (used internally in clearable CDC IPs).
 - Add `clk_int_div` arbitrary integer clock divider with *at-runtime*
   configurable divider selection and glitch-free, 50%duty cycle output clock.
+- Add an assertion to the `lzc` to verify parameters.
 
 ### Fixed
 - Correct reset polarity in assertions in `isochronous_4phase_handshake` and `isochronous_spill_register`

@@ -99,4 +99,13 @@ module lzc #(
 
   end : gen_lzc
 
+// pragma translate_off
+`ifndef VERILATOR
+  initial begin: validate_params
+    assert (WIDTH >= 1)
+      else $fatal(1, "The WIDTH must at least be one bit wide!");
+  end
+`endif
+// pragma translate_on
+
 endmodule : lzc
