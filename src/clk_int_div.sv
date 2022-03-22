@@ -106,6 +106,7 @@ module clk_int_div #(
   logic                       t_ff2_en;
 
   logic [DIV_VALUE_WIDTH-1:0]   cycle_cntr_d, cycle_cntr_q;
+  logic                         cycle_counter_en;
   logic                         clk_div_bypass_en_d, clk_div_bypass_en_q;
   logic                         odd_clk;
   logic                         even_clk;
@@ -115,6 +116,7 @@ module clk_int_div #(
   logic                         use_odd_division_d, use_odd_division_q;
   logic                         gate_en_d, gate_en_q;
   logic                         clear_cycle_counter;
+  logic                         clear_toggle_flops;
 
   typedef enum logic[1:0] {IDLE, LOAD_DIV, WAIT_END_PERIOD} clk_gate_state_e;
   clk_gate_state_e clk_gate_state_d, clk_gate_state_q;
@@ -126,7 +128,9 @@ module clk_int_div #(
     clk_div_bypass_en_d = clk_div_bypass_en_q;
     use_odd_division_d  = use_odd_division_q;
     clk_gate_state_d    = clk_gate_state_q;
+    cycle_counter_en    = 1'b1;
     clear_cycle_counter = 1'b0;
+    clear_toggle_flops  = 1'b0;
     toggle_ffs_en       = 1'b1;
 
     gate_en_d           = 1'b0;
@@ -135,36 +139,50 @@ module clk_int_div #(
       IDLE: begin
         gate_en_d     = 1'b1;
         toggle_ffs_en = 1'b1;
-        if (div_valid_i) begin
+        if (en_i && div_valid_i) begin
           if (div_i == div_q) begin
             div_ready_o      = 1'b1;
           end else begin
             clk_gate_state_d = LOAD_DIV;
             gate_en_d        = 1'b0;
           end
+        // If we disabled the clock output, stop the cycle counter and the
+        // toggle flip-flops at the start of the next period to safe energy.
+        end else if (!en_i && ungated_output_clock == 1'b0) begin
+            cycle_counter_en                 = 1'b0;
+            toggle_ffs_en                    = 1'b0;
         end
       end
 
       LOAD_DIV: begin
-        gate_en_d     = 1'b0;
-        toggle_ffs_en = 1'b1;
+        gate_en_d                 = 1'b0;
+        toggle_ffs_en             = 1'b1;
         // Wait until the ouptut clock is currently deasserted. This ensures
         // that the clock gate disable (gate_en) was latched and changing the
         // div_q and the cycle_counter_q value cannot affect the output clock
         // any longer.
         if ((ungated_output_clock == 1'b0) || clk_div_bypass_en_q) begin
-          toggle_ffs_en       = 1'b0;
-          div_d               = div_i;
-          div_ready_o         = 1'b1;
-          clear_cycle_counter = 1'b1;
-          use_odd_division_d  = div_i[0];
-          clk_div_bypass_en_d = (div_i == 0) || (div_i == 1);
-          clk_gate_state_d    = WAIT_END_PERIOD;
+          // Now clear the cycle counter and the toggle flip flops to have a
+          // deterministic output phase (rising edge of output clock always
+          // coincides with first rising edge of input clock when cycl_count_o
+          // == 0).
+          toggle_ffs_en           = 1'b0;
+          div_d                   = div_i;
+          div_ready_o             = 1'b1;
+          clear_cycle_counter     = 1'b1;
+          clear_toggle_flops      = 1'b1;
+          use_odd_division_d      = div_i[0];
+          clk_div_bypass_en_d     = (div_i == 0) || (div_i == 1);
+          clk_gate_state_d        = WAIT_END_PERIOD;
         end
       end
 
       WAIT_END_PERIOD: begin
         gate_en_d     = 1'b0;
+        // Keep the toggle flip-flops disabled until we reach idle state.
+        // Otherwise, the start state of the t-ffs depends on the number of wait
+        // cycles which would yield different output clock phase depending on
+        // the number of wait cycles.
         toggle_ffs_en = 1'b0;
         if (cycle_cntr_q == div_q - 1) begin
           clk_gate_state_d = IDLE;
@@ -200,17 +218,20 @@ module clk_int_div #(
 
   // Cycle Counter
   always_comb begin
+    cycle_cntr_d = cycle_cntr_q;
     // Reset the counter if we load a new divider value.
     if (clear_cycle_counter) begin
       cycle_cntr_d = '0;
     end else begin
-      // During normal operation, reset the counter whenver it reaches
-      // <target_count>-1. In bypass mode (div == 0 or div == 1) disable the
-      // counter to save power.
-      if (clk_div_bypass_en_q || (cycle_cntr_q == div_q-1)) begin
-        cycle_cntr_d = '0;
-      end else begin
-        cycle_cntr_d = cycle_cntr_q + 1;
+      if (cycle_counter_en) begin
+        // During normal operation, reset the counter whenver it reaches
+        // <target_count>-1. In bypass mode (div == 0 or div == 1) disable the
+        // counter to save power.
+        if (clk_div_bypass_en_q || (cycle_cntr_q == div_q-1)) begin
+          cycle_cntr_d = '0;
+        end else begin
+          cycle_cntr_d = cycle_cntr_q + 1;
+        end
       end
     end
   end
@@ -235,7 +256,7 @@ module clk_int_div #(
   // S. Sutherland and D. Mills,
   // Verilog and System Verilog gotchas: 101 common coding errors and how to
   // avoid them. New York: Springer, 2007. page 64.
-  assign t_ff1_d = !t_ff1_q;
+
   always_ff @(posedge clk_i, negedge rst_ni) begin
     if (!rst_ni) begin
       t_ff1_q = '0; // Intentional blocking assignment! Do not replace!
@@ -248,7 +269,6 @@ module clk_int_div #(
 
   // The second flip-flop is required for odd integer division and needs to
   // negative edge tirggered.
-  assign t_ff2_d = !t_ff2_q;
   always_ff @(negedge clk_i, negedge rst_ni) begin
     if (!rst_ni) begin
       t_ff2_q = '0; // Intentional blocking assignment! Do not replace!
@@ -258,6 +278,17 @@ module clk_int_div #(
       end
     end
   end
+
+  always_comb begin
+    if (clear_toggle_flops) begin
+      t_ff1_d = '0;
+      t_ff2_d = '0;
+    end else begin
+      t_ff1_d = t_ff1_en? !t_ff1_q: t_ff1_q;
+      t_ff2_d = t_ff2_en? !t_ff2_q: t_ff2_q;
+    end
+  end
+
 
   //----- FSM to control T-FF enable and clk_div_bypass_en -----
 
