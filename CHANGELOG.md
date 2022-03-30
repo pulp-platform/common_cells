@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   output.  `edge_propagator` is now implemented by instantiating `edge_propagator_ack`.
 - Add `4phase_cdc`: A 4 phase handshaking CDC that allows glitch-free resetting (used internally in the new clearable CDC IPs).
 - Add one-sided clearable and/or async resettable flavors of 2phase CDC (`cdc_2phase_clearable`) and gray-counting FIFO CDCs (`cdc_fifo_gray_clearable`).
-- Add reset CDC controller `cdc_reset_ctrl` that supports reset/synchronous clear sequencing accross clock domain crossings (used internally in clearable CDC IPs).
+- Add reset CDC controller `cdc_reset_ctrl` that supports reset/synchronous clear sequencing across clock domain crossings (used internally in clearable CDC IPs).
 - Add `clk_int_div` arbitrary integer clock divider with *at-runtime*
   configurable divider selection and glitch-free, 50%duty cycle output clock.
 

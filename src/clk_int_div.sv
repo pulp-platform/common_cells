@@ -10,7 +10,7 @@
 // always generates clean 50% duty cycle output clock. Clock divider setting
 // changes are handshaked and during the transitioning phase between clk_div
 // value changes, the output clock is gated to prevent clock glitches and no
-// other clk_div change request is accepted. Clk_o remains gated for at most
+// other clk_div change request is accepted. clk_o remains gated for at most
 // 3x<new clk period> clk_i cycles. If the new div_i value equals the currently
 // configured value, the clock is not gated and the handshake is immediately
 // granted. It is thus safe to statically tie the valid signal to logic high if
@@ -252,7 +252,7 @@ module clk_int_div #(
   // non-blocking assignment like we normally do for flip-flops, we would create
   // a race condition when sampling data from the fast clock domain into
   // flip-flops clocked by t_ff1_q and t_ff2_q. To avoid this, we use blocking assignments
-  // which is the reccomended method acording to:
+  // which is the recomended method acording to:
   // S. Sutherland and D. Mills,
   // Verilog and System Verilog gotchas: 101 common coding errors and how to
   // avoid them. New York: Springer, 2007. page 64.
