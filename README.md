@@ -15,13 +15,14 @@ Please note that cells with status *deprecated* are not to be used for new desig
 
 ### Clocks and Resets
 
-| Name                    | Description                                         | Status       | Superseded By |
-| ----------------------- | --------------------------------------------------- | ------------ | ------------- |
-| `clk_div`               | Clock divider with integer divisor                  | active       |               |
-| `clock_divider`         | Clock divider with configuration registers          | *deprecated* | `clk_div`     |
-| `clock_divider_counter` | Clock divider using a counter                       | *deprecated* | `clk_div`     |
-| `rstgen`                | Reset synchronizer                                  | active       |               |
-| `rstgen_bypass`         | Reset synchronizer with dedicated test reset bypass | active       |               |
+| Name                    | Description                                                                          | Status       | Superseded By |
+| ----------------------- | ------------------------------------------------------------------------------------ | ------------ | ------------- |
+| `clk_int_div`           | Arbitrary integer clock divier with config interface and 50% output clock duty cycle | active       |               |
+| `clk_div`               | Clock divider with integer divisor                                                   | *deprecated* | `clk_int_div` |
+| `clock_divider`         | Clock divider with configuration registers                                           | *deprecated* | `clk_int_div` |
+| `clock_divider_counter` | Clock divider using a counter                                                        | *deprecated* | `clk_int_div` |
+| `rstgen`                | Reset synchronizer                                                                   | active       |               |
+| `rstgen_bypass`         | Reset synchronizer with dedicated test reset bypass                                  | active       |               |
 
 ### Clock Domains and Asynchronous Crossings
 

@@ -11,7 +11,7 @@ package:
 
 dependencies:
   common_verification: { git: "https://github.com/pulp-platform/common_verification.git", version: 0.2.0 }
-  tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.2.3 }
+  tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.2.9 }
 
 export_include_dirs:
   - include
@@ -25,7 +25,7 @@ sources:
   - src/cb_filter_pkg.sv
   - src/cc_onehot.sv
   - src/cf_math_pkg.sv
-  - src/clk_div.sv
+  - src/clk_int_div.sv
   - src/delta_counter.sv
   - src/ecc_pkg.sv
   - src/edge_propagator_tx.sv
@@ -115,6 +115,8 @@ sources:
       - test/isochronous_crossing_tb.sv
       - test/stream_omega_net_tb.sv
       - test/stream_xbar_tb.sv
+      - test/clk_int_div_tb.sv
+
 
   - target: synth_test
     files:
@@ -129,6 +131,7 @@ sources:
   # Deprecated modules
   # Level 0
   - src/deprecated/clock_divider_counter.sv
+  - src/deprecated/clk_div.s
   - src/deprecated/find_first_one.sv
   - src/deprecated/generic_LFSR_8bit.sv
   - src/deprecated/generic_fifo.sv
