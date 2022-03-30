@@ -86,7 +86,8 @@ module clk_int_div_tb;
     .div_i          ( dut_in.data  ),
     .div_valid_i    ( dut_in.valid ),
     .div_ready_o    ( dut_in.ready ),
-    .clk_o(clk_out)
+    .clk_o          ( clk_out      ),
+    .cycl_count_o   (              )
   );
 
   initial begin : apply_stimuli
