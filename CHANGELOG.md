@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 1.24.0 - 2022-03-31
 ### Added
 - Add `edge_propagator_ack`: Edge/pulse propagator with sender-synchronous receive-acknowledge
   output.  `edge_propagator` is now implemented by instantiating `edge_propagator_ack`.
@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Deprecated flawed `clk_div` module and add elaboration warning message that
   will be shown for existing designs (can be disabled with optional
   instantiation parameter).
+- Add optional `Seed` parameter to `stream_delay` module
+- Update `tech_cells_generic` to `0.2.9`
 
 ## 1.23.0 - 2021-09-05
 ### Added
