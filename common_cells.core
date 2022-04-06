@@ -1,11 +1,12 @@
 CAPI=2:
 
-name : pulp-platform.org::common_cells:1.20.0
+name : pulp-platform.org::common_cells:1.24.0
 
 filesets:
   rtl:
     files:
       - include/common_cells/registers.svh : {is_include_file : true, include_path : include}
+      - include/common_cells/assertions.svh : {is_include_file : true, include_path : include}
       # Source files grouped in levels. Files in level 0 have no dependencies on files in this package.
       # Files in level 1 only depend on files in level 0, files in level 2 on files in levels 1 and 0,
       # etc. Files within a level are ordered alphabetically.
@@ -14,7 +15,6 @@ filesets:
       - src/cb_filter_pkg.sv
       - src/cdc_2phase.sv
       - src/cf_math_pkg.sv
-      - src/clk_div.sv
       - src/delta_counter.sv
       - src/ecc_pkg.sv
       - src/edge_propagator_tx.sv
@@ -34,6 +34,7 @@ filesets:
       - src/serial_deglitch.sv
       - src/shift_reg.sv
       - src/spill_register.sv
+      - src/spill_register_flushable.sv
       - src/stream_demux.sv
       - src/stream_filter.sv
       - src/stream_fork.sv
@@ -75,6 +76,7 @@ filesets:
     files:
       # Deprecated modules
       # Level 0
+      - src/deprecated/clk_div.sv
       - src/deprecated/clock_divider_counter.sv
       - src/deprecated/find_first_one.sv
       - src/deprecated/generic_LFSR_8bit.sv
