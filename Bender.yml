@@ -131,7 +131,7 @@ sources:
   # Deprecated modules
   # Level 0
   - src/deprecated/clock_divider_counter.sv
-  - src/deprecated/clk_div.s
+  - src/deprecated/clk_div.sv
   - src/deprecated/find_first_one.sv
   - src/deprecated/generic_LFSR_8bit.sv
   - src/deprecated/generic_fifo.sv
