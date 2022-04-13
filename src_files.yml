@@ -10,7 +10,7 @@ common_cells_all:
     - src/cb_filter_pkg.sv
     - src/cdc_2phase.sv
     - src/cf_math_pkg.sv
-    - src/clk_div.sv
+    - src/clk_int_div.sv
     - src/delta_counter.sv
     - src/ecc_pkg.sv
     - src/edge_propagator_tx.sv
