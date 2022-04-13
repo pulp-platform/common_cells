@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 1.24.1 - 2022-04-13
+### Fixed
+- Fix typos in `Bender.yml` and `src_files.yml`
+
 ## 1.24.0 - 2022-03-31
 ### Added
 - Add `edge_propagator_ack`: Edge/pulse propagator with sender-synchronous receive-acknowledge
