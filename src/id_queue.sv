@@ -52,7 +52,7 @@ module id_queue #(
     parameter type data_t   = logic,
     // Dependent parameters, DO NOT OVERRIDE!
     localparam type id_t    = logic[ID_WIDTH-1:0],
-    localparam type mask_t  = logic[$bits(data_t)-1:0]
+    localparam type mask_t  = data_t
 ) (
     input  logic    clk_i,
     input  logic    rst_ni,
