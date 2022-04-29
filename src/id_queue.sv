@@ -51,8 +51,7 @@ module id_queue #(
     parameter bit FULL_BW   = 0,
     parameter type data_t   = logic,
     // Dependent parameters, DO NOT OVERRIDE!
-    localparam type id_t    = logic[ID_WIDTH-1:0],
-    localparam type mask_t  = data_t
+    localparam type id_t    = logic[ID_WIDTH-1:0]
 ) (
     input  logic    clk_i,
     input  logic    rst_ni,
@@ -63,7 +62,7 @@ module id_queue #(
     output logic    inp_gnt_o,
 
     input  data_t   exists_data_i,
-    input  mask_t   exists_mask_i,
+    input  data_t   exists_mask_i,
     input  logic    exists_req_i,
     output logic    exists_o,
     output logic    exists_gnt_o,
@@ -357,7 +356,7 @@ module id_queue #(
 
     // Exists Lookup
     for (genvar i = 0; i < CAPACITY; i++) begin: gen_lookup
-        mask_t exists_match_bits;
+        data_t exists_match_bits;
         for (genvar j = 0; j < $bits(data_t); j++) begin: gen_mask
             always_comb begin
                 if (linked_data_q[i].free) begin
