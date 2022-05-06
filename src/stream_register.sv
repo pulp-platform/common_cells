@@ -29,7 +29,7 @@ module stream_register #(
     input  logic    ready_i,
     output T        data_o
 );
-    
+
     logic reg_ena;
     assign ready_o = ready_i | ~valid_o;
     assign reg_ena = valid_i & ready_o;
