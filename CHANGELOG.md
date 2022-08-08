@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## 1.24.1 - 2022-04-13
 ### Fixed
+- Fix FuseSoc core version in `common_cells.core`
 - Fix typos in `Bender.yml` and `src_files.yml`
 
 ## 1.24.0 - 2022-03-31
