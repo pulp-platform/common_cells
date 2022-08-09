@@ -59,45 +59,43 @@ module sub_per_hash_tb;
   // ------------------------
   // Test Bench
   // ------------------------
-  program test_cbf;
-    initial begin : shutdown_sim
-      repeat (MaxCycles) @(posedge clk);
-      $info("Stop, because max cycles was reached.");
-      $stop();
+  initial begin : shutdown_sim
+    repeat (MaxCycles) @(posedge clk);
+    $info("Stop, because max cycles was reached.");
+    $stop();
+  end
+
+  initial begin : stimulus
+    set_data(0);
+    // wait for reset
+    @(posedge rst_n);
+    repeat (10) @(posedge clk);
+
+    for (longint unsigned i = 0; i < 2**DataWidth; i++) begin
+      set_data(i);
     end
 
-    initial begin : stimulus
-      set_data(0);
-      // wait for reset
-      @(posedge rst_n);
-      repeat (10) @(posedge clk);
+    repeat (10) @(posedge clk);
+    $info("Stop, because all possible inputs were applied.");
+    $stop();
+  end
 
-      for (longint unsigned i = 0; i < 2**DataWidth; i++) begin
-        set_data(i);
-      end
+  task cycle_start();
+    #TTest;
+  endtask : cycle_start
 
-      repeat (10) @(posedge clk);
-      $info("Stop, because all possible inputs were applied.");
-      $stop();
-    end
+  task cycle_end();
+    @(posedge clk);
+  endtask : cycle_end
 
-    task cycle_start();
-      #TTest;
-    endtask : cycle_start
+  task set_data (input longint unsigned nbr);
+    data <= #TAppli data_t'(nbr);
+    cycle_end();
+  endtask : set_data
 
-    task cycle_end();
-      @(posedge clk);
-    endtask : cycle_end
-
-    task set_data (input longint unsigned nbr);
-      data <= #TAppli data_t'(nbr);
-      cycle_end();
-    endtask : set_data
-
-    task init_signals();
-      data <= '0;
-    endtask : init_signals
-  endprogram
+  task init_signals();
+    data <= '0;
+  endtask : init_signals
 
   // generate duts
   for (genvar i = 0; i < NoHashes; i++) begin : gen_hash_dut
