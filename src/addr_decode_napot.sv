@@ -8,25 +8,12 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-// Author: Wolfgang Roenninger <wroennin@ethz.ch>
+// Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
+// Author: Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
-/// Address Decoder: Maps the input address combinatorially to an index.
-/// The address map `addr_map_i` is a packed array of rule_t structs.
-/// The ranges of any two rules may overlap. If so, the rule at the higher (more significant)
-/// position in `addr_map_i` prevails.
-///
-/// There can be an arbitrary number of address rules. There can be multiple
-/// ranges defined for the same index. The start address has to be less than the end address.
-///
-/// There is the possibility to add a default mapping:
-/// `en_default_idx_i`: Driving this port to `1'b1` maps all input addresses
-/// for which no rule in `addr_map_i` exists to the default index specified by
-/// `default_idx_i`. In this case, `dec_error_o` is always `1'b0`.
-///
-/// Assertions: The module checks every time there is a change in the address mapping
-/// if the resulting map is valid. It fatals if `start_addr` is higher than `end_addr`
-/// or if a mapping targets an index that is outside the number of allowed indices.
-/// It issues warnings if the address regions of any two mappings overlap.
+/// This module wraps `addr_decode` in its naturally-aligned power of two (NAPOT) variant,
+/// alleviating the need to set the `Napot` parameter and using more descriptive `rule_t`
+/// field names. See the `addr_decode`documentation for details.
 module addr_decode_napot #(
   /// Highest index which can happen in a rule.
   parameter int unsigned NoIndices = 32'd0,
@@ -35,7 +22,7 @@ module addr_decode_napot #(
   /// Address type inside the rules and to decode.
   parameter type         addr_t    = logic,
   /// Rule packed struct type.
-  /// The address decoder expects three fields in `rule_t`:
+  /// The NAPOT address decoder expects three fields in `rule_t`:
   ///
   /// typedef struct packed {
   ///   int unsigned idx;
@@ -43,9 +30,9 @@ module addr_decode_napot #(
   ///   addr_t       mask;
   /// } rule_t;
   ///
-  ///  - `idx`:        index of the rule, has to be < `NoIndices`
-  ///  - `start_addr`: start address of the range the rule describes, value is included in range
-  ///  - `end_addr`:   end address of the range the rule describes, value is NOT included in range
+  ///  - `idx`:   index of the rule, has to be < `NoIndices`.
+  ///  - `base`:  base address whose specified bits should match `addr_i`.
+  ///  - `mask`:  set for bits which are to be checked to determine a match.
   parameter type         rule_t    = logic,
   /// Dependent parameter, do **not** overwite!
   ///
@@ -78,42 +65,29 @@ module addr_decode_napot #(
   input  idx_t                default_idx_i
 );
 
-  logic [NoRules-1:0] matched_rules; // purely for address map debugging
+  // Rename struct field names to those expected by `addr_decode`
+  typedef struct packed {
+    int unsigned  idx;
+    addr_t        start_addr;
+    addr_t        end_addr;
+  } rule_range_t;
 
-  always_comb begin
-    // default assignments
-    matched_rules = '0;
-    dec_valid_o   = 1'b0;
-    dec_error_o   = (en_default_idx_i) ? 1'b0 : 1'b1;
-    idx_o         = (en_default_idx_i) ? default_idx_i : '0;
+  addr_decode #(
+    .NoIndices ( NoIndices    ) ,
+    .NoRules   ( NoRules      ),
+    .addr_t    ( addr_t       ),
+    .rule_t    ( rule_range_t ),
+    .Napot     ( 1            ),
+    .IdxWidth  ( IdxWidth     ),
+    .idx_t     ( idx_t        )
+  ) i_addr_decode (
+    .addr_i,
+    .addr_map_i,
+    .idx_o,
+    .dec_valid_o,
+    .dec_error_o,
+    .en_default_idx_i,
+    .default_idx_i
+);
 
-    // match the rules
-    for (int unsigned i = 0; i < NoRules; i++) begin
-      if ((addr_map_i[i].base & addr_map_i[i].mask) == (addr_i & addr_map_i[i].mask)) begin
-        matched_rules[i] = 1'b1;
-        dec_valid_o      = 1'b1;
-        dec_error_o      = 1'b0;
-        idx_o            = idx_t'(addr_map_i[i].idx);
-      end
-    end
-  end
-
-  // Assumptions and assertions
-  `ifndef VERILATOR
-  // pragma translate_off
-  initial begin : proc_check_parameters
-    assume ($bits(addr_i) == $bits(addr_map_i[0].base)) else
-      $warning($sformatf("Input address has %d bits and address map has %d bits.",
-        $bits(addr_i), $bits(addr_map_i[0].base)));
-    assume (NoRules > 0) else
-      $fatal(1, $sformatf("At least one rule needed"));
-    assume (NoIndices > 0) else
-      $fatal(1, $sformatf("At least one index needed"));
-  end
-
-  assert final ($onehot0(matched_rules)) else
-    $warning("More than one bit set in the one-hot signal, matched_rules");
-
-  // pragma translate_on
-  `endif
 endmodule
