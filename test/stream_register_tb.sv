@@ -70,95 +70,92 @@ module stream_register_tb #(
         }
     endclass
 
-    program testbench ();
-        logic[7:0] queue [$];
-        // clocking outputs are DUT inputs and vice versa
-        clocking cb @(posedge clk);
-            default input #2 output #4;
-            output clr, inp_data, inp_valid, oup_ready;
-            input inp_ready, oup_valid, oup_data;
-        endclocking
+    logic[7:0] queue [$];
+    // clocking outputs are DUT inputs and vice versa
+    clocking cb @(posedge clk);
+        default input #2 output #4;
+        output clr, inp_data, inp_valid, oup_ready;
+        input inp_ready, oup_valid, oup_data;
+    endclocking
 
-        clocking pck @(posedge clk);
-            default input #2 output #4;
-            input clr, inp_data, inp_valid, inp_ready, oup_data, oup_valid, oup_ready;
-        endclocking
+    clocking pck @(posedge clk);
+        default input #2 output #4;
+        input clr, inp_data, inp_valid, inp_ready, oup_data, oup_valid, oup_ready;
+    endclocking
 
-        // --------
-        // Driver
-        // --------
-        initial begin
-            automatic random_action_t random_action = new();
+    // --------
+    // Driver
+    // --------
+    initial begin
+        automatic random_action_t random_action = new();
 
-            cb.clr <= 1'b0;
+        cb.clr <= 1'b0;
 
-            wait (rst_n == 1'b1);
-            cb.inp_valid <= 1'b0;
+        wait (rst_n == 1'b1);
+        cb.inp_valid <= 1'b0;
 
-            forever begin
-                void'(random_action.randomize());
-                repeat($urandom_range(0, 8)) @(cb);
-                // $display("%d\n", random_action.action);
-                case (random_action.action)
-                    0: begin
-                        cb.inp_data     <= $urandom_range(0,256);
-                        cb.inp_valid    <= 1'b1;
-                    end
-                    1: begin
-                        cb.clr <= 1'b0;
-                        cb.inp_data     <= $urandom_range(0,256);
-                        cb.inp_valid    <= 1'b0;
-                    end
-                    default: begin
-                        cb.clr          <= 1'b1;
-                        cb.inp_valid    <= 1'b0;
-                        @(cb);
-                        cb.clr          <= 1'b0;
-                    end
-                endcase
-            end
-        end
-
-        initial begin
-            // wait for reset to be high
-            wait (rst_n == 1'b1);
-            // pop from queue
-            forever begin
-                @(cb)
-                cb.oup_ready    <= 1'b1;
-                repeat($urandom_range(0, 8)) @(cb);
-                cb.oup_ready    <= 1'b0;
-            end
-        end
-
-        // -------------------
-        // Monitor && Checker
-        // -------------------
-        initial begin
-            automatic T data;
-            nr_checks = 0;
-            forever begin
-                @(pck)
-
-                if (pck.inp_valid && pck.inp_ready && !pck.clr) begin
-                    queue.push_back(pck.inp_data);
+        forever begin
+            void'(random_action.randomize());
+            repeat($urandom_range(0, 8)) @(cb);
+            // $display("%d\n", random_action.action);
+            case (random_action.action)
+                0: begin
+                    cb.inp_data     <= $urandom_range(0,256);
+                    cb.inp_valid    <= 1'b1;
                 end
-
-                if (pck.oup_valid && pck.oup_ready) begin
-                    data = queue.pop_front();
-                    // $display("Time: %t, Expected: %0h Got %0h", $time, data, fifo_if.pck.rdata);
-                    assert(data == pck.oup_data)
-                        else $error("Mismatch, Expected: %0h Got %0h", data, pck.oup_data);
-                    nr_checks++;
+                1: begin
+                    cb.clr <= 1'b0;
+                    cb.inp_data     <= $urandom_range(0,256);
+                    cb.inp_valid    <= 1'b0;
                 end
-
-                if (pck.clr) begin
-                    queue = {};
+                default: begin
+                    cb.clr          <= 1'b1;
+                    cb.inp_valid    <= 1'b0;
+                    @(cb);
+                    cb.clr          <= 1'b0;
                 end
-
-            end
+            endcase
         end
-    endprogram
+    end
 
-    testbench tb();
+    initial begin
+        // wait for reset to be high
+        wait (rst_n == 1'b1);
+        // pop from queue
+        forever begin
+            @(cb)
+            cb.oup_ready    <= 1'b1;
+            repeat($urandom_range(0, 8)) @(cb);
+            cb.oup_ready    <= 1'b0;
+        end
+    end
+
+    // -------------------
+    // Monitor && Checker
+    // -------------------
+    initial begin
+        automatic T data;
+        nr_checks = 0;
+        forever begin
+            @(pck)
+
+            if (pck.inp_valid && pck.inp_ready && !pck.clr) begin
+                queue.push_back(pck.inp_data);
+            end
+
+            if (pck.oup_valid && pck.oup_ready) begin
+                data = queue.pop_front();
+                // $display("Time: %t, Expected: %0h Got %0h", $time, data, fifo_if.pck.rdata);
+                assert(data == pck.oup_data)
+                    else $error("Mismatch, Expected: %0h Got %0h", data, pck.oup_data);
+                nr_checks++;
+            end
+
+            if (pck.clr) begin
+                queue = {};
+            end
+
+        end
+    end
+
 endmodule

@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## Unreleased
 ### Changed
 - Avoid using `$bits()` call in `id_queue`'s parameters.
+- Avoid program blocks in testbenches for simulator compatibility.
 
 ## 1.24.1 - 2022-04-13
 ### Fixed
