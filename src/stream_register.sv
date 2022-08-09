@@ -1,4 +1,4 @@
-// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright 2022 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License. You may obtain a copy of the License at
@@ -7,6 +7,8 @@
 // this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
+
+`include "common_cells/registers.svh"
 
 /// Register with a simple stream-like ready/valid handshake.
 /// This register does not cut combinatorial paths on all control signals; if you need a complete
@@ -28,30 +30,11 @@ module stream_register #(
     output T        data_o
 );
 
-    logic   fifo_empty,
-            fifo_full;
-
-    fifo_v2 #(
-        .FALL_THROUGH   (1'b0),
-        .DATA_WIDTH     ($bits(T)),
-        .DEPTH          (1),
-        .dtype          (T)
-    ) i_fifo (
-        .clk_i          (clk_i),
-        .rst_ni         (rst_ni),
-        .flush_i        (clr_i),
-        .testmode_i     (testmode_i),
-        .full_o         (fifo_full),
-        .empty_o        (fifo_empty),
-        .alm_full_o     ( ),
-        .alm_empty_o    ( ),
-        .data_i         (data_i),
-        .push_i         (valid_i & ~fifo_full),
-        .data_o         (data_o),
-        .pop_i          (ready_i & ~fifo_empty)
-    );
-
-    assign ready_o = ~fifo_full;
-    assign valid_o = ~fifo_empty;
+    logic reg_ena;
+    assign ready_o = ready_i | ~valid_o;
+    assign reg_ena = valid_i & ready_o;
+    // Load-enable FFs with synch clear
+    `FFLARNC(valid_o, valid_i, ready_o, clr_i, 1'b0, clk_i, rst_ni)
+    `FFLARNC(data_o,   data_i, reg_ena, clr_i,   '0, clk_i, rst_ni)
 
 endmodule
