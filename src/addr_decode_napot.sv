@@ -77,9 +77,7 @@ module addr_decode_napot #(
     .NoRules   ( NoRules      ),
     .addr_t    ( addr_t       ),
     .rule_t    ( rule_range_t ),
-    .Napot     ( 1            ),
-    .IdxWidth  ( IdxWidth     ),
-    .idx_t     ( idx_t        )
+    .Napot     ( 1            )
   ) i_addr_decode (
     .addr_i,
     .addr_map_i,
