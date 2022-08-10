@@ -49,6 +49,7 @@ filesets:
       - src/cdc_2phase.sv
       - src/cdc_4phase.sv
       - src/addr_decode.sv
+      - src/addr_decode_napot.sv
       - src/cb_filter.sv
       - src/cdc_fifo_2phase.sv
       - src/counter.sv

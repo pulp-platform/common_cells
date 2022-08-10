@@ -23,10 +23,13 @@
 /// for which no rule in `addr_map_i` exists to the default index specified by
 /// `default_idx_i`. In this case, `dec_error_o` is always `1'b0`.
 ///
+/// The `Napot` parameter allows using naturally-aligned power of two (NAPOT) regions,
+/// using base addresses and masks instead of address ranges to specify rules.
+///
 /// Assertions: The module checks every time there is a change in the address mapping
-/// if the resulting map is valid. It fatals if `start_addr` is higher than `end_addr`
-/// or if a mapping targets an index that is outside the number of allowed indices.
-/// It issues warnings if the address regions of any two mappings overlap.
+/// if the resulting map is valid. It fatals if `start_addr` is higher than `end_addr` (non-NAPOT
+/// only) or if a mapping targets an index that is outside the number of allowed indices.
+/// It issues warnings if the address regions of any two mappings overlap (non-NAPOT only).
 module addr_decode #(
   /// Highest index which can happen in a rule.
   parameter int unsigned NoIndices = 32'd0,
@@ -46,7 +49,13 @@ module addr_decode #(
   ///  - `idx`:        index of the rule, has to be < `NoIndices`
   ///  - `start_addr`: start address of the range the rule describes, value is included in range
   ///  - `end_addr`:   end address of the range the rule describes, value is NOT included in range
+  ///
+  /// If `Napot` is 1, The field names remain the same, but the rule describes a naturally-aligned
+  /// power of two (NAPOT) region instead of an address range: `start_addr` becomes the base address
+  /// and `end_addr` the mask. See the wrapping module `addr_decode_napot` for details.
   parameter type         rule_t    = logic,
+  // Whether this is a NAPOT (base and mask) or regular range decoder
+  parameter bit          Napot     = 0,
   /// Dependent parameter, do **not** overwite!
   ///
   /// Width of the `idx_o` output port.
@@ -89,7 +98,11 @@ module addr_decode #(
 
     // match the rules
     for (int unsigned i = 0; i < NoRules; i++) begin
-      if ((addr_i >= addr_map_i[i].start_addr) && (addr_i < addr_map_i[i].end_addr)) begin
+      if (
+        !Napot && (addr_i >= addr_map_i[i].start_addr) && (addr_i < addr_map_i[i].end_addr) ||
+        Napot && (addr_map_i[i].start_addr & addr_map_i[i].end_addr) ==
+                 (addr_i & addr_map_i[i].end_addr)
+      ) begin
         matched_rules[i] = 1'b1;
         dec_valid_o      = 1'b1;
         dec_error_o      = 1'b0;
@@ -126,7 +139,7 @@ module addr_decode #(
   always @(addr_map_i) #0 begin : proc_check_addr_map
     if (!$isunknown(addr_map_i)) begin
       for (int unsigned i = 0; i < NoRules; i++) begin
-        check_start : assume (addr_map_i[i].start_addr < addr_map_i[i].end_addr) else
+        check_start : assume (Napot || addr_map_i[i].start_addr < addr_map_i[i].end_addr) else
           $fatal(1, $sformatf("This rule has a higher start than end address!!!\n\
               Violating rule %d.\n\
               Rule> IDX: %h START: %h END: %h\n\
@@ -143,8 +156,9 @@ module addr_decode #(
             (NoIndices-1)));
         for (int unsigned j = i + 1; j < NoRules; j++) begin
           // overlap check
-          check_overlap : assume (!((addr_map_i[j].start_addr < addr_map_i[i].end_addr) &&
-                                    (addr_map_i[j].end_addr > addr_map_i[i].start_addr)))   else
+          check_overlap : assume (Napot ||
+                                  !((addr_map_i[j].start_addr < addr_map_i[i].end_addr) &&
+                                    (addr_map_i[j].end_addr > addr_map_i[i].start_addr))) else
                $warning($sformatf("Overlapping address region found!!!\n\
               Rule %d: IDX: %h START: %h END: %h\n\
               Rule %d: IDX: %h START: %h END: %h\n\

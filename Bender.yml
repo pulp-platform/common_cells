@@ -60,6 +60,7 @@ sources:
   - src/unread.sv
   - src/cdc_reset_ctrlr_pkg.sv
   # Level 1
+  - src/addr_decode_napot.sv
   - src/cdc_2phase.sv
   - src/cdc_4phase.sv
   - src/addr_decode.sv
