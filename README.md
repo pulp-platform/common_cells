@@ -89,6 +89,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | `stream_demux`             | Ready/valid interface demultiplexer                                                                       | active       |               |
 | `lossy_valid_to_stream`    | Convert Valid-only to ready/valid by updating in-flight transaction                                       | active       |               |
 | `stream_join`              | Ready/valid handshake join multiple to one common                                                         | active       |               |
+| `stream_join_dynamic`      | Ready/valid handshake join multiple to one common, dynamically configurable subset selection              | active       |               |
 | `stream_mux`               | Ready/valid interface multiplexer                                                                         | active       |               |
 | `stream_register`          | Register with ready/valid interface                                                                       | active       |               |
 | `stream_fork`              | Ready/valid fork                                                                                          | active       |               |
