@@ -54,6 +54,7 @@ sources:
   - src/stream_intf.sv
   - src/stream_join.sv
   - src/stream_mux.sv
+  - src/stream_throttle.sv
   - src/sub_per_hash.sv
   - src/sync.sv
   - src/sync_wedge.sv
