@@ -36,13 +36,13 @@ module popcount #(
    end
 
    //Recursive instantiation to build binary adder tree
-   if (INPUT_WIDTH == 1) begin : single_node
+   if (INPUT_WIDTH == 1) begin : gen_single_node
      assign left_child_result  = 1'b0;
      assign right_child_result = padded_input[0];
-   end else if (INPUT_WIDTH == 2) begin : leaf_node
+   end else if (INPUT_WIDTH == 2) begin : gen_leaf_node
      assign left_child_result  = padded_input[1];
      assign right_child_result = padded_input[0];
-   end else begin : non_leaf_node
+   end else begin : gen_non_leaf_node
      popcount #(.INPUT_WIDTH(PaddedWidth / 2))
          left_child(
                     .data_i(padded_input[PaddedWidth-1:PaddedWidth/2]),
