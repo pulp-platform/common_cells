@@ -8,3 +8,5 @@ waive --rule=always-ff-non-blocking --line=262 --location="src/clk_int_div.sv"
 waive --rule=always-ff-non-blocking --line=265 --location="src/clk_int_div.sv"
 waive --rule=always-ff-non-blocking --line=274 --location="src/clk_int_div.sv"
 waive --rule=always-ff-non-blocking --line=277 --location="src/clk_int_div.sv"
+# Allow strings to continue across lines
+waive --rule=forbid-line-continuations
