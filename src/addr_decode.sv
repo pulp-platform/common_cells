@@ -49,6 +49,7 @@ module addr_decode #(
   ///  - `idx`:        index of the rule, has to be < `NoIndices`
   ///  - `start_addr`: start address of the range the rule describes, value is included in range
   ///  - `end_addr`:   end address of the range the rule describes, value is NOT included in range
+  ///                  if `end_addr == '0` end of address space is assumed
   ///
   /// If `Napot` is 1, The field names remain the same, but the rule describes a naturally-aligned
   /// power of two (NAPOT) region instead of an address range: `start_addr` becomes the base address
@@ -99,7 +100,8 @@ module addr_decode #(
     // match the rules
     for (int unsigned i = 0; i < NoRules; i++) begin
       if (
-        !Napot && (addr_i >= addr_map_i[i].start_addr) && (addr_i < addr_map_i[i].end_addr) ||
+        !Napot && (addr_i >= addr_map_i[i].start_addr) &&
+        ((addr_i < addr_map_i[i].end_addr) || (addr_map_i[i].end_addr == '0)) ||
         Napot && (addr_map_i[i].start_addr & addr_map_i[i].end_addr) ==
                  (addr_i & addr_map_i[i].end_addr)
       ) begin
@@ -139,7 +141,8 @@ module addr_decode #(
   always @(addr_map_i) #0 begin : proc_check_addr_map
     if (!$isunknown(addr_map_i)) begin
       for (int unsigned i = 0; i < NoRules; i++) begin
-        check_start : assume (Napot || addr_map_i[i].start_addr < addr_map_i[i].end_addr) else
+        check_start : assume (Napot || addr_map_i[i].start_addr < addr_map_i[i].end_addr ||
+          addr_map_i[i].end_addr == '0) else
           $fatal(1, $sformatf("This rule has a higher start than end address!!!\n\
               Violating rule %d.\n\
               Rule> IDX: %h START: %h END: %h\n\
@@ -158,7 +161,11 @@ module addr_decode #(
           // overlap check
           check_overlap : assume (Napot ||
                                   !((addr_map_i[j].start_addr < addr_map_i[i].end_addr) &&
-                                    (addr_map_i[j].end_addr > addr_map_i[i].start_addr))) else
+                                    (addr_map_i[j].end_addr > addr_map_i[i].start_addr)) ||
+                                  !((addr_map_i[i].end_addr == '0) &&
+                                    (addr_map_i[j].end_addr > addr_map_i[i].start_addr)) ||
+                                  !((addr_map_i[j].start_addr < addr_map_i[i].end_addr) &&
+                                    (addr_map_i[j].end_addr == '0))) else
                $warning($sformatf("Overlapping address region found!!!\n\
               Rule %d: IDX: %h START: %h END: %h\n\
               Rule %d: IDX: %h START: %h END: %h\n\
