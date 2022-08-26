@@ -4,9 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 1.26.0 - 2022-08-26
+### Added
+- Add `stream_throttle`: restricts the number of outstanding transfers in a stream.
+
 ### Changed
-- Allow out-of-bounds (i.e. `'0`) top end address in addr_map of `addr_decode` module for end of address space
+- Allow out-of-bounds (i.e. `'0`) top end address in addr_map of `addr_decode` module for end of address space.
+- Update CI.
 
 ## 1.25.0 - 2022-08-10
 ### Added
