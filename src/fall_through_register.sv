@@ -32,7 +32,7 @@ module fall_through_register #(
     logic   fifo_empty,
             fifo_full;
 
-    fifo_v2 #(
+    fifo_v3 #(
         .FALL_THROUGH   (1'b1),
         .DATA_WIDTH     ($size(T)),
         .DEPTH          (1),
@@ -44,8 +44,6 @@ module fall_through_register #(
         .testmode_i     (testmode_i),
         .full_o         (fifo_full),
         .empty_o        (fifo_empty),
-        .alm_full_o     ( ),
-        .alm_empty_o    ( ),
         .data_i         (data_i),
         .push_i         (valid_i & ~fifo_full),
         .data_o         (data_o),
