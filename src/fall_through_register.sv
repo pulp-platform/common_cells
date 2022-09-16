@@ -44,6 +44,7 @@ module fall_through_register #(
         .testmode_i     (testmode_i),
         .full_o         (fifo_full),
         .empty_o        (fifo_empty),
+        .usage_o        (),
         .data_i         (data_i),
         .push_i         (valid_i & ~fifo_full),
         .data_o         (data_o),
