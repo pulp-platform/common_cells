@@ -59,6 +59,7 @@ sources:
   - src/sync.sv
   - src/sync_wedge.sv
   - src/unread.sv
+  - src/read.sv
   - src/cdc_reset_ctrlr_pkg.sv
   # Level 1
   - src/addr_decode_napot.sv
