@@ -6,6 +6,7 @@
 // Date: 07.11.2022
 // Description: Dummy circuit to assign a signal, prevent signal being removed after non-ungroupped synthesis compilation
 
+(* no_ungroup *)
 module read #(
     parameter int unsigned Width = 1,
     parameter type T = logic [Width-1:0]
