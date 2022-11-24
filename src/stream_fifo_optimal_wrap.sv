@@ -4,12 +4,9 @@
 //
 // Thomas Benz <tbenz@ethz.ch>
 
-`include "common_cells/assertions.svh"
-
 /// Optimal implementation of a stream FIFO based on the common cells modules.
 /// Selects the smaller and faster spill register if the depth is 2 and the FIFO if
 /// the depth is >2. Throws an error for the meaningless configurations depth 0 and 1.
-/// Includes assertion to check for full push and empty pop scenarios.
 module stream_fifo_optimal_wrap #(
     /// Depth can be arbitrary from 2 to 2**32
     parameter int unsigned Depth = 32'd8,
@@ -80,11 +77,6 @@ module stream_fifo_optimal_wrap #(
 
         // usage is not supported
         assign usage_o = 'x;
-
-        // no full push
-        `ASSERT_NEVER(CheckFullPush, (!ready_o & valid_i), clk_i, !rst_ni)
-        // empty pop
-        `ASSERT_NEVER(CheckEmptyPop, (!valid_o & ready_i), clk_i, !rst_ni)
     end
 
 
@@ -120,11 +112,6 @@ module stream_fifo_optimal_wrap #(
             .valid_o,
             .ready_i
         );
-
-        // no full push
-        `ASSERT_NEVER(CheckFullPush, (!ready_o & valid_i), clk_i, !rst_ni)
-        // empty pop
-        `ASSERT_NEVER(CheckEmptyPop, (!valid_o & ready_i), clk_i, !rst_ni)
     end
 
 endmodule : stream_fifo_optimal_wrap
