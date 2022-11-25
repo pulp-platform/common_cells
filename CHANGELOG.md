@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Allow out-of-bounds (i.e. `'0`) top end address in addr_map of `addr_decode` module for end of address space.
 - Update CI.
+- Remove asserts in `stream_fifo_optimal_wrap`
 
 ## 1.25.0 - 2022-08-10
 ### Added
