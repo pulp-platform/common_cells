@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Remove asserts in `stream_fifo_optimal_wrap`
 
+### Added
+- Add `mem_to_banks`: split memory access over multiple parallel banks. Moved from the `AXI4+ATOP`
+  [`axi_to_mem`](https://github.com/pulp-platform/axi/blob/2f395b176bee1c769c80f060a4345fda965bb04b/src/axi_to_mem.sv#L563) module.
+
 ## 1.26.0 - 2022-08-26
 ### Added
 - Add `stream_throttle`: restricts the number of outstanding transfers in a stream.

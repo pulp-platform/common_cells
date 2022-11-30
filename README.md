@@ -97,6 +97,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | `stream_throttle`          | Restrict the number of outstanding transfers in a stream.                                                 | active       |               |
 | `sub_per_hash`             | Substitution-permutation hash function                                                                    | active       |               |
 | `popcount`                 | Combinatorial popcount (hamming weight)                                                                   | active       |               |
+| `mem_to_banks`             | Split memory access over multiple parallel banks                                                          | active       |               |
 
 ### Data Structures
 
