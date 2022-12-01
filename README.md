@@ -101,19 +101,20 @@ Please note that cells with status *deprecated* are not to be used for new desig
 
 ### Data Structures
 
-| Name                       | Description                                                      | Status       | Superseded By |
-| -------------------------- | ---------------------------------------------------------------- | ------------ | ------------- |
-| `cb_filter`                | Counting-Bloom-Filter with combinational lookup                  | active       |               |
-| `fifo`                     | FIFO register with upper threshold                               | *deprecated* | `fifo_v3`     |
-| `fifo_v2`                  | FIFO register with upper and lower threshold                     | *deprecated* | `fifo_v3`     |
-| `fifo_v3`                  | FIFO register with generic fill counts                           | active       |               |
-| `stream_fifo`              | FIFO register with ready/valid interface                         | active       |               |
-| `stream_fifo_optimal_wrap` | Wrapper that optimally selects either a spill register or a FIFO | active       |               |
-| `generic_fifo`             | FIFO register without thresholds                                 | *deprecated* | `fifo_v3`     |
-| `generic_fifo_adv`         | FIFO register without thresholds                                 | *deprecated* | `fifo_v3`     |
-| `sram`                     | SRAM behavioral model                                            | active       |               |
-| `plru_tree`                | Pseudo least recently used tree                                  | active       |               |
-| `unread`                   | Empty module to sink unconnected outputs into                    | active       |               |
+| Name                       | Description                                                             | Status       | Superseded By |
+| -------------------------- | ----------------------------------------------------------------------- | ------------ | ------------- |
+| `cb_filter`                | Counting-Bloom-Filter with combinational lookup                         | active       |               |
+| `fifo`                     | FIFO register with upper threshold                                      | *deprecated* | `fifo_v3`     |
+| `fifo_v2`                  | FIFO register with upper and lower threshold                            | *deprecated* | `fifo_v3`     |
+| `fifo_v3`                  | FIFO register with generic fill counts                                  | active       |               |
+| `stream_fifo`              | FIFO register with ready/valid interface                                | active       |               |
+| `stream_fifo_optimal_wrap` | Wrapper that optimally selects either a spill register or a FIFO        | active       |               |
+| `generic_fifo`             | FIFO register without thresholds                                        | *deprecated* | `fifo_v3`     |
+| `generic_fifo_adv`         | FIFO register without thresholds                                        | *deprecated* | `fifo_v3`     |
+| `sram`                     | SRAM behavioral model                                                   | active       |               |
+| `plru_tree`                | Pseudo least recently used tree                                         | active       |               |
+| `unread`                   | Empty module to sink unconnected outputs into                           | active       |               |
+| `read`                     | Dummy module that prevents a signal from being removed during synthesis | active       |               |
 
 
 ## Header Contents
