@@ -34,7 +34,6 @@ module fall_through_register #(
 
     fifo_v3 #(
         .FALL_THROUGH   (1'b1),
-        .DATA_WIDTH     ($size(T)),
         .DEPTH          (1),
         .dtype          (T)
     ) i_fifo (
