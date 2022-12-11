@@ -11,7 +11,7 @@ package:
 
 dependencies:
   common_verification: { git: "https://github.com/pulp-platform/common_verification.git", version: 0.2.0 }
-  tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.2.9 }
+  tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.2.11 }
 
 export_include_dirs:
   - include
@@ -81,6 +81,7 @@ sources:
   - src/stream_delay.sv
   - src/stream_fifo.sv
   - src/stream_fork_dynamic.sv
+  - src/clk_mux_glitch_free.sv
   # Level 2
   - src/cdc_reset_ctrlr.sv
   - src/cdc_fifo_gray.sv
@@ -125,6 +126,7 @@ sources:
       - test/stream_omega_net_tb.sv
       - test/stream_xbar_tb.sv
       - test/clk_int_div_tb.sv
+      - test/clk_mux_glitch_free_tb.sv
 
 
   - target: synth_test
