@@ -48,13 +48,13 @@
 module clk_mux_glitch_free #(
   parameter int unsigned  NUM_INPUTS = 2,
   parameter int unsigned NUM_SYNC_STAGES = 2,
-  localparam int unsigned SEL_WIDTH = $clog2(NUM_INPUTS)
+  localparam int unsigned SelWidth = $clog2(NUM_INPUTS)
 ) (
    input logic [NUM_INPUTS-1:0] clks_i,
    input logic                  test_clk_i,
    input logic                  test_en_i,
    input logic                  async_rstn_i,
-   input logic [SEL_WIDTH-1:0]  async_sel_i,
+   input logic [SelWidth-1:0]  async_sel_i,
    output logic                 clk_o
 );
 
@@ -189,13 +189,13 @@ endmodule
 
 // Helper Module to generate an N-input clock OR-gate from a tree of tc_clk_or2 cells.
 module clk_or_tree #(
-  parameter NUM_INPUTS
+  parameter int unsigned NUM_INPUTS
 ) (
   input logic [NUM_INPUTS-1:0] clks_i,
   output logic clk_o
 );
 
-  if (NUM_INPUTS < 1) begin
+  if (NUM_INPUTS < 1) begin : gen_error
     $error("Cannot parametrize clk_or with less then 1 input but was %0d", NUM_INPUTS);
   end else if (NUM_INPUTS == 1) begin : gen_leaf
     assign clk_o          = clks_i[0];
