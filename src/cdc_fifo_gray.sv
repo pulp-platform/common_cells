@@ -97,8 +97,10 @@
 
 `include "common_cells/registers.svh"
 
+`ifndef SV2V
 (* no_ungroup *)
 (* no_boundary_optimization *)
+`endif
 module cdc_fifo_gray #(
   /// The width of the default logic type.
   parameter int unsigned WIDTH = 1,
@@ -135,10 +137,15 @@ module cdc_fifo_gray #(
     .src_data_i,
     .src_valid_i,
     .src_ready_o,
-
+`ifndef SV2V
     (* async *) .async_data_o ( async_data ),
     (* async *) .async_wptr_o ( async_wptr ),
     (* async *) .async_rptr_i ( async_rptr )
+`else
+    .async_data_o ( async_data ),
+    .async_wptr_o ( async_wptr ),
+    .async_rptr_i ( async_rptr )
+`endif
   );
 
   cdc_fifo_gray_dst #(
@@ -150,10 +157,15 @@ module cdc_fifo_gray #(
     .dst_data_o,
     .dst_valid_o,
     .dst_ready_i,
-
+`ifndef SV2V
     (* async *) .async_data_i ( async_data ),
     (* async *) .async_wptr_i ( async_wptr ),
     (* async *) .async_rptr_o ( async_rptr )
+`else
+    .async_data_i ( async_data ),
+    .async_wptr_i ( async_wptr ),
+    .async_rptr_o ( async_rptr )
+`endif
   );
 
   // Check the invariants.
@@ -166,9 +178,10 @@ module cdc_fifo_gray #(
 
 endmodule
 
-
+`ifndef SV2V
 (* no_ungroup *)
 (* no_boundary_optimization *)
+`endif
 module cdc_fifo_gray_src #(
   parameter type T = logic,
   parameter int LOG_DEPTH = 3,
@@ -224,9 +237,10 @@ module cdc_fifo_gray_src #(
 
 endmodule
 
-
+`ifndef SV2V
 (* no_ungroup *)
 (* no_boundary_optimization *)
+`endif
 module cdc_fifo_gray_dst #(
   parameter type T = logic,
   parameter int LOG_DEPTH = 3,

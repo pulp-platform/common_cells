@@ -262,6 +262,7 @@ module stream_omega_net #(
     // Make sure that the handshake and payload is stable
     // pragma translate_off
     `ifndef VERILATOR
+    `ifndef SYNTHESIS
     default disable iff rst_ni;
     for (genvar i = 0; unsigned'(i) < NumInp; i++) begin : gen_sel_assertions
       assert property (@(posedge clk_i) (valid_i[i] |-> sel_i[i] < sel_oup_t'(NumOut))) else
@@ -295,6 +296,7 @@ module stream_omega_net #(
       assert ($clog2(NumLanes) % SelW == 0) else
           $fatal(1, "Bit slicing of the internal selection signal is broken.");
     end
+    `endif
     `endif
     // pragma translate_on
   end

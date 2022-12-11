@@ -83,9 +83,9 @@ module cdc_2phase_clearable #(
   logic        s_dst_isolate_ack_q;
 
   // Asynchronous handshake signals between the CDCs
-  (* dont_touch = "true" *) logic async_req;
-  (* dont_touch = "true" *) logic async_ack;
-  (* dont_touch = "true" *) T async_data;
+  `ifndef SV2V (* dont_touch = "true" *) `endif logic async_req;
+  `ifndef SV2V (* dont_touch = "true" *) `endif logic async_ack;
+  `ifndef SV2V (* dont_touch = "true" *) `endif T async_data;
 
   if (CLEAR_ON_ASYNC_RESET) begin : gen_elaboration_assertion
     if (SYNC_STAGES < 3)
@@ -212,9 +212,9 @@ module cdc_2phase_src_clearable #(
   output T     async_data_o
 );
 
-  (* dont_touch = "true" *)
+  `ifndef SV2V (* dont_touch = "true" *) `endif
   logic  req_src_d, req_src_q, ack_synced;
-  (* dont_touch = "true" *)
+  `ifndef SV2V (* dont_touch = "true" *) `endif
   T data_src_d, data_src_q;
 
   // Synchronize the async ACK
@@ -286,10 +286,10 @@ module cdc_2phase_dst_clearable #(
   input  T     async_data_i
 );
 
-  (* dont_touch = "true" *)
-  (* async_reg = "true" *)
+  `ifndef SV2V (* dont_touch = "true" *) `endif
+  `ifndef SV2V (* async_reg = "true" *) `endif
  logic ack_dst_d, ack_dst_q, req_synced, req_synced_q1;
-  (* dont_touch = "true" *)
+  `ifndef SV2V (* dont_touch = "true" *) `endif
   T data_dst_d, data_dst_q;
 
 

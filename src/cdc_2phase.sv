@@ -57,9 +57,9 @@ module cdc_2phase #(
 );
 
   // Asynchronous handshake signals.
-  (* dont_touch = "true" *) logic async_req;
-  (* dont_touch = "true" *) logic async_ack;
-  (* dont_touch = "true" *) T async_data;
+  `ifndef SV2V  `endif logic async_req;
+  `ifndef SV2V  `endif logic async_ack;
+  `ifndef SV2V  `endif T async_data;
 
   // The sender in the source domain.
   cdc_2phase_src #(.T(T)) i_src (
@@ -102,9 +102,9 @@ module cdc_2phase_src #(
   output T     async_data_o
 );
 
-  (* dont_touch = "true" *)
+  `ifndef SV2V (* dont_touch = "true" *) `endif
   logic req_src_q, ack_src_q, ack_q;
-  (* dont_touch = "true" *)
+  `ifndef SV2V (* dont_touch = "true" *) `endif
   T data_src_q;
 
   // The req_src and data_src registers change when a new data item is accepted.
@@ -152,10 +152,14 @@ module cdc_2phase_dst #(
   input  T     async_data_i
 );
 
+`ifndef SV2V
   (* dont_touch = "true" *)
   (* async_reg = "true" *)
+`endif
   logic req_dst_q, req_q0, req_q1, ack_dst_q;
+`ifndef SV2V
   (* dont_touch = "true" *)
+`endif
   T data_dst_q;
 
   // The ack_dst register changes when a new data item is accepted.

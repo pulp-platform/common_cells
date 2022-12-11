@@ -289,7 +289,7 @@ end
 ////////////////////////////////////////////////////////////////////////
 // assertions
 ////////////////////////////////////////////////////////////////////////
-
+`ifndef SYNTHESIS
 // pragma translate_off
 initial begin
   // these are the LUT limits
@@ -311,5 +311,6 @@ end
       else $fatal(1,"Lfsr must not be all-zero.");
 `endif
 // pragma translate_on
+`endif
 
 endmodule // lfsr

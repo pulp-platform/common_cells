@@ -53,9 +53,9 @@ module cdc_4phase #(
 );
 
   // Asynchronous handshake signals.
-  (* dont_touch = "true" *) logic async_req;
-  (* dont_touch = "true" *) logic async_ack;
-  (* dont_touch = "true" *) T async_data;
+  `ifndef SV2V (* dont_touch = "true" *) `endif logic async_req;
+  `ifndef SV2V (* dont_touch = "true" *) `endif logic async_ack;
+  `ifndef SV2V (* dont_touch = "true" *) `endif T async_data;
 
   // The sender in the source domain.
   cdc_4phase_src #(
@@ -106,11 +106,11 @@ module cdc_4phase_src #(
   output T     async_data_o
 );
 
-  (* dont_touch = "true" *)
+  `ifndef SV2V (* dont_touch = "true" *) `endif
   logic  req_src_d, req_src_q;
-  (* dont_touch = "true" *)
+  `ifndef SV2V (* dont_touch = "true" *) `endif
   T data_src_d, data_src_q;
-  (* dont_touch = "true" *)
+  `ifndef SV2V (* dont_touch = "true" *) `endif
   logic  ack_synced;
 
   typedef enum logic[1:0] {IDLE, WAIT_ACK_ASSERT, WAIT_ACK_DEASSERT} state_e;
@@ -217,9 +217,9 @@ module cdc_4phase_dst #(
   input  T     async_data_i
 );
 
-  (* dont_touch = "true" *)
+  `ifndef SV2V (* dont_touch = "true" *) `endif
   logic  ack_dst_d, ack_dst_q;
-  (* dont_touch = "true" *)
+  `ifndef SV2V (* dont_touch = "true" *) `endif
   logic  req_synced;
 
   logic  data_valid;

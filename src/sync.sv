@@ -19,9 +19,10 @@ module sync #(
     input  logic serial_i,
     output logic serial_o
 );
-
+`ifndef SV2V
    (* dont_touch = "true" *)
    (* async_reg = "true" *)
+`endif
    logic [STAGES-1:0] reg_q;
 
     always_ff @(posedge clk_i, negedge rst_ni) begin

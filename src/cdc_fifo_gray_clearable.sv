@@ -97,8 +97,12 @@
 
 `include "common_cells/registers.svh"
 
+
+`ifndef SV2V
 (* no_ungroup *)
 (* no_boundary_optimization *)
+`endif
+
 module cdc_fifo_gray_clearable #(
   /// The width of the default logic type.
   parameter int unsigned WIDTH = 1,
@@ -177,10 +181,15 @@ module cdc_fifo_gray_clearable #(
     .src_data_i,
     .src_valid_i ( src_valid_i & !s_src_isolate_req ),
     .src_ready_o ( s_src_ready                      ),
-
+`ifndef SV2V
     (* async *) .async_data_o ( async_data ),
     (* async *) .async_wptr_o ( async_wptr ),
     (* async *) .async_rptr_i ( async_rptr )
+`else
+    .async_data_o ( async_data ),
+    .async_wptr_o ( async_wptr ),
+    .async_rptr_i ( async_rptr )
+`endif
   );
 
   assign src_ready_o = s_src_ready & !s_src_isolate_req;
@@ -196,10 +205,15 @@ module cdc_fifo_gray_clearable #(
     .dst_data_o,
     .dst_valid_o ( s_dst_valid                      ),
     .dst_ready_i ( dst_ready_i & !s_dst_isolate_req ),
-
+`ifndef SV2V
     (* async *) .async_data_i ( async_data ),
     (* async *) .async_wptr_i ( async_wptr ),
     (* async *) .async_rptr_o ( async_rptr )
+`else
+    .async_data_i ( async_data ),
+    .async_wptr_i ( async_wptr ),
+    .async_rptr_o ( async_rptr )
+`endif
   );
 
   assign dst_valid_o = s_dst_valid & !s_dst_isolate_req;
@@ -263,9 +277,10 @@ module cdc_fifo_gray_clearable #(
 
 endmodule
 
-
+`ifndef SV2V
 (* no_ungroup *)
 (* no_boundary_optimization *)
+`endif
 module cdc_fifo_gray_src_clearable #(
   parameter type T = logic,
   parameter int LOG_DEPTH = 3,
@@ -323,8 +338,10 @@ module cdc_fifo_gray_src_clearable #(
 endmodule
 
 
+`ifndef SV2V
 (* no_ungroup *)
 (* no_boundary_optimization *)
+`endif
 module cdc_fifo_gray_dst_clearable #(
   parameter type T = logic,
   parameter int LOG_DEPTH = 3,

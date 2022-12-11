@@ -235,6 +235,7 @@ module hash_block #(
     end
   end
 
+`ifndef SYNTHESIS
   // assertions
   // pragma translate_off
   initial begin
@@ -243,4 +244,6 @@ module hash_block #(
           InpWidth, HashWidth);
   end
   // pragma translate_on
+`endif
+
 endmodule
