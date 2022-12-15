@@ -62,6 +62,7 @@ common_cells_all:
     - src/stream_delay.sv
     - src/stream_fifo.sv
     - src/stream_fork_dynamic.sv
+    - src/clk_mux_glitch_free.sv
     # Level 2
     - src/cdc_reset_ctrlr.sv
     - src/cdc_fifo_gray.sv
