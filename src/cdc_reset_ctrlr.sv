@@ -137,16 +137,19 @@ module cdc_reset_ctrlr
 
 `ifndef SV2V
   (* dont_touch = "true" *)
-  logic        async_a2b_req, async_b2a_ack;
 `endif
+  logic        async_a2b_req, async_b2a_ack;
+
 `ifndef SV2V
   (* dont_touch = "true" *)
 `endif
   clear_seq_phase_e async_a2b_next_phase;
+
 `ifndef SV2V
   (* dont_touch = "true" *)
 `endif
   logic        async_b2a_req, async_a2b_ack;
+
 `ifndef SV2V
   (* dont_touch = "true" *)
 `endif

@@ -57,9 +57,9 @@ module cdc_2phase #(
 );
 
   // Asynchronous handshake signals.
-  `ifndef SV2V  `endif logic async_req;
-  `ifndef SV2V  `endif logic async_ack;
-  `ifndef SV2V  `endif T async_data;
+  `ifndef SV2V  (* dont_touch = "true" *) `endif logic async_req;
+  `ifndef SV2V  (* dont_touch = "true" *) `endif logic async_ack;
+  `ifndef SV2V  (* dont_touch = "true" *) `endif T async_data;
 
   // The sender in the source domain.
   cdc_2phase_src #(.T(T)) i_src (
