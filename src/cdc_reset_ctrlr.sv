@@ -110,12 +110,12 @@ module cdc_reset_ctrlr
   import cdc_reset_ctrlr_pkg::*;
  #(
   /// The number of synchronization stages to use for the
-  //clear signal request/acknowledge. Must be less or
-  //equal to the number of sync stages used in the CDC
+  /// clear signal request/acknowledge. Must be less than the
+  /// number of sync stages used in the CDC.
   parameter int unsigned SYNC_STAGES = 2,
   /// Whether an asynchronous reset shall cause a clear
   /// request to be sent to the other side.
-  parameter logic CLEAR_ON_ASYNC_RESET = 1'b1
+  parameter logic        CLEAR_ON_ASYNC_RESET = 1'b1
 )(
   // Side A (both sides are symmetric)
   input logic  a_clk_i,
@@ -188,12 +188,12 @@ module cdc_reset_ctrlr_half
   import cdc_reset_ctrlr_pkg::*;
 #(
   /// The number of synchronization stages to use for the
-  //clear signal request/acknowledge. Must be less or
-  //equal to the number of sync stages used in the CDC
+  /// clear signal request/acknowledge. Must be less than
+  /// the number of sync stages used in the CDC
   parameter int unsigned SYNC_STAGES = 2,
   /// Whether an asynchronous reset shall cause a clear
   /// request to be sent to the other side.
-  parameter logic CLEAR_ON_ASYNC_RESET = 1'b1
+  parameter logic        CLEAR_ON_ASYNC_RESET = 1'b1
 )(
   // Synchronous side
   input logic                clk_i,

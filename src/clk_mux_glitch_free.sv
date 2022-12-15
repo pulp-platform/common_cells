@@ -129,7 +129,9 @@ module clk_mux_glitch_free #(
         glitch_filter_q[i] <= glitch_filter_d[i];
       end
     end
-    assign s_glitch_filter_output[i] = glitch_filter_q[i][1] & glitch_filter_q[i][0] & glitch_filter_d[i][0];
+    assign s_glitch_filter_output[i] = glitch_filter_q[i][1] &
+                                       glitch_filter_q[i][0] &
+                                       glitch_filter_d[i][0];
 
     // Synchronize to current clock
     sync #(.STAGES(NUM_SYNC_STAGES)) i_sync_en(
