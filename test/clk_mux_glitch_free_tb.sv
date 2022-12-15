@@ -80,7 +80,7 @@ module clk_mux_glitch_free_tb;
   // Check clock edges
   initial begin : check_clock
     automatic realtime last_high_pulse_duration = 0ns;
-    automatic realtime last_low_pulse_duration = 0ns;
+    automatic realtime last_low_pulse_duration  = 0ns;
     automatic realtime pulse_duraton            = 0ns;
     automatic realtime last_edge                = 0ns;
     $timeformat(-9, 3, "ns", 0);

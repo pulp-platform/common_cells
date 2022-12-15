@@ -54,7 +54,7 @@ module clk_mux_glitch_free #(
    input logic                  test_clk_i,
    input logic                  test_en_i,
    input logic                  async_rstn_i,
-   input logic [SelWidth-1:0]  async_sel_i,
+   input logic [SelWidth-1:0]   async_sel_i,
    output logic                 clk_o
 );
 
@@ -103,7 +103,7 @@ module clk_mux_glitch_free #(
   // Onehot decoder
   always_comb begin
     s_sel_onehot = '0;
-    s_sel_onehot[async_sel_i] =1'b1;
+    s_sel_onehot[async_sel_i] = 1'b1;
   end
 
   // Input stages
@@ -202,7 +202,6 @@ module clk_or_tree #(
   end else if (NUM_INPUTS == 1) begin : gen_leaf
     assign clk_o          = clks_i[0];
   end else if (NUM_INPUTS == 2) begin : gen_leaf
-
     tc_clk_or2 i_clk_or2 (
       .clk0_i(clks_i[0]),
       .clk1_i(clks_i[1]),
