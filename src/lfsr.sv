@@ -289,7 +289,7 @@ end
 ////////////////////////////////////////////////////////////////////////
 // assertions
 ////////////////////////////////////////////////////////////////////////
-
+`ifndef VERILATOR
 // pragma translate_off
 initial begin
   // these are the LUT limits
@@ -304,6 +304,7 @@ initial begin
   assert((CipherLayers > 0) && (LfsrWidth == 64) || (CipherLayers == 0)) else
     $fatal(1, "Use additional cipher layers only in conjunction with an LFSR width of 64 bit." );
 end
+`endif
 
 `ifndef VERILATOR
   all_zero: assert property (

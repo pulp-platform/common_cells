@@ -49,7 +49,7 @@ module id_queue #(
     parameter int ID_WIDTH  = 0,
     parameter int CAPACITY  = 0,
     parameter bit FULL_BW   = 0,
-    parameter type data_t   = logic,
+    parameter type data_t   = logic[31:0],
     // Dependent parameters, DO NOT OVERRIDE!
     localparam type id_t    = logic[ID_WIDTH-1:0]
 ) (
