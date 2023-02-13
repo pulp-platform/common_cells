@@ -304,13 +304,11 @@ initial begin
   assert((CipherLayers > 0) && (LfsrWidth == 64) || (CipherLayers == 0)) else
     $fatal(1, "Use additional cipher layers only in conjunction with an LFSR width of 64 bit." );
 end
-`endif
 
-`ifndef VERILATOR
   all_zero: assert property (
     @(posedge clk_i) disable iff (!rst_ni) en_i |-> lfsr_d)
       else $fatal(1,"Lfsr must not be all-zero.");
-`endif
 // pragma translate_on
+`endif
 
 endmodule // lfsr
