@@ -43,6 +43,7 @@ sources:
   - src/onehot_to_bin.sv
   - src/plru_tree.sv
   - src/popcount.sv
+  - src/priority_encoder.sv
   - src/rr_arb_tree.sv
   - src/rstgen_bypass.sv
   - src/serial_deglitch.sv
@@ -116,6 +117,7 @@ sources:
       - test/graycode_tb.sv
       - test/id_queue_tb.sv
       - test/popcount_tb.sv
+      - test/priority_encoder_tb.sv
       - test/rr_arb_tree_tb.sv
       - test/stream_test.sv
       - test/stream_register_tb.sv
