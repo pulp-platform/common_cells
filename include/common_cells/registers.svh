@@ -85,9 +85,9 @@
 // __clk: clock input
 // __reset_clk: reset input, active-high
 `define FFSR(__q, __d, __reset_value, __clk, __reset_clk) \
-  `ifndef NO_SYNOPSYS_FF                       \
+  `ifndef NO_SYNOPSYS_FF                                  \
   /``* synopsys sync_set_reset `"__reset_clk`" *``/       \
-    `endif                        \
+  `endif                                                  \
   always_ff @(posedge (__clk)) begin                      \
     __q <= (__reset_clk) ? (__reset_value) : (__d);       \
   end
@@ -99,9 +99,9 @@
 // __clk: clock input
 // __reset_n_clk: reset input, active-low
 `define FFSRN(__q, __d, __reset_value, __clk, __reset_n_clk) \
-    `ifndef NO_SYNOPSYS_FF                       \
+  `ifndef NO_SYNOPSYS_FF                                     \
   /``* synopsys sync_set_reset `"__reset_n_clk`" *``/        \
-    `endif                        \
+  `endif                                                     \
   always_ff @(posedge (__clk)) begin                         \
     __q <= (!__reset_n_clk) ? (__reset_value) : (__d);       \
   end
@@ -127,7 +127,9 @@
     if (!__arst_n) begin                                                                      \
       __q <= (__reset_value);                                                                 \
     end else begin                                                                            \
-      __q <= (__load) ? (__d) : (__q);                                                        \
+      if (__load) begin                                                                       \
+        __q <= (__d);                                                                         \
+      end                                                                                     \
     end                                                                                       \
   end
 
@@ -143,7 +145,9 @@
     if (__arst) begin                                         \
       __q <= (__reset_value);                                 \
     end else begin                                            \
-      __q <= (__load) ? (__d) : (__q);                        \
+      if (__load) begin                                       \
+        __q <= (__d);                                         \
+      end                                                     \
     end                                                       \
   end
 
@@ -165,12 +169,16 @@
 // __reset_value: value assigned upon reset
 // __clk: clock input
 // __reset_clk: reset input, active-high
-`define FFLSR(__q, __d, __load, __reset_value, __clk, __reset_clk)       \
-    `ifndef NO_SYNOPSYS_FF                                               \
-  /``* synopsys sync_set_reset `"__reset_clk`" *``/                      \
-    `endif                                                               \
-  always_ff @(posedge (__clk)) begin                                     \
-    __q <= (__reset_clk) ? (__reset_value) : ((__load) ? (__d) : (__q)); \
+`define FFLSR(__q, __d, __load, __reset_value, __clk, __reset_clk) \
+  `ifndef NO_SYNOPSYS_FF                                           \
+  /``* synopsys sync_set_reset `"__reset_clk`" *``/                \
+  `endif                                                           \
+  always_ff @(posedge (__clk)) begin                               \
+    if (__reset_clk) begin                                         \
+      __q <= (__reset_value);                                      \
+    end else if (__load) begin                                     \
+      __q <= (__d);                                                \
+    end                                                            \
   end
 
 // Flip-Flop with load-enable and synchronous active-low reset
@@ -180,12 +188,16 @@
 // __reset_value: value assigned upon reset
 // __clk: clock input
 // __reset_n_clk: reset input, active-low
-`define FFLSRN(__q, __d, __load, __reset_value, __clk, __reset_n_clk)       \
-    `ifndef NO_SYNOPSYS_FF                                                  \
-  /``* synopsys sync_set_reset `"__reset_n_clk`" *``/                       \
-    `endif                                                                  \
-  always_ff @(posedge (__clk)) begin                                        \
-    __q <= (!__reset_n_clk) ? (__reset_value) : ((__load) ? (__d) : (__q)); \
+`define FFLSRN(__q, __d, __load, __reset_value, __clk, __reset_n_clk) \
+  `ifndef NO_SYNOPSYS_FF                                              \
+  /``* synopsys sync_set_reset `"__reset_n_clk`" *``/                 \
+  `endif                                                              \
+  always_ff @(posedge (__clk)) begin                                  \
+    if (!__reset_n_clk) begin                                         \
+      __q <= (__reset_value);                                         \
+    end else if (__load) begin                                        \
+      __q <= (__d);                                                   \
+    end                                                               \
   end
 
 // Flip-Flop with load-enable and asynchronous active-low reset and synchronous clear
@@ -204,7 +216,11 @@
     if (!__arst_n) begin                                                   \
       __q <= (__reset_value);                                              \
     end else begin                                                         \
-      __q <= (__clear) ? (__reset_value) : (__load) ? (__d) : (__q);       \
+      if (__clear) begin                                                   \
+        __q <= (__reset_value);                                            \
+      end else if (__load) begin                                           \
+        __q <= (__d);                                                      \
+      end                                                                  \
     end                                                                    \
   end
 
@@ -215,7 +231,9 @@
 // __clk: clock input
 `define FFLNR(__q, __d, __load, __clk) \
   always_ff @(posedge (__clk)) begin   \
-    __q <= (__load) ? (__d) : (__q);   \
+    if (__load) begin                  \
+      __q <= (__d);                    \
+    end                                \
   end
 
 `endif
