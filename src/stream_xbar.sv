@@ -156,8 +156,10 @@ module stream_xbar #(
       .data_o  ( spill      )
     );
     // Assign the outputs (deaggregate the data).
-    assign data_o[j] = spill.data;
-    assign idx_o[j]  = spill.idx;
+    always_comb begin
+      data_o[j] = spill.data;
+      idx_o[j]  = spill.idx;
+    end
   end
 
   // Assertions
