@@ -1,0 +1,22 @@
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Based on https://github.com/pulp-platform/pulp-actions/tree/main/gitlab-ci#action-usage
+
+# Author: Nils Wistoff <nwistoff@iis.ee.ethz.ch>
+
+name: gitlab-ci
+
+on: [ push, pull_request, workflow_dispatch ]
+
+jobs:
+  gitlab-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Gitlab CI
+        uses: pulp-platform/pulp-actions/gitlab-ci@v1
+        with:
+          domain: iis-git.ee.ethz.ch
+          repo: github-mirror/common_cells
+          token: ${{ secrets.GITLAB_TOKEN }}

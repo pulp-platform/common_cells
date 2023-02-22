@@ -1,64 +1,59 @@
-variables:
-  VSIM: vsim-10.6b -64
-  VLIB: vlib-10.6b
-  VMAP: vmap-10.6b
-  VCOM: vcom-10.6b -64
-  VLOG: vlog-10.6b -64
-  VOPT: vopt-10.6b -64
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
 
-before_script:
-  - export PATH="~fschuiki/.cargo/bin/":$PATH
-  - |
-    echo 'plugins:' > Bender.local
-    echo '  bender-vsim: { git: "git@iis-git.ee.ethz.ch:fschuiki/bender-vsim.git", rev: master }' >> Bender.local
+# Author: Nils Wistoff <nwistoff@iis.ee.ethz.ch>
+
+variables:
+  VSIM: questa-2022.3 vsim -64
+  VLIB: questa-2022.3 vlib
+  VMAP: questa-2022.3 vmap
+  VCOM: questa-2022.3 vcom -64
+  VLOG: questa-2022.3 vlog -64
+  VOPT: questa-2022.3 vopt -64
 
 stages:
-  - build
   - test
 
-compile:
-  stage: build
-  script:
-    - bender vsim
-
-test_fifo:
+.test-tpl:
   stage: test
+  needs:
+  variables:
+    TOPLEVEL: ""
+    PARAM1: ""
+    PARAM2: ""
+  timeout: 10min
   script:
-    # workaround to prevent simulation from failing due to assertions
-    - bender vsim -t test --vlog-flag="+define+VERILATOR"
-    - cd build
-    - $VSIM -c work.fifo_tb -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" -GDEPTH=0
-    - $VSIM -c work.fifo_tb -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" -GDEPTH=13
-    - $VSIM -c work.fifo_tb -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]" -GDEPTH=32 -GFALL_THROUGH=1
+    - bender script vsim -t test > compile.tcl
+    - $VSIM -c -quiet -do 'source compile.tcl; quit'
+    - $VSIM -c $TOPLEVEL -do "run -all" $PARAM1 $PARAM2
+    - (! grep -n "Error:" transcript)
 
-test_stream_register:
-  stage: test
-  script:
-    # workaround to prevent simulation from failing due to assertions
-    - bender vsim -t test --vlog-flag="+define+VERILATOR"
-    - cd build
-    - $VSIM -c work.stream_register_tb -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"
-
-test_cdc_2phase:
-  stage: test
-  script:
-    - bender vsim -t test
-    - cd build
-    - $VOPT cdc_2phase_tb -o cdc_2phase_tb_opt -GUNTIL=1000000
-    - $VSIM -c cdc_2phase_tb_opt -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"
-
-test_cdc_fifo:
-  stage: test
-  script:
-    - bender vsim -t test
-    - cd build
-    - for g in 0 1; do for i in 1 2 3 4 5; do $VOPT cdc_fifo_tb -o cdc_fifo_tb_depth${i}_gray${g} -GDEPTH=$i -GGRAY=$g; done; done
-    - for g in 0 1; do for i in 1 2 3 4 5; do $VSIM -c cdc_fifo_tb_depth${i}_gray${g} -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"; done; done
-
-test_graycode:
-  stage: test
-  script:
-    - bender vsim -t test
-    - cd build
-    - for i in 1 2 3 4 8 16; do $VOPT graycode_tb -o graycode_tb_$i -GN=$i; done
-    - for i in 1 2 3 4 8 16; do $VSIM -c graycode_tb_$i -do "run -a; quit -code [coverage attribute -name TESTSTATUS -concise]"; done
+tests:
+  extends: .test-tpl
+  parallel:
+    matrix:
+      - TOPLEVEL:
+          - addr_decode_tb
+          - cb_filter_tb
+          # - cdc_fifo_clearable_tb
+          - clk_int_div_tb
+          - clk_mux_glitch_free_tb
+          - id_queue_tb
+          - isochronous_crossing_tb
+          - popcount_tb
+          - rr_arb_tree_tb
+          - stream_omega_net_tb
+          - stream_register_tb
+          - stream_to_mem_tb
+          - stream_xbar_tb
+          - sub_per_hash_tb
+      - TOPLEVEL: graycode_tb
+        PARAM1: [-GN=1, -GN=2, -GN=3, -GN=4, -GN=8, -GN=16]
+      - TOPLEVEL: fifo_tb
+        PARAM1: [-GDEPTH=1, -GDEPTH=13, -GDEPTH=32 -GFALL_THROUGH=1]
+      # - TOPLEVEL: [cdc_2phase_tb, cdc_2phase_clearable_tb]
+      #   PARAM1: -GUNTIL=1000000
+      # - TOPLEVEL: cdc_fifo_tb
+      #   PARAM1: [-GDEPTH=1, -GDEPTH=2, -GDEPTH=3, -GDEPTH=4, -GDEPTH=5]
+      #   PARAM2: [-GGRAY=0, -GGRAY=1]
