@@ -10,8 +10,6 @@
 //
 // Description: A Simple shift register with ICG for arbitrary depth and types.
 
-`default_nettype none
-
 `include "common_cells/registers.svh"
 
 module shift_reg_gated #(
@@ -36,10 +34,8 @@ module shift_reg_gated #(
   // It's a shift register if depth is greater than 0
   end else begin : gen_shift_reg
 
-    logic [Depth-1 : 0] valid_d;
-    logic [Depth-1 : 0] valid_q;
-    dtype [Depth-1 : 0] data_d;
-    dtype [Depth-1 : 0] data_q;
+    logic [Depth-1 : 0] valid_d, valid_q;
+    dtype [Depth-1 : 0] data_d, data_q;
 
     for (genvar i = 0; i < Depth; i++) begin
 
@@ -67,5 +63,3 @@ module shift_reg_gated #(
   end
 
 endmodule
-
-`default_nettype wire
