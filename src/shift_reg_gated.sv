@@ -37,13 +37,13 @@ module shift_reg_gated #(
     logic [Depth-1 : 0] valid_d, valid_q;
     dtype [Depth-1 : 0] data_d, data_q;
 
-    for (genvar i = 0; i < Depth; i++) begin
+    for (genvar i = 0; i < Depth; i++) begin : gen_regs
 
       // Prepare D port for each shift register.
-      if (i == 0) begin
+      if (i == 0) begin : gen_shift_in
         assign valid_d[i] = valid_i;
         assign data_d[i]  = data_i;
-      end else begin
+      end else begin : gen_shift
         assign valid_d[i] = valid_q[i-1];
         assign data_d[i]  = data_q[i-1];
       end
