@@ -100,11 +100,27 @@ module clk_int_div_tb;
     @(posedge rstn);
     in_driver.reset_in();
 
+
     // Verify test bypass mode
     test_mode_en = 1'b1;
     semphr_is_transitioning.put();
     repeat (100) @(clk);
     test_mode_en = 1'b0;
+
+    $info("Testing programming divider while clock disabled...");
+    enable = 1'b0;
+    next_div_value = 3;
+    semphr_is_transitioning.put(1);
+    wait_cycl = $urandom_range(5*current_div_value, MaxWaitCycles*current_div_value);
+    repeat(wait_cycl) @(posedge clk);
+    in_driver.send(next_div_value);
+    current_div_value = next_div_value;
+    semphr_is_transitioning.put(1);
+    @(posedge clk);
+    enable = 1'b1;
+    repeat(20) @(posedge clk);
+
+    $info("Starting randomized reconfiguration while clock is enabled...");
 
     for (int i = 0; i < NumTests; i++) begin
       do begin
