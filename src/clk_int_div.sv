@@ -139,7 +139,7 @@ module clk_int_div #(
       IDLE: begin
         gate_en_d     = 1'b1;
         toggle_ffs_en = 1'b1;
-        if (en_i && div_valid_i) begin
+        if (div_valid_i) begin
           if (div_i == div_q) begin
             div_ready_o      = 1'b1;
           end else begin
