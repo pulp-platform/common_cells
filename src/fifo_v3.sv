@@ -74,6 +74,7 @@ module fifo_v3 #(
             // un-gate the clock, we want to write something
             gate_clock = 1'b0;
             // increment the write counter
+            // this is dead code when DEPTH is a power of two
             if (write_pointer_q == FifoDepth[ADDR_DEPTH-1:0] - 1)
                 write_pointer_n = '0;
             else
@@ -85,6 +86,7 @@ module fifo_v3 #(
         if (pop_i && ~empty_o) begin
             // read from the queue is a default assignment
             // but increment the read pointer...
+            // this is dead code when DEPTH is a power of two
             if (read_pointer_n == FifoDepth[ADDR_DEPTH-1:0] - 1)
                 read_pointer_n = '0;
             else
