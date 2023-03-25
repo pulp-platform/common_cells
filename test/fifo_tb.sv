@@ -168,7 +168,7 @@ module fifo_tb #(
     logic       clk,
                 rst_n;
 
-    logic [3:0] done;
+    logic [5:0] done;
 
     clk_rst_gen #(.ClkPeriod(TCLK), .RstClkCycles(10)) i_clk_rst_gen (
         .clk_o    (clk),
@@ -221,6 +221,30 @@ module fifo_tb #(
         .clk_i  (clk),
         .rst_ni (rst_n),
         .done_o (done[3])
+    );
+
+    fifo_inst_tb #(
+        .FALL_THROUGH   (1'b0),
+        .DEPTH          (9),
+        .N_CHECKS       (N_CHECKS),
+        .TA             (TA),
+        .TT             (TT)
+    ) i_tb_9 (
+        .clk_i  (clk),
+        .rst_ni (rst_n),
+        .done_o (done[4])
+    );
+
+    fifo_inst_tb #(
+        .FALL_THROUGH   (1'b1),
+        .DEPTH          (9),
+        .N_CHECKS       (N_CHECKS),
+        .TA             (TA),
+        .TT             (TT)
+    ) i_tb_ft_9 (
+        .clk_i  (clk),
+        .rst_ni (rst_n),
+        .done_o (done[5])
     );
 
     initial begin
