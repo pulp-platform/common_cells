@@ -386,8 +386,14 @@ module cdc_reset_ctrlr_half
   // sudenly reset asynchronously. With a 2phase CDC, one-sided async resets might
   // introduce spurios transactions.
 
+  `ifdef TARGET_VSIM
+  typedef logic [$bits(clear_seq_phase_e)-1:0] clear_seq_phase_flat_e;
+  `else
+  typedef clear_seq_phase_e clear_seq_phase_flat_e;
+  `endif
+
   cdc_4phase_src #(
-    .T(clear_seq_phase_e),
+    .T(clear_seq_phase_flat_e),
     .SYNC_STAGES(2),
     .DECOUPLED(0), // Important! The CDC must not be in decoupled mode.
                    // Otherwise we will proceed to the next state without
