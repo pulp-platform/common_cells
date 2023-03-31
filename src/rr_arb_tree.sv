@@ -206,8 +206,10 @@ module rr_arb_tree #(
         logic             upper_empty, lower_empty;
 
         for (genvar i = 0; i < NumIn; i++) begin : gen_mask
+        // verilator lint_off UNSIGNED
           assign upper_mask[i] = (i >  rr_q) ? req_d[i] : 1'b0;
           assign lower_mask[i] = (i <= rr_q) ? req_d[i] : 1'b0;
+        // verilator lint_on UNSIGNED
         end
 
         lzc #(
