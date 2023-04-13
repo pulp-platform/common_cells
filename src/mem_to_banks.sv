@@ -154,7 +154,7 @@ module mem_to_banks #(
 
   if (HideStrb) begin : gen_dead_write_fifo
     fifo_v3 #(
-      .FALL_THROUGH ( 1'b1     ),
+      .FALL_THROUGH ( 1'b0     ),
       .DEPTH        ( MaxTrans+1 ),
       .DATA_WIDTH   ( NumBanks )
     ) i_dead_write_fifo (
