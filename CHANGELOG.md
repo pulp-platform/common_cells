@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 1.29.0 - 2023-04-14
+### Added
+- Add `shift_reg_gated`: Shift register with ICG for arbitrary types.
+
+### Changed
+- CI: Run testbenches in `test/` on internal gitlab mirror.
+- `fifo_tb`: Add test for DEPTH not power of two.
+
+### Fixed
+- `clk_int_div`: Allow configuration while clock is disabled.
+- `mem_to_banks`: Cut possible timing loop for HideStrb feature.
+- Improved tool compatibility (Verilator, Questasim, Synopsys).
+
 ## 1.28.0 - 2022-12-15
 ### Added
 - Add `clk_mux_glitch_free`: A glitch-free clock multiplexer.
