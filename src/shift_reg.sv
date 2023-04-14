@@ -23,31 +23,17 @@ module shift_reg #(
     output dtype d_o
 );
 
-    // register of depth 0 is a wire
-    if (Depth == 0) begin : gen_pass_through
-        assign d_o = d_i;
-    // register of depth 1 is a simple register
-    end else if (Depth == 1) begin : gen_register
-        always_ff @(posedge clk_i or negedge rst_ni) begin
-            if (~rst_ni) begin
-                d_o <= '0;
-            end else begin
-                d_o <= d_i;
-            end
-        end
-    // if depth is greater than 1 it becomes a shift register
-    end else if (Depth > 1) begin : gen_shift_reg
-        dtype [Depth-1:0] reg_d, reg_q;
-        assign d_o = reg_q[Depth-1];
-        assign reg_d = {reg_q[Depth-2:0], d_i};
+    shift_reg_gated #(
+        .Depth(Depth),
+        .dtype(dtype)
+    ) i_shift_reg_gated (
+        .clk_i  (clk_i),
+        .rst_ni (rst_ni),
+        .valid_i(1'b1),
+        .data_i (d_i),
+        .valid_o(),
+        .data_o (d_o)
+    );
 
-        always_ff @(posedge clk_i or negedge rst_ni) begin
-            if (~rst_ni) begin
-                reg_q <= '0;
-            end else begin
-                reg_q <= reg_d;
-            end
-        end
-    end
 
 endmodule

@@ -47,6 +47,7 @@ sources:
   - src/rstgen_bypass.sv
   - src/serial_deglitch.sv
   - src/shift_reg.sv
+  - src/shift_reg_gated.sv
   - src/spill_register_flushable.sv
   - src/stream_demux.sv
   - src/stream_filter.sv

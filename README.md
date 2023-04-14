@@ -76,6 +76,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | `lzc`                      | Leading/trailing-zero counter                                                                             | active       |               |
 | `onehot_to_bin`            | One-hot to binary converter                                                                               | active       |               |
 | `shift_reg`                | Shift register for arbitrary types                                                                        | active       |               |
+| `shift_reg_gated`          | Shift register with ICG for arbitrary types                                                               | active       |               |
 | `rr_arb_tree`              | Round-robin arbiter for req/gnt and vld/rdy interfaces with optional priority                             | active       |               |
 | `rrarbiter`                | Round-robin arbiter for req/ack interface with look-ahead                                                 | *deprecated* | `rr_arb_tree` |
 | `prioarbiter`              | Priority arbiter arbiter for req/ack interface with look-ahead                                            | *deprecated* | `rr_arb_tree` |
