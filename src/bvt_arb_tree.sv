@@ -62,26 +62,26 @@ module bvt_arb_tree #(
   typedef logic [TimeWidth-1:0] time_t;
 
   // time counter storage
-  time_t [NumIn-1:0] virtual_time_d, virual_time_q;
+  time_t [NumIn-1:0] virtual_time_d, virtual_time_q;
 
   // get minimal time
   min_max_tree #(
     .NumIn     ( NumIn     ),
     .DataWidth ( TimeWidth )
   ) i_min_max_tree (
-    .data_i   ( virual_time_q ),
-    .valid_i  ( req_i         ),
-    .is_max_i ( 1'b0          ),
-    .data_o   ( /* NC */      ),
-    .valid_o  ( req_o         ),
-    .idx_o    ( idx_o         )
+    .data_i   ( virtual_time_q ),
+    .valid_i  ( req_i          ),
+    .is_max_i ( 1'b0           ),
+    .data_o   ( /* NC */       ),
+    .valid_o  ( req_o          ),
+    .idx_o    ( idx_o          )
   );
 
   // update counters
   always_comb begin : proc_next_counters
     // default: add time to the counters
     for (int unsigned i = 0; i < NumIn; i++) begin
-      virtual_time_d[i] = virual_time_q[i] + prio_i[i];
+      virtual_time_d[i] = virtual_time_q[i] + prio_i[i];
     end
 
     // reset the counter that was joust handshacked
@@ -98,5 +98,14 @@ module bvt_arb_tree #(
 
   // multiplex data channel
   assign data_o = data_i[idx_o];
+
+  // state
+  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_state
+    if(~rst_ni) begin
+      virtual_time_q <= '0;
+    end else begin
+      virtual_time_q <= virtual_time_d;
+    end
+  end
 
 endmodule
