@@ -26,7 +26,7 @@ stages:
   script:
     - bender script vsim -t test > compile.tcl
     - $VSIM -c -quiet -do 'source compile.tcl; quit'
-    - $VSIM -c $TOPLEVEL -do "run -all" $PARAM1 $PARAM2
+    - $VSIM -c $TOPLEVEL -voptargs="-timescale 1ns/100ps" -do "run -all" $PARAM1 $PARAM2
     - (! grep -n "Error:" transcript)
 
 tests:
@@ -38,6 +38,7 @@ tests:
           - cb_filter_tb
           # - cdc_fifo_clearable_tb
           - clk_int_div_tb
+          - clk_int_div_static_tb
           - clk_mux_glitch_free_tb
           - id_queue_tb
           - isochronous_crossing_tb
