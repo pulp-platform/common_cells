@@ -63,6 +63,7 @@ sources:
   - src/read.sv
   - src/cdc_reset_ctrlr_pkg.sv
   # Level 1
+  - src/clk_int_div_static.sv
   - src/addr_decode_napot.sv
   - src/cdc_2phase.sv
   - src/cdc_4phase.sv
@@ -127,6 +128,7 @@ sources:
       - test/stream_omega_net_tb.sv
       - test/stream_xbar_tb.sv
       - test/clk_int_div_tb.sv
+      - test/clk_int_div_static_tb.sv
       - test/clk_mux_glitch_free_tb.sv
 
 
