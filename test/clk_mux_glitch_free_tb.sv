@@ -64,7 +64,7 @@ module clk_mux_glitch_free_tb;
     $info("Asserting hard reset");
     s_rstn = 1'b0;
     s_sel = $urandom_range(0, NUM_INPUTS-1);
-    delay_random(0, MAX_PERIOD);
+    delay_random(0, MAX_PERIOD*1000);
     $info("Deasserting hard reset.");
     s_rstn = 1'b1;
     $info("Switching between clock inputs %0d times", TEST_LENGTH);
@@ -87,9 +87,8 @@ module clk_mux_glitch_free_tb;
     // The rules we check are as follows:
     // Every high pulse must have a duration of at least
     // min(previous period, next period)/2 
-    // Every low period must have a duration of at leat <newly
+    // Every low period must have a duration of at least <newly
     // selected_clk_period/2>.
-    @(posedge s_rstn);
     forever begin
       @(posedge s_clock_output);
       pulse_duraton = $realtime - last_edge;
