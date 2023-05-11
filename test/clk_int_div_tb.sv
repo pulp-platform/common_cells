@@ -123,12 +123,12 @@ module clk_int_div_tb;
     $info("Starting randomized reconfiguration while clock is enabled...");
 
     for (int i = 0; i < NumTests; i++) begin
-      do begin
-        assert(std::randomize(next_div_value)) else
-          $error("Randomization failure");
-      end while (next_div_value == 0);
+      logic [DivWidth-1:0] div_value_temp;
+      assert(std::randomize(div_value_temp)) else
+        $error("Randomization failure");
       $info("Setting clock divider value to %0d", next_div_value);
-      in_driver.send(next_div_value);
+      next_div_value = (div_value_temp == 0)? 1: div_value_temp;
+      in_driver.send(div_value_temp);
       semphr_is_transitioning.put(1);
       current_div_value = next_div_value;
       wait_cycl = $urandom_range(0, MaxWaitCycles);
