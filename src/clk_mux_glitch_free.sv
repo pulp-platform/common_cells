@@ -129,6 +129,7 @@ module clk_mux_glitch_free #(
   logic [NUM_INPUTS-1:0]        s_gated_clock;
   logic                         s_output_clock;
 
+  logic [NUM_INPUTS-1:0]        s_reset_synced;
   logic [NUM_INPUTS-1:0]        async_reset_bypass_active_q;
 
 
@@ -140,6 +141,15 @@ module clk_mux_glitch_free #(
 
   // Input stages
   for (genvar i = 0; i < NUM_INPUTS; i++) begin : gen_input_stages
+    // Synchronize the reset into each clock domain
+    rstgen i_rstgen(
+      .clk_i       ( clks_i[i]         ),
+      .rst_ni      ( async_rstn_i      ),
+      .test_mode_i ( test_en_i         ),
+      .rst_no      ( s_reset_synced[i] ),
+      .init_no     (                   )
+    );
+
     // Gate onehot signal with other clocks' output gate enable
     always_comb begin
       s_gate_enable_unfiltered_async[i] = 1'b1;
@@ -155,8 +165,8 @@ module clk_mux_glitch_free #(
     assign glitch_filter_d[i][1] = glitch_filter_q[i][0];
 
     // Filter HIGH-pulse glitches
-    always_ff @(posedge clks_i[i], negedge async_rstn_i) begin
-      if (!async_rstn_i) begin
+    always_ff @(posedge clks_i[i], negedge s_reset_synced[i]) begin
+      if (!s_reset_synced[i]) begin
         glitch_filter_q[i] <= '0;
       end else begin
         glitch_filter_q[i] <= glitch_filter_d[i];
@@ -168,10 +178,10 @@ module clk_mux_glitch_free #(
 
     // Synchronize to current clock
     sync #(.STAGES(NUM_SYNC_STAGES)) i_sync_en(
-      .clk_i    ( clks_i[i]                 ),
-      .rst_ni   ( async_rstn_i              ),
+      .clk_i    ( clks_i[i]                       ),
+      .rst_ni   ( s_reset_synced[i]               ),
       .serial_i ( s_glitch_filter_output_async[i] ),
-      .serial_o ( s_gate_enable_sync[i]          )
+      .serial_o ( s_gate_enable_sync[i]           )
     );
 
     // If the design is parametrized to propagate a clock during asserted reset,
@@ -179,8 +189,8 @@ module clk_mux_glitch_free #(
     // gate enable signal to the clock gate for as long as the reset is active.
 
     if (CLOCK_DURING_RESET) begin : gen_async_reset_clock_bypass_logic
-      always_ff @(posedge clks_i[i], negedge async_rstn_i) begin
-        if (!async_rstn_i) begin
+      always_ff @(posedge clks_i[i], negedge s_reset_synced[i]) begin
+        if (!s_reset_synced[i]) begin
           async_reset_bypass_active_q[i] <= 1'b1;
         end else begin
           async_reset_bypass_active_q[i] <= 1'b0;
@@ -214,8 +224,8 @@ module clk_mux_glitch_free #(
     // least one clock period of the original clock input before any other clock
     // even has the chance to become active.
 
-    always_ff @(posedge clks_i[i], negedge async_rstn_i) begin
-      if (!async_rstn_i) begin
+    always_ff @(posedge clks_i[i], negedge s_reset_synced[i]) begin
+      if (!s_reset_synced[i]) begin
         clock_has_been_disabled_q[i] <= 1'b1;
       end else begin
         clock_has_been_disabled_q[i] <= ~s_gate_enable[i];
