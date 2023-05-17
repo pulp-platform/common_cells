@@ -28,7 +28,7 @@ module rstgen_bypass #(
 
     logic [NumRegs-1:0] synch_regs_q;
 
-    // bypass mode: use glitch-free (clock) multiplexers
+    // bypass mode: use (clock) multiplexers
     tc_clk_mux2 i_tc_clk_mux2_rst_n (
         .clk0_i     ( rst_ni ),
         .clk1_i     ( rst_test_mode_ni ),
