@@ -48,6 +48,7 @@ tests:
           - stream_to_mem_tb
           - stream_xbar_tb
           - sub_per_hash_tb
+          - stream_deposit_tb
       - TOPLEVEL: graycode_tb
         PARAM1: [-GN=1, -GN=2, -GN=3, -GN=4, -GN=8, -GN=16]
       - TOPLEVEL: fifo_tb

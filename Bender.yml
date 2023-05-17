@@ -56,6 +56,7 @@ sources:
   - src/stream_join.sv
   - src/stream_mux.sv
   - src/stream_throttle.sv
+  - src/stream_deposit.sv
   - src/sub_per_hash.sv
   - src/sync.sv
   - src/sync_wedge.sv
@@ -128,6 +129,7 @@ sources:
       - test/stream_xbar_tb.sv
       - test/clk_int_div_tb.sv
       - test/clk_mux_glitch_free_tb.sv
+      - test/stream_deposit_tb.sv
 
 
   - target: synth_test
