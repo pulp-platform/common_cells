@@ -27,7 +27,7 @@ module popcount #(
    localparam int unsigned PaddedWidth = 1 << $clog2(INPUT_WIDTH);
 
    logic [PaddedWidth-1:0]           padded_input;
-   logic [PopcountWidth-2:0]         left_child_result, right_child_result;
+   logic [PopcountWidth-1:0]         left_child_result, right_child_result;
 
    //Zero pad the input to next power of two
    always_comb begin
