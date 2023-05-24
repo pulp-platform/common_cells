@@ -13,7 +13,7 @@
 
 // Author: Manuel Eggimann <meggimann@iis.ee.ethz.ch>
 
-module stream_deposit_tb #(
+module lossy_valid_to_stream_tb #(
     /// Theu number of requests to simulate
     parameter int unsigned NumReq   = 32'd10000,
     /// Clock cycle time.
@@ -54,30 +54,25 @@ module stream_deposit_tb #(
   stream_driver_out_t stream_sink = new(dut_out);
 
 
-  payload_t current_payload;
-  bit data_in_flight = 0;
+  payload_t payload_queue[$];
+  logic is_busy;
 
   assign dut_in.ready = 1'b1;
-  stream_deposit #(
+  lossy_valid_to_stream #(
       .T(payload_t)
-  ) i_stream_deposit (
+  ) i_lossy_valid_to_stream (
       .clk_i  (clk),
       .rst_ni (rst_n),
       .valid_i(dut_in.valid),
       .data_i (dut_in.data),
       .data_o (dut_out.data),
       .valid_o(dut_out.valid),
-      .ready_i(dut_out.ready)
+      .ready_i(dut_out.ready),
+      .busy_o(is_busy)
   );
 
   initial begin : apply_stimuli
     automatic int unsigned wait_cycl;
-
-    // Disable data stable assertion for this module in the dv interface. The
-    // whole point of the stream_deposit is, that the data does not have to be
-    // stable.
-
-    $assertoff(0, dut_out);
 
     @(posedge rst_n);
     stream_source.reset_in();
@@ -85,14 +80,17 @@ module stream_deposit_tb #(
       wait_cycl = $urandom_range(0, 5);
       repeat (wait_cycl) @(posedge clk);
       stream_source.send(i);
-      current_payload = i;
-      data_in_flight = 1;
+      if (payload_queue.size() == 2 && !dut_out.ready)
+        payload_queue[0] = i;
+      else
+        payload_queue.push_front(i);
     end
     $stop();
   end
 
   initial begin : receive_responses
     automatic payload_t data;
+    automatic payload_t expected_data;
     automatic int unsigned wait_cycl;
     @(posedge rst_n);
     stream_sink.reset_out();
@@ -100,11 +98,11 @@ module stream_deposit_tb #(
       wait_cycl = $urandom_range(0, 5);
       repeat (wait_cycl) @(posedge clk);
       stream_sink.recv(data);
-      assert (data_in_flight) else
+      assert (payload_queue.size() > 0) else
         $error("Receieved transaction at output even though the input side did not send any new data.");
-      assert (data == current_payload) else
-        $error("Received the wrong data. Was %d instead of %d", data, current_payload);
-      data_in_flight = 0;
+      expected_data = payload_queue.pop_back();
+      assert (data == expected_data) else
+        $error("Received the wrong data.x Was %d instead of %d", data, expected_data);
     end
   end
 
