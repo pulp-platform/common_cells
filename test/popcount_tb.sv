@@ -31,6 +31,9 @@ end while (0)
 module popcount_tb;
 
    //---------------- Signals connecting to MUT ----------------
+   logic data_w1;
+   logic  popcount_w1;
+
    logic [4:0] data_w5;
    logic [3:0] popcount_w5;
 
@@ -47,6 +50,10 @@ module popcount_tb;
    logic [10:0]  popcount_w981;
 
    //--------------------- Instantiate MUT ---------------------
+  popcount #(.INPUT_WIDTH(1)) i_popcount_w1
+    (.data_i(data_w1),
+     .popcount_o(popcount_w1));
+
    popcount #(.INPUT_WIDTH(5)) i_popcount_w5
      (.data_i(data_w5),
       .popcount_o(popcount_w5));
@@ -71,7 +78,17 @@ module popcount_tb;
 
    initial begin
      //------------------------------------------------------------
-     //Test 12 bit popcount
+
+     // Test 1 bit popcount
+     data_w1 = 0;
+     for(int i = 0; i<100; i++)
+       begin
+         `SV_RAND_CHECK(randomize(data_w1));
+         #5ns;
+         assert(popcount_w1 == $countones(data_w1)) else $error("Popcount of %b was %d but should be %d.", data_w1, popcount_w1, $countones(data_w1));
+       end
+
+     //Test 5 bit popcount
      data_w5    = 0;
      #5ns;
      assert(popcount_w5 == $countones(data_w5)) else $error("Popcount of %b was %d but should be %d.", data_w5, popcount_w5, $countones(data_w5));
