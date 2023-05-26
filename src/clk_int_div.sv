@@ -28,7 +28,9 @@
 // clk_o will always be directly driven by clk_i. Use this mode for DFT of the
 // downstream logic.
 //
-// Parameters: DIV_VALUE_WIDTH: The number of bits to use for the internal
+// Parameters:
+//
+// DIV_VALUE_WIDTH: The number of bits to use for the internal
 // counter. Defines the maximum division factor.
 //
 // DEFAULT_DIV_VALUE: The default division factor to use after reset. Use this
@@ -36,9 +38,21 @@
 // configurability. An elaboration time error will be issued if the supplied
 // default div value is not repressentable with DIV_VALUE_WIDTH bits.
 //
-// ENABLE_CLOCK_IN_RESET: If 1'b1, clk_o will not be gated during reset and will
-// immediately start clocking with the configured DEFAULT_DIV_VALUE. (Disabled
-// by default).
+// ENABLE_CLOCK_IN_RESET: If 1'b1, the clock gate will be enabled during reset
+// which allows the clk_int_div instance to bypass the clock during reset, IFF
+// the DEFAULT_DIV_VALUE is 1. For all other DEFAULT_DIV_VALUES, the output
+// clock will not be available until rst_ni is deasserted!
+//
+// IMPORTANT!!!
+//
+// All clock gating/logic within this design is performed by dedicated clock logic
+// tech cells. By default the common_cell library uses the behavioral models in
+// the `tech_cells_generic` repository. However, for synthesis these cells need to be
+// mapped to dedicated cells from your standard cell library, preferably ones
+// that are designed for clock logic (they have balanced rise and fall time).
+// During synthesis you furthermore have to properly set `dont_touch` or
+// `size_only` attributes to prevent the logic synthesizer from replacing those
+// cells with regular logic gates which could end up being glitchty!
 //
 //-----------------------------------------------------------------------------
 // Copyright (C) 2022 ETH Zurich, University of Bologna Copyright and related
