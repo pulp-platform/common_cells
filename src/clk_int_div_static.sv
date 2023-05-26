@@ -73,7 +73,8 @@ module clk_int_div_static #(
 
   localparam int unsigned DivValueWidth = $clog2(DIV_VALUE+1);
 
-  logic [DivValueWidth-1:0] div_value = DIV_VALUE;
+  logic [DivValueWidth-1:0] div_value;
+  assign div_value = DIV_VALUE;
 
   clk_int_div #(
     .DIV_VALUE_WIDTH       ( DivValueWidth         ),

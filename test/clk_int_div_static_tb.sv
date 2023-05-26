@@ -47,7 +47,8 @@ module clk_int_div_static_tb;
 
   for (genvar i = 1; i < MaxClkDiv; i++) begin :gen_clk_divs
     clk_int_div_static #(
-      .DIV_VALUE(i)
+      .DIV_VALUE(i),
+      .ENABLE_CLOCK_IN_RESET(1'b1)
     ) i_dut(
       .clk_i          ( clk          ),
       .rst_ni         ( rstn         ),
@@ -57,7 +58,7 @@ module clk_int_div_static_tb;
     );
 
     assert_period_period: assert property (@(posedge clk_out[i]) T_clk(TClkIn*i)) else
-      $error("Output period of div-2 clock is incorrect. Should be in range %d to %d.", TClkIn*i-t_delta, TClkIn*i+t_delta);
+      $error("Output period of div %d clock is incorrect. Should be in range %d to %d.", i, TClkIn*i-t_delta, TClkIn*i+t_delta);
 
   end
 
