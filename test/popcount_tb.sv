@@ -32,7 +32,7 @@ module popcount_tb;
 
    //---------------- Signals connecting to MUT ----------------
    logic data_w1;
-   logic  popcount_w1;
+   logic popcount_w1;
 
    logic [4:0] data_w5;
    logic [3:0] popcount_w5;
