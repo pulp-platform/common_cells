@@ -14,7 +14,7 @@
 // its input vector. Any unsigned INPUT_WIDTH larger or equal 1 is legal. The output result
 // width is ceil(log2(INPUT_WIDTH))+1.
 //
-// This module usded tobe implemented using a binary added tree. However,
+// This module used to be implemented using a binary added tree. However,
 // the heuristics of modern logic Synthesizers work much better with a flat high
 // level description using a for loop and yield exactly the same or even better results.
 
