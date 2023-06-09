@@ -44,7 +44,7 @@ module stream_delay #(
         state_e state_d, state_q;
 
         logic       load;
-        logic [CounterBits:0] count_out;
+        logic [CounterBits-1:0] count_out;
         logic       en;
 
         logic [CounterBits-1:0] counter_load;
