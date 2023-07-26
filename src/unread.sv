@@ -16,6 +16,10 @@
 module unread (
     input logic d_i
 );
-
+    // Vivado treats this module as black box otherwise
+`ifdef TARGET_VIVADO
+    logic x;
+    assign d_i = x;
+`endif
 endmodule
 /* verilator lint_on UNUSED */
