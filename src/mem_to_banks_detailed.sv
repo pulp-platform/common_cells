@@ -37,12 +37,13 @@ module mem_to_banks_detailed #(
   localparam type inp_data_t = logic [DataWidth-1:0],
   /// Dependent parameter, do not override! Input write strobe type.
   localparam type inp_strb_t = logic [DataWidth/8-1:0],
-  localparam type inp_ersp_t = logic [ErspWidth*NumBanks-1:0],
+  /// Dependent parameter, do not override! Input sideband data type.
+  localparam type inp_ersp_t = logic [NumBanks-1:0][ErspWidth-1:0],
   /// Dependent parameter, do not override! Output data type.
   localparam type oup_data_t = logic [DataWidth/NumBanks-1:0],
   /// Dependent parameter, do not override! Output write strobe type.
   localparam type oup_strb_t = logic [DataWidth/NumBanks/8-1:0],
-  /// Dependent parameter, do not override! Output write strobe type.
+  /// Dependent parameter, do not override! Output sideband data type.
   localparam type oup_ersp_t = logic [ErspWidth-1:0]
 ) (
   /// Clock input.
@@ -193,15 +194,15 @@ module mem_to_banks_detailed #(
     ) i_ft_reg (
       .clk_i,
       .rst_ni,
-      .flush_i    ( 1'b0                                ),
-      .testmode_i ( 1'b0                                ),
+      .flush_i    ( 1'b0                                             ),
+      .testmode_i ( 1'b0                                             ),
       .usage_o    (),
-      .data_i     ( {bank_rdata_i[i], bank_ersp_i[i]}                     ),
-      .valid_i    ( bank_rvalid_i[i]                    ),
-      .ready_o    ( resp_ready[i]                       ),
-      .data_o     ( {rdata_o[i*BitsPerBank+:BitsPerBank], ersp_o[i*ErspWidth+:ErspWidth]} ),
-      .valid_o    ( resp_valid[i]                       ),
-      .ready_i    ( rvalid_o & !dead_response[i]        )
+      .data_i     ( {bank_rdata_i[i], bank_ersp_i[i]}                ),
+      .valid_i    ( bank_rvalid_i[i]                                 ),
+      .ready_o    ( resp_ready[i]                                    ),
+      .data_o     ( {rdata_o[i*BitsPerBank+:BitsPerBank], ersp_o[i]} ),
+      .valid_o    ( resp_valid[i]                                    ),
+      .ready_i    ( rvalid_o & !dead_response[i]                     )
     );
   end
   assign rvalid_o = &(resp_valid | dead_response);
