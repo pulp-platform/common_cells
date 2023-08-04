@@ -17,10 +17,10 @@ module mem_to_banks_detailed #(
   parameter int unsigned AddrWidth = 32'd0,
   /// Input data width, must be a power of two.
   parameter int unsigned DataWidth = 32'd0,
-  /// Atop width.
-  parameter int unsigned AtopWidth = 32'd0,
-  /// Response Sideband Width.
-  parameter int unsigned ErspWidth = 32'd0,
+  /// Request sideband width.
+  parameter int unsigned WUserWidth = 32'd0,
+  /// Response sideband width.
+  parameter int unsigned RUserWidth = 32'd0,
   /// Number of banks at output, must evenly divide `DataWidth`.
   parameter int unsigned NumBanks  = 32'd0,
   /// Remove transactions that have zero strobe
@@ -29,67 +29,67 @@ module mem_to_banks_detailed #(
   parameter int unsigned MaxTrans  = 32'd1,
   /// FIFO depth, must be >=1
   parameter int unsigned FifoDepth = 32'd1,
-  /// Atop type.
-  parameter  type atop_t     = logic [AtopWidth-1:0],
+  /// Request sideband type.
+  parameter  type wuser_t     = logic [WUserWidth-1:0],
   /// Dependent parameter, do not override! Address type.
-  localparam type addr_t     = logic [AddrWidth-1:0],
+  localparam type addr_t      = logic [AddrWidth-1:0],
   /// Dependent parameter, do not override! Input data type.
-  localparam type inp_data_t = logic [DataWidth-1:0],
+  localparam type inp_data_t  = logic [DataWidth-1:0],
   /// Dependent parameter, do not override! Input write strobe type.
-  localparam type inp_strb_t = logic [DataWidth/8-1:0],
-  /// Dependent parameter, do not override! Input sideband data type.
-  localparam type inp_ersp_t = logic [NumBanks-1:0][ErspWidth-1:0],
+  localparam type inp_strb_t  = logic [DataWidth/8-1:0],
+  /// Dependent parameter, do not override! Input response sideband type.
+  localparam type inp_ruser_t = logic [NumBanks-1:0][RUserWidth-1:0],
   /// Dependent parameter, do not override! Output data type.
-  localparam type oup_data_t = logic [DataWidth/NumBanks-1:0],
+  localparam type oup_data_t  = logic [DataWidth/NumBanks-1:0],
   /// Dependent parameter, do not override! Output write strobe type.
-  localparam type oup_strb_t = logic [DataWidth/NumBanks/8-1:0],
-  /// Dependent parameter, do not override! Output sideband data type.
-  localparam type oup_ersp_t = logic [ErspWidth-1:0]
+  localparam type oup_strb_t  = logic [DataWidth/NumBanks/8-1:0],
+  /// Dependent parameter, do not override! Output response sideband type.
+  localparam type oup_ruser_t = logic [RUserWidth-1:0]
 ) (
   /// Clock input.
-  input  logic                      clk_i,
+  input  logic                       clk_i,
   /// Asynchronous reset, active low.
-  input  logic                      rst_ni,
+  input  logic                       rst_ni,
   /// Memory request to split, request is valid.
-  input  logic                      req_i,
+  input  logic                       req_i,
   /// Memory request to split, request can be granted.
-  output logic                      gnt_o,
+  output logic                       gnt_o,
   /// Memory request to split, request address, byte-wise.
-  input  addr_t                     addr_i,
+  input  addr_t                      addr_i,
   /// Memory request to split, request write data.
-  input  inp_data_t                 wdata_i,
+  input  inp_data_t                  wdata_i,
   /// Memory request to split, request write strobe.
-  input  inp_strb_t                 strb_i,
-  /// Memory request to split, request Atomic signal from AXI4+ATOP.
-  input  atop_t                     atop_i,
+  input  inp_strb_t                  strb_i,
+  /// Memory request to split, request sideband.
+  input  wuser_t                     wuser_i,
   /// Memory request to split, request write enable, active high.
-  input  logic                      we_i,
+  input  logic                       we_i,
   /// Memory request to split, response is valid. Required for read and write requests
-  output logic                      rvalid_o,
+  output logic                       rvalid_o,
   /// Memory request to split, response read data.
-  output inp_data_t                 rdata_o,
-  /// Memory request to split, response sideband data.
-  output inp_ersp_t                 ersp_o,
+  output inp_data_t                  rdata_o,
+  /// Memory request to split, response sideband.
+  output inp_ruser_t                 ruser_o,
   /// Memory bank request, request is valid.
-  output logic      [NumBanks-1:0]  bank_req_o,
+  output logic       [NumBanks-1:0]  bank_req_o,
   /// Memory bank request, request can be granted.
-  input  logic      [NumBanks-1:0]  bank_gnt_i,
+  input  logic       [NumBanks-1:0]  bank_gnt_i,
   /// Memory bank request, request address, byte-wise. Will be different for each bank.
-  output addr_t     [NumBanks-1:0]  bank_addr_o,
+  output addr_t      [NumBanks-1:0]  bank_addr_o,
   /// Memory bank request, request write data.
-  output oup_data_t [NumBanks-1:0]  bank_wdata_o,
+  output oup_data_t  [NumBanks-1:0]  bank_wdata_o,
   /// Memory bank request, request write strobe.
-  output oup_strb_t [NumBanks-1:0]  bank_strb_o,
-  /// Memory bank request, request Atomic signal from AXI4+ATOP.
-  output atop_t     [NumBanks-1:0]  bank_atop_o,
+  output oup_strb_t  [NumBanks-1:0]  bank_strb_o,
+  /// Memory bank request, request sideband.
+  output wuser_t     [NumBanks-1:0]  bank_wuser_o,
   /// Memory bank request, request write enable, active high.
-  output logic      [NumBanks-1:0]  bank_we_o,
+  output logic       [NumBanks-1:0]  bank_we_o,
   /// Memory bank request, response is valid. Required for read and write requests
-  input  logic      [NumBanks-1:0]  bank_rvalid_i,
+  input  logic       [NumBanks-1:0]  bank_rvalid_i,
   /// Memory bank request, response read data.
-  input  oup_data_t [NumBanks-1:0]  bank_rdata_i,
-  /// Memory bank request, response sideband data.
-  input  oup_ersp_t [NumBanks-1:0]  bank_ersp_i
+  input  oup_data_t  [NumBanks-1:0]  bank_rdata_i,
+  /// Memory bank request, response sideband.
+  input  oup_ruser_t [NumBanks-1:0]  bank_ruser_i
 );
 
   localparam int unsigned DataBytes    = $bits(inp_strb_t);
@@ -100,7 +100,7 @@ module mem_to_banks_detailed #(
     addr_t     addr;
     oup_data_t wdata;
     oup_strb_t strb;
-    atop_t     atop;
+    wuser_t    wuser;
     logic      we;
   } req_t;
 
@@ -122,7 +122,7 @@ module mem_to_banks_detailed #(
     assign bank_req[i].addr  = align_addr(addr_i) + i * BytesPerBank;
     assign bank_req[i].wdata = wdata_i[i*BitsPerBank+:BitsPerBank];
     assign bank_req[i].strb  = strb_i[i*BytesPerBank+:BytesPerBank];
-    assign bank_req[i].atop  = atop_i;
+    assign bank_req[i].wuser = wuser_i;
     assign bank_req[i].we    = we_i;
     stream_fifo #(
       .FALL_THROUGH ( 1'b1         ),
@@ -145,7 +145,7 @@ module mem_to_banks_detailed #(
     assign bank_addr_o[i]  = bank_oup[i].addr;
     assign bank_wdata_o[i] = bank_oup[i].wdata;
     assign bank_strb_o[i]  = bank_oup[i].strb;
-    assign bank_atop_o[i]  = bank_oup[i].atop;
+    assign bank_wuser_o[i] = bank_oup[i].wuser;
     assign bank_we_o[i]    = bank_oup[i].we;
 
     assign zero_strobe[i] = (bank_oup[i].strb == '0);
@@ -189,20 +189,20 @@ module mem_to_banks_detailed #(
   for (genvar i = 0; unsigned'(i) < NumBanks; i++) begin : gen_resp_regs
     stream_fifo #(
       .FALL_THROUGH ( 1'b1              ),
-      .DATA_WIDTH   ( $bits(oup_data_t) + $bits(oup_ersp_t) ),
+      .DATA_WIDTH   ( $bits(oup_data_t) + $bits(oup_ruser_t) ),
       .DEPTH        ( FifoDepth         )
     ) i_ft_reg (
       .clk_i,
       .rst_ni,
-      .flush_i    ( 1'b0                                             ),
-      .testmode_i ( 1'b0                                             ),
+      .flush_i    ( 1'b0                                              ),
+      .testmode_i ( 1'b0                                              ),
       .usage_o    (),
-      .data_i     ( {bank_rdata_i[i], bank_ersp_i[i]}                ),
-      .valid_i    ( bank_rvalid_i[i]                                 ),
-      .ready_o    ( resp_ready[i]                                    ),
-      .data_o     ( {rdata_o[i*BitsPerBank+:BitsPerBank], ersp_o[i]} ),
-      .valid_o    ( resp_valid[i]                                    ),
-      .ready_i    ( rvalid_o & !dead_response[i]                     )
+      .data_i     ( {bank_rdata_i[i], bank_ruser_i[i]}                ),
+      .valid_i    ( bank_rvalid_i[i]                                  ),
+      .ready_o    ( resp_ready[i]                                     ),
+      .data_o     ( {rdata_o[i*BitsPerBank+:BitsPerBank], ruser_o[i]} ),
+      .valid_o    ( resp_valid[i]                                     ),
+      .ready_i    ( rvalid_o & !dead_response[i]                      )
     );
   end
   assign rvalid_o = &(resp_valid | dead_response);

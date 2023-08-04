@@ -85,13 +85,13 @@ module mem_to_banks #(
   mem_to_banks_detailed #(
     .AddrWidth  ( AddrWidth  ),
     .DataWidth  ( DataWidth  ),
-    .AtopWidth  ( AtopWidth  ),
-    .ErspWidth  ( 1          ),
+    .WUserWidth ( AtopWidth  ),
+    .RUserWidth ( 1          ),
     .NumBanks   ( NumBanks   ),
     .HideStrb   ( HideStrb   ),
     .MaxTrans   ( MaxTrans   ),
     .FifoDepth  ( FifoDepth  ),
-    .atop_t     ( atop_t     ),
+    .wuser_t    ( atop_t     ),
     .addr_t     ( addr_t     ),
     .inp_data_t ( inp_data_t ),
     .inp_strb_t ( inp_strb_t ),
@@ -105,21 +105,21 @@ module mem_to_banks #(
     .addr_i,
     .wdata_i,
     .strb_i,
-    .atop_i,
+    .wuser_i      ( atop_i ),
     .we_i,
     .rvalid_o,
     .rdata_o,
-    .ersp_o (),
+    .ruser_o      (),
     .bank_req_o,
     .bank_gnt_i,
     .bank_addr_o,
     .bank_wdata_o,
     .bank_strb_o,
-    .bank_atop_o,
+    .bank_wuser_o ( bank_atop_o ),
     .bank_we_o,
     .bank_rvalid_i,
     .bank_rdata_i,
-    .bank_err_i ('0)
+    .bank_ruser_i ('0)
   );
 
 endmodule
