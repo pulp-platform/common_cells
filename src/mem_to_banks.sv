@@ -82,135 +82,44 @@ module mem_to_banks #(
   input  oup_data_t [NumBanks-1:0]  bank_rdata_i
 );
 
-  localparam int unsigned DataBytes    = $bits(inp_strb_t);
-  localparam int unsigned BitsPerBank  = $bits(oup_data_t);
-  localparam int unsigned BytesPerBank = $bits(oup_strb_t);
+  mem_to_banks_detailed #(
+    .AddrWidth  ( AddrWidth  ),
+    .DataWidth  ( DataWidth  ),
+    .WUserWidth ( AtopWidth  ),
+    .RUserWidth ( 1          ),
+    .NumBanks   ( NumBanks   ),
+    .HideStrb   ( HideStrb   ),
+    .MaxTrans   ( MaxTrans   ),
+    .FifoDepth  ( FifoDepth  ),
+    .wuser_t    ( atop_t     ),
+    .addr_t     ( addr_t     ),
+    .inp_data_t ( inp_data_t ),
+    .inp_strb_t ( inp_strb_t ),
+    .oup_data_t ( oup_data_t ),
+    .oup_strb_t ( oup_strb_t )
+  ) i_mem_to_banks_detailed (
+    .clk_i,
+    .rst_ni,
+    .req_i,
+    .gnt_o,
+    .addr_i,
+    .wdata_i,
+    .strb_i,
+    .wuser_i      ( atop_i ),
+    .we_i,
+    .rvalid_o,
+    .rdata_o,
+    .ruser_o      (),
+    .bank_req_o,
+    .bank_gnt_i,
+    .bank_addr_o,
+    .bank_wdata_o,
+    .bank_strb_o,
+    .bank_wuser_o ( bank_atop_o ),
+    .bank_we_o,
+    .bank_rvalid_i,
+    .bank_rdata_i,
+    .bank_ruser_i ('0)
+  );
 
-  typedef struct packed {
-    addr_t     addr;
-    oup_data_t wdata;
-    oup_strb_t strb;
-    atop_t     atop;
-    logic      we;
-  } req_t;
-
-  logic                 req_valid;
-  logic [NumBanks-1:0]              req_ready,
-                        resp_valid, resp_ready;
-  req_t [NumBanks-1:0]  bank_req,
-                        bank_oup;
-  logic [NumBanks-1:0]  bank_req_internal, bank_gnt_internal, zero_strobe, dead_response;
-  logic                 dead_write_fifo_full;
-
-  function automatic addr_t align_addr(input addr_t addr);
-    return (addr >> $clog2(DataBytes)) << $clog2(DataBytes);
-  endfunction
-
-  // Handle requests.
-  assign req_valid = req_i & gnt_o;
-  for (genvar i = 0; unsigned'(i) < NumBanks; i++) begin : gen_reqs
-    assign bank_req[i].addr  = align_addr(addr_i) + i * BytesPerBank;
-    assign bank_req[i].wdata = wdata_i[i*BitsPerBank+:BitsPerBank];
-    assign bank_req[i].strb  = strb_i[i*BytesPerBank+:BytesPerBank];
-    assign bank_req[i].atop  = atop_i;
-    assign bank_req[i].we    = we_i;
-    stream_fifo #(
-      .FALL_THROUGH ( 1'b1         ),
-      .DATA_WIDTH   ( $bits(req_t) ),
-      .DEPTH        ( FifoDepth    ),
-      .T            ( req_t        )
-    ) i_ft_reg (
-      .clk_i,
-      .rst_ni,
-      .flush_i    ( 1'b0          ),
-      .testmode_i ( 1'b0          ),
-      .usage_o    (),
-      .data_i     ( bank_req[i]   ),
-      .valid_i    ( req_valid     ),
-      .ready_o    ( req_ready[i]  ),
-      .data_o     ( bank_oup[i]   ),
-      .valid_o    ( bank_req_internal[i] ),
-      .ready_i    ( bank_gnt_internal[i] )
-    );
-    assign bank_addr_o[i]  = bank_oup[i].addr;
-    assign bank_wdata_o[i] = bank_oup[i].wdata;
-    assign bank_strb_o[i]  = bank_oup[i].strb;
-    assign bank_atop_o[i]  = bank_oup[i].atop;
-    assign bank_we_o[i]    = bank_oup[i].we;
-
-    assign zero_strobe[i] = (bank_oup[i].strb == '0);
-
-    if (HideStrb) begin : gen_hide_strb
-      assign bank_req_o[i] = (bank_oup[i].we && zero_strobe[i]) ? 1'b0 : bank_req_internal[i];
-      assign bank_gnt_internal[i] = (bank_oup[i].we && zero_strobe[i]) ? 1'b1 : bank_gnt_i[i];
-    end else begin : gen_legacy_strb
-      assign bank_req_o[i] = bank_req_internal[i];
-      assign bank_gnt_internal[i] = bank_gnt_i[i];
-    end
-  end
-
-  // Grant output if all our requests have been granted.
-  assign gnt_o = (&req_ready) & (&resp_ready) & !dead_write_fifo_full;
-
-  if (HideStrb) begin : gen_dead_write_fifo
-    fifo_v3 #(
-      .FALL_THROUGH ( 1'b0     ),
-      .DEPTH        ( MaxTrans+1 ),
-      .DATA_WIDTH   ( NumBanks )
-    ) i_dead_write_fifo (
-      .clk_i,
-      .rst_ni,
-      .flush_i    ( 1'b0                    ),
-      .testmode_i ( 1'b0                    ),
-      .full_o     ( dead_write_fifo_full    ),
-      .empty_o    (),
-      .usage_o    (),
-      .data_i     ( bank_we_o & zero_strobe ),
-      .push_i     ( req_i & gnt_o           ),
-      .data_o     ( dead_response           ),
-      .pop_i      ( rvalid_o                )
-    );
-  end else begin : gen_no_dead_write_fifo
-    assign dead_response = '0;
-    assign dead_write_fifo_full = 1'b0;
-  end
-
-  // Handle responses.
-  for (genvar i = 0; unsigned'(i) < NumBanks; i++) begin : gen_resp_regs
-    stream_fifo #(
-      .FALL_THROUGH ( 1'b1              ),
-      .DATA_WIDTH   ( $bits(oup_data_t) ),
-      .DEPTH        ( FifoDepth         ),
-      .T            ( oup_data_t        )
-    ) i_ft_reg (
-      .clk_i,
-      .rst_ni,
-      .flush_i    ( 1'b0                                ),
-      .testmode_i ( 1'b0                                ),
-      .usage_o    (),
-      .data_i     ( bank_rdata_i[i]                     ),
-      .valid_i    ( bank_rvalid_i[i]                    ),
-      .ready_o    ( resp_ready[i]                       ),
-      .data_o     ( rdata_o[i*BitsPerBank+:BitsPerBank] ),
-      .valid_o    ( resp_valid[i]                       ),
-      .ready_i    ( rvalid_o & !dead_response[i]        )
-    );
-  end
-  assign rvalid_o = &(resp_valid | dead_response);
-
-  // Assertions
-  // pragma translate_off
-  `ifndef VERILATOR
-  `ifndef SYNTHESIS
-    initial begin
-      assume (DataWidth != 0 && (DataWidth & (DataWidth - 1)) == 0)
-        else $fatal(1, "Data width must be a power of two!");
-      assume (DataWidth % NumBanks == 0)
-        else $fatal(1, "Data width must be evenly divisible over banks!");
-      assume ((DataWidth / NumBanks) % 8 == 0)
-        else $fatal(1, "Data width of each bank must be divisible into 8-bit bytes!");
-    end
-  `endif
-  `endif
-  // pragma translate_on
 endmodule
