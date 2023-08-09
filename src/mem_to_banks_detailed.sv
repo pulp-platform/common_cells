@@ -22,7 +22,7 @@ module mem_to_banks_detailed #(
   /// Response sideband width.
   parameter int unsigned RUserWidth = 32'd0,
   /// Number of banks at output, must evenly divide `DataWidth`.
-  parameter int unsigned NumBanks  = 32'd0,
+  parameter int unsigned NumBanks  = 32'd1,
   /// Remove transactions that have zero strobe
   parameter bit          HideStrb  = 1'b0,
   /// Number of outstanding transactions
