@@ -91,12 +91,7 @@ module mem_to_banks #(
     .HideStrb   ( HideStrb   ),
     .MaxTrans   ( MaxTrans   ),
     .FifoDepth  ( FifoDepth  ),
-    .wuser_t    ( atop_t     ),
-    .addr_t     ( addr_t     ),
-    .inp_data_t ( inp_data_t ),
-    .inp_strb_t ( inp_strb_t ),
-    .oup_data_t ( oup_data_t ),
-    .oup_strb_t ( oup_strb_t )
+    .wuser_t    ( atop_t     )
   ) i_mem_to_banks_detailed (
     .clk_i,
     .rst_ni,
