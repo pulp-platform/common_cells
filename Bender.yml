@@ -8,6 +8,7 @@ package:
     - "Manuel Eggimann <meggimann@iis.ee.ethz.ch>"
     - "Stefan Mach <smach@iis.ee.ethz.ch>"
     - "Wolfgang Roenninger <wroennin@student.ethz.ch>"
+    - "Thomas Benz <tbenz@iis.ee.ethz.ch>"
 
 dependencies:
   common_verification: { git: "https://github.com/pulp-platform/common_verification.git", version: 0.2.0 }
@@ -44,6 +45,7 @@ sources:
   - src/plru_tree.sv
   - src/popcount.sv
   - src/rr_arb_tree.sv
+  - src/rr_distributor.sv
   - src/rstgen_bypass.sv
   - src/serial_deglitch.sv
   - src/shift_reg.sv
