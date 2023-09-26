@@ -48,10 +48,9 @@ common_cells_all:
     - src/read.sv
     - src/cdc_reset_ctrlr_pkg.sv
     # Level 1
+    - src/addr_decode_dync.sv
     - src/cdc_2phase.sv
     - src/cdc_4phase.sv
-    - src/addr_decode.sv
-    - src/addr_decode_napot.sv
     - src/cb_filter.sv
     - src/cdc_fifo_2phase.sv
     - src/counter.sv
@@ -67,6 +66,8 @@ common_cells_all:
     - src/stream_fork_dynamic.sv
     - src/clk_mux_glitch_free.sv
     # Level 2
+    - src/addr_decode.sv
+    - src/addr_decode_napot.sv
     - src/cdc_reset_ctrlr.sv
     - src/cdc_fifo_gray.sv
     - src/fall_through_register.sv

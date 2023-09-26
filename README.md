@@ -68,6 +68,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | Name                       | Description                                                                                               | Status       | Superseded By |
 |----------------------------|-----------------------------------------------------------------------------------------------------------|--------------|---------------|
 | `addr_decode`              | Address map decoder                                                                                       | active       |               |
+| `addr_decode_dync`         | Address map decoder extended to support dynamic online configuration                                      | active       |               |
 | `addr_decode_napot`        | Address map decoder using naturally-aligned power of two (NAPOT) regions                                  | active       |               |
 | `multiaddr_decode`         | Address map decoder using NAPOT regions and allowing for multiple address inputs                          | active       |               |
 | `ecc_decode`               | SECDED Decoder (Single Error Correction, Double Error Detection)                                          | active       |               |
