@@ -1,6 +1,6 @@
 CAPI=2:
 
-name : pulp-platform.org::common_cells:1.31.1
+name : pulp-platform.org::common_cells:1.32.0
 
 filesets:
   rtl:
@@ -27,6 +27,7 @@ filesets:
       - src/lfsr.sv
       - src/lfsr_16bit.sv
       - src/lfsr_8bit.sv
+      - src/multiaddr_decode.sv
       - src/mv_filter.sv
       - src/onehot_to_bin.sv
       - src/plru_tree.sv
@@ -42,6 +43,7 @@ filesets:
       - src/stream_fork.sv
       - src/stream_intf.sv
       - src/stream_join.sv
+      - src/stream_join_dynamic.sv
       - src/stream_mux.sv
       - src/stream_throttle.sv
       - src/sub_per_hash.sv
