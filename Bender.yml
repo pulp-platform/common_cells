@@ -69,6 +69,7 @@ sources:
   - src/cdc_2phase.sv
   - src/cdc_4phase.sv
   - src/addr_decode.sv
+  - src/multiaddr_decode.sv
   - target: not(all(xilinx,vivado_ipx))
     files:
     - src/cb_filter.sv
