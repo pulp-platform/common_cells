@@ -11,7 +11,7 @@
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 // Author: Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
-/// This module wraps `addr_decode` in its naturally-aligned power of two (NAPOT) variant,
+/// This module wraps `addr_decode_dync` in its naturally-aligned power of two (NAPOT) variant,
 /// alleviating the need to set the `Napot` parameter and using more descriptive `rule_t`
 /// field names. See the `addr_decode`documentation for details.
 module addr_decode_napot #(
@@ -72,20 +72,21 @@ module addr_decode_napot #(
     addr_t        end_addr;
   } rule_range_t;
 
-  addr_decode #(
+  addr_decode_dync #(
     .NoIndices ( NoIndices    ) ,
     .NoRules   ( NoRules      ),
     .addr_t    ( addr_t       ),
     .rule_t    ( rule_range_t ),
     .Napot     ( 1            )
-  ) i_addr_decode (
+  ) i_addr_decode_dync (
     .addr_i,
     .addr_map_i,
     .idx_o,
     .dec_valid_o,
     .dec_error_o,
     .en_default_idx_i,
-    .default_idx_i
+    .default_idx_i,
+    .config_ongoing_i ( 1'b0 )
 );
 
 endmodule
