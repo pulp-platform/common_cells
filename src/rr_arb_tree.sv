@@ -111,9 +111,11 @@ module rr_arb_tree #(
 
   // pragma translate_off
   `ifndef ASSERTS_OFF
+  `ifndef VERILATOR
   `ifndef XSIM
   // Default SVA reset
   default disable iff (!rst_ni || flush_i);
+  `endif
   `endif
   `endif
   // pragma translate_on
@@ -171,7 +173,7 @@ module rr_arb_tree #(
         // pragma translate_off
         `ifndef ASSERTS_OFF
           lock: assert property(
-            @(posedge clk_i) LockIn |-> req_o &&
+            @(posedge clk_i) disable iff (!rst_ni || flush_i) LockIn |-> req_o &&
                              (!gnt_i && !flush_i) |=> idx_o == $past(idx_o)) else
                 $fatal (1, "Lock implies same arbiter decision in next cycle if output is not \
                             ready.");
@@ -179,7 +181,7 @@ module rr_arb_tree #(
           logic [NumIn-1:0] req_tmp;
           assign req_tmp = req_q & req_i;
           lock_req: assume property(
-            @(posedge clk_i) LockIn |-> lock_d |=> req_tmp == req_q) else
+            @(posedge clk_i) disable iff (!rst_ni || flush_i) LockIn |-> lock_d |=> req_tmp == req_q) else
                 $fatal (1, "It is disallowed to deassert unserved request signals when LockIn is \
                             enabled.");
         `endif
@@ -318,27 +320,27 @@ module rr_arb_tree #(
     end
 
     hot_one : assert property(
-      @(posedge clk_i) $onehot0(gnt_o))
+      @(posedge clk_i) disable iff (!rst_ni || flush_i) $onehot0(gnt_o))
         else $fatal (1, "Grant signal must be hot1 or zero.");
 
     gnt0 : assert property(
-      @(posedge clk_i) |gnt_o |-> gnt_i)
+      @(posedge clk_i) disable iff (!rst_ni || flush_i) |gnt_o |-> gnt_i)
         else $fatal (1, "Grant out implies grant in.");
 
     gnt1 : assert property(
-      @(posedge clk_i) req_o |-> gnt_i |-> |gnt_o)
+      @(posedge clk_i) disable iff (!rst_ni || flush_i) req_o |-> gnt_i |-> |gnt_o)
         else $fatal (1, "Req out and grant in implies grant out.");
 
     gnt_idx : assert property(
-      @(posedge clk_i) req_o |->  gnt_i |-> gnt_o[idx_o])
+      @(posedge clk_i) disable iff (!rst_ni || flush_i) req_o |->  gnt_i |-> gnt_o[idx_o])
         else $fatal (1, "Idx_o / gnt_o do not match.");
 
     req0 : assert property(
-      @(posedge clk_i) |req_i |-> req_o)
+      @(posedge clk_i) disable iff (!rst_ni || flush_i) |req_i |-> req_o)
         else $fatal (1, "Req in implies req out.");
 
     req1 : assert property(
-      @(posedge clk_i) req_o |-> |req_i)
+      @(posedge clk_i) disable iff (!rst_ni || flush_i) req_o |-> |req_i)
         else $fatal (1, "Req out implies req in.");
     `endif
     `endif
