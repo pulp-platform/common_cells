@@ -185,7 +185,7 @@ module cdc_2phase_clearable #(
   assign dst_clear_pending_o = s_dst_isolate_req;
 
 
-`ifndef VERILATOR
+`ifndef ASSERTS_OFF
 
   no_valid_i_during_clear_i : assert property (
     @(posedge src_clk_i) disable iff (!src_rst_ni) src_clear_i |-> !src_valid_i
@@ -257,7 +257,7 @@ module cdc_2phase_src_clearable #(
   assign async_data_o = data_src_q;
 
 // Assertions
-`ifndef VERILATOR
+`ifndef ASSERTS_OFF
   // pragma translate_off
   no_clear_and_request: assume property (
      @(posedge clk_i) disable iff(~rst_ni) (clear_i |-> ~valid_i))

@@ -235,7 +235,7 @@ module hash_block #(
     end
   end
 
-`ifndef VERILATOR
+`ifndef ASSERTS_OFF
   // assertions
   // pragma translate_off
   initial begin

@@ -165,7 +165,7 @@ module stream_xbar #(
   // Assertions
   // Make sure that the handshake and payload is stable
   // pragma translate_off
-  `ifndef VERILATOR
+  `ifndef ASSERTS_OFF
   default disable iff rst_ni;
   for (genvar i = 0; unsigned'(i) < NumInp; i++) begin : gen_sel_assertions
     assert property (@(posedge clk_i) (valid_i[i] |-> sel_i[i] < sel_oup_t'(NumOut))) else

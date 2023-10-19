@@ -58,7 +58,7 @@ module lfsr_16bit #(
         end
     end
 
-  `ifndef VERILATOR
+  `ifndef ASSERTS_OFF
     //pragma translate_off
     initial begin
         assert (WIDTH <= 16)

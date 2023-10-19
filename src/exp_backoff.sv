@@ -82,7 +82,7 @@ module exp_backoff #(
 ///////////////////////////////////////////////////////
 
 //pragma translate_off
-`ifndef VERILATOR
+`ifndef ASSERTS_OFF
   initial begin
     // assert wrong parameterizations
     assert (MaxExp>0)

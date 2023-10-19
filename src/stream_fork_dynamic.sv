@@ -86,7 +86,7 @@ module stream_fork_dynamic #(
   );
 
 // pragma translate_off
-`ifndef VERILATOR
+`ifndef ASSERTS_OFF
   initial begin: p_assertions
     assert (N_OUP >= 1) else $fatal(1, "N_OUP must be at least 1!");
   end

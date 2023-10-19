@@ -38,7 +38,7 @@ module stream_join_dynamic #(
   end
 
 // pragma translate_off
-`ifndef VERILATOR
+`ifndef ASSERTS_OFF
   initial begin: p_assertions
     assert (N_INP >= 1) else $fatal(1, "N_INP must be at least 1!");
   end

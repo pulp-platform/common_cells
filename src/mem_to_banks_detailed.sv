@@ -209,7 +209,7 @@ module mem_to_banks_detailed #(
 
   // Assertions
   // pragma translate_off
-  `ifndef VERILATOR
+  `ifndef ASSERTS_OFF
   `ifndef SYNTHESIS
     initial begin
       assume (DataWidth != 0 && (DataWidth & (DataWidth - 1)) == 0)

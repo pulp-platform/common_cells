@@ -123,7 +123,7 @@ module stream_fork #(
                             // of the '1 literal when assigned to a port of parametrized width.
 
 // pragma translate_off
-`ifndef VERILATOR
+`ifndef ASSERTS_OFF
     initial begin: p_assertions
         assert (N_OUP >= 1) else $fatal(1, "Number of outputs must be at least 1!");
     end

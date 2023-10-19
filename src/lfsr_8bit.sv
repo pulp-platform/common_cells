@@ -52,7 +52,7 @@ module lfsr_8bit #(
     end
   end
 
-`ifndef VERILATOR
+`ifndef ASSERTS_OFF
   //pragma translate_off
   initial begin
     assert (WIDTH <= 8) else $fatal(1, "WIDTH needs to be less than 8 because of the 8-bit LFSR");
