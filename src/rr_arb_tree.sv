@@ -173,15 +173,16 @@ module rr_arb_tree #(
         // pragma translate_off
         `ifndef COMMON_CELLS_ASSERTS_OFF
           lock: assert property(
-            @(posedge clk_i) disable iff (!rst_ni || flush_i) LockIn |-> req_o &&
-                             (!gnt_i && !flush_i) |=> idx_o == $past(idx_o)) else
+            @(posedge clk_i) disable iff (!rst_ni || flush_i)
+                LockIn |-> req_o && (!gnt_i && !flush_i) |=> idx_o == $past(idx_o)) else
                 $fatal (1, "Lock implies same arbiter decision in next cycle if output is not \
                             ready.");
 
           logic [NumIn-1:0] req_tmp;
           assign req_tmp = req_q & req_i;
           lock_req: assume property(
-            @(posedge clk_i) disable iff (!rst_ni || flush_i) LockIn |-> lock_d |=> req_tmp == req_q) else
+            @(posedge clk_i) disable iff (!rst_ni || flush_i)
+                LockIn |-> lock_d |=> req_tmp == req_q) else
                 $fatal (1, "It is disallowed to deassert unserved request signals when LockIn is \
                             enabled.");
         `endif
