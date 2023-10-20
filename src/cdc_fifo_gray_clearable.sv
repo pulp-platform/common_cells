@@ -255,7 +255,7 @@ module cdc_fifo_gray_clearable #(
 
   // Check the invariants.
   // pragma translate_off
-  `ifndef ASSERTS_OFF
+  `ifndef COMMON_CELLS_ASSERTS_OFF
   initial assert(LOG_DEPTH > 0);
   initial assert(SYNC_STAGES >= 2);
   `endif

@@ -82,7 +82,7 @@ module exp_backoff #(
 ///////////////////////////////////////////////////////
 
 //pragma translate_off
-`ifndef ASSERTS_OFF
+`ifndef COMMON_CELLS_ASSERTS_OFF
   initial begin
     // assert wrong parameterizations
     assert (MaxExp>0)

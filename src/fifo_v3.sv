@@ -138,7 +138,7 @@ module fifo_v3 #(
     end
 
 // pragma translate_off
-`ifndef ASSERTS_OFF
+`ifndef COMMON_CELLS_ASSERTS_OFF
     initial begin
         assert (DEPTH > 0)             else $error("DEPTH must be greater than 0.");
     end

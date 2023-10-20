@@ -110,7 +110,7 @@ module rr_arb_tree #(
 );
 
   // pragma translate_off
-  `ifndef ASSERTS_OFF
+  `ifndef COMMON_CELLS_ASSERTS_OFF
   `ifndef VERILATOR
   `ifndef XSIM
   // Default SVA reset
@@ -171,7 +171,7 @@ module rr_arb_tree #(
         end
 
         // pragma translate_off
-        `ifndef ASSERTS_OFF
+        `ifndef COMMON_CELLS_ASSERTS_OFF
           lock: assert property(
             @(posedge clk_i) disable iff (!rst_ni || flush_i) LockIn |-> req_o &&
                              (!gnt_i && !flush_i) |=> idx_o == $past(idx_o)) else
@@ -310,7 +310,7 @@ module rr_arb_tree #(
     end
 
     // pragma translate_off
-    `ifndef ASSERTS_OFF
+    `ifndef COMMON_CELLS_ASSERTS_OFF
     `ifndef XSIM
     initial begin : p_assert
       assert(NumIn)

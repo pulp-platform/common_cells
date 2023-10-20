@@ -261,7 +261,7 @@ module stream_omega_net #(
     // Assertions
     // Make sure that the handshake and payload is stable
     // pragma translate_off
-    `ifndef ASSERTS_OFF
+    `ifndef COMMON_CELLS_ASSERTS_OFF
     `ifndef VERILATOR
     default disable iff (~rst_ni);
     `endif

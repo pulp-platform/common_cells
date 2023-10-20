@@ -235,7 +235,7 @@ module hash_block #(
     end
   end
 
-`ifndef ASSERTS_OFF
+`ifndef COMMON_CELLS_ASSERTS_OFF
   // assertions
   // pragma translate_off
   initial begin

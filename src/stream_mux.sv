@@ -36,7 +36,7 @@ module stream_mux #(
   assign oup_valid_o  = inp_valid_i[inp_sel_i];
 
 // pragma translate_off
-`ifndef ASSERTS_OFF
+`ifndef COMMON_CELLS_ASSERTS_OFF
   initial begin: p_assertions
     assert (N_INP >= 1) else $fatal (1, "The number of inputs must be at least 1!");
   end

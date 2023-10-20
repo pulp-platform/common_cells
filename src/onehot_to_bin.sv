@@ -30,7 +30,7 @@ module onehot_to_bin #(
     end
 
 // pragma translate_off
-`ifndef ASSERTS_OFF
+`ifndef COMMON_CELLS_ASSERTS_OFF
     assert final ($onehot0(onehot)) else
         $fatal(1, "[onehot_to_bin] More than two bit set in the one-hot signal");
 `endif

@@ -120,7 +120,7 @@ module multiaddr_decode #(
   end
 
   // Assumptions and assertions
-  `ifndef ASSERTS_OFF
+  `ifndef COMMON_CELLS_ASSERTS_OFF
   `ifndef XSIM
   // pragma translate_off
   initial begin : proc_check_parameters
