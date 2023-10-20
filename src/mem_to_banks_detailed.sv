@@ -208,7 +208,7 @@ module mem_to_banks_detailed #(
   assign rvalid_o = &(resp_valid | dead_response);
 
   // Assertions
-  // pragma translate_off
+  // synopsys translate_off
   `ifndef COMMON_CELLS_ASSERTS_OFF
   `ifndef SYNTHESIS
     initial begin

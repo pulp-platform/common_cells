@@ -40,7 +40,7 @@ module lzc #(
     localparam int unsigned NumLevels = $clog2(WIDTH);
 
   `ifndef COMMON_CELLS_ASSERTS_OFF
-    // pragma translate_off
+    // synopsys translate_off
     initial begin
       assert(WIDTH > 0) else $fatal(1, "input must be at least one bit wide");
     end
@@ -101,7 +101,7 @@ module lzc #(
 
   end : gen_lzc
 
-// pragma translate_off
+// synopsys translate_off
 `ifndef COMMON_CELLS_ASSERTS_OFF
   initial begin: validate_params
     assert (WIDTH >= 1)

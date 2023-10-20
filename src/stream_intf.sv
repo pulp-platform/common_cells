@@ -40,7 +40,7 @@ interface STREAM_DV #(
   );
 
   // Make sure that the handshake and payload is stable
-  // pragma translate_off
+  // synopsys translate_off
   `ifndef COMMON_CELLS_ASSERTS_OFF
   assert property (@(posedge clk_i) (valid && !ready |=> $stable(data)));
   assert property (@(posedge clk_i) (valid && !ready |=> valid));

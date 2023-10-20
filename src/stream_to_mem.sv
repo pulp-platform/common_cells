@@ -116,7 +116,7 @@ module stream_to_mem #(
   assign mem_req_o = req_i;
 
 // Assertions
-// pragma translate_off
+// synopsys translate_off
 `ifndef COMMON_CELLS_ASSERTS_OFF
   if (BufDepth > 0) begin : gen_buf_asserts
     assert property (@(posedge clk_i) mem_resp_valid_i |-> buf_ready)

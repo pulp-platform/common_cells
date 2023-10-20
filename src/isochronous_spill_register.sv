@@ -95,7 +95,7 @@ module isochronous_spill_register #(
     assign dst_data_o = mem_q[rd_pointer_q[0]];
   end
 
-  // pragma translate_off
+  // synopsys translate_off
   // stability guarantees
   `ifndef COMMON_CELLS_ASSERTS_OFF
   assert property (@(posedge src_clk_i) disable iff (~src_rst_ni)

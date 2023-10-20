@@ -62,7 +62,7 @@ module cdc_fifo_2phase #(
 );
 
   // Check the invariants.
-  //pragma translate_off
+  // synopsys translate_off
   initial begin
     assert(LOG_DEPTH > 0);
   end

@@ -37,7 +37,7 @@ module stream_join_dynamic #(
     assign inp_ready_o[i] = oup_valid_o & oup_ready_i;
   end
 
-// pragma translate_off
+// synopsys translate_off
 `ifndef COMMON_CELLS_ASSERTS_OFF
   initial begin: p_assertions
     assert (N_INP >= 1) else $fatal(1, "N_INP must be at least 1!");

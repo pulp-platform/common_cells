@@ -109,7 +109,7 @@ module plru_tree #(
         end
     end
 
-// pragma translate_off
+// synopsys translate_off
 `ifndef COMMON_CELLS_ASSERTS_OFF
     initial begin
         assert (ENTRIES == 2**LogEntries) else $error("Entries must be a power of two");

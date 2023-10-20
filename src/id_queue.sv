@@ -404,7 +404,7 @@ module id_queue #(
     end
 
     // Validate parameters.
-// pragma translate_off
+// synopsys translate_off
 `ifndef COMMON_CELLS_ASSERTS_OFF
     initial begin: validate_params
         assert (ID_WIDTH >= 1)

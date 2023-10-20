@@ -81,7 +81,7 @@ module exp_backoff #(
 // assertions
 ///////////////////////////////////////////////////////
 
-//pragma translate_off
+// synopsys translate_off
 `ifndef COMMON_CELLS_ASSERTS_OFF
   initial begin
     // assert wrong parameterizations

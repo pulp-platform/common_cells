@@ -59,7 +59,7 @@ module lfsr_16bit #(
     end
 
   `ifndef COMMON_CELLS_ASSERTS_OFF
-    //pragma translate_off
+    // synopsys translate_off
     initial begin
         assert (WIDTH <= 16)
             else $fatal(1, "WIDTH needs to be less than 16 because of the 16-bit LFSR");

@@ -26,7 +26,7 @@ module find_first_one #(
 
     localparam int NUM_LEVELS = $clog2(WIDTH);
 
-    // pragma translate_off
+    // synopsys translate_off
     initial begin
         assert(WIDTH >= 0);
     end

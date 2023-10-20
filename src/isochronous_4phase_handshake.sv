@@ -68,7 +68,7 @@ module isochronous_4phase_handshake (
   // destination is valid if we didn't yet get acknowledge
   assign dst_valid_o = (dst_req_q != dst_ack_q);
 
- // pragma translate_off
+ // synopsys translate_off
  // stability guarantees
   `ifndef COMMON_CELLS_ASSERTS_OFF
   assert property (@(posedge src_clk_i) disable iff (~src_rst_ni)

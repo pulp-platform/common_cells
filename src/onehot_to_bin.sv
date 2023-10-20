@@ -29,7 +29,7 @@ module onehot_to_bin #(
         assign bin[j] = |(tmp_mask & onehot);
     end
 
-// pragma translate_off
+// synopsys translate_off
 `ifndef COMMON_CELLS_ASSERTS_OFF
     assert final ($onehot0(onehot)) else
         $fatal(1, "[onehot_to_bin] More than two bit set in the one-hot signal");

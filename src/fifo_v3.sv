@@ -137,7 +137,7 @@ module fifo_v3 #(
         end
     end
 
-// pragma translate_off
+// synopsys translate_off
 `ifndef COMMON_CELLS_ASSERTS_OFF
     initial begin
         assert (DEPTH > 0)             else $error("DEPTH must be greater than 0.");

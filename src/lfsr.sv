@@ -290,7 +290,7 @@ end
 // assertions
 ////////////////////////////////////////////////////////////////////////
 `ifndef COMMON_CELLS_ASSERTS_OFF
-// pragma translate_off
+// synopsys translate_off
 initial begin
   // these are the LUT limits
   assert(OutWidth <= LfsrWidth) else

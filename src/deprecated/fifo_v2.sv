@@ -67,7 +67,7 @@ module fifo_v2 #(
         .pop_i
     );
 
-    // pragma translate_off
+    // synopsys translate_off
     `ifndef COMMON_CELLS_ASSERTS_OFF
         initial begin
             assert (ALM_FULL_TH <= DEPTH)  else $error("ALM_FULL_TH can't be larger than the DEPTH.");

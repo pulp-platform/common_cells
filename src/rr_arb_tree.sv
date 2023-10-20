@@ -109,7 +109,7 @@ module rr_arb_tree #(
   output idx_t                idx_o
 );
 
-  // pragma translate_off
+  // synopsys translate_off
   `ifndef COMMON_CELLS_ASSERTS_OFF
   `ifndef VERILATOR
   `ifndef XSIM
@@ -170,7 +170,7 @@ module rr_arb_tree #(
           end
         end
 
-        // pragma translate_off
+        // synopsys translate_off
         `ifndef COMMON_CELLS_ASSERTS_OFF
           lock: assert property(
             @(posedge clk_i) disable iff (!rst_ni || flush_i)
@@ -310,7 +310,7 @@ module rr_arb_tree #(
       end
     end
 
-    // pragma translate_off
+    // synopsys translate_off
     `ifndef COMMON_CELLS_ASSERTS_OFF
     `ifndef XSIM
     initial begin : p_assert
