@@ -43,5 +43,5 @@ module stream_join_dynamic #(
     assert (N_INP >= 1) else $fatal(1, "N_INP must be at least 1!");
   end
 `endif
-// pragma translate_on
+// synopsys translate_on
 endmodule

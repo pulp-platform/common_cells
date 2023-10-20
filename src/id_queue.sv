@@ -413,6 +413,6 @@ module id_queue #(
             else $fatal(1, "The queue must have capacity of at least one entry!");
     end
 `endif
-// pragma translate_on
+// synopsys translate_on
 
 endmodule

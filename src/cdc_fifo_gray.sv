@@ -162,7 +162,7 @@ module cdc_fifo_gray #(
   initial assert(LOG_DEPTH > 0);
   initial assert(SYNC_STAGES >= 2);
   `endif
-  // pragma translate_on
+  // synopsys translate_on
 
 endmodule
 

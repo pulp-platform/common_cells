@@ -115,6 +115,6 @@ module plru_tree #(
         assert (ENTRIES == 2**LogEntries) else $error("Entries must be a power of two");
     end
 `endif
-// pragma translate_on
+// synopsys translate_on
 
 endmodule

@@ -76,6 +76,6 @@ module isochronous_4phase_handshake (
   assert property (@(posedge dst_clk_i) disable iff (~dst_rst_ni)
     (dst_valid_o && !dst_ready_i |=> $stable(dst_valid_o))) else $error("dst_valid_o is unstable");
   `endif
-  // pragma translate_on
+  // synopsys translate_on
 
 endmodule

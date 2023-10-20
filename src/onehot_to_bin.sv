@@ -34,5 +34,5 @@ module onehot_to_bin #(
     assert final ($onehot0(onehot)) else
         $fatal(1, "[onehot_to_bin] More than two bit set in the one-hot signal");
 `endif
-// pragma translate_on
+// synopsys translate_on
 endmodule

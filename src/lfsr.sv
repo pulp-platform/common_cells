@@ -308,7 +308,7 @@ end
   all_zero: assert property (
     @(posedge clk_i) disable iff (!rst_ni) en_i |-> lfsr_d)
       else $fatal(1,"Lfsr must not be all-zero.");
-// pragma translate_on
+// synopsys translate_on
 `endif
 
 endmodule // lfsr

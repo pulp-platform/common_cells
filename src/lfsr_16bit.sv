@@ -64,7 +64,7 @@ module lfsr_16bit #(
         assert (WIDTH <= 16)
             else $fatal(1, "WIDTH needs to be less than 16 because of the 16-bit LFSR");
     end
-    //pragma translate_on
+    // synopsys translate_on
   `endif
 
 endmodule

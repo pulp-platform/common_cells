@@ -107,5 +107,5 @@ module isochronous_spill_register #(
   assert property (@(posedge dst_clk_i) disable iff (~dst_rst_ni)
     (dst_valid_o && !dst_ready_i |=> $stable(dst_data_o))) else $error("dst_data_o is unstable");
   `endif
-  // pragma translate_on
+  // synopsys translate_on
 endmodule

@@ -263,7 +263,7 @@ module cdc_2phase_src_clearable #(
      @(posedge clk_i) disable iff(~rst_ni) (clear_i |-> ~valid_i))
     else $fatal(1, "No request allowed while clear_i is asserted.");
 
-  // pragma translate_on
+  // synopsys translate_on
 `endif
 
 endmodule

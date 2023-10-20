@@ -221,5 +221,5 @@ module mem_to_banks_detailed #(
     end
   `endif
   `endif
-  // pragma translate_on
+  // synopsys translate_on
 endmodule

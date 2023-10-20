@@ -44,7 +44,7 @@ module lzc #(
     initial begin
       assert(WIDTH > 0) else $fatal(1, "input must be at least one bit wide");
     end
-    // pragma translate_on
+    // synopsys translate_on
   `endif
 
     logic [WIDTH-1:0][NumLevels-1:0] index_lut;
@@ -108,6 +108,6 @@ module lzc #(
       else $fatal(1, "The WIDTH must at least be one bit wide!");
   end
 `endif
-// pragma translate_on
+// synopsys translate_on
 
 endmodule : lzc

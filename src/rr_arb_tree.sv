@@ -118,7 +118,7 @@ module rr_arb_tree #(
   `endif
   `endif
   `endif
-  // pragma translate_on
+  // synopsys translate_on
 
   // just pass through in this corner case
   if (NumIn == unsigned'(1)) begin : gen_pass_through
@@ -186,7 +186,7 @@ module rr_arb_tree #(
                 $fatal (1, "It is disallowed to deassert unserved request signals when LockIn is \
                             enabled.");
         `endif
-        // pragma translate_on
+        // synopsys translate_on
 
         always_ff @(posedge clk_i or negedge rst_ni) begin : p_req_regs
           if (!rst_ni) begin
@@ -345,7 +345,7 @@ module rr_arb_tree #(
         else $fatal (1, "Req out implies req in.");
     `endif
     `endif
-    // pragma translate_on
+    // synopsys translate_on
   end
 
 endmodule : rr_arb_tree

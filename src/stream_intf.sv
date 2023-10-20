@@ -45,5 +45,5 @@ interface STREAM_DV #(
   assert property (@(posedge clk_i) (valid && !ready |=> $stable(data)));
   assert property (@(posedge clk_i) (valid && !ready |=> valid));
   `endif
-  // pragma translate_on
+  // synopsys translate_on
 endinterface

@@ -205,5 +205,5 @@ module stream_xbar #(
     assert (NumOut > 32'd0) else $fatal(1, "NumOut has to be > 0!");
   end
   `endif
-  // pragma translate_on
+  // synopsys translate_on
 endmodule

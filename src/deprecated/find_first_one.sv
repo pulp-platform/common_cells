@@ -30,7 +30,7 @@ module find_first_one #(
     initial begin
         assert(WIDTH >= 0);
     end
-    // pragma translate_on
+    // synopsys translate_on
 
     logic [WIDTH-1:0][NUM_LEVELS-1:0]          index_lut;
     logic [2**NUM_LEVELS-1:0]                  sel_nodes;

@@ -37,7 +37,7 @@ package cf_math_pkg;
             $fatal(1, "Division by zero!");
         end
         `endif
-        // pragma translate_on
+        // synopsys translate_on
 
         remainder = dividend;
         for (ceil_div = 0; remainder > 0; ceil_div++) begin

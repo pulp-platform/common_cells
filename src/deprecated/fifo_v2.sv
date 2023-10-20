@@ -74,6 +74,6 @@ module fifo_v2 #(
             assert (ALM_EMPTY_TH <= DEPTH) else $error("ALM_EMPTY_TH can't be larger than the DEPTH.");
         end
     `endif
-    // pragma translate_on
+    // synopsys translate_on
 
 endmodule // fifo_v2

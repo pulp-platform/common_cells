@@ -91,5 +91,5 @@ module stream_fork_dynamic #(
     assert (N_OUP >= 1) else $fatal(1, "N_OUP must be at least 1!");
   end
 `endif
-// pragma translate_on
+// synopsys translate_on
 endmodule

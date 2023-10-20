@@ -76,7 +76,7 @@ module stream_arbiter_flushable #(
   end else begin : gen_arb_error
     // synopsys translate_off
     $fatal(1, "Invalid value for parameter 'ARBITER'!");
-    // pragma translate_on
+    // synopsys translate_on
   end
 
 endmodule

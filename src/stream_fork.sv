@@ -128,6 +128,6 @@ module stream_fork #(
         assert (N_OUP >= 1) else $fatal(1, "Number of outputs must be at least 1!");
     end
 `endif
-// pragma translate_on
+// synopsys translate_on
 
 endmodule

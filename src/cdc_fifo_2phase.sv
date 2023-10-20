@@ -66,7 +66,7 @@ module cdc_fifo_2phase #(
   initial begin
     assert(LOG_DEPTH > 0);
   end
-  //pragma translate_on
+  // synopsys translate_on
 
   localparam int PtrWidth = LOG_DEPTH+1;
   typedef logic [PtrWidth-1:0] pointer_t;

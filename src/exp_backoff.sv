@@ -93,6 +93,6 @@ module exp_backoff #(
       else $fatal(1,"Zero seed is not allowed for LFSR");
   end
 `endif
-//pragma translate_on
+// synopsys translate_on
 
 endmodule // exp_backoff

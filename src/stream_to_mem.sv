@@ -130,5 +130,5 @@ module stream_to_mem #(
       else $error("Without BufDepth = 0, the memory must respond in the same cycle!");
   end
 `endif
-// pragma translate_on
+// synopsys translate_on
 endmodule

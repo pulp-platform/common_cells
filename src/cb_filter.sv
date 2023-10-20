@@ -243,6 +243,6 @@ module hash_block #(
       $fatal(1, "%m:\nA Hash Function reduces the width of the input>\nInpWidth: %s\nOUT_WIDTH: %s",
           InpWidth, HashWidth);
   end
-  // pragma translate_on
+  // synopsys translate_on
 `endif
 endmodule

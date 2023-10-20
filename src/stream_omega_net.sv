@@ -305,6 +305,6 @@ module stream_omega_net #(
           $fatal(1, "Bit slicing of the internal selection signal is broken.");
     end
     `endif
-    // pragma translate_on
+    // synopsys translate_on
   end
 endmodule

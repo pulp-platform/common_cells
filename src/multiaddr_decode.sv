@@ -148,7 +148,7 @@ module multiaddr_decode #(
     end
   end
 
-  // pragma translate_on
+  // synopsys translate_on
   `endif
   `endif
 endmodule

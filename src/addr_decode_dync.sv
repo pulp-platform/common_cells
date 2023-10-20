@@ -184,7 +184,7 @@ module addr_decode_dync #(
       end
     end
   end
-  // pragma translate_on
+  // synopsys translate_on
   `endif
   `endif
 
