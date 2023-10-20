@@ -405,7 +405,7 @@ module id_queue #(
 
     // Validate parameters.
 // pragma translate_off
-`ifndef VERILATOR
+`ifndef COMMON_CELLS_ASSERTS_OFF
     initial begin: validate_params
         assert (ID_WIDTH >= 1)
             else $fatal(1, "The ID must at least be one bit wide!");

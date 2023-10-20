@@ -117,7 +117,7 @@ module stream_to_mem #(
 
 // Assertions
 // pragma translate_off
-`ifndef VERILATOR
+`ifndef COMMON_CELLS_ASSERTS_OFF
   if (BufDepth > 0) begin : gen_buf_asserts
     assert property (@(posedge clk_i) mem_resp_valid_i |-> buf_ready)
       else $error("Memory response lost!");

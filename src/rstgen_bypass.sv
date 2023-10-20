@@ -58,7 +58,7 @@ module rstgen_bypass #(
         end
     end
     // pragma translate_off
-    `ifndef VERILATOR
+    `ifndef COMMON_CELLS_ASSERTS_OFF
     initial begin : p_assertions
         if (NumRegs < 1) $fatal(1, "At least one register is required.");
     end
