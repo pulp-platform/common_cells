@@ -50,6 +50,7 @@ sources:
       - src/popcount.sv
       - src/rr_arb_tree.sv
       - src/rstgen_bypass.sv
+      - src/rstsync.sv
       - src/serial_deglitch.sv
       - src/shift_reg.sv
       - src/shift_reg_gated.sv
