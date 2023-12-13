@@ -23,7 +23,7 @@ module onehot_to_bin #(
         logic [ONEHOT_WIDTH-1:0] tmp_mask;
             for (genvar i = 0; i < ONEHOT_WIDTH; i++) begin : gen_il
                 logic [BIN_WIDTH-1:0] tmp_i;
-                assign tmp_i = i;
+                assign tmp_i = BIN_WIDTH'(i);
                 assign tmp_mask[i] = tmp_i[j];
             end
         assign bin[j] = |(tmp_mask & onehot);
