@@ -123,6 +123,10 @@ module plru_tree #(
     initial begin
         assert (ENTRIES == 2**LogEntries) else $error("Entries must be a power of two");
     end
+
+    output_onehot : assert property(
+        @(posedge clk_i) disable iff (~rst_ni) ((plru_o & (plru_o - 1)) == '0))
+        else $fatal (1, "More than one bit set in PLRU output.");
 `endif
 // pragma translate_on
 
