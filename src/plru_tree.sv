@@ -125,7 +125,7 @@ module plru_tree #(
     end
 
     output_onehot : assert property(
-        @(posedge clk_i) disable iff (~rst_ni) ($onehot0(plru_o))
+        @(posedge clk_i) disable iff (~rst_ni) ($onehot0(plru_o)))
         else $fatal (1, "More than one bit set in PLRU output.");
 `endif
 // pragma translate_on
