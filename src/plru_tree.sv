@@ -28,6 +28,11 @@ module plru_tree #(
     logic [2*(ENTRIES-1)-1:0] plru_tree_q, plru_tree_d;
 
     always_comb begin : plru_replacement
+        automatic int unsigned idx_base, shift;
+        automatic logic new_index;
+        idx_base    = 0;
+        shift       = 0;
+        new_index   = 1'b0;
         plru_tree_d = plru_tree_q;
         // The PLRU-tree indexing:
         // lvl0        0
@@ -53,7 +58,6 @@ module plru_tree #(
         // default: begin /* No hit */ end
         // endcase
         for (int unsigned i = 0; i < ENTRIES; i++) begin
-            automatic int unsigned idx_base, shift, new_index;
             // we got a hit so update the pointer as it was least recently used
             if (used_i[i]) begin
                 // Set the nodes to the values we would expect
@@ -62,11 +66,20 @@ module plru_tree #(
                   // lvl0 <=> MSB, lvl1 <=> MSB-1, ...
                   shift = LogEntries - lvl;
                   // to circumvent the 32 bit integer arithmetic assignment
-                  new_index =  ~((i >> (shift-1)) & 1);
-                  plru_tree_d[idx_base + (i >> shift)] = new_index[0];
+                  new_index = 1'(~(i >> (shift-1)));
+                  plru_tree_d[idx_base + (i >> shift)] = new_index;
                 end
             end
         end
+    end
+
+    always_comb begin : plru_output
+        automatic int unsigned idx_base, shift;
+        automatic logic new_index;
+        idx_base  = 0;
+        shift     = 0;
+        new_index = 1'b0;
+        plru_o    = '1;
         // Decode tree to write enable signals
         // Next for-loop basically creates the following logic for e.g. an 8 entry
         // TLB (note: pseudo-code obviously):
@@ -82,22 +95,18 @@ module plru_tree #(
         // the corresponding bit of the entry's index, this is
         // the next entry to replace.
         for (int unsigned i = 0; i < ENTRIES; i += 1) begin
-            automatic logic en;
-            automatic int unsigned idx_base, shift, new_index;
-            en = 1'b1;
             for (int unsigned lvl = 0; lvl < LogEntries; lvl++) begin
                 idx_base = $unsigned((2**lvl)-1);
                 // lvl0 <=> MSB, lvl1 <=> MSB-1, ...
                 shift = LogEntries - lvl;
-                // en &= plru_tree_q[idx_base + (i>>shift)] == ((i >> (shift-1)) & 1'b1);
-                new_index =  (i >> (shift-1)) & 1;
-                if (new_index[0]) begin
-                  en &= plru_tree_q[idx_base + (i>>shift)];
+                // plru_o[i] &= plru_tree_q[idx_base + (i>>shift)] == ((i >> (shift-1)) & 1'b1);
+                new_index = 1'(i >> (shift-1));
+                if (new_index) begin
+                  plru_o[i] &= plru_tree_q[idx_base + (i>>shift)];
                 end else begin
-                  en &= ~plru_tree_q[idx_base + (i>>shift)];
+                  plru_o[i] &= ~plru_tree_q[idx_base + (i>>shift)];
                 end
             end
-            plru_o[i] = en;
         end
     end
 
