@@ -157,12 +157,12 @@ module cdc_fifo_gray #(
   );
 
   // Check the invariants.
-  // pragma translate_off
+  `ifndef SYNTHESIS
   `ifndef COMMON_CELLS_ASSERTS_OFF
   initial assert(LOG_DEPTH > 0);
   initial assert(SYNC_STAGES >= 2);
   `endif
-  // pragma translate_on
+  `endif
 
 endmodule
 

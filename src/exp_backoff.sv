@@ -81,7 +81,7 @@ module exp_backoff #(
 // assertions
 ///////////////////////////////////////////////////////
 
-//pragma translate_off
+`ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
   initial begin
     // assert wrong parameterizations
@@ -93,6 +93,6 @@ module exp_backoff #(
       else $fatal(1,"Zero seed is not allowed for LFSR");
   end
 `endif
-//pragma translate_on
+`endif
 
 endmodule // exp_backoff

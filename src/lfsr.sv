@@ -290,7 +290,7 @@ end
 // assertions
 ////////////////////////////////////////////////////////////////////////
 `ifndef COMMON_CELLS_ASSERTS_OFF
-// pragma translate_off
+`ifndef SYNTHESIS
 initial begin
   // these are the LUT limits
   assert(OutWidth <= LfsrWidth) else
@@ -308,7 +308,7 @@ end
   all_zero: assert property (
     @(posedge clk_i) disable iff (!rst_ni) en_i |-> lfsr_d)
       else $fatal(1,"Lfsr must not be all-zero.");
-// pragma translate_on
+`endif
 `endif
 
 endmodule // lfsr

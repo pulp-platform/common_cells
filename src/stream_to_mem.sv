@@ -116,7 +116,7 @@ module stream_to_mem #(
   assign mem_req_o = req_i;
 
 // Assertions
-// pragma translate_off
+`ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
   if (BufDepth > 0) begin : gen_buf_asserts
     assert property (@(posedge clk_i) mem_resp_valid_i |-> buf_ready)
@@ -130,5 +130,5 @@ module stream_to_mem #(
       else $error("Without BufDepth = 0, the memory must respond in the same cycle!");
   end
 `endif
-// pragma translate_on
+`endif
 endmodule

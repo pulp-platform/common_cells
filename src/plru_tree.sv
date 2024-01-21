@@ -118,7 +118,7 @@ module plru_tree #(
         end
     end
 
-// pragma translate_off
+`ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
     initial begin
         assert (ENTRIES == 2**LogEntries) else $error("Entries must be a power of two");
@@ -128,6 +128,6 @@ module plru_tree #(
         @(posedge clk_i) disable iff (~rst_ni) ($onehot0(plru_o)))
         else $fatal (1, "More than one bit set in PLRU output.");
 `endif
-// pragma translate_on
+`endif
 
 endmodule

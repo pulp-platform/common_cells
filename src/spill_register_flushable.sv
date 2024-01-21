@@ -94,12 +94,12 @@ module spill_register_flushable #(
     // We empty the spill register before the slice register.
     assign data_o = b_full_q ? b_data_q : a_data_q;
 
-    // pragma translate_off
+    `ifndef SYNTHESIS
     `ifndef COMMON_CELLS_ASSERTS_OFF
     flush_valid : assert property (
       @(posedge clk_i) disable iff (~rst_ni) (flush_i |-> ~valid_i)) else
       $warning("Trying to flush and feed the spill register simultaneously. You will lose data!");
    `endif
-     // pragma translate_on
+     `endif
   end
 endmodule

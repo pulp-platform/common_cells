@@ -124,7 +124,7 @@ module addr_decode_dync #(
   // Assumptions and assertions
   `ifndef COMMON_CELLS_ASSERTS_OFF
   `ifndef XSIM
-  // pragma translate_off
+  `ifndef SYNTHESIS
   initial begin : proc_check_parameters
     assume ($bits(addr_i) == $bits(addr_map_i[0].start_addr)) else
       $warning($sformatf("Input address has %d bits and address map has %d bits.",
@@ -184,7 +184,7 @@ module addr_decode_dync #(
       end
     end
   end
-  // pragma translate_on
+  `endif
   `endif
   `endif
 

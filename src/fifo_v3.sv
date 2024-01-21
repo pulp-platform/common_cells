@@ -137,7 +137,7 @@ module fifo_v3 #(
         end
     end
 
-// pragma translate_off
+`ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
     initial begin
         assert (DEPTH > 0)             else $error("DEPTH must be greater than 0.");
@@ -151,6 +151,6 @@ module fifo_v3 #(
         @(posedge clk_i) disable iff (~rst_ni) (empty_o |-> ~pop_i))
         else $fatal (1, "Trying to pop data although the FIFO is empty.");
 `endif
-// pragma translate_on
+`endif
 
 endmodule // fifo_v3

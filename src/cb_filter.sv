@@ -237,12 +237,12 @@ module hash_block #(
 
 `ifndef COMMON_CELLS_ASSERTS_OFF
   // assertions
-  // pragma translate_off
+  `ifndef SYNTHESIS
   initial begin
     hash_conf: assume (InpWidth > HashWidth) else
       $fatal(1, "%m:\nA Hash Function reduces the width of the input>\nInpWidth: %s\nOUT_WIDTH: %s",
           InpWidth, HashWidth);
   end
-  // pragma translate_on
+  `endif
 `endif
 endmodule

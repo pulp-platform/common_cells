@@ -85,11 +85,11 @@ module stream_fork_dynamic #(
     .ready_i ( int_oup_ready )
   );
 
-// pragma translate_off
+`ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
   initial begin: p_assertions
     assert (N_OUP >= 1) else $fatal(1, "N_OUP must be at least 1!");
   end
 `endif
-// pragma translate_on
+`endif
 endmodule

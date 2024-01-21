@@ -23,7 +23,7 @@ package cf_math_pkg;
     function automatic integer ceil_div (input longint dividend, input longint divisor);
         automatic longint remainder;
 
-        // pragma translate_off
+        `ifndef SYNTHESIS
         `ifndef COMMON_CELLS_ASSERTS_OFF
         if (dividend < 0) begin
             $fatal(1, "Dividend %0d is not a natural number!", dividend);
@@ -37,7 +37,7 @@ package cf_math_pkg;
             $fatal(1, "Division by zero!");
         end
         `endif
-        // pragma translate_on
+        `endif
 
         remainder = dividend;
         for (ceil_div = 0; remainder > 0; ceil_div++) begin

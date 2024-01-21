@@ -109,7 +109,7 @@ module rr_arb_tree #(
   output idx_t                idx_o
 );
 
-  // pragma translate_off
+  `ifndef SYNTHESIS
   `ifndef COMMON_CELLS_ASSERTS_OFF
   `ifndef VERILATOR
   `ifndef XSIM
@@ -118,7 +118,7 @@ module rr_arb_tree #(
   `endif
   `endif
   `endif
-  // pragma translate_on
+  `endif
 
   // just pass through in this corner case
   if (NumIn == unsigned'(1)) begin : gen_pass_through
@@ -170,7 +170,7 @@ module rr_arb_tree #(
           end
         end
 
-        // pragma translate_off
+        `ifndef SYNTHESIS
         `ifndef COMMON_CELLS_ASSERTS_OFF
           lock: assert property(
             @(posedge clk_i) disable iff (!rst_ni || flush_i)
@@ -186,7 +186,7 @@ module rr_arb_tree #(
                 $fatal (1, "It is disallowed to deassert unserved request signals when LockIn is \
                             enabled.");
         `endif
-        // pragma translate_on
+        `endif
 
         always_ff @(posedge clk_i or negedge rst_ni) begin : p_req_regs
           if (!rst_ni) begin
@@ -310,7 +310,7 @@ module rr_arb_tree #(
       end
     end
 
-    // pragma translate_off
+    `ifndef SYNTHESIS
     `ifndef COMMON_CELLS_ASSERTS_OFF
     `ifndef XSIM
     initial begin : p_assert
@@ -345,7 +345,7 @@ module rr_arb_tree #(
         else $fatal (1, "Req out implies req in.");
     `endif
     `endif
-    // pragma translate_on
+    `endif
   end
 
 endmodule : rr_arb_tree
