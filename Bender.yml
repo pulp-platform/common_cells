@@ -47,6 +47,7 @@ sources:
       - src/mv_filter.sv
       - src/onehot_to_bin.sv
       - src/plru_tree.sv
+      - src/passthrough_stream_fifo.sv
       - src/popcount.sv
       - src/rr_arb_tree.sv
       - src/rstgen_bypass.sv
@@ -127,6 +128,7 @@ sources:
       - test/fifo_tb.sv
       - test/graycode_tb.sv
       - test/id_queue_tb.sv
+      - test/passthrough_stream_fifo_tb.sv
       - test/popcount_tb.sv
       - test/rr_arb_tree_tb.sv
       - test/stream_test.sv

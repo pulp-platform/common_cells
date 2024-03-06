@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Added
+- Add `passthrough_stream_fifo`: stream FIFO which does not cut the timing path, this allows it to do a simultaneous push and pop when full.
+
 ## 1.32.0 - 2023-09-26
 ### Added
 - Add `stream_join_dynamic`: `stream_join` with a dynamically configurable subset selection.
