@@ -42,6 +42,7 @@ tests:
           - clk_mux_glitch_free_tb
           - id_queue_tb
           - isochronous_crossing_tb
+          - passthrough_stream_fifo_tb
           - popcount_tb
           - rr_arb_tree_tb
           - stream_omega_net_tb

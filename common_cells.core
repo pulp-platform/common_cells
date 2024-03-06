@@ -31,6 +31,7 @@ filesets:
       - src/mv_filter.sv
       - src/onehot_to_bin.sv
       - src/plru_tree.sv
+      - src/passthrough_stream_fifo.sv
       - src/popcount.sv
       - src/rr_arb_tree.sv
       - src/rstgen_bypass.sv
