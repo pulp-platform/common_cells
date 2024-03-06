@@ -48,7 +48,7 @@ module generic_fifo_adv
    int 						    unsigned                    i;
    
    // Parameter Check
-   // synopsys translate_off
+   `ifndef SYNTHESIS
    initial
    begin : parameter_check
       integer param_err_flg;
@@ -66,7 +66,7 @@ module generic_fifo_adv
            $display("ERROR: %m :\n  Invalid value (%d) for parameter DATA_DEPTH (legal range: greater than 1)", DATA_DEPTH );
 	end                   
    end
-   // synopsys translate_on
+   `endif
    
 `ifndef PULP_FPGA_EMUL
    cluster_clock_gating cg_cell

@@ -67,13 +67,13 @@ module fifo_v2 #(
         .pop_i
     );
 
-    // pragma translate_off
+    `ifndef SYNTHESIS
     `ifndef COMMON_CELLS_ASSERTS_OFF
         initial begin
             assert (ALM_FULL_TH <= DEPTH)  else $error("ALM_FULL_TH can't be larger than the DEPTH.");
             assert (ALM_EMPTY_TH <= DEPTH) else $error("ALM_EMPTY_TH can't be larger than the DEPTH.");
         end
     `endif
-    // pragma translate_on
+    `endif
 
 endmodule // fifo_v2
