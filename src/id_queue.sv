@@ -404,7 +404,7 @@ module id_queue #(
     end
 
     // Validate parameters.
-// pragma translate_off
+`ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
     initial begin: validate_params
         assert (ID_WIDTH >= 1)
@@ -413,6 +413,6 @@ module id_queue #(
             else $fatal(1, "The queue must have capacity of at least one entry!");
     end
 `endif
-// pragma translate_on
+`endif
 
 endmodule

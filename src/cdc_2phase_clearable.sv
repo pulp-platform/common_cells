@@ -258,12 +258,12 @@ module cdc_2phase_src_clearable #(
 
 // Assertions
 `ifndef COMMON_CELLS_ASSERTS_OFF
-  // pragma translate_off
+  `ifndef SYNTHESIS
   no_clear_and_request: assume property (
      @(posedge clk_i) disable iff(~rst_ni) (clear_i |-> ~valid_i))
     else $fatal(1, "No request allowed while clear_i is asserted.");
 
-  // pragma translate_on
+  `endif
 `endif
 
 endmodule

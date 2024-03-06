@@ -26,11 +26,11 @@ module find_first_one #(
 
     localparam int NUM_LEVELS = $clog2(WIDTH);
 
-    // pragma translate_off
+    `ifndef SYNTHESIS
     initial begin
         assert(WIDTH >= 0);
     end
-    // pragma translate_on
+    `endif
 
     logic [WIDTH-1:0][NUM_LEVELS-1:0]          index_lut;
     logic [2**NUM_LEVELS-1:0]                  sel_nodes;

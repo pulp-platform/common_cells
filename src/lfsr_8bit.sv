@@ -53,11 +53,11 @@ module lfsr_8bit #(
   end
 
 `ifndef COMMON_CELLS_ASSERTS_OFF
-  //pragma translate_off
+  `ifndef SYNTHESIS
   initial begin
     assert (WIDTH <= 8) else $fatal(1, "WIDTH needs to be less than 8 because of the 8-bit LFSR");
   end
-  //pragma translate_on
+  `endif
 `endif
 
 endmodule

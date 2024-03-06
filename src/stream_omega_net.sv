@@ -260,7 +260,7 @@ module stream_omega_net #(
 
     // Assertions
     // Make sure that the handshake and payload is stable
-    // pragma translate_off
+    `ifndef SYNTHESIS
     `ifndef COMMON_CELLS_ASSERTS_OFF
     `ifndef VERILATOR
     default disable iff (~rst_ni);
@@ -305,6 +305,6 @@ module stream_omega_net #(
           $fatal(1, "Bit slicing of the internal selection signal is broken.");
     end
     `endif
-    // pragma translate_on
+    `endif
   end
 endmodule

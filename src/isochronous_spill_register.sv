@@ -95,7 +95,7 @@ module isochronous_spill_register #(
     assign dst_data_o = mem_q[rd_pointer_q[0]];
   end
 
-  // pragma translate_off
+  `ifndef SYNTHESIS
   // stability guarantees
   `ifndef COMMON_CELLS_ASSERTS_OFF
   assert property (@(posedge src_clk_i) disable iff (~src_rst_ni)
@@ -107,5 +107,5 @@ module isochronous_spill_register #(
   assert property (@(posedge dst_clk_i) disable iff (~dst_rst_ni)
     (dst_valid_o && !dst_ready_i |=> $stable(dst_data_o))) else $error("dst_data_o is unstable");
   `endif
-  // pragma translate_on
+  `endif
 endmodule

@@ -164,7 +164,7 @@ module stream_xbar #(
 
   // Assertions
   // Make sure that the handshake and payload is stable
-  // pragma translate_off
+  `ifndef SYNTHESIS
   `ifndef COMMON_CELLS_ASSERTS_OFF
   `ifndef VERILATOR
   default disable iff (~rst_ni);
@@ -205,5 +205,5 @@ module stream_xbar #(
     assert (NumOut > 32'd0) else $fatal(1, "NumOut has to be > 0!");
   end
   `endif
-  // pragma translate_on
+  `endif
 endmodule

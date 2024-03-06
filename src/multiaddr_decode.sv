@@ -122,7 +122,7 @@ module multiaddr_decode #(
   // Assumptions and assertions
   `ifndef COMMON_CELLS_ASSERTS_OFF
   `ifndef XSIM
-  // pragma translate_off
+  `ifndef SYNTHESIS
   initial begin : proc_check_parameters
     assume (NoRules > 0) else
       $fatal(1, $sformatf("At least one rule needed"));
@@ -148,7 +148,7 @@ module multiaddr_decode #(
     end
   end
 
-  // pragma translate_on
+  `endif
   `endif
   `endif
 endmodule

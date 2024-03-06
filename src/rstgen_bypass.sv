@@ -57,11 +57,11 @@ module rstgen_bypass #(
             synch_regs_q <= {synch_regs_q[NumRegs-2:0], 1'b1};
         end
     end
-    // pragma translate_off
+    `ifndef SYNTHESIS
     `ifndef COMMON_CELLS_ASSERTS_OFF
     initial begin : p_assertions
         if (NumRegs < 1) $fatal(1, "At least one register is required.");
     end
     `endif
-    // pragma translate_on
+    `endif
 endmodule
