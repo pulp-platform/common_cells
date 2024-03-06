@@ -8,12 +8,12 @@
 
 name: gitlab-ci
 
-on: [ push, pull_request, workflow_dispatch ]
+on: [ push, pull_request_target, workflow_dispatch ]
 
 jobs:
   gitlab-ci:
     runs-on: ubuntu-latest
-    if: github.repository == 'pulp-platform/common_cells' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    if: github.repository == 'pulp-platform/common_cells'
     steps:
       - name: Check Gitlab CI
         uses: pulp-platform/pulp-actions/gitlab-ci@v1
