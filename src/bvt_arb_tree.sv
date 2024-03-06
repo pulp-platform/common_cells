@@ -61,8 +61,15 @@ module bvt_arb_tree #(
   /// type holding the virtual time of every input
   typedef logic [TimeWidth-1:0] time_t;
 
+  /// type holding the prio sum
+  localparam int unsigned PrioSumWidth = PrioWidth + IdxWidth + 32'd1;
+  typedef logic [PrioSumWidth-1:0] priority_sum_t;
+
   // time counter storage
   time_t [NumIn-1:0] virtual_time_d, virtual_time_q;
+
+  // valid signal
+  logic [NumIn-1:0] valid;
 
   // get minimal time
   min_max_tree #(
@@ -70,12 +77,34 @@ module bvt_arb_tree #(
     .DataWidth ( TimeWidth )
   ) i_min_max_tree (
     .data_i   ( virtual_time_q ),
-    .valid_i  ( req_i          ),
+    .valid_i  ( valid          ),
     .is_max_i ( 1'b0           ),
     .data_o   ( /* NC */       ),
     .valid_o  ( req_o          ),
     .idx_o    ( idx_o          )
   );
+
+  // hold the sum of all prios
+  priority_sum_t priority_sum;
+
+
+  // calc the priority sum
+  always_comb begin : proc_calc_sum
+    priority_sum = '0;
+    for (int unsigned i = 0; i < NumIn; i++) begin
+      priority_sum = priority_sum + prio_i[i];
+    end
+  end
+
+
+  // not all are valid
+  always_comb begin : gen_valid
+    valid = '0;
+    for (int unsigned i = 0; i < NumIn; i++) begin
+      valid[i] = req_i[i] & (virtual_time_q[i] < (NumIn * prio_i[i] / priority_sum));
+    end
+  end
+
 
   // update counters
   always_comb begin : proc_next_counters
@@ -84,7 +113,7 @@ module bvt_arb_tree #(
       virtual_time_d[i] = virtual_time_q[i] + prio_i[i];
     end
 
-    // reset the counter that was joust handshacked
+    // reset the counter that was just handshacked
     if (req_o & gnt_i) begin
       virtual_time_d[idx_o] = '0;
     end
