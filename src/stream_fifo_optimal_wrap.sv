@@ -36,13 +36,13 @@ module stream_fifo_optimal_wrap #(
     // Prevent Depth 0 and 1
     //--------------------------------------
     // Throw an error if depth is 0 or 1
-    // pragma translate off
+    `ifndef SYNTHESIS
     if (Depth < 32'd2) begin : gen_fatal
         initial begin
             $fatal(1, "FIFO of depth %d does not make any sense!", Depth);
         end
     end
-    // pragma translate on
+    `endif
 
     //--------------------------------------
     // Spill register (depth 2)
@@ -51,13 +51,13 @@ module stream_fifo_optimal_wrap #(
     if (Depth == 32'd2) begin : gen_spill
 
         // print info
-        // pragma translate off
+        `ifndef SYNTHESIS
         if (PrintInfo) begin : gen_info
             initial begin
                 $display("[%m] Instantiate spill register (of depth %d)", Depth);
             end
         end
-        // pragma translate on
+        `endif
 
         // spill register
         spill_register_flushable #(
@@ -87,13 +87,13 @@ module stream_fifo_optimal_wrap #(
     if (Depth > 32'd2) begin : gen_fifo
 
         // print info
-        // pragma translate off
+        `ifndef SYNTHESIS
         if (PrintInfo) begin : gen_info
             initial begin
                 $info("[%m] Instantiate stream FIFO of depth %d", Depth);
             end
         end
-        // pragma translate on
+        `endif
 
         // stream fifo
         stream_fifo #(
