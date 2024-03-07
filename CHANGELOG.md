@@ -4,9 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 1.33.0 - 2024-03-07
 ### Added
-- Add `passthrough_stream_fifo`: stream FIFO which does not cut the timing path, this allows it to do a simultaneous push and pop when full.
+- Add `passthrough_stream_fifo`: Stream FIFO which does not cut the timing path, this allows it to do a simultaneous push and pop when full.
+- Registers: Add FFARNC macro: Flip-Flop with asynchronous active-low reset and synchronous clear.
+
+### Changed
+- Enable assertions in verilator.
+- Change `pragma translate_off` statements to ```ifndef SYNTHESIS`` according to IEEE 1364.1-2005 spec 6.3.2.
+- `plru_tree`: Add assertion that output is onehot.
+- Update CI trigger condition.
+
+### Fixed
+- `onehot_to_bin`: Fix width mismatch in assignment.
+- `plru_tree`: Improve tool compatibility.
+- `stream_xbar`: Fix masked assertion.
 
 ## 1.32.0 - 2023-09-26
 ### Added
