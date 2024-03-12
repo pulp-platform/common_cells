@@ -267,7 +267,7 @@ module stream_omega_net #(
     `endif
     for (genvar i = 0; unsigned'(i) < NumInp; i++) begin : gen_sel_assertions
       assert property (@(posedge clk_i) disable iff (~rst_ni)
-          (valid_i[i] |-> sel_i[i] < sel_oup_t'(NumOut))) else
+          (valid_i[i] |-> sel_i[i] < NumOut)) else
           $fatal(1, "Non-existing output is selected!");
     end
 
