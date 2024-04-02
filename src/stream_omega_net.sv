@@ -38,6 +38,10 @@ module stream_omega_net #(
   /// When this is set, valids have to be asserted until the corresponding transaction is indicated
   /// by ready.
   parameter int unsigned LockIn      = 1'b1,
+  /// If `AxiVldReady` is 1, which bits of the payload to check for stability on valid inputs.
+  /// In some cases, we may want to allow parts of the payload to change depending on the value of
+  /// other parts (e.g. write data in read requests), requiring more nuanced external assertions.
+  parameter payload_t    AxiVldMask  = '1,
   /// Derived parameter, do **not** overwrite!
   ///
   /// Width of the output selection signal.
@@ -274,7 +278,7 @@ module stream_omega_net #(
     if (AxiVldRdy) begin : gen_handshake_assertions
       for (genvar i = 0; unsigned'(i) < NumInp; i++) begin : gen_inp_assertions
         assert property (@(posedge clk_i) disable iff (~rst_ni)
-            (valid_i[i] && !ready_o[i] |=> $stable(data_i[i]))) else
+            (valid_i[i] && !ready_o[i] |=> $stable(data_i[i] & AxiVldMask))) else
             $error("data_i is unstable at input: %0d", i);
         assert property (@(posedge clk_i) disable iff (~rst_ni)
             (valid_i[i] && !ready_o[i] |=> $stable(sel_i[i]))) else
@@ -285,7 +289,7 @@ module stream_omega_net #(
       end
       for (genvar i = 0; unsigned'(i) < NumOut; i++) begin : gen_out_assertions
         assert property (@(posedge clk_i) disable iff (~rst_ni)
-            (valid_o[i] && !ready_i[i] |=> $stable(data_o[i]))) else
+            (valid_o[i] && !ready_i[i] |=> $stable(data_o[i] & AxiVldMask))) else
             $error("data_o is unstable at output: %0d Check that parameter LockIn is set.", i);
         assert property (@(posedge clk_i) disable iff (~rst_ni)
             (valid_o[i] && !ready_i[i] |=> $stable(idx_o[i]))) else
