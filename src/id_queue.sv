@@ -49,6 +49,7 @@ module id_queue #(
     parameter int ID_WIDTH  = 0,
     parameter int CAPACITY  = 0,
     parameter bit FULL_BW   = 0,
+    parameter bit CUT_OUP_POP_INP_GNT = 0,
     parameter type data_t   = logic[31:0],
     // Dependent parameters, DO NOT OVERRIDE!
     localparam type id_t    = logic[ID_WIDTH-1:0]
@@ -185,8 +186,9 @@ module id_queue #(
     // Data potentially freed by the output.
     assign oup_data_free_idx = head_tail_q[match_out_idx].head;
 
-    // Data can be accepted if the linked list pool is not full, or some data is simultaneously.
-    assign inp_gnt_o = ~full || (oup_data_popped && FULL_BW);
+    // Data can be accepted if the linked list pool is not full, or if some data is simultaneously
+    // popped (given FULL_BW & !CUT_OUP_POP_INP_GNT).
+    assign inp_gnt_o = ~full || (oup_data_popped && FULL_BW && ~CUT_OUP_POP_INP_GNT);
     always_comb begin
         match_in_id         = '0;
         match_out_id        = '0;
