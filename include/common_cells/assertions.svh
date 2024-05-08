@@ -74,6 +74,18 @@
   end                                        \
 `endif
 
+// When a net is assigned with a value, the assignment is evaluated after
+// initial in Xcelium. Add 1ps delay to check value after the assignment is
+// completed.
+`define ASSERT_INIT_NET(__name, __prop)      \
+  initial begin                              \
+    #1ps;                                    \
+    __name: assert (__prop)                  \
+      else begin                             \
+        `ASSERT_RPT(`PRIM_STRINGIFY(__name)) \
+      end                                    \
+  end                                        \
+
 // Assertion in final block. Can be used for things like queues being empty
 // at end of sim, all credits returned at end of sim, state machines in idle
 // at end of sim.
