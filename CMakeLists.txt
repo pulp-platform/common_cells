@@ -39,7 +39,7 @@ ip_sources(${IP} SYSTEMVERILOG
     ${PROJECT_SOURCE_DIR}/src/lfsr.sv
     ${PROJECT_SOURCE_DIR}/src/lfsr_16bit.sv
     ${PROJECT_SOURCE_DIR}/src/lfsr_8bit.sv
-    ${PROJECT_SOURCE_DIR}/src/multiaddr_decode.sv
+    # ${PROJECT_SOURCE_DIR}/src/multiaddr_decode.sv # not compiling standalone xcelium
     ${PROJECT_SOURCE_DIR}/src/mv_filter.sv
     ${PROJECT_SOURCE_DIR}/src/onehot_to_bin.sv
     ${PROJECT_SOURCE_DIR}/src/plru_tree.sv
@@ -61,7 +61,7 @@ ip_sources(${IP} SYSTEMVERILOG
     ${PROJECT_SOURCE_DIR}/src/stream_throttle.sv
     ${PROJECT_SOURCE_DIR}/src/sub_per_hash.sv
     ${PROJECT_SOURCE_DIR}/src/sync.sv
-    ${PROJECT_SOURCE_DIR}/src/sync_wedge.sv
+    # ${PROJECT_SOURCE_DIR}/src/sync_wedge.sv # Reference to pulp_clock_gating (not defined)
     ${PROJECT_SOURCE_DIR}/src/unread.sv
     ${PROJECT_SOURCE_DIR}/src/read.sv
     ${PROJECT_SOURCE_DIR}/src/cdc_reset_ctrlr_pkg.sv
@@ -74,7 +74,7 @@ ip_sources(${IP} SYSTEMVERILOG
     ${PROJECT_SOURCE_DIR}/src/counter.sv
     ${PROJECT_SOURCE_DIR}/src/ecc_decode.sv
     ${PROJECT_SOURCE_DIR}/src/ecc_encode.sv
-    ${PROJECT_SOURCE_DIR}/src/edge_detect.sv
+    # ${PROJECT_SOURCE_DIR}/src/edge_detect.sv # Reference so sync_wedge
     ${PROJECT_SOURCE_DIR}/src/lzc.sv
     ${PROJECT_SOURCE_DIR}/src/max_counter.sv
     ${PROJECT_SOURCE_DIR}/src/rstgen.sv
@@ -91,7 +91,7 @@ ip_sources(${IP} SYSTEMVERILOG
     ${PROJECT_SOURCE_DIR}/src/fall_through_register.sv
     ${PROJECT_SOURCE_DIR}/src/id_queue.sv
     ${PROJECT_SOURCE_DIR}/src/stream_to_mem.sv
-    ${PROJECT_SOURCE_DIR}/src/stream_arbiter_flushable.sv
+    # ${PROJECT_SOURCE_DIR}/src/stream_arbiter_flushable.sv # not compiling standalone xcelium
     ${PROJECT_SOURCE_DIR}/src/stream_fifo_optimal_wrap.sv
     ${PROJECT_SOURCE_DIR}/src/stream_register.sv
     ${PROJECT_SOURCE_DIR}/src/stream_xbar.sv
@@ -99,7 +99,7 @@ ip_sources(${IP} SYSTEMVERILOG
     ${PROJECT_SOURCE_DIR}/src/cdc_fifo_gray_clearable.sv
     ${PROJECT_SOURCE_DIR}/src/cdc_2phase_clearable.sv
     ${PROJECT_SOURCE_DIR}/src/mem_to_banks_detailed.sv
-    ${PROJECT_SOURCE_DIR}/src/stream_arbiter.sv
+    # ${PROJECT_SOURCE_DIR}/src/stream_arbiter.sv # not compiling standalone xcelium
     ${PROJECT_SOURCE_DIR}/src/stream_omega_net.sv
     # Level 4
     ${PROJECT_SOURCE_DIR}/src/mem_to_banks.sv
