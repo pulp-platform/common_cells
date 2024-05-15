@@ -241,7 +241,7 @@
     end else begin                                                \
       if (__clear) begin                                          \
         __q <= (__reset_value);                                   \
-      end begin                                                   \
+      end else begin                                              \
         __q <= (__d);                                             \
       end                                                         \
     end                                                           \
