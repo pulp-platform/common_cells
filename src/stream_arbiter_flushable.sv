@@ -58,7 +58,7 @@ module stream_arbiter_flushable #(
       .DataType   (DATA_T),
       .ExtPrio    (1'b1),
       .AxiVldRdy  (1'b1),
-      .LockIn     (1'b1)
+      .LockIn     (1'b0)
     ) i_arbiter (
       .clk_i,
       .rst_ni,
