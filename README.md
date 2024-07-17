@@ -55,6 +55,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | Name                | Description                                                       | Status       | Superseded By |
 | ------------------- | ----------------------------------------------------------------- | ------------ | ------------- |
 | `counter`           | Generic up/down counter with overflow detection                   | active       |               |
+| `credit_counter`    | Up/down counter for credit                                        | active       |               |
 | `delta_counter`     | Up/down counter with variable delta and overflow detection        | active       |               |
 | `generic_LFSR_8bit` | 8-bit linear feedback shift register (LFSR)                       | *deprecated* | `lfsr_8bit`   |
 | `lfsr_8bit`         | 8-bit linear feedback shift register (LFSR)                       | active       |               |
