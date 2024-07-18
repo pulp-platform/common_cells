@@ -109,8 +109,13 @@ module mem_to_banks_detailed #(
                         resp_valid, resp_ready;
   req_t [NumBanks-1:0]  bank_req,
                         bank_oup;
-  logic [NumBanks-1:0]  bank_req_internal, bank_gnt_internal, zero_strobe, dead_response;
-  logic                 dead_write_fifo_full;
+  logic [NumBanks-1:0]  bank_req_internal,
+                        bank_gnt_internal,
+                        zero_strobe,
+                        dead_response,
+                        dead_response_unmasked;
+  logic                 dead_write_fifo_full,
+                        dead_write_fifo_empty;
 
   function automatic addr_t align_addr(input addr_t addr);
     return (addr >> $clog2(DataBytes)) << $clog2(DataBytes);
@@ -148,11 +153,13 @@ module mem_to_banks_detailed #(
     assign bank_wuser_o[i] = bank_oup[i].wuser;
     assign bank_we_o[i]    = bank_oup[i].we;
 
-    assign zero_strobe[i] = (bank_oup[i].strb == '0);
+    assign zero_strobe[i] = (bank_req[i].strb == '0);
 
     if (HideStrb) begin : gen_hide_strb
-      assign bank_req_o[i] = (bank_oup[i].we && zero_strobe[i]) ? 1'b0 : bank_req_internal[i];
-      assign bank_gnt_internal[i] = (bank_oup[i].we && zero_strobe[i]) ? 1'b1 : bank_gnt_i[i];
+      assign bank_req_o[i] = (bank_oup[i].we && (bank_oup[i].strb == '0)) ?
+                               1'b0 : bank_req_internal[i];
+      assign bank_gnt_internal[i] = (bank_oup[i].we && (bank_oup[i].strb == '0)) ?
+                                      1'b1 : bank_gnt_i[i];
     end else begin : gen_legacy_strb
       assign bank_req_o[i] = bank_req_internal[i];
       assign bank_gnt_internal[i] = bank_gnt_i[i];
@@ -170,19 +177,22 @@ module mem_to_banks_detailed #(
     ) i_dead_write_fifo (
       .clk_i,
       .rst_ni,
-      .flush_i    ( 1'b0                    ),
-      .testmode_i ( 1'b0                    ),
-      .full_o     ( dead_write_fifo_full    ),
-      .empty_o    (),
+      .flush_i    ( 1'b0                           ),
+      .testmode_i ( 1'b0                           ),
+      .full_o     ( dead_write_fifo_full           ),
+      .empty_o    ( dead_write_fifo_empty          ),
       .usage_o    (),
-      .data_i     ( bank_we_o & zero_strobe ),
-      .push_i     ( req_i & gnt_o           ),
-      .data_o     ( dead_response           ),
-      .pop_i      ( rvalid_o                )
+      .data_i     ( {NumBanks{we_i}} & zero_strobe ),
+      .push_i     ( req_i & gnt_o                  ),
+      .data_o     ( dead_response_unmasked         ),
+      .pop_i      ( rvalid_o                       )
     );
+    assign dead_response = dead_response_unmasked & {NumBanks{~dead_write_fifo_empty}};
   end else begin : gen_no_dead_write_fifo
+    assign dead_response_unmasked = '0;
     assign dead_response = '0;
     assign dead_write_fifo_full = 1'b0;
+    assign dead_write_fifo_empty = 1'b1;
   end
 
   // Handle responses.

@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - `credit_counter`: Add up/down counter for credit.
 
+### Fixed
+- `mem_to_banks_detailed`: Ensure no spurious response after full dead write.
+
 ## 1.36.0 - 2024-07-08
 ### Fixed
 - `registers`: Fix else statement in FFARNC macro.
