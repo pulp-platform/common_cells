@@ -153,12 +153,12 @@ module mem_to_banks_detailed #(
     assign bank_wuser_o[i] = bank_oup[i].wuser;
     assign bank_we_o[i]    = bank_oup[i].we;
 
-    assign zero_strobe[i] = (|bank_req[i].strb == '0);
+    assign zero_strobe[i] = (bank_req[i].strb == '0);
 
     if (HideStrb) begin : gen_hide_strb
-      assign bank_req_o[i] = (bank_oup[i].we && (|bank_oup[i].strb == '0)) ?
+      assign bank_req_o[i] = (bank_oup[i].we && (bank_oup[i].strb == '0)) ?
                                1'b0 : bank_req_internal[i];
-      assign bank_gnt_internal[i] = (bank_oup[i].we && (|bank_oup[i].strb == '0)) ?
+      assign bank_gnt_internal[i] = (bank_oup[i].we && (bank_oup[i].strb == '0)) ?
                                       1'b1 : bank_gnt_i[i];
     end else begin : gen_legacy_strb
       assign bank_req_o[i] = bank_req_internal[i];
