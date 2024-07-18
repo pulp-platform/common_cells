@@ -1,6 +1,6 @@
 CAPI=2:
 
-name : pulp-platform.org::common_cells:1.36.0
+name : pulp-platform.org::common_cells:1.37.0
 
 filesets:
   rtl:
