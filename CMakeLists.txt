@@ -6,11 +6,14 @@
 cmake_minimum_required(VERSION 3.25)
 project(common_cells NONE)
 
+# Fetch dependencies
+include("deps/deps.cmake")
+
 add_ip(common_cells
     VENDOR pulp_platform
     LIBRARY ip
     VERSION 1.33.1
-    )
+)
 
 # include/common_cells/registers.svh
 # include/common_cells/assertions.svh
@@ -126,6 +129,8 @@ ip_sources(${IP} SYSTEMVERILOG
     # ${PROJECT_SOURCE_DIR}/src/edge_propagator.sv
     # ${PROJECT_SOURCE_DIR}/src/edge_propagator_rx.sv
 )
+
+ip_link(${IP} pulp_platform::ip::tech_cells_generic)
 
 if(NOT PROJECT_IS_TOP_LEVEL)
     set(RTL_LIB_NAME ${IP} PARENT_SCOPE)
