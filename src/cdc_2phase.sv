@@ -111,7 +111,7 @@ module cdc_2phase_src #(
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       req_src_q  <= 0;
-      data_src_q <= '0;
+      data_src_q <= T'('0);
     end else if (valid_i && ready_o) begin
       req_src_q  <= ~req_src_q;
       data_src_q <= data_i;
@@ -171,7 +171,7 @@ module cdc_2phase_dst #(
   // indicated by the async_req line changing levels.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      data_dst_q <= '0;
+      data_dst_q <= T'('0);
     end else if (req_q0 != req_q1 && !valid_o) begin
       data_dst_q <= async_data_i;
     end

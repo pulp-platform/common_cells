@@ -53,7 +53,7 @@ module shift_reg_gated #(
 
       // Gate each shift register with a valid flag to enable the synthsis tools to insert ICG for
       // better power comsumption.
-      `FFL(data_q[i], data_d[i], valid_d[i], '0, clk_i, rst_ni)
+      `FFL(data_q[i], data_d[i], valid_d[i], dtype'('0), clk_i, rst_ni)
     end
 
     // Output the shifted result.

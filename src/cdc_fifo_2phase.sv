@@ -90,7 +90,7 @@ module cdc_fifo_2phase #(
   for (genvar i = 0; i < 2**LOG_DEPTH; i++) begin : g_word
     always_ff @(posedge src_clk_i, negedge src_rst_ni) begin
       if (!src_rst_ni)
-        fifo_data_q[i] <= '0;
+        fifo_data_q[i] <= T'('0);
       else if (fifo_write && fifo_widx == i)
         fifo_data_q[i] <= fifo_wdata;
     end
