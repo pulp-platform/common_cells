@@ -19,6 +19,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/CPM.cmake)
 
 CPMAddPackage(
     NAME tech_cells_generic
-    GIT_TAG v0.2.13
+    # Commit on socmake branch
+    GIT_TAG b4d2371
     GIT_REPOSITORY "https://github.com/HEP-SoC/tech_cells_generic.git"
 )
