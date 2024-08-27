@@ -131,7 +131,7 @@ module fifo_v3 #(
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
-            mem_q <= '0;
+            mem_q <= {FifoDepth{dtype'('0)}};
         end else if (!gate_clock) begin
             mem_q <= mem_n;
         end

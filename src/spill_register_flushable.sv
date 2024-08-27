@@ -41,7 +41,7 @@ module spill_register_flushable #(
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : ps_a_data
       if (!rst_ni)
-        a_data_q <= '0;
+        a_data_q <= T'('0);
       else if (a_fill)
         a_data_q <= data_i;
     end
@@ -60,7 +60,7 @@ module spill_register_flushable #(
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : ps_b_data
       if (!rst_ni)
-        b_data_q <= '0;
+        b_data_q <= T'('0);
       else if (b_fill)
         b_data_q <= a_data_q;
     end

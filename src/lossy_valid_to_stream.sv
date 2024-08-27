@@ -125,7 +125,7 @@ module lossy_valid_to_stream #(
       read_ptr_q           <= '0;
       write_ptr_q          <= '0;
       pending_tx_counter_q <= '0;
-      mem_q                <= '0;
+      mem_q                <= {2{T'('0)}};
     end else begin
       read_ptr_q           <= read_ptr_d;
       write_ptr_q          <= write_ptr_d;
