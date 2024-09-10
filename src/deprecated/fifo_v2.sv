@@ -16,7 +16,7 @@ module fifo_v2 #(
     parameter int unsigned DEPTH        = 8,    // depth can be arbitrary from 0 to 2**32
     parameter int unsigned ALM_EMPTY_TH = 1,    // almost empty threshold (when to assert alm_empty_o)
     parameter int unsigned ALM_FULL_TH  = 1,    // almost full threshold (when to assert alm_full_o)
-    parameter type dtype                = logic [DATA_WIDTH-1:0],
+    // parameter type dtype                = logic [DATA_WIDTH-1:0],
     // DO NOT OVERWRITE THIS PARAMETER
     parameter int unsigned ADDR_DEPTH   = (DEPTH > 1) ? $clog2(DEPTH) : 1
 )(
@@ -30,10 +30,10 @@ module fifo_v2 #(
     output logic  alm_full_o,       // FIFO fillstate >= the specified threshold
     output logic  alm_empty_o,      // FIFO fillstate <= the specified threshold
     // as long as the queue is not full we can push new data
-    input  dtype  data_i,           // data to push into the queue
+    input  logic [DATA_WIDTH-1:0]  data_i,           // data to push into the queue
     input  logic  push_i,           // data is valid and can be pushed to the queue
     // as long as the queue is not empty we can pop new elements
-    output dtype  data_o,           // output data
+    output logic [DATA_WIDTH-1:0]  data_o,           // output data
     input  logic  pop_i             // pop head from queue
 );
 
@@ -51,22 +51,23 @@ module fifo_v2 #(
     fifo_v3 #(
         .FALL_THROUGH ( FALL_THROUGH ),
         .DATA_WIDTH   ( DATA_WIDTH   ),
-        .DEPTH        ( DEPTH        ),
-        .dtype        ( dtype        )
+        .DEPTH        ( DEPTH        )
+        // .dtype        ( dtype        )
     ) i_fifo_v3 (
-        .clk_i,
-        .rst_ni,
-        .flush_i,
-        .testmode_i,
-        .full_o,
-        .empty_o,
+        .clk_i(clk_i),
+        .rst_ni(rst_ni),
+        .flush_i(flush_i),
+        .testmode_i(testmode_i),
+        .full_o(full_o),
+        .empty_o(empty_o),
         .usage_o (usage),
-        .data_i,
-        .push_i,
-        .data_o,
-        .pop_i
+        .data_i(data_i),
+        .push_i(push_i),
+        .data_o(data_o),
+        .pop_i(pop_i)
     );
 
+    // tmrg copy start
     `ifndef SYNTHESIS
     `ifndef COMMON_CELLS_ASSERTS_OFF
         initial begin
@@ -75,5 +76,6 @@ module fifo_v2 #(
         end
     `endif
     `endif
+    // tmrg copy stop
 
 endmodule // fifo_v2

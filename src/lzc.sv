@@ -20,7 +20,7 @@ module lzc #(
   /// Dependent parameter. Do **not** change!
   ///
   /// Width of the output signal with the zero count.
-  parameter int unsigned CNT_WIDTH = cf_math_pkg::idx_width(WIDTH)
+  parameter int unsigned CNT_WIDTH = (WIDTH > 32'd1) ? unsigned'($clog2(WIDTH)) : 32'd1
 ) (
   /// Input vector to be counted.
   input  logic [WIDTH-1:0]     in_i,
@@ -30,6 +30,7 @@ module lzc #(
   output logic                 empty_o
 );
 
+  // tmrg do_not_touch
   if (WIDTH == 1) begin : gen_degenerate_lzc
 
     assign cnt_o[0] = !in_i[0];
@@ -39,6 +40,8 @@ module lzc #(
 
     localparam int unsigned NumLevels = $clog2(WIDTH);
 
+
+  // tmrg copy start
   `ifndef COMMON_CELLS_ASSERTS_OFF
     `ifndef SYNTHESIS
     initial begin
@@ -98,9 +101,11 @@ module lzc #(
 
     assign cnt_o = NumLevels > unsigned'(0) ? index_nodes[0] : {($clog2(WIDTH)) {1'b0}};
     assign empty_o = NumLevels > unsigned'(0) ? ~sel_nodes[0] : ~(|in_i);
+  // tmrg copy stop
 
   end : gen_lzc
 
+// tmrg copy start
 `ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
   initial begin: validate_params
@@ -109,5 +114,6 @@ module lzc #(
   end
 `endif
 `endif
+// tmrg copy stop
 
 endmodule : lzc

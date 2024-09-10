@@ -18,7 +18,7 @@ add_ip(common_cells
 # include/common_cells/registers.svh
 # include/common_cells/assertions.svh
 ip_include_directories(${IP} SYSTEMVERILOG
-    ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/include/common_cells
 )
 
 ip_sources(${IP} SYSTEMVERILOG
@@ -26,86 +26,89 @@ ip_sources(${IP} SYSTEMVERILOG
     # package. Files in level 1 only depend on files in level 0, files in level 2 on files in
     # levels 1 and 0, etc. Files within a level are ordered alphabetically.
     # Level 0
-    ${PROJECT_SOURCE_DIR}/src/binary_to_gray.sv
-    ${PROJECT_SOURCE_DIR}/src/cb_filter_pkg.sv
-    ${PROJECT_SOURCE_DIR}/src/cc_onehot.sv
-    ${PROJECT_SOURCE_DIR}/src/cf_math_pkg.sv
-    ${PROJECT_SOURCE_DIR}/src/clk_int_div.sv
+    ${PROJECT_SOURCE_DIR}/src/cdc_reset_ctrlr_pkg.sv
+    # ${PROJECT_SOURCE_DIR}/src/binary_to_gray.sv
+    # ${PROJECT_SOURCE_DIR}/src/cb_filter_pkg.sv
+    # ${PROJECT_SOURCE_DIR}/src/cc_onehot.sv
+    # ${PROJECT_SOURCE_DIR}/src/cf_math_pkg.sv
+    # ${PROJECT_SOURCE_DIR}/src/clk_int_div.sv
     ${PROJECT_SOURCE_DIR}/src/delta_counter.sv
-    ${PROJECT_SOURCE_DIR}/src/ecc_pkg.sv
-    ${PROJECT_SOURCE_DIR}/src/edge_propagator_tx.sv
-    ${PROJECT_SOURCE_DIR}/src/exp_backoff.sv
+    # ${PROJECT_SOURCE_DIR}/src/ecc_pkg.sv
+    # ${PROJECT_SOURCE_DIR}/src/edge_propagator_tx.sv
+    # ${PROJECT_SOURCE_DIR}/src/exp_backoff.sv
     ${PROJECT_SOURCE_DIR}/src/fifo_v3.sv
-    ${PROJECT_SOURCE_DIR}/src/gray_to_binary.sv
-    ${PROJECT_SOURCE_DIR}/src/isochronous_4phase_handshake.sv
-    ${PROJECT_SOURCE_DIR}/src/isochronous_spill_register.sv
-    ${PROJECT_SOURCE_DIR}/src/lfsr.sv
-    ${PROJECT_SOURCE_DIR}/src/lfsr_16bit.sv
-    ${PROJECT_SOURCE_DIR}/src/lfsr_8bit.sv
+    # ${PROJECT_SOURCE_DIR}/src/gray_to_binary.sv
+    # ${PROJECT_SOURCE_DIR}/src/isochronous_4phase_handshake.sv
+    # ${PROJECT_SOURCE_DIR}/src/isochronous_spill_register.sv # unsupported 'parameter type' by TMRG
+    # ${PROJECT_SOURCE_DIR}/src/lfsr.sv
+    # ${PROJECT_SOURCE_DIR}/src/lfsr_16bit.sv
+    # ${PROJECT_SOURCE_DIR}/src/lfsr_8bit.sv
     # ${PROJECT_SOURCE_DIR}/src/multiaddr_decode.sv # not compiling standalone xcelium
-    ${PROJECT_SOURCE_DIR}/src/mv_filter.sv
-    ${PROJECT_SOURCE_DIR}/src/onehot_to_bin.sv
-    ${PROJECT_SOURCE_DIR}/src/plru_tree.sv
-    ${PROJECT_SOURCE_DIR}/src/passthrough_stream_fifo.sv
-    ${PROJECT_SOURCE_DIR}/src/popcount.sv
+    # ${PROJECT_SOURCE_DIR}/src/mv_filter.sv
+    # ${PROJECT_SOURCE_DIR}/src/onehot_to_bin.sv
+    # ${PROJECT_SOURCE_DIR}/src/plru_tree.sv
+    # ${PROJECT_SOURCE_DIR}/src/passthrough_stream_fifo.sv # unsupported 'parameter type' by TMRG
+    # ${PROJECT_SOURCE_DIR}/src/popcount.sv
     ${PROJECT_SOURCE_DIR}/src/rr_arb_tree.sv
-    ${PROJECT_SOURCE_DIR}/src/rstgen_bypass.sv
-    ${PROJECT_SOURCE_DIR}/src/serial_deglitch.sv
-    ${PROJECT_SOURCE_DIR}/src/shift_reg.sv
-    ${PROJECT_SOURCE_DIR}/src/shift_reg_gated.sv
-    ${PROJECT_SOURCE_DIR}/src/spill_register_flushable.sv
-    ${PROJECT_SOURCE_DIR}/src/stream_demux.sv
-    ${PROJECT_SOURCE_DIR}/src/stream_filter.sv
-    ${PROJECT_SOURCE_DIR}/src/stream_fork.sv
-    ${PROJECT_SOURCE_DIR}/src/stream_intf.sv
-    ${PROJECT_SOURCE_DIR}/src/stream_join.sv
-    ${PROJECT_SOURCE_DIR}/src/stream_join_dynamic.sv
-    ${PROJECT_SOURCE_DIR}/src/stream_mux.sv
-    ${PROJECT_SOURCE_DIR}/src/stream_throttle.sv
-    ${PROJECT_SOURCE_DIR}/src/sub_per_hash.sv
+    # ${PROJECT_SOURCE_DIR}/src/rstgen_bypass.sv
+    # ${PROJECT_SOURCE_DIR}/src/serial_deglitch.sv
+    # ${PROJECT_SOURCE_DIR}/src/shift_reg.sv # unsupported 'parameter type' by TMRG
+    # ${PROJECT_SOURCE_DIR}/src/shift_reg_gated.sv # unsupported 'parameter type' by TMRG
+    ${PROJECT_SOURCE_DIR}/src/spill_register_flushable.sv # unsupported 'parameter type' by TMRG
+    # ${PROJECT_SOURCE_DIR}/src/stream_demux.sv
+    # ${PROJECT_SOURCE_DIR}/src/stream_filter.sv
+    # ${PROJECT_SOURCE_DIR}/src/stream_fork.sv
+    # ${PROJECT_SOURCE_DIR}/src/stream_intf.sv
+    # ${PROJECT_SOURCE_DIR}/src/stream_join.sv
+    # ${PROJECT_SOURCE_DIR}/src/stream_join_dynamic.sv
+    # ${PROJECT_SOURCE_DIR}/src/stream_mux.sv
+    # ${PROJECT_SOURCE_DIR}/src/stream_throttle.sv
+    # ${PROJECT_SOURCE_DIR}/src/sub_per_hash.sv
     ${PROJECT_SOURCE_DIR}/src/sync.sv
     # ${PROJECT_SOURCE_DIR}/src/sync_wedge.sv # Reference to pulp_clock_gating (not defined)
-    ${PROJECT_SOURCE_DIR}/src/unread.sv
-    ${PROJECT_SOURCE_DIR}/src/read.sv
-    ${PROJECT_SOURCE_DIR}/src/cdc_reset_ctrlr_pkg.sv
+    # ${PROJECT_SOURCE_DIR}/src/unread.sv
+    # ${PROJECT_SOURCE_DIR}/src/read.sv
     # Level 1
+    ${PROJECT_SOURCE_DIR}/src/addr_map_rule_pkg.sv
     ${PROJECT_SOURCE_DIR}/src/addr_decode_dync.sv
-    ${PROJECT_SOURCE_DIR}/src/cdc_2phase.sv
+    # ${PROJECT_SOURCE_DIR}/src/cdc_2phase.sv
     ${PROJECT_SOURCE_DIR}/src/cdc_4phase.sv
-    ${PROJECT_SOURCE_DIR}/src/cb_filter.sv
-    ${PROJECT_SOURCE_DIR}/src/cdc_fifo_2phase.sv
+    # ${PROJECT_SOURCE_DIR}/src/cb_filter.sv
+    # ${PROJECT_SOURCE_DIR}/src/cdc_fifo_2phase.sv
     ${PROJECT_SOURCE_DIR}/src/counter.sv
-    ${PROJECT_SOURCE_DIR}/src/ecc_decode.sv
-    ${PROJECT_SOURCE_DIR}/src/ecc_encode.sv
+    # ${PROJECT_SOURCE_DIR}/src/ecc_decode.sv
+    # ${PROJECT_SOURCE_DIR}/src/ecc_encode.sv
     # ${PROJECT_SOURCE_DIR}/src/edge_detect.sv # Reference so sync_wedge
     ${PROJECT_SOURCE_DIR}/src/lzc.sv
-    ${PROJECT_SOURCE_DIR}/src/max_counter.sv
-    ${PROJECT_SOURCE_DIR}/src/rstgen.sv
-    ${PROJECT_SOURCE_DIR}/src/spill_register.sv
-    ${PROJECT_SOURCE_DIR}/src/stream_delay.sv
-    ${PROJECT_SOURCE_DIR}/src/stream_fifo.sv
-    ${PROJECT_SOURCE_DIR}/src/stream_fork_dynamic.sv
-    ${PROJECT_SOURCE_DIR}/src/clk_mux_glitch_free.sv
+    # ${PROJECT_SOURCE_DIR}/src/max_counter.sv
+    # ${PROJECT_SOURCE_DIR}/src/rstgen.sv
+    ${PROJECT_SOURCE_DIR}/src/spill_register.sv # unsupported 'parameter type' by TMRG
+    # ${PROJECT_SOURCE_DIR}/src/stream_delay.sv # unsupported 'parameter type' by TMRG
+    # ${PROJECT_SOURCE_DIR}/src/stream_fifo.sv # unsupported 'parameter type' by TMRG
+    # ${PROJECT_SOURCE_DIR}/src/stream_fork_dynamic.sv
+    # ${PROJECT_SOURCE_DIR}/src/clk_mux_glitch_free.sv
     # Level 2
     ${PROJECT_SOURCE_DIR}/src/addr_decode.sv
-    ${PROJECT_SOURCE_DIR}/src/addr_decode_napot.sv
+    # ${PROJECT_SOURCE_DIR}/src/addr_decode_napot.sv
     ${PROJECT_SOURCE_DIR}/src/cdc_reset_ctrlr.sv
-    ${PROJECT_SOURCE_DIR}/src/cdc_fifo_gray.sv
-    ${PROJECT_SOURCE_DIR}/src/fall_through_register.sv
-    ${PROJECT_SOURCE_DIR}/src/id_queue.sv
-    ${PROJECT_SOURCE_DIR}/src/stream_to_mem.sv
+    # ${PROJECT_SOURCE_DIR}/src/cdc_fifo_gray.sv # unsupported 'parameter type' by TMRG
+    # ${PROJECT_SOURCE_DIR}/src/fall_through_register.sv # unsupported 'parameter type' by TMRG
+    # ${PROJECT_SOURCE_DIR}/src/id_queue.sv # unsupported 'parameter type' by TMRG
+    # ${PROJECT_SOURCE_DIR}/src/stream_to_mem.sv # unsupported 'parameter type' by TMRG
     # ${PROJECT_SOURCE_DIR}/src/stream_arbiter_flushable.sv # not compiling standalone xcelium
-    ${PROJECT_SOURCE_DIR}/src/stream_fifo_optimal_wrap.sv
-    ${PROJECT_SOURCE_DIR}/src/stream_register.sv
-    ${PROJECT_SOURCE_DIR}/src/stream_xbar.sv
+    # ${PROJECT_SOURCE_DIR}/src/stream_fifo_optimal_wrap.sv # unsupported 'parameter type' by TMRG
+    # ${PROJECT_SOURCE_DIR}/src/stream_register.sv # unsupported 'parameter type' by TMRG
+    # ${PROJECT_SOURCE_DIR}/src/stream_xbar.sv # unsupported 'parameter type' by TMRG
     # Level 3
-    ${PROJECT_SOURCE_DIR}/src/cdc_fifo_gray_clearable.sv
+    # ${PROJECT_SOURCE_DIR}/src/cdc_fifo_gray_clearable.sv
+    ${PROJECT_SOURCE_DIR}/src/cdc_2phase_dst_clearable.sv
+    ${PROJECT_SOURCE_DIR}/src/cdc_2phase_src_clearable.sv
     ${PROJECT_SOURCE_DIR}/src/cdc_2phase_clearable.sv
-    ${PROJECT_SOURCE_DIR}/src/mem_to_banks_detailed.sv
+    # ${PROJECT_SOURCE_DIR}/src/mem_to_banks_detailed.sv
     # ${PROJECT_SOURCE_DIR}/src/stream_arbiter.sv # not compiling standalone xcelium
-    ${PROJECT_SOURCE_DIR}/src/stream_omega_net.sv
+    # ${PROJECT_SOURCE_DIR}/src/stream_omega_net.sv
     # Level 4
-    ${PROJECT_SOURCE_DIR}/src/mem_to_banks.sv
+    # ${PROJECT_SOURCE_DIR}/src/mem_to_banks.sv
 
     # Deprecated modules
     # Level 0

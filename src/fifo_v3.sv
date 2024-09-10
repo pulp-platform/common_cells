@@ -14,7 +14,7 @@ module fifo_v3 #(
     parameter bit          FALL_THROUGH = 1'b0, // fifo is in fall-through mode
     parameter int unsigned DATA_WIDTH   = 32,   // default data width if the fifo is of type logic
     parameter int unsigned DEPTH        = 8,    // depth can be arbitrary from 0 to 2**32
-    parameter type dtype                = logic [DATA_WIDTH-1:0],
+    // parameter type dtype                = logic [DATA_WIDTH-1:0],
     // DO NOT OVERWRITE THIS PARAMETER
     parameter int unsigned ADDR_DEPTH   = (DEPTH > 1) ? $clog2(DEPTH) : 1
 )(
@@ -27,10 +27,10 @@ module fifo_v3 #(
     output logic  empty_o,          // queue is empty
     output logic  [ADDR_DEPTH-1:0] usage_o,  // fill pointer
     // as long as the queue is not full we can push new data
-    input  dtype  data_i,           // data to push into the queue
+    input  logic [DATA_WIDTH-1:0]  data_i,           // data to push into the queue
     input  logic  push_i,           // data is valid and can be pushed to the queue
     // as long as the queue is not empty we can pop new elements
-    output dtype  data_o,           // output data
+    output logic [DATA_WIDTH-1:0]  data_o,           // output data
     input  logic  pop_i             // pop head from queue
 );
     // local parameter
@@ -44,7 +44,7 @@ module fifo_v3 #(
     // this integer will be truncated by the synthesis tool
     logic [ADDR_DEPTH:0] status_cnt_n, status_cnt_q;
     // actual memory
-    dtype [FifoDepth - 1:0] mem_n, mem_q;
+    logic [DATA_WIDTH-1:0] [FifoDepth - 1:0] mem_n, mem_q;
 
     assign usage_o = status_cnt_q[ADDR_DEPTH-1:0];
 
@@ -137,6 +137,7 @@ module fifo_v3 #(
         end
     end
 
+// tmrg copy start
 `ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
     initial begin
@@ -152,5 +153,6 @@ module fifo_v3 #(
         else $fatal (1, "Trying to pop data although the FIFO is empty.");
 `endif
 `endif
+// tmrg copy stop
 
 endmodule // fifo_v3

@@ -46,12 +46,13 @@
 ///    why).
 ///
 ///
-/* verilator lint_off DECLFILENAME */
 
-`include "common_cells/registers.svh"
+`include "registers.svh"
 
 module cdc_2phase_clearable #(
+// tmrg copy start
   parameter type T = logic,
+// tmrg copy stop
   parameter int unsigned SYNC_STAGES = 3,
   parameter int CLEAR_ON_ASYNC_RESET = 1
 )(
@@ -82,6 +83,7 @@ module cdc_2phase_clearable #(
   logic        s_dst_isolate_req;
   logic        s_dst_isolate_ack_q;
 
+  // tmrg copy start
   // Asynchronous handshake signals between the CDCs
   (* dont_touch = "true" *) logic async_req;
   (* dont_touch = "true" *) logic async_ack;
@@ -96,6 +98,7 @@ module cdc_2phase_clearable #(
       $error("A minimum of 2 synchronizer stages is required for proper functionality.");
     end
   end
+  // tmrg copy stop
 
 
   // The sender in the source domain.
@@ -184,7 +187,7 @@ module cdc_2phase_clearable #(
   // clear sequence.
   assign dst_clear_pending_o = s_dst_isolate_req;
 
-
+// tmrg ignore start
 `ifndef COMMON_CELLS_ASSERTS_OFF
 
   no_valid_i_during_clear_i : assert property (
@@ -192,154 +195,7 @@ module cdc_2phase_clearable #(
   );
 
 `endif
+// tmrg ignore stop
 
 endmodule
 
-
-/// Half of the two-phase clock domain crossing located in the source domain.
-module cdc_2phase_src_clearable #(
-  parameter type T = logic,
-  parameter int unsigned SYNC_STAGES = 2
-) (
-  input  logic rst_ni,
-  input  logic clk_i,
-  input  logic clear_i,
-  input  T     data_i,
-  input  logic valid_i,
-  output logic ready_o,
-  output logic async_req_o,
-  input  logic async_ack_i,
-  output T     async_data_o
-);
-
-  (* dont_touch = "true" *)
-  logic  req_src_d, req_src_q, ack_synced;
-  (* dont_touch = "true" *)
-  T data_src_d, data_src_q;
-
-  // Synchronize the async ACK
-  sync #(
-    .STAGES(SYNC_STAGES)
-  ) i_sync(
-    .clk_i,
-    .rst_ni,
-    .serial_i( async_ack_i ),
-    .serial_o( ack_synced  )
-  );
-
-  // If we receive the clear signal clear the content of the request flip-flop
-  // and the data register
-  always_comb begin
-    data_src_d = data_src_q;
-    req_src_d  = req_src_q;
-    if (clear_i) begin
-      req_src_d  = 1'b0;
-    // The req_src and data_src registers change when a new data item is accepted.
-    end else if (valid_i && ready_o) begin
-      req_src_d  = ~req_src_q;
-      data_src_d = data_i;
-    end
-  end
-
-  `FFNR(data_src_q, data_src_d, clk_i)
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      req_src_q  <= 0;
-    end else begin
-      req_src_q  <= req_src_d;
-    end
-  end
-
-  // Output assignments.
-  assign ready_o = (req_src_q == ack_synced);
-  assign async_req_o = req_src_q;
-  assign async_data_o = data_src_q;
-
-// Assertions
-`ifndef COMMON_CELLS_ASSERTS_OFF
-  `ifndef SYNTHESIS
-  no_clear_and_request: assume property (
-     @(posedge clk_i) disable iff(~rst_ni) (clear_i |-> ~valid_i))
-    else $fatal(1, "No request allowed while clear_i is asserted.");
-
-  `endif
-`endif
-
-endmodule
-
-
-/// Half of the two-phase clock domain crossing located in the destination
-/// domain.
-module cdc_2phase_dst_clearable #(
-  parameter type T = logic,
-  parameter int unsigned SYNC_STAGES = 2
-)(
-  input  logic rst_ni,
-  input  logic clk_i,
-  input  logic clear_i,
-  output T     data_o,
-  output logic valid_o,
-  input  logic ready_i,
-  input  logic async_req_i,
-  output logic async_ack_o,
-  input  T     async_data_i
-);
-
-  (* dont_touch = "true" *)
-  (* async_reg = "true" *)
- logic ack_dst_d, ack_dst_q, req_synced, req_synced_q1;
-  (* dont_touch = "true" *)
-  T data_dst_d, data_dst_q;
-
-
-  //Synchronize the request
-  sync #(
-    .STAGES(SYNC_STAGES)
-  ) i_sync(
-    .clk_i,
-    .rst_ni,
-    .serial_i( async_req_i ),
-    .serial_o( req_synced  )
-  );
-
-  // The ack_dst register changes when a new data item is accepted.
-  always_comb begin
-    ack_dst_d = ack_dst_q;
-    if (clear_i) begin
-      ack_dst_d = 1'b0;
-    end else if (valid_o && ready_i) begin
-      ack_dst_d = ~ack_dst_q;
-    end
-  end
-
-  // The data_dst register samples when a new data item is presented. This is
-  // indicated by a transition in the req_synced line.
-  always_comb begin
-    data_dst_d = data_dst_q;
-    if (req_synced != req_synced_q1 && !valid_o) begin
-      data_dst_d = async_data_i;
-    end
-  end
-
-  `FFNR(data_dst_q, data_dst_d, clk_i)
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      ack_dst_q     <= 0;
-      req_synced_q1 <= 1'b0;
-    end else begin
-      ack_dst_q     <= ack_dst_d;
-      // The req_synced_q1 is the delayed version of the synchronized req_synced
-      // used to detect transitions in the request.
-      req_synced_q1 <= req_synced;
-    end
-  end
-
-  // Output assignments.
-  assign valid_o = (ack_dst_q != req_synced_q1);
-  assign data_o = data_dst_q;
-  assign async_ack_o = ack_dst_q;
-
-endmodule
-/* verilator lint_on DECLFILENAME */

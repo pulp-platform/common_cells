@@ -15,7 +15,7 @@
 /// A register with handshakes that completely cuts any combinational paths
 /// between the input and output. This spill register can be flushed.
 module spill_register_flushable #(
-  parameter type T           = logic,
+  // parameter int unsigned T = 1,
   parameter bit  Bypass      = 1'b0   // make this spill register transparent
 ) (
   input  logic clk_i   ,
@@ -23,10 +23,10 @@ module spill_register_flushable #(
   input  logic valid_i ,
   input  logic flush_i ,
   output logic ready_o ,
-  input  T     data_i  ,
+  input  cdc_reset_ctrlr_pkg::clear_seq_phase_e data_i  ,
   output logic valid_o ,
   input  logic ready_i ,
-  output T     data_o
+  output cdc_reset_ctrlr_pkg::clear_seq_phase_e data_o
 );
 
   if (Bypass) begin : gen_bypass
@@ -35,7 +35,7 @@ module spill_register_flushable #(
     assign data_o  = data_i;
   end else begin : gen_spill_reg
     // The A register.
-    T a_data_q;
+    cdc_reset_ctrlr_pkg::clear_seq_phase_e a_data_q;
     logic a_full_q;
     logic a_fill, a_drain;
 
@@ -54,7 +54,7 @@ module spill_register_flushable #(
     end
 
     // The B register.
-    T b_data_q;
+    cdc_reset_ctrlr_pkg::clear_seq_phase_e b_data_q;
     logic b_full_q;
     logic b_fill, b_drain;
 

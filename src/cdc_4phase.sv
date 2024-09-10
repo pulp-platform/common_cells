@@ -33,83 +33,83 @@
 /// CONSTRAINT: Requires max_delay of min_period(src_clk_i, dst_clk_i) through
 /// the paths async_req, async_ack, async_data.
 /* verilator lint_off DECLFILENAME */
-module cdc_4phase #(
-  parameter type T = logic,
-  parameter bit DECOUPLED = 1'b1,
-  parameter bit SEND_RESET_MSG = 1'b0,
-  parameter T RESET_MSG = T'('0)
-)(
-  input  logic src_rst_ni,
-  input  logic src_clk_i,
-  input  T     src_data_i,
-  input  logic src_valid_i,
-  output logic src_ready_o,
+// module cdc_4phase #(
+//   parameter type T = logic,
+//   parameter bit DECOUPLED = 1'b1,
+//   parameter bit SEND_RESET_MSG = 1'b0,
+//   parameter T RESET_MSG = T'('0)
+// )(
+//   input  logic src_rst_ni,
+//   input  logic src_clk_i,
+//   input  T     src_data_i,
+//   input  logic src_valid_i,
+//   output logic src_ready_o,
 
-  input  logic dst_rst_ni,
-  input  logic dst_clk_i,
-  output T     dst_data_o,
-  output logic dst_valid_o,
-  input  logic dst_ready_i
-);
+//   input  logic dst_rst_ni,
+//   input  logic dst_clk_i,
+//   output T     dst_data_o,
+//   output logic dst_valid_o,
+//   input  logic dst_ready_i
+// );
 
-  // Asynchronous handshake signals.
-  (* dont_touch = "true" *) logic async_req;
-  (* dont_touch = "true" *) logic async_ack;
-  (* dont_touch = "true" *) T async_data;
+//   // Asynchronous handshake signals.
+//   (* dont_touch = "true" *) logic async_req;
+//   (* dont_touch = "true" *) logic async_ack;
+//   (* dont_touch = "true" *) T async_data;
 
-  // The sender in the source domain.
-  cdc_4phase_src #(
-    .T(T),
-    .DECOUPLED(DECOUPLED),
-    .SEND_RESET_MSG(SEND_RESET_MSG),
-    .RESET_MSG(RESET_MSG)
-  ) i_src (
-    .rst_ni       ( src_rst_ni  ),
-    .clk_i        ( src_clk_i   ),
-    .data_i       ( src_data_i  ),
-    .valid_i      ( src_valid_i ),
-    .ready_o      ( src_ready_o ),
-    .async_req_o  ( async_req   ),
-    .async_ack_i  ( async_ack   ),
-    .async_data_o ( async_data  )
-  );
+//   // The sender in the source domain.
+//   cdc_4phase_src #(
+//     .T(T),
+//     .DECOUPLED(DECOUPLED),
+//     .SEND_RESET_MSG(SEND_RESET_MSG),
+//     .RESET_MSG(RESET_MSG)
+//   ) i_src (
+//     .rst_ni       ( src_rst_ni  ),
+//     .clk_i        ( src_clk_i   ),
+//     .data_i       ( src_data_i  ),
+//     .valid_i      ( src_valid_i ),
+//     .ready_o      ( src_ready_o ),
+//     .async_req_o  ( async_req   ),
+//     .async_ack_i  ( async_ack   ),
+//     .async_data_o ( async_data  )
+//   );
 
-  // The receiver in the destination domain.
-  cdc_4phase_dst #(.T(T), .DECOUPLED(DECOUPLED)) i_dst (
-    .rst_ni       ( dst_rst_ni  ),
-    .clk_i        ( dst_clk_i   ),
-    .data_o       ( dst_data_o  ),
-    .valid_o      ( dst_valid_o ),
-    .ready_i      ( dst_ready_i ),
-    .async_req_i  ( async_req   ),
-    .async_ack_o  ( async_ack   ),
-    .async_data_i ( async_data  )
-  );
-endmodule
+//   // The receiver in the destination domain.
+//   cdc_4phase_dst #(.T(T), .DECOUPLED(DECOUPLED)) i_dst (
+//     .rst_ni       ( dst_rst_ni  ),
+//     .clk_i        ( dst_clk_i   ),
+//     .data_o       ( dst_data_o  ),
+//     .valid_o      ( dst_valid_o ),
+//     .ready_i      ( dst_ready_i ),
+//     .async_req_i  ( async_req   ),
+//     .async_ack_o  ( async_ack   ),
+//     .async_data_i ( async_data  )
+//   );
+// endmodule
 
 
 /// Half of the 4-phase clock domain crossing located in the source domain.
 module cdc_4phase_src #(
-  parameter type T = logic,
+  // parameter type T = logic,
   parameter int unsigned SYNC_STAGES = 2,
   parameter bit DECOUPLED = 1'b1,
   parameter bit SEND_RESET_MSG = 1'b0,
-  parameter T RESET_MSG = T'('0)
+  parameter cdc_reset_ctrlr_pkg::clear_seq_phase_e RESET_MSG = '0
 )(
   input  logic rst_ni,
   input  logic clk_i,
-  input  T     data_i,
+  input  cdc_reset_ctrlr_pkg::clear_seq_phase_e data_i,
   input  logic valid_i,
   output logic ready_o,
   output logic async_req_o,
   input  logic async_ack_i,
-  output T     async_data_o
+  output cdc_reset_ctrlr_pkg::clear_seq_phase_e async_data_o
 );
 
   (* dont_touch = "true" *)
   logic  req_src_d, req_src_q;
   (* dont_touch = "true" *)
-  T data_src_d, data_src_q;
+  cdc_reset_ctrlr_pkg::clear_seq_phase_e data_src_d, data_src_q;
   (* dont_touch = "true" *)
   logic  ack_synced;
 
@@ -185,7 +185,7 @@ module cdc_4phase_src #(
         data_src_q <= RESET_MSG;
       end else begin
         req_src_q  <= 1'b0;
-        data_src_q <= T'('0);
+        data_src_q <= cdc_reset_ctrlr_pkg::clear_seq_phase_e'('0);
       end
     end else begin
       req_src_q  <= req_src_d;
@@ -203,18 +203,18 @@ endmodule
 /// Half of the 4-phase clock domain crossing located in the destination
 /// domain.
 module cdc_4phase_dst #(
-  parameter type T = logic,
+  // parameter type T = logic,
   parameter int unsigned SYNC_STAGES = 2,
   parameter bit DECOUPLED = 1
 )(
   input  logic rst_ni,
   input  logic clk_i,
-  output T     data_o,
+  output cdc_reset_ctrlr_pkg::clear_seq_phase_e data_o,
   output logic valid_o,
   input  logic ready_i,
   input  logic async_req_i,
   output logic async_ack_o,
-  input  T     async_data_i
+  input  cdc_reset_ctrlr_pkg::clear_seq_phase_e async_data_i
 );
 
   (* dont_touch = "true" *)
@@ -302,7 +302,7 @@ module cdc_4phase_dst #(
     // Decouple the output from the asynchronous data bus without introducing
     // additional latency by inserting a spill register
     spill_register #(
-      .T(T),
+      // .T(T),
       .Bypass(1'b0)
     ) i_spill_register (
       .clk_i,

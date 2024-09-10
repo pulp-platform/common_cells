@@ -41,7 +41,7 @@ module addr_decode_dync #(
   /// Total number of rules.
   parameter int unsigned NoRules   = 32'd0,
   /// Address type inside the rules and to decode.
-  parameter type         addr_t    = logic,
+  // parameter type         addr_t    = logic,
   /// Rule packed struct type.
   /// The address decoder expects three fields in `rule_t`:
   ///
@@ -59,24 +59,24 @@ module addr_decode_dync #(
   /// If `Napot` is 1, The field names remain the same, but the rule describes a naturally-aligned
   /// power of two (NAPOT) region instead of an address range: `start_addr` becomes the base address
   /// and `end_addr` the mask. See the wrapping module `addr_decode_napot` for details.
-  parameter type         rule_t    = logic,
+  // parameter type         rule_t    = logic,
   // Whether this is a NAPOT (base and mask) or regular range decoder
   parameter bit          Napot     = 0,
   /// Dependent parameter, do **not** overwite!
   ///
   /// Width of the `idx_o` output port.
-  parameter int unsigned IdxWidth  = cf_math_pkg::idx_width(NoIndices),
+  parameter int unsigned IdxWidth  = (NoIndices > 32'd1) ? unsigned'($clog2(NoIndices)) : 32'd1
   /// Dependent parameter, do **not** overwite!
   ///
   /// Type of the `idx_o` output port.
-  parameter type         idx_t     = logic [IdxWidth-1:0]
+  // parameter type         idx_t     = logic [IdxWidth-1:0]
 ) (
   /// Address to decode.
-  input  addr_t               addr_i,
+  input  logic [31:0]              addr_i,
   /// Address map: rule with the highest array position wins on collision
-  input  rule_t [NoRules-1:0] addr_map_i,
+  input  addr_map_rule_pkg::addr_map_rule_t [NoRules-1:0] addr_map_i,
   /// Decoded index.
-  output idx_t                idx_o,
+  output logic [IdxWidth-1:0] idx_o,
   /// Decode is valid.
   output logic                dec_valid_o,
   /// Decode is not valid, no matching rule found.
@@ -90,12 +90,14 @@ module addr_decode_dync #(
   /// When `en_default_idx_i` is `1`, this will be the index when no rule matches.
   ///
   /// When not used, tie to `0`.
-  input  idx_t                default_idx_i,
+  input  logic [IdxWidth-1:0] default_idx_i,
   /// The module is dynamically configured, this deactivates its output and the integrated
   /// assertions.
   input  logic                config_ongoing_i
 );
+  // tmrg do_not_touch
 
+  typedef logic [IdxWidth-1:0] idx_t;
   logic [NoRules-1:0] matched_rules; // purely for address map debugging
 
   always_comb begin
@@ -121,6 +123,7 @@ module addr_decode_dync #(
     end
   end
 
+  // tmrg copy start
   // Assumptions and assertions
   `ifndef COMMON_CELLS_ASSERTS_OFF
   `ifndef XSIM
@@ -187,5 +190,7 @@ module addr_decode_dync #(
   `endif
   `endif
   `endif
+  // tmrg copy stop
+
 
 endmodule

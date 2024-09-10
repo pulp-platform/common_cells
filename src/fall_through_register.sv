@@ -13,7 +13,7 @@
 // is ready to accept data within the same clock cycle, they are forwarded. Use this module to get a
 // 'default ready' behavior towards the input.
 module fall_through_register #(
-    parameter type T = logic  // Vivado requires a default value for type parameters.
+    parameter int unsigned T = 1  // Vivado requires a default value for type parameters.
 ) (
     input  logic    clk_i,          // Clock
     input  logic    rst_ni,         // Asynchronous active-low reset
@@ -22,11 +22,11 @@ module fall_through_register #(
     // Input port
     input  logic    valid_i,
     output logic    ready_o,
-    input  T        data_i,
+    input  logic [T-1:0] data_i,
     // Output port
     output logic    valid_o,
     input  logic    ready_i,
-    output T        data_o
+    output logic [T-1:0] data_o
 );
 
     logic   fifo_empty,
@@ -34,8 +34,7 @@ module fall_through_register #(
 
     fifo_v3 #(
         .FALL_THROUGH   (1'b1),
-        .DEPTH          (1),
-        .dtype          (T)
+        .DEPTH          (1)
     ) i_fifo (
         .clk_i          (clk_i),
         .rst_ni         (rst_ni),
