@@ -22,9 +22,9 @@ module cdc_2phase_dst_clearable #(
 
   (* dont_touch = "true" *)
   (* async_reg = "true" *)
- logic ack_dst_d, ack_dst_q, req_synced, req_synced_q1;
+  logic ack_dst_d, ack_dst_q, req_synced, req_synced_q1;
   (* dont_touch = "true" *)
-  logic data_dst_d, data_dst_q;
+  T data_dst_d, data_dst_q;
 
 
   //Synchronize the request

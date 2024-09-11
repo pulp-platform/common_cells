@@ -22,7 +22,7 @@ module cdc_2phase_src_clearable #(
   (* dont_touch = "true" *)
   logic  req_src_d, req_src_q, ack_synced;
   (* dont_touch = "true" *)
-  logic data_src_d, data_src_q;
+  T data_src_d, data_src_q;
 
   // Synchronize the async ACK
   sync #(

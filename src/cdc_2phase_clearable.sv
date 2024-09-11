@@ -108,7 +108,7 @@ module cdc_2phase_clearable #(
   ) i_src (
     .rst_ni       ( src_rst_ni                       ),
     .clk_i        ( src_clk_i                        ),
-    .clear_i      ( s_src_clear_req                      ),
+    .clear_i      ( s_src_clear_req                  ),
     .data_i       ( src_data_i                       ),
     .valid_i      ( src_valid_i & !s_src_isolate_req ),
     .ready_o      ( s_src_ready                      ),
@@ -127,7 +127,7 @@ module cdc_2phase_clearable #(
   ) i_dst (
     .rst_ni       ( dst_rst_ni                       ),
     .clk_i        ( dst_clk_i                        ),
-    .clear_i      ( s_dst_clear_req                      ),
+    .clear_i      ( s_dst_clear_req                  ),
     .data_o       ( dst_data_o                       ),
     .valid_o      ( s_dst_valid                      ),
     .ready_i      ( dst_ready_i & !s_dst_isolate_req ),
