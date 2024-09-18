@@ -29,7 +29,13 @@
 `ifndef SYNTHESIS
 `ifndef XSIM
 `define INC_ASSERT
+`endif
 `endif   
+`endif
+// forcefully enable assertions with ASSERTS_OVERRIDE_ON, overriding any define that turns them off
+`ifdef ASSERTS_OVERRIDE_ON
+`ifndef INC_ASSERT
+`define INC_ASSERT
 `endif
 `endif
 
