@@ -272,33 +272,19 @@ module stream_omega_net #(
     default disable iff (~rst_ni);
     `endif
     for (genvar i = 0; unsigned'(i) < NumInp; i++) begin : gen_sel_assertions
-      assert property (@(posedge clk_i) disable iff (~rst_ni)
-          (valid_i[i] |-> sel_i[i] < NumOut)) else
-          $fatal(1, "Non-existing output is selected!");
+      `ASSERT(non_existing_output, valid_i[i] |-> sel_i[i] < NumOut, clk_i, !rst_ni, "Non-existing output is selected!")
     end
 
     if (AxiVldRdy) begin : gen_handshake_assertions
       for (genvar i = 0; unsigned'(i) < NumInp; i++) begin : gen_inp_assertions
-        assert property (@(posedge clk_i) disable iff (~rst_ni)
-            (valid_i[i] && !ready_o[i] |=> $stable(data_i[i] & AxiVldMask))) else
-            $error("data_i is unstable at input: %0d", i);
-        assert property (@(posedge clk_i) disable iff (~rst_ni)
-            (valid_i[i] && !ready_o[i] |=> $stable(sel_i[i]))) else
-            $error("sel_i is unstable at input: %0d", i);
-        assert property (@(posedge clk_i) disable iff (~rst_ni)
-            (valid_i[i] && !ready_o[i] |=> valid_i[i])) else
-            $error("valid_i at input %0d has been taken away without a ready.", i);
+        `ASSERT(input_data_unstable, valid_i[i] && !ready_o[i] |=> $stable(data_i[i] & AxiVldMask), clk_i, !rst_ni, "data_i is unstable at input: %0d", i)
+        `ASSERT(input_sel_unstable, valid_i[i] && !ready_o[i] |=> $stable(sel_i[i]), clk_i, !rst_ni, "sel_i is unstable at input: %0d", i)
+        `ASSERT(input_valid_taken, valid_i[i] && !ready_o[i] |=> valid_i[i], clk_i, !rst_ni, "valid_i at input %0d has been taken away without a ready.", i)
       end
       for (genvar i = 0; unsigned'(i) < NumOut; i++) begin : gen_out_assertions
-        assert property (@(posedge clk_i) disable iff (~rst_ni)
-            (valid_o[i] && !ready_i[i] |=> $stable(data_o[i] & AxiVldMask))) else
-            $error("data_o is unstable at output: %0d Check that parameter LockIn is set.", i);
-        assert property (@(posedge clk_i) disable iff (~rst_ni)
-            (valid_o[i] && !ready_i[i] |=> $stable(idx_o[i]))) else
-            $error("idx_o is unstable at output: %0d Check that parameter LockIn is set.", i);
-        assert property (@(posedge clk_i) disable iff (~rst_ni)
-            (valid_o[i] && !ready_i[i] |=> valid_o[i])) else
-            $error("valid_o at output %0d has been taken away without a ready.", i);
+        `ASSERT(output_data_unstable, valid_o[i] && !ready_i[i] |=> $stable(data_o[i] & AxiVldMask), clk_i, !rst_ni, "data_o is unstable at output: %0d Check that parameter LockIn is set.", i)
+        `ASSERT(output_idx_unstable, valid_o[i] && !ready_i[i] |=> $stable(idx_o[i]), clk_i, !rst_ni, "idx_o is unstable at output: %0d Check that parameter LockIn is set.", i)
+        `ASSERT(output_valid_taken, valid_o[i] && !ready_i[i] |=> valid_o[i], clk_i, !rst_ni, "valid_o at output %0d has been taken away without a ready.", i)
       end
     end
 
