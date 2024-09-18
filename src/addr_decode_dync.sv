@@ -125,8 +125,6 @@ module addr_decode_dync #(
 
   // Assumptions and assertions
   `ifndef COMMON_CELLS_ASSERTS_OFF
-  `ifndef XSIM
-  `ifndef SYNTHESIS
   initial begin : proc_check_parameters
     `ASSUME_I(addr_width_mismatch, $bits(addr_i) == $bits(addr_map_i[0].start_addr),
              $sformatf("Input address has %d bits and address map has %d bits.",
@@ -135,8 +133,8 @@ module addr_decode_dync #(
     `ASSUME_I(noindices_0, NoIndices > 0, $sformatf("At least one index needed"))
   end
 
-  assert final ($onehot0(matched_rules) || config_ongoing_i) else
-    $warning("More than one bit set in the one-hot signal, matched_rules");
+  `ASSERT_FINAL(more_than_1_bit_set, $onehot0(matched_rules) || config_ongoing_i,
+                "More than one bit set in the one-hot signal, matched_rules")
 
   // These following assumptions check the validity of the address map.
   // The assumptions gets generated for each distinct pair of rules.
@@ -184,8 +182,6 @@ module addr_decode_dync #(
       end
     end
   end
-  `endif
-  `endif
   `endif
 
 endmodule
