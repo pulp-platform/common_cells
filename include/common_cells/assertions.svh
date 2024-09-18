@@ -204,4 +204,11 @@
    `COVER(__name, __prop, __clk, __rst)                                                     \
 `endif
 
+
+// undefine local helper macros
+`ifdef INC_ASSERT
+`undef INC_ASSERT
+`endif
+`undef ASSERT_STRINGIFY
+
 `endif // COMMON_CELLS_ASSERTIONS_SVH
