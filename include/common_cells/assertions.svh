@@ -6,8 +6,8 @@
 //  - Provides default clk and rst options to simplify code
 //  - Provides boiler plate template for common assertions
 
-`ifndef PRIM_ASSERT_SV
-`define PRIM_ASSERT_SV
+`ifndef COMMON_CELLS_ASSERTIONS_SVH
+`define COMMON_CELLS_ASSERTIONS_SVH
 
 `ifdef UVM
   // report assertion error with UVM if compiled
@@ -34,7 +34,7 @@
 `endif
 
 // Converts an arbitrary block of code into a Verilog string
-`define PRIM_STRINGIFY(__x) `"__x`"
+`define ASSERT_STRINGIFY(__x) `"__x`"
 
 // ASSERT_RPT is available to change the reporting mechanism when an assert fails
 `define ASSERT_RPT(__name)                                                  \
@@ -55,23 +55,23 @@
 
 // Immediate assertion
 // Note that immediate assertions are sensitive to simulation glitches.
-`define ASSERT_I(__name, __prop)           \
-`ifdef INC_ASSERT                          \
-  __name: assert (__prop)                  \
-    else begin                             \
-      `ASSERT_RPT(`PRIM_STRINGIFY(__name)) \
-    end                                    \
+`define ASSERT_I(__name, __prop)             \
+`ifdef INC_ASSERT                            \
+  __name: assert (__prop)                    \
+    else begin                               \
+      `ASSERT_RPT(`ASSERT_STRINGIFY(__name)) \
+    end                                      \
 `endif
 
 // Assertion in initial block. Can be used for things like parameter checking.
-`define ASSERT_INIT(__name, __prop)          \
-`ifdef INC_ASSERT                            \
-  initial begin                              \
-    __name: assert (__prop)                  \
-      else begin                             \
-        `ASSERT_RPT(`PRIM_STRINGIFY(__name)) \
-      end                                    \
-  end                                        \
+`define ASSERT_INIT(__name, __prop)            \
+`ifdef INC_ASSERT                              \
+  initial begin                                \
+    __name: assert (__prop)                    \
+      else begin                               \
+        `ASSERT_RPT(`ASSERT_STRINGIFY(__name)) \
+      end                                      \
+  end                                          \
 `endif
 
 // Assertion in final block. Can be used for things like queues being empty
@@ -82,7 +82,7 @@
   final begin                                                                \
     __name: assert (__prop || $test$plusargs("disable_assert_final_checks")) \
       else begin                                                             \
-        `ASSERT_RPT(`PRIM_STRINGIFY(__name))                                 \
+        `ASSERT_RPT(`ASSERT_STRINGIFY(__name))                               \
       end                                                                    \
   end                                                                        \
 `endif
@@ -93,7 +93,7 @@
 `ifdef INC_ASSERT                                                                        \
   __name: assert property (@(posedge __clk) disable iff ((__rst) !== '0) (__prop))       \
     else begin                                                                           \
-      `ASSERT_RPT(`PRIM_STRINGIFY(__name))                                               \
+      `ASSERT_RPT(`ASSERT_STRINGIFY(__name))                                             \
     end                                                                                  \
 `endif
 // Note: Above we use (__rst !== '0) in the disable iff statements instead of
@@ -106,7 +106,7 @@
 `ifdef INC_ASSERT                                                                              \
   __name: assert property (@(posedge __clk) disable iff ((__rst) !== '0) not (__prop))         \
     else begin                                                                                 \
-      `ASSERT_RPT(`PRIM_STRINGIFY(__name))                                                     \
+      `ASSERT_RPT(`ASSERT_STRINGIFY(__name))                                                   \
     end                                                                                        \
 `endif
 
@@ -157,17 +157,17 @@
 `ifdef INC_ASSERT                                                                        \
   __name: assume property (@(posedge __clk) disable iff ((__rst) !== '0) (__prop))       \
     else begin                                                                           \
-      `ASSERT_RPT(`PRIM_STRINGIFY(__name))                                               \
+      `ASSERT_RPT(`ASSERT_STRINGIFY(__name))                                             \
     end                                                                                  \
 `endif
 
 // Assume an immediate property
-`define ASSUME_I(__name, __prop)           \
-`ifdef INC_ASSERT                          \
-  __name: assume (__prop)                  \
-    else begin                             \
-      `ASSERT_RPT(`PRIM_STRINGIFY(__name)) \
-    end                                    \
+`define ASSUME_I(__name, __prop)             \
+`ifdef INC_ASSERT                            \
+  __name: assume (__prop)                    \
+    else begin                               \
+      `ASSERT_RPT(`ASSERT_STRINGIFY(__name)) \
+    end                                      \
 `endif
 
 //////////////////////////////////
@@ -198,4 +198,4 @@
    `COVER(__name, __prop, __clk, __rst)                                                     \
 `endif
 
-`endif // PRIM_ASSERT_SV
+`endif // COMMON_CELLS_ASSERTIONS_SVH
