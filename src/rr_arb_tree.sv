@@ -111,17 +111,6 @@ module rr_arb_tree #(
   output idx_t                idx_o
 );
 
-  `ifndef SYNTHESIS
-  `ifndef COMMON_CELLS_ASSERTS_OFF
-  `ifndef VERILATOR
-  `ifndef XSIM
-  // Default SVA reset
-  default disable iff (!rst_ni || flush_i);
-  `endif
-  `endif
-  `endif
-  `endif
-
   // just pass through in this corner case
   if (NumIn == unsigned'(1)) begin : gen_pass_through
     assign req_o    = req_i[0];

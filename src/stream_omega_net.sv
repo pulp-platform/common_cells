@@ -267,9 +267,6 @@ module stream_omega_net #(
     // Assertions
     // Make sure that the handshake and payload is stable
     `ifndef COMMON_CELLS_ASSERTS_OFF
-    `ifndef VERILATOR
-    default disable iff (~rst_ni);
-    `endif
     for (genvar i = 0; unsigned'(i) < NumInp; i++) begin : gen_sel_assertions
       `ASSERT(non_existing_output, valid_i[i] |-> sel_i[i] < NumOut, clk_i, !rst_ni, "Non-existing output is selected!")
     end
