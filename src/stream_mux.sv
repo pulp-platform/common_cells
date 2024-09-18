@@ -37,10 +37,8 @@ module stream_mux #(
   assign oup_data_o   = inp_data_i[inp_sel_i];
   assign oup_valid_o  = inp_valid_i[inp_sel_i];
 
-`ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
   `ASSERT_INIT(n_inp_0, N_INP >= 1, "The number of inputs must be at least 1!")
-`endif
 `endif
 
 endmodule

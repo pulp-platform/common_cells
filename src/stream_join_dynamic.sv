@@ -39,9 +39,7 @@ module stream_join_dynamic #(
     assign inp_ready_o[i] = oup_valid_o & oup_ready_i;
   end
 
-`ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
   `ASSERT_INIT(n_inp_0, N_INP >= 1, "N_INP must be at least 1!")
-`endif
 `endif
 endmodule

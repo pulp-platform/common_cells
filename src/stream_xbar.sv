@@ -170,7 +170,6 @@ module stream_xbar #(
 
   // Assertions
   // Make sure that the handshake and payload is stable
-  `ifndef SYNTHESIS
   `ifndef COMMON_CELLS_ASSERTS_OFF
   `ifndef VERILATOR
   default disable iff (~rst_ni);
@@ -194,6 +193,5 @@ module stream_xbar #(
 
   `ASSERT_INIT(numinp_0, NumInp > 32'd0, "NumInp has to be > 0!")
   `ASSERT_INIT(numout_0, NumOut > 32'd0, "NumOut has to be > 0!")
-  `endif
   `endif
 endmodule

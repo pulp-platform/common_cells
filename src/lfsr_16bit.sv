@@ -61,9 +61,7 @@ module lfsr_16bit #(
     end
 
   `ifndef COMMON_CELLS_ASSERTS_OFF
-    `ifndef SYNTHESIS
     `ASSERT_INIT(width_gt_16, WIDTH <= 16, "WIDTH needs to be less than 16 because of the 16-bit LFSR")
-    `endif
   `endif
 
 endmodule

@@ -87,9 +87,7 @@ module stream_fork_dynamic #(
     .ready_i ( int_oup_ready )
   );
 
-`ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
   `ASSERT_INIT(n_oup_0, N_OUP >= 1, "N_OUP must be at least 1!")
-`endif
 `endif
 endmodule

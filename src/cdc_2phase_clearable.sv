@@ -257,10 +257,7 @@ module cdc_2phase_src_clearable #(
 
 // Assertions
 `ifndef COMMON_CELLS_ASSERTS_OFF
-  `ifndef SYNTHESIS
   `ASSUME(no_clear_and_request, clear_i |-> ~valid_i, clk_i, !rst_ni, "No request allowed while clear_i is asserted.")
-
-  `endif
 `endif
 
 endmodule

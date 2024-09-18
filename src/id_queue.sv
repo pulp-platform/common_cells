@@ -408,11 +408,9 @@ module id_queue #(
     end
 
     // Validate parameters.
-`ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
     `ASSERT_INIT(id_width_0, ID_WIDTH >= 1, "The ID must at least be one bit wide!")
     `ASSERT_INIT(capacity_0, CAPACITY >= 1, "The queue must have capacity of at least one entry!")
-`endif
 `endif
 
 endmodule

@@ -118,7 +118,6 @@ module stream_to_mem #(
   assign mem_req_o = req_i;
 
 // Assertions
-`ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
   if (BufDepth > 0) begin : gen_buf_asserts
     `ASSERT(memory_response_lost, mem_resp_valid_i |-> buf_ready, clk_i, !rst_ni, "Memory response lost!")
@@ -127,6 +126,5 @@ module stream_to_mem #(
   end else begin : gen_no_buf_asserts
     `ASSUME(no_memory_response, mem_req_valid_o & mem_req_ready_i |-> mem_resp_valid_i, clk_i, !rst_ni, "Without BufDepth = 0, the memory must respond in the same cycle!")
   end
-`endif
 `endif
 endmodule

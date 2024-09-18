@@ -55,9 +55,7 @@ module lfsr_8bit #(
   end
 
 `ifndef COMMON_CELLS_ASSERTS_OFF
-  `ifndef SYNTHESIS
   `ASSERT_INIT(width_gt_8, WIDTH <= 8, "WIDTH needs to be less than 8 because of the 8-bit LFSR")
-  `endif
 `endif
 
 endmodule

@@ -69,12 +69,10 @@ module isochronous_4phase_handshake (
   // destination is valid if we didn't yet get acknowledge
   assign dst_valid_o = (dst_req_q != dst_ack_q);
 
- `ifndef SYNTHESIS
  // stability guarantees
   `ifndef COMMON_CELLS_ASSERTS_OFF
   `ASSERT(src_valid_unstable, src_valid_i && !src_ready_o |=> $stable(src_valid_i), src_clk_i, !src_rst_ni, "src_valid_i is unstable")
   `ASSERT(dst_valid_unstable, dst_valid_o && !dst_ready_i |=> $stable(dst_valid_o), dst_clk_i, !dst_rst_ni, "dst_valid_o is unstable")
-  `endif
   `endif
 
 endmodule

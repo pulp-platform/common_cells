@@ -220,9 +220,7 @@ module mem_to_banks_detailed #(
   assign rvalid_o = &(resp_valid | dead_response);
 
   // Assertions
-  `ifndef SYNTHESIS
   `ifndef COMMON_CELLS_ASSERTS_OFF
-  `ifndef SYNTHESIS
     initial begin
       `ASSUME_I(datawidth_not_power_of_2, DataWidth != 0 && (DataWidth & (DataWidth - 1)) == 0,
                "Data width must be a power of two!")
@@ -231,7 +229,5 @@ module mem_to_banks_detailed #(
       `ASSUME_I(bank_datawidth_not_divisible_by_8, (DataWidth / NumBanks) % 8 == 0,
                "Data width of each bank must be divisible into 8-bit bytes!")
     end
-  `endif
-  `endif
   `endif
 endmodule

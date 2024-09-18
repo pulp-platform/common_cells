@@ -31,9 +31,7 @@ module onehot_to_bin #(
         assign bin[j] = |(tmp_mask & onehot);
     end
 
-`ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
     `ASSERT_FINAL(more_than_2_bits, $onehot0(onehot), "[onehot_to_bin] More than two bit set in the one-hot signal")
-`endif
 `endif
 endmodule

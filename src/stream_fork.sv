@@ -124,10 +124,8 @@ module stream_fork #(
     assign all_ones = '1;   // Synthesis fix for Vivado, which does not correctly compute the width
                             // of the '1 literal when assigned to a port of parametrized width.
 
-`ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
     `ASSERT_INIT(n_oup_0, N_OUP >= 1, "Number of outputs must be at least 1!")
-`endif
 `endif
 
 endmodule

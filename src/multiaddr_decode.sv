@@ -123,8 +123,6 @@ module multiaddr_decode #(
 
   // Assumptions and assertions
   `ifndef COMMON_CELLS_ASSERTS_OFF
-  `ifndef XSIM
-  `ifndef SYNTHESIS
   initial begin : proc_check_parameters
     `ASSUME_I(norules_0, NoRules > 0, $sformatf("At least one rule needed"))
     `ASSUME_I(addr_width_not_equal, $bits(addr_i) == $bits(addr_map_i[0].addr),
@@ -149,7 +147,5 @@ module multiaddr_decode #(
     end
   end
 
-  `endif
-  `endif
   `endif
 endmodule

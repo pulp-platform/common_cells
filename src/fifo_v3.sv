@@ -139,14 +139,12 @@ module fifo_v3 #(
         end
     end
 
-`ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
     `ASSERT_INIT(depth_0, DEPTH > 0, "DEPTH must be greater than 0.")
 
     `ASSERT(full_write, full_o |-> ~push_i, clk_i, !rst_ni, "Trying to push new data although the FIFO is full.")
 
     `ASSERT(empty_read, empty_o |-> ~pop_i, clk_i, !rst_ni, "Trying to pop data although the FIFO is empty.")
-`endif
 `endif
 
 endmodule // fifo_v3

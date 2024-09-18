@@ -292,7 +292,6 @@ end
 // assertions
 ////////////////////////////////////////////////////////////////////////
 `ifndef COMMON_CELLS_ASSERTS_OFF
-`ifndef SYNTHESIS
 // these are the LUT limits
 `ASSERT_INIT(outwidth_gt_lfsrwidth, OutWidth <= LfsrWidth, "OutWidth must be smaller equal the LfsrWidth.")
 `ASSERT_INIT(rstval_0, RstVal > unsigned'(0), "RstVal must be nonzero.")
@@ -301,7 +300,6 @@ end
 `ASSERT_INIT(cipherlayers_invalid, (CipherLayers > 0) && (LfsrWidth == 64) || (CipherLayers == 0), "Use additional cipher layers only in conjunction with an LFSR width of 64 bit.")
 
   `ASSERT(all_zero, en_i |-> lfsr_d, clk_i, !rst_ni, "Lfsr must not be all-zero.")
-`endif
 `endif
 
 endmodule // lfsr

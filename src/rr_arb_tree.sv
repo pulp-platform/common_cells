@@ -172,7 +172,6 @@ module rr_arb_tree #(
           end
         end
 
-        `ifndef SYNTHESIS
         `ifndef COMMON_CELLS_ASSERTS_OFF
           `ASSERT(lock, LockIn |-> req_o && (!gnt_i && !flush_i) |=> idx_o == $past(idx_o), clk_i, !rst_ni || flush_i, "Lock implies same arbiter decision in next cycle if output is not \
                             ready.")
@@ -181,7 +180,6 @@ module rr_arb_tree #(
           assign req_tmp = req_q & req_i;
           `ASSUME(lock_req, LockIn |-> lock_d |=> req_tmp == req_q, clk_i, !rst_ni || flush_i, "It is disallowed to deassert unserved request signals when LockIn is \
                             enabled.")
-        `endif
         `endif
 
         always_ff @(posedge clk_i or negedge rst_ni) begin : p_req_regs
@@ -306,9 +304,7 @@ module rr_arb_tree #(
       end
     end
 
-    `ifndef SYNTHESIS
     `ifndef COMMON_CELLS_ASSERTS_OFF
-    `ifndef XSIM
     `ASSERT_INIT(numin_0, NumIn, "Input must be at least one element wide.")
     `ASSERT_INIT(lockin_and_extprio, !(LockIn && ExtPrio), "Cannot use LockIn feature together with external ExtPrio.")
 
@@ -323,8 +319,6 @@ module rr_arb_tree #(
     `ASSERT(req0, |req_i |-> req_o, clk_i, !rst_ni || flush_i, "Req in implies req out.")
 
     `ASSERT(req1, req_o |-> |req_i, clk_i, !rst_ni || flush_i, "Req out implies req in.")
-    `endif
-    `endif
     `endif
   end
 
