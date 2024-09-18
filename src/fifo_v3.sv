@@ -141,9 +141,7 @@ module fifo_v3 #(
 
 `ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
-    initial begin
-        assert (DEPTH > 0)             else $error("DEPTH must be greater than 0.");
-    end
+    `ASSERT_INIT(depth_0, DEPTH > 0, "DEPTH must be greater than 0.")
 
     `ASSERT(full_write, full_o |-> ~push_i, clk_i, !rst_ni, "Trying to push new data although the FIFO is full.")
 

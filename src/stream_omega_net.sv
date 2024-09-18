@@ -288,14 +288,9 @@ module stream_omega_net #(
       end
     end
 
-    initial begin : proc_parameter_assertions
-      assert ((2**$clog2(Radix) == Radix) && (Radix > 32'd1)) else
-          $fatal(1, "Radix %0d is not power of two.", Radix);
-      assert (2**$clog2(NumRouters) == NumRouters) else
-          $fatal(1, "NumRouters %0d is not power of two.", NumRouters);
-      assert ($clog2(NumLanes) % SelW == 0) else
-          $fatal(1, "Bit slicing of the internal selection signal is broken.");
-    end
+    `ASSERT_INIT(radix_not_power_of_2, (2**$clog2(Radix) == Radix) && (Radix > 32'd1), "Radix is not power of two.")
+    `ASSERT_INIT(num_routers_not_power_of_2, 2**$clog2(NumRouters) == NumRouters, "NumRouters is not power of two.")
+    `ASSERT_INIT(bit_sclicing_broken, $clog2(NumLanes) % SelW == 0, "Bit slicing of the internal selection signal is broken.")
     `endif
     `endif
   end

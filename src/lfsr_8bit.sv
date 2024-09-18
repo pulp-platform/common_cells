@@ -56,9 +56,7 @@ module lfsr_8bit #(
 
 `ifndef COMMON_CELLS_ASSERTS_OFF
   `ifndef SYNTHESIS
-  initial begin
-    assert (WIDTH <= 8) else $fatal(1, "WIDTH needs to be less than 8 because of the 8-bit LFSR");
-  end
+  `ASSERT_INIT(width_gt_8, WIDTH <= 8, "WIDTH needs to be less than 8 because of the 8-bit LFSR")
   `endif
 `endif
 

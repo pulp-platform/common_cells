@@ -41,9 +41,7 @@ module stream_join_dynamic #(
 
 `ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
-  initial begin: p_assertions
-    assert (N_INP >= 1) else $fatal(1, "N_INP must be at least 1!");
-  end
+  `ASSERT_INIT(n_inp_0, N_INP >= 1, "N_INP must be at least 1!")
 `endif
 `endif
 endmodule

@@ -192,10 +192,8 @@ module stream_xbar #(
     end
   end
 
-  initial begin : proc_parameter_assertions
-    assert (NumInp > 32'd0) else $fatal(1, "NumInp has to be > 0!");
-    assert (NumOut > 32'd0) else $fatal(1, "NumOut has to be > 0!");
-  end
+  `ASSERT_INIT(numinp_0, NumInp > 32'd0, "NumInp has to be > 0!")
+  `ASSERT_INIT(numout_0, NumOut > 32'd0, "NumOut has to be > 0!")
   `endif
   `endif
 endmodule

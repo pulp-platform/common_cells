@@ -410,12 +410,8 @@ module id_queue #(
     // Validate parameters.
 `ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
-    initial begin: validate_params
-        assert (ID_WIDTH >= 1)
-            else $fatal(1, "The ID must at least be one bit wide!");
-        assert (CAPACITY >= 1)
-            else $fatal(1, "The queue must have capacity of at least one entry!");
-    end
+    `ASSERT_INIT(id_width_0, ID_WIDTH >= 1, "The ID must at least be one bit wide!")
+    `ASSERT_INIT(capacity_0, CAPACITY >= 1, "The queue must have capacity of at least one entry!")
 `endif
 `endif
 

@@ -43,9 +43,7 @@ module lzc #(
 
   `ifndef COMMON_CELLS_ASSERTS_OFF
     `ifndef SYNTHESIS
-    initial begin
-      assert(WIDTH > 0) else $fatal(1, "input must be at least one bit wide");
-    end
+    `ASSERT_INIT(width_0, WIDTH > 0, "input must be at least one bit wide")
     `endif
   `endif
 
@@ -105,10 +103,7 @@ module lzc #(
 
 `ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
-  initial begin: validate_params
-    assert (WIDTH >= 1)
-      else $fatal(1, "The WIDTH must at least be one bit wide!");
-  end
+  `ASSERT_INIT(width_0, WIDTH >= 1, "The WIDTH must at least be one bit wide!")
 `endif
 `endif
 

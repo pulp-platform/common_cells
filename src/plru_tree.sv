@@ -122,9 +122,7 @@ module plru_tree #(
 
 `ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
-    initial begin
-        assert (ENTRIES == 2**LogEntries) else $error("Entries must be a power of two");
-    end
+    `ASSERT_INIT(entries_not_power_of_2, ENTRIES == 2**LogEntries, "Entries must be a power of two")
 
     `ASSERT(output_onehot, $onehot0(plru_o), clk_i, !rst_ni, "More than one bit set in PLRU output.")
 `endif

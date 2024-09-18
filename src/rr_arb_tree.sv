@@ -309,12 +309,8 @@ module rr_arb_tree #(
     `ifndef SYNTHESIS
     `ifndef COMMON_CELLS_ASSERTS_OFF
     `ifndef XSIM
-    initial begin : p_assert
-      assert(NumIn)
-        else $fatal(1, "Input must be at least one element wide.");
-      assert(!(LockIn && ExtPrio))
-        else $fatal(1,"Cannot use LockIn feature together with external ExtPrio.");
-    end
+    `ASSERT_INIT(numin_0, NumIn, "Input must be at least one element wide.")
+    `ASSERT_INIT(lockin_and_extprio, !(LockIn && ExtPrio), "Cannot use LockIn feature together with external ExtPrio.")
 
     `ASSERT(hot_one, $onehot0(gnt_o), clk_i, !rst_ni || flush_i, "Grant signal must be hot1 or zero.")
 

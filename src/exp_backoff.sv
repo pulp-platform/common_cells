@@ -85,15 +85,10 @@ module exp_backoff #(
 
 `ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
-  initial begin
-    // assert wrong parameterizations
-    assert (MaxExp>0)
-      else $fatal(1,"MaxExp must be greater than 0");
-    assert (MaxExp<=16)
-      else $fatal(1,"MaxExp cannot be greater than 16");
-    assert (Seed>0)
-      else $fatal(1,"Zero seed is not allowed for LFSR");
-  end
+  // assert wrong parameterizations
+  `ASSERT_INIT(max_exp_0, MaxExp>0, "MaxExp must be greater than 0")
+  `ASSERT_INIT(max_exp_gt_16, MaxExp<=16, "MaxExp cannot be greater than 16")
+  `ASSERT_INIT(seed_0, Seed>0, "Zero seed is not allowed for LFSR")
 `endif
 `endif
 

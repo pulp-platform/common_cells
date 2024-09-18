@@ -62,10 +62,7 @@ module lfsr_16bit #(
 
   `ifndef COMMON_CELLS_ASSERTS_OFF
     `ifndef SYNTHESIS
-    initial begin
-        assert (WIDTH <= 16)
-            else $fatal(1, "WIDTH needs to be less than 16 because of the 16-bit LFSR");
-    end
+    `ASSERT_INIT(width_gt_16, WIDTH <= 16, "WIDTH needs to be less than 16 because of the 16-bit LFSR")
     `endif
   `endif
 

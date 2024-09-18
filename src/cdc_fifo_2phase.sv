@@ -65,9 +65,7 @@ module cdc_fifo_2phase #(
 
   // Check the invariants.
   `ifndef SYNTHESIS
-  initial begin
-    assert(LOG_DEPTH > 0);
-  end
+  `ASSERT_INIT(log_depth_0, LOG_DEPTH > 0)
   `endif
 
   localparam int PtrWidth = LOG_DEPTH+1;
