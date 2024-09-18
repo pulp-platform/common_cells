@@ -145,13 +145,9 @@ module fifo_v3 #(
         assert (DEPTH > 0)             else $error("DEPTH must be greater than 0.");
     end
 
-    full_write : assert property(
-        @(posedge clk_i) disable iff (~rst_ni) (full_o |-> ~push_i))
-        else $fatal (1, "Trying to push new data although the FIFO is full.");
+    `ASSERT(full_write, full_o |-> ~push_i, clk_i, !rst_ni, "Trying to push new data although the FIFO is full.")
 
-    empty_read : assert property(
-        @(posedge clk_i) disable iff (~rst_ni) (empty_o |-> ~pop_i))
-        else $fatal (1, "Trying to pop data although the FIFO is empty.");
+    `ASSERT(empty_read, empty_o |-> ~pop_i, clk_i, !rst_ni, "Trying to pop data although the FIFO is empty.")
 `endif
 `endif
 
