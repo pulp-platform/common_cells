@@ -257,8 +257,8 @@ module cdc_fifo_gray_clearable #(
   // Check the invariants.
   `ifndef SYNTHESIS
   `ifndef COMMON_CELLS_ASSERTS_OFF
-  initial assert(LOG_DEPTH > 0);
-  initial assert(SYNC_STAGES >= 2);
+  `ASSERT_INIT(log_depth_0, LOG_DEPTH > 0)
+  `ASSERT_INIT(sync_stages_lt_2, SYNC_STAGES >= 2)
   `endif
   `endif
 
