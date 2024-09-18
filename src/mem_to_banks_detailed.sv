@@ -224,12 +224,12 @@ module mem_to_banks_detailed #(
   `ifndef COMMON_CELLS_ASSERTS_OFF
   `ifndef SYNTHESIS
     initial begin
-      assume (DataWidth != 0 && (DataWidth & (DataWidth - 1)) == 0)
-        else $fatal(1, "Data width must be a power of two!");
-      assume (DataWidth % NumBanks == 0)
-        else $fatal(1, "Data width must be evenly divisible over banks!");
-      assume ((DataWidth / NumBanks) % 8 == 0)
-        else $fatal(1, "Data width of each bank must be divisible into 8-bit bytes!");
+      `ASSUME_I(datawidth_not_power_of_2, DataWidth != 0 && (DataWidth & (DataWidth - 1)) == 0,
+               "Data width must be a power of two!")
+      `ASSUME_I(datawidth_not_divisible_by_banks, DataWidth % NumBanks == 0,
+               "Data width must be evenly divisible over banks!")
+      `ASSUME_I(bank_datawidth_not_divisible_by_8, (DataWidth / NumBanks) % 8 == 0,
+               "Data width of each bank must be divisible into 8-bit bytes!")
     end
   `endif
   `endif

@@ -128,13 +128,11 @@ module addr_decode_dync #(
   `ifndef XSIM
   `ifndef SYNTHESIS
   initial begin : proc_check_parameters
-    assume ($bits(addr_i) == $bits(addr_map_i[0].start_addr)) else
-      $warning($sformatf("Input address has %d bits and address map has %d bits.",
-        $bits(addr_i), $bits(addr_map_i[0].start_addr)));
-    assume (NoRules > 0) else
-      $fatal(1, $sformatf("At least one rule needed"));
-    assume (NoIndices > 0) else
-      $fatal(1, $sformatf("At least one index needed"));
+    `ASSUME_I(addr_width_mismatch, $bits(addr_i) == $bits(addr_map_i[0].start_addr),
+             $sformatf("Input address has %d bits and address map has %d bits.",
+	               $bits(addr_i), $bits(addr_map_i[0].start_addr)))
+    `ASSUME_I(norules_0, NoRules > 0, $sformatf("At least one rule needed"))
+    `ASSUME_I(noindices_0, NoIndices > 0, $sformatf("At least one index needed"))
   end
 
   assert final ($onehot0(matched_rules) || config_ongoing_i) else
@@ -151,37 +149,37 @@ module addr_decode_dync #(
   always @(addr_map_i or config_ongoing_i) #0 begin : proc_check_addr_map
     if (!$isunknown(addr_map_i) && ~config_ongoing_i) begin
       for (int unsigned i = 0; i < NoRules; i++) begin
-        check_start : assume (Napot || addr_map_i[i].start_addr < addr_map_i[i].end_addr ||
-          addr_map_i[i].end_addr == '0) else
-          $fatal(1, $sformatf("This rule has a higher start than end address!!!\n\
+        `ASSUME_I(check_start, Napot || addr_map_i[i].start_addr < addr_map_i[i].end_addr ||
+          addr_map_i[i].end_addr == '0,
+          $sformatf("This rule has a higher start than end address!!!\n\
               Violating rule %d.\n\
               Rule> IDX: %h START: %h END: %h\n\
               #####################################################",
-              i ,addr_map_i[i].idx, addr_map_i[i].start_addr, addr_map_i[i].end_addr));
+              i ,addr_map_i[i].idx, addr_map_i[i].start_addr, addr_map_i[i].end_addr))
         // check the SLV ids
-        check_idx : assume (addr_map_i[i].idx < NoIndices) else
-            $fatal(1, $sformatf("This rule has a IDX that is not allowed!!!\n\
+        `ASSUME_I(check_idx, addr_map_i[i].idx < NoIndices,
+            $sformatf("This rule has a IDX that is not allowed!!!\n\
             Violating rule %d.\n\
             Rule> IDX: %h START: %h END: %h\n\
             Rule> MAX_IDX: %h\n\
             #####################################################",
             i, addr_map_i[i].idx, addr_map_i[i].start_addr, addr_map_i[i].end_addr,
-            (NoIndices-1)));
+            (NoIndices-1)))
         for (int unsigned j = i + 1; j < NoRules; j++) begin
           // overlap check
-          check_overlap : assume (Napot ||
+          `ASSUME_I(check_overlap, Napot ||
                                   !((addr_map_i[j].start_addr < addr_map_i[i].end_addr) &&
                                     (addr_map_i[j].end_addr > addr_map_i[i].start_addr)) ||
                                   !((addr_map_i[i].end_addr == '0) &&
                                     (addr_map_i[j].end_addr > addr_map_i[i].start_addr)) ||
                                   !((addr_map_i[j].start_addr < addr_map_i[i].end_addr) &&
-                                    (addr_map_i[j].end_addr == '0))) else
-               $warning($sformatf("Overlapping address region found!!!\n\
+                                    (addr_map_i[j].end_addr == '0)),
+              $sformatf("Overlapping address region found!!!\n\
               Rule %d: IDX: %h START: %h END: %h\n\
               Rule %d: IDX: %h START: %h END: %h\n\
               #####################################################",
               i, addr_map_i[i].idx, addr_map_i[i].start_addr, addr_map_i[i].end_addr,
-              j, addr_map_i[j].idx, addr_map_i[j].start_addr, addr_map_i[j].end_addr));
+              j, addr_map_i[j].idx, addr_map_i[j].start_addr, addr_map_i[j].end_addr))
         end
       end
     end

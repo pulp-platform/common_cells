@@ -126,11 +126,10 @@ module multiaddr_decode #(
   `ifndef XSIM
   `ifndef SYNTHESIS
   initial begin : proc_check_parameters
-    assume (NoRules > 0) else
-      $fatal(1, $sformatf("At least one rule needed"));
-    assume ($bits(addr_i) == $bits(addr_map_i[0].addr)) else
-      $warning($sformatf("Input address has %d bits and address map has %d bits.",
-        $bits(addr_i), $bits(addr_map_i[0].addr)));
+    `ASSUME_I(norules_0, NoRules > 0, $sformatf("At least one rule needed"))
+    `ASSUME_I(addr_width_not_equal, $bits(addr_i) == $bits(addr_map_i[0].addr),
+             $sformatf("Input address has %d bits and address map has %d bits.",
+                       $bits(addr_i), $bits(addr_map_i[0].addr)))
   end
 
   // These following assumptions check the validity of the address map.
@@ -139,13 +138,13 @@ module multiaddr_decode #(
     if (!$isunknown(addr_map_i)) begin
       for (int unsigned i = 0; i < NoRules; i++) begin
         // check the SLV ids
-        check_idx : assume (addr_map_i[i].idx < NoIndices) else
-            $fatal(1, $sformatf("This rule has a IDX that is not allowed!!!\n\
+        `ASSUME_I(check_idx, addr_map_i[i].idx < NoIndices,
+            $sformatf("This rule has a IDX that is not allowed!!!\n\
             Violating rule %d.\n\
             Rule> IDX: %h\n\
             Rule> MAX_IDX: %h\n\
             #####################################################",
-            i, addr_map_i[i].idx, (NoIndices-1)));
+            i, addr_map_i[i].idx, (NoIndices-1)))
       end
     end
   end

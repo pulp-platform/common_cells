@@ -241,9 +241,9 @@ module hash_block #(
   // assertions
   `ifndef SYNTHESIS
   initial begin
-    hash_conf: assume (InpWidth > HashWidth) else
-      $fatal(1, "%m:\nA Hash Function reduces the width of the input>\nInpWidth: %s\nOUT_WIDTH: %s",
-          InpWidth, HashWidth);
+    `ASSUME_I(hash_conf, InpWidth > HashWidth,
+      $sformatf("%m:\nA Hash Function reduces the width of the input>\nInpWidth: %s\nOUT_WIDTH: %s",
+          InpWidth, HashWidth))
   end
   `endif
 `endif
