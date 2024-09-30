@@ -222,7 +222,7 @@ module mem_to_banks_detailed #(
   // Assertions
   `ifndef COMMON_CELLS_ASSERTS_OFF
     initial begin
-      `ASSUME_I(datawidth_not_power_of_2, DataWidth != 0 && (DataWidth & (DataWidth - 1)) == 0,
+      `ASSUME_I(datawidth_not_power_of_2, DataWidth != 0 && 2**$clog2(DataWidth) == DataWidth,
                "Data width must be a power of two!")
       `ASSUME_I(datawidth_not_divisible_by_banks, DataWidth % NumBanks == 0,
                "Data width must be evenly divisible over banks!")
