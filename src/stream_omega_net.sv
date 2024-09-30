@@ -268,25 +268,39 @@ module stream_omega_net #(
     // Make sure that the handshake and payload is stable
     `ifndef COMMON_CELLS_ASSERTS_OFF
     for (genvar i = 0; unsigned'(i) < NumInp; i++) begin : gen_sel_assertions
-      `ASSERT(non_existing_output, valid_i[i] |-> sel_i[i] < NumOut, clk_i, !rst_ni, "Non-existing output is selected!")
+      `ASSERT(non_existing_output, valid_i[i] |-> sel_i[i] < NumOut, clk_i, !rst_ni,
+              "Non-existing output is selected!")
     end
 
     if (AxiVldRdy) begin : gen_handshake_assertions
       for (genvar i = 0; unsigned'(i) < NumInp; i++) begin : gen_inp_assertions
-        `ASSERT(input_data_unstable, valid_i[i] && !ready_o[i] |=> $stable(data_i[i] & AxiVldMask), clk_i, !rst_ni, $sformatf("data_i is unstable at input: %0d", i))
-        `ASSERT(input_sel_unstable, valid_i[i] && !ready_o[i] |=> $stable(sel_i[i]), clk_i, !rst_ni, $sformatf("sel_i is unstable at input: %0d", i))
-        `ASSERT(input_valid_taken, valid_i[i] && !ready_o[i] |=> valid_i[i], clk_i, !rst_ni, $sformatf("valid_i at input %0d has been taken away without a ready.", i))
+        `ASSERT(input_data_unstable, valid_i[i] && !ready_o[i] |=> $stable(data_i[i] & AxiVldMask),
+                clk_i, !rst_ni, $sformatf("data_i is unstable at input: %0d", i))
+        `ASSERT(input_sel_unstable, valid_i[i] && !ready_o[i] |=> $stable(sel_i[i]),
+                clk_i, !rst_ni, $sformatf("sel_i is unstable at input: %0d", i))
+        `ASSERT(input_valid_taken, valid_i[i] && !ready_o[i] |=> valid_i[i], clk_i, !rst_ni,
+                $sformatf("valid_i at input %0d has been taken away without a ready.", i))
       end
       for (genvar i = 0; unsigned'(i) < NumOut; i++) begin : gen_out_assertions
-        `ASSERT(output_data_unstable, valid_o[i] && !ready_i[i] |=> $stable(data_o[i] & AxiVldMask), clk_i, !rst_ni, $sformatf("data_o is unstable at output: %0d Check that parameter LockIn is set.", i))
-        `ASSERT(output_idx_unstable, valid_o[i] && !ready_i[i] |=> $stable(idx_o[i]), clk_i, !rst_ni, $sformatf("idx_o is unstable at output: %0d Check that parameter LockIn is set.", i))
-        `ASSERT(output_valid_taken, valid_o[i] && !ready_i[i] |=> valid_o[i], clk_i, !rst_ni, $sformatf("valid_o at output %0d has been taken away without a ready.", i))
+        `ASSERT(output_data_unstable, valid_o[i] && !ready_i[i] |=> $stable(data_o[i] & AxiVldMask),
+                clk_i, !rst_ni,
+                $sformatf("data_o is unstable at output: %0d Check that parameter LockIn is set.",
+                          i))
+        `ASSERT(output_idx_unstable, valid_o[i] && !ready_i[i] |=> $stable(idx_o[i]),
+                clk_i, !rst_ni,
+                $sformatf("idx_o is unstable at output: %0d Check that parameter LockIn is set.",
+                          i))
+        `ASSERT(output_valid_taken, valid_o[i] && !ready_i[i] |=> valid_o[i], clk_i, !rst_ni,
+                $sformatf("valid_o at output %0d has been taken away without a ready.", i))
       end
     end
 
-    `ASSERT_INIT(radix_not_power_of_2, (2**$clog2(Radix) == Radix) && (Radix > 32'd1), "Radix is not power of two.")
-    `ASSERT_INIT(num_routers_not_power_of_2, 2**$clog2(NumRouters) == NumRouters, "NumRouters is not power of two.")
-    `ASSERT_INIT(bit_sclicing_broken, $clog2(NumLanes) % SelW == 0, "Bit slicing of the internal selection signal is broken.")
+    `ASSERT_INIT(radix_not_power_of_2, (2**$clog2(Radix) == Radix) && (Radix > 32'd1),
+                 "Radix is not power of two.")
+    `ASSERT_INIT(num_routers_not_power_of_2, 2**$clog2(NumRouters) == NumRouters,
+                 "NumRouters is not power of two.")
+    `ASSERT_INIT(bit_sclicing_broken, $clog2(NumLanes) % SelW == 0,
+                 "Bit slicing of the internal selection signal is broken.")
     `endif
   end
 endmodule

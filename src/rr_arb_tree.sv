@@ -162,13 +162,14 @@ module rr_arb_tree #(
         end
 
         `ifndef COMMON_CELLS_ASSERTS_OFF
-          `ASSERT(lock, LockIn |-> req_o && (!gnt_i && !flush_i) |=> idx_o == $past(idx_o), clk_i, !rst_ni || flush_i, "Lock implies same arbiter decision in next cycle if output is not \
-                            ready.")
+          `ASSERT(lock, LockIn |-> req_o && (!gnt_i && !flush_i) |=> idx_o == $past(idx_o),
+                  clk_i, !rst_ni || flush_i,
+                  "Lock implies same arbiter decision in next cycle if output is not ready.")
 
           logic [NumIn-1:0] req_tmp;
           assign req_tmp = req_q & req_i;
-          `ASSUME(lock_req, LockIn |-> lock_d |=> req_tmp == req_q, clk_i, !rst_ni || flush_i, "It is disallowed to deassert unserved request signals when LockIn is \
-                            enabled.")
+          `ASSUME(lock_req, LockIn |-> lock_d |=> req_tmp == req_q, clk_i, !rst_ni || flush_i,
+                  "It is disallowed to deassert unserved request signals when LockIn is enabled.")
         `endif
 
         always_ff @(posedge clk_i or negedge rst_ni) begin : p_req_regs
@@ -295,15 +296,19 @@ module rr_arb_tree #(
 
     `ifndef COMMON_CELLS_ASSERTS_OFF
     `ASSERT_INIT(numin_0, NumIn, "Input must be at least one element wide.")
-    `ASSERT_INIT(lockin_and_extprio, !(LockIn && ExtPrio), "Cannot use LockIn feature together with external ExtPrio.")
+    `ASSERT_INIT(lockin_and_extprio, !(LockIn && ExtPrio),
+                 "Cannot use LockIn feature together with external ExtPrio.")
 
-    `ASSERT(hot_one, $onehot0(gnt_o), clk_i, !rst_ni || flush_i, "Grant signal must be hot1 or zero.")
+    `ASSERT(hot_one, $onehot0(gnt_o), clk_i, !rst_ni || flush_i,
+            "Grant signal must be hot1 or zero.")
 
     `ASSERT(gnt0, |gnt_o |-> gnt_i, clk_i, !rst_ni || flush_i, "Grant out implies grant in.")
 
-    `ASSERT(gnt1, req_o |-> gnt_i |-> |gnt_o, clk_i, !rst_ni || flush_i, "Req out and grant in implies grant out.")
+    `ASSERT(gnt1, req_o |-> gnt_i |-> |gnt_o, clk_i, !rst_ni || flush_i,
+            "Req out and grant in implies grant out.")
 
-    `ASSERT(gnt_idx, req_o |->  gnt_i |-> gnt_o[idx_o], clk_i, !rst_ni || flush_i, "Idx_o / gnt_o do not match.")
+    `ASSERT(gnt_idx, req_o |->  gnt_i |-> gnt_o[idx_o], clk_i, !rst_ni || flush_i,
+            "Idx_o / gnt_o do not match.")
 
     `ASSERT(req0, |req_i |-> req_o, clk_i, !rst_ni || flush_i, "Req in implies req out.")
 

@@ -98,9 +98,13 @@ module isochronous_spill_register #(
 
   // stability guarantees
   `ifndef COMMON_CELLS_ASSERTS_OFF
-  `ASSERT(src_valid_unstable, src_valid_i && !src_ready_o |=> $stable(src_valid_i), src_clk_i, !src_rst_ni, "src_valid_i is unstable")
-  `ASSERT(src_data_unstable, src_valid_i && !src_ready_o |=> $stable(src_data_i), src_clk_i, !src_rst_ni, "src_data_i is unstable")
-  `ASSERT(dst_valid_unstable, dst_valid_o && !dst_ready_i |=> $stable(dst_valid_o), dst_clk_i, !dst_rst_ni, "dst_valid_o is unstable")
-  `ASSERT(dst_data_unstable, dst_valid_o && !dst_ready_i |=> $stable(dst_data_o), dst_clk_i, !dst_rst_ni, "dst_data_o is unstable")
+  `ASSERT(src_valid_unstable, src_valid_i && !src_ready_o |=> $stable(src_valid_i),
+          src_clk_i, !src_rst_ni, "src_valid_i is unstable")
+  `ASSERT(src_data_unstable, src_valid_i && !src_ready_o |=> $stable(src_data_i),
+          src_clk_i, !src_rst_ni, "src_data_i is unstable")
+  `ASSERT(dst_valid_unstable, dst_valid_o && !dst_ready_i |=> $stable(dst_valid_o),
+          dst_clk_i, !dst_rst_ni, "dst_valid_o is unstable")
+  `ASSERT(dst_data_unstable, dst_valid_o && !dst_ready_i |=> $stable(dst_data_o),
+          dst_clk_i, !dst_rst_ni, "dst_data_o is unstable")
   `endif
 endmodule

@@ -128,7 +128,7 @@ module addr_decode_dync #(
   initial begin : proc_check_parameters
     `ASSUME_I(addr_width_mismatch, $bits(addr_i) == $bits(addr_map_i[0].start_addr),
              $sformatf("Input address has %d bits and address map has %d bits.",
-	               $bits(addr_i), $bits(addr_map_i[0].start_addr)))
+                       $bits(addr_i), $bits(addr_map_i[0].start_addr)))
     `ASSUME_I(norules_0, NoRules > 0, $sformatf("At least one rule needed"))
     `ASSUME_I(noindices_0, NoIndices > 0, $sformatf("At least one index needed"))
   end

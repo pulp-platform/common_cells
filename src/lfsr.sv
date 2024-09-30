@@ -293,11 +293,15 @@ end
 ////////////////////////////////////////////////////////////////////////
 `ifndef COMMON_CELLS_ASSERTS_OFF
 // these are the LUT limits
-`ASSERT_INIT(outwidth_gt_lfsrwidth, OutWidth <= LfsrWidth, "OutWidth must be smaller equal the LfsrWidth.")
+`ASSERT_INIT(outwidth_gt_lfsrwidth, OutWidth <= LfsrWidth,
+             "OutWidth must be smaller equal the LfsrWidth.")
 `ASSERT_INIT(rstval_0, RstVal > unsigned'(0), "RstVal must be nonzero.")
-`ASSERT_INIT(lfsrwidth_invalid, (LfsrWidth >= $low(Masks)) && (LfsrWidth <= $high(Masks)), "Unsupported LfsrWidth.")
-`ASSERT_INIT(mask_invalid, Masks[LfsrWidth][LfsrWidth-1], "LFSR mask is not correct. The MSB must be 1.")
-`ASSERT_INIT(cipherlayers_invalid, (CipherLayers > 0) && (LfsrWidth == 64) || (CipherLayers == 0), "Use additional cipher layers only in conjunction with an LFSR width of 64 bit.")
+`ASSERT_INIT(lfsrwidth_invalid, (LfsrWidth >= $low(Masks)) && (LfsrWidth <= $high(Masks)),
+             "Unsupported LfsrWidth.")
+`ASSERT_INIT(mask_invalid, Masks[LfsrWidth][LfsrWidth-1],
+             "LFSR mask is not correct. The MSB must be 1.")
+`ASSERT_INIT(cipherlayers_invalid, (CipherLayers > 0) && (LfsrWidth == 64) || (CipherLayers == 0),
+             "Use additional cipher layers only in conjunction with an LFSR width of 64 bit.")
 
   `ASSERT(all_zero, en_i |-> lfsr_d, clk_i, !rst_ni, "Lfsr must not be all-zero.")
 `endif
