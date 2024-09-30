@@ -2,6 +2,8 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 
+`include "common_cells/assertions.svh"
+
 /// A trailing zero counter / leading zero counter.
 /// Set MODE to 0 for trailing zero counter => cnt_o is the number of trailing zeros (from the LSB)
 /// Set MODE to 1 for leading zero counter  => cnt_o is the number of leading zeros  (from the MSB)

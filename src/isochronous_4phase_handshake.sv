@@ -39,6 +39,7 @@
 /// ratio will work.
 
 `include "common_cells/registers.svh"
+`include "common_cells/assertions.svh"
 
 module isochronous_4phase_handshake (
   input  logic src_clk_i,

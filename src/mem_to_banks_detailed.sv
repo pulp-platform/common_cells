@@ -10,6 +10,8 @@
 //
 // Author: Wolfgang Roenninger <wroennin@ethz.ch>
 
+`include "common_cells/assertions.svh"
+
 /// Split memory access over multiple parallel banks, where each bank has its own req/gnt
 /// request and valid response direction.
 module mem_to_banks_detailed #(

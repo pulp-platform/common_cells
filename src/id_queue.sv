@@ -45,6 +45,8 @@
 // Maintainers:
 // - Andreas Kurth <akurth@iis.ee.ethz.ch>
 
+`include "common_cells/assertions.svh"
+
 module id_queue #(
     parameter int ID_WIDTH  = 0,
     parameter int CAPACITY  = 0,

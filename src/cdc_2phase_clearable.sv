@@ -49,6 +49,7 @@
 /* verilator lint_off DECLFILENAME */
 
 `include "common_cells/registers.svh"
+`include "common_cells/assertions.svh"
 
 module cdc_2phase_clearable #(
   parameter type T = logic,

@@ -10,6 +10,8 @@
 
 // Author: Luca Colagrande <colluca@ethz.ch>
 
+`include "common_cells/assertions.svh"
+
 /// Multi-address Decoder: Combinational module which takes an address set
 /// in {addr, mask} representation and returns a bit mask `select_o` indicating which
 /// address map rules in `addr_map_i` it matches.

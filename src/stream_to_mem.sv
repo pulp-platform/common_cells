@@ -11,9 +11,11 @@
 // Authors:
 // - Andreas Kurth <akurth@iis.ee.ethz.ch>
 
+`include "common_cells/registers.svh"
+`include "common_cells/assertions.svh"
+
 /// `stream_to_mem`: Allows to use memories with flow control (`valid`/`ready`) for requests but without flow
 /// control for output data to be used in streams.
-`include "common_cells/registers.svh"
 module stream_to_mem #(
   /// Memory request payload type, usually write enable, write data, etc.
   parameter type         mem_req_t  = logic,

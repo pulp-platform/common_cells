@@ -8,6 +8,8 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
+`include "common_cells/assertions.svh"
+
 /// Stream multiplexer: connects the output to one of `N_INP` data streams with valid-ready
 /// handshaking.
 

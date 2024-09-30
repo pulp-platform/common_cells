@@ -10,6 +10,8 @@
 
 // Author: Wolfgang Roenninger <wroennin@ethz.ch>
 
+`include "common_cells/assertions.svh"
+
 /// Fully connected stream crossbar.
 ///
 /// Handshaking rules as defined by the `AMBA AXI` standard on default.

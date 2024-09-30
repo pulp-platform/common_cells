@@ -96,6 +96,7 @@
 /// async] ```
 
 `include "common_cells/registers.svh"
+`include "common_cells/assertions.svh"
 
 (* no_ungroup *)
 (* no_boundary_optimization *)

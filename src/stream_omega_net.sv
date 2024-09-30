@@ -10,6 +10,8 @@
 
 // Author: Wolfgang Roenninger <wroennin@ethz.ch>
 
+`include "common_cells/assertions.svh"
+
 /// Omega network using multiple `stream_xbar` as switches.
 ///
 /// An omega network is isomorphic to a butterfly network.

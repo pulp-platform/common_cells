@@ -14,6 +14,8 @@
 // - Michael Rogenmoser <michaero@iis.ee.ethz.ch>
 // - Thomas Benz <tbenz@iis.ee.ethz.ch>
 
+`include "common_cells/assertions.svh"
+
 /// Address Decoder: Maps the input address combinatorially to an index.
 /// DYNamic Configuration (DYNC) version
 /// The address map `addr_map_i` is a packed array of rule_t structs.

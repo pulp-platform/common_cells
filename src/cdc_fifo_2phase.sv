@@ -11,6 +11,8 @@
 //
 // Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
 
+`include "common_cells/assertions.svh"
+
 /// A clock domain crossing FIFO, using 2-phase hand shakes.
 ///
 /// This FIFO has its push and pop ports in two separate clock domains. Its size

@@ -11,6 +11,7 @@
 //
 // Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
 
+`include "common_cells/assertions.svh"
 
 /// A register with handshakes that completely cuts any combinational paths
 /// between the input and output. This spill register can be flushed.

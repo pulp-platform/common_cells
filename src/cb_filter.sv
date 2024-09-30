@@ -39,6 +39,8 @@
 //   - `filter_empty_o`:  Filter is empty.
 //   - `filter_error_o`:  One of the internal counters or buckets overflowed.
 
+`include "common_cells/assertions.svh"
+
 /// This is a counting bloom filter
 module cb_filter #(
   parameter int unsigned KHashes     =  32'd3,  // Number of hash functions

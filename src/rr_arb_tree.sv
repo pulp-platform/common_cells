@@ -13,6 +13,8 @@
 // Date: 02.04.2019
 // Description: logarithmic arbitration tree with round robin arbitration scheme.
 
+`include "common_cells/assertions.svh"
+
 /// The rr_arb_tree employs non-starving round robin-arbitration - i.e., the priorities
 /// rotate each cycle.
 ///
