@@ -41,7 +41,7 @@ interface STREAM_DV #(
 
   // Make sure that the handshake and payload is stable
   `ifndef COMMON_CELLS_ASSERTS_OFF
-  `ASSERT(data_unstable, (valid && !ready |=> $stable(data)), clk_i, !rst_ni)
-  `ASSERT(valid_unstable, (valid && !ready |=> valid), clk_i, !rst_ni)
+  `ASSERT(data_unstable, (valid && !ready |=> $stable(data)), clk_i, 1'b0)
+  `ASSERT(valid_unstable, (valid && !ready |=> valid), clk_i, 1'b0)
   `endif
 endinterface
