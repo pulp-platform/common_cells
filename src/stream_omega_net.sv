@@ -299,7 +299,7 @@ module stream_omega_net #(
                  "Radix is not power of two.")
     `ASSERT_INIT(num_routers_not_power_of_2, 2**$clog2(NumRouters) == NumRouters,
                  "NumRouters is not power of two.")
-    `ASSERT_INIT(bit_sclicing_broken, $clog2(NumLanes) % SelW == 0,
+    `ASSERT_INIT(bit_slicing_broken, $clog2(NumLanes) % SelW == 0,
                  "Bit slicing of the internal selection signal is broken.")
     `endif
   end
