@@ -11,6 +11,8 @@
 
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
+`include "common_cells/assertions.svh"
+
 /// A stream interface with custom payload of type `payload_t`.
 /// Handshaking rules as defined in the AXI standard.
 interface STREAM_DV #(
