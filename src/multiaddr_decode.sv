@@ -133,7 +133,7 @@ module multiaddr_decode #(
 
   // These following assumptions check the validity of the address map.
   // check_idx: Enforces a valid index in the rule.
-  always @(addr_map_i) #0 begin : proc_check_addr_map
+  always_comb begin : proc_check_addr_map
     if (!$isunknown(addr_map_i)) begin
       for (int unsigned i = 0; i < NoRules; i++) begin
         // check the SLV ids

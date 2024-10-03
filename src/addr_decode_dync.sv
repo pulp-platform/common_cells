@@ -146,7 +146,7 @@ module addr_decode_dync #(
   // check_start:        Enforces a smaller start than end address.
   // check_idx:          Enforces a valid index in the rule.
   // check_overlap:      Warns if there are overlapping address regions.
-  always @(addr_map_i or config_ongoing_i) #0 begin : proc_check_addr_map
+  always_comb begin : proc_check_addr_map
     if (!$isunknown(addr_map_i) && ~config_ongoing_i) begin
       for (int unsigned i = 0; i < NoRules; i++) begin
         check_start : assume (Napot || addr_map_i[i].start_addr < addr_map_i[i].end_addr ||
