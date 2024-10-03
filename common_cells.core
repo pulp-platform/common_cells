@@ -122,3 +122,10 @@ filesets:
 targets:
   default:
     filesets : [rtl, deprecated]
+    parameters: [COMMON_CELLS_ASSERTS_OFF]
+
+parameters:
+  COMMON_CELLS_ASSERTS_OFF:
+    datatype: bool
+    description: Turn off asserts for PULP common cells
+    paramtype: vlogdefine
