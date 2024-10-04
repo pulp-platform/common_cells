@@ -161,8 +161,7 @@ The use of linter rules that flag explicit uses of `always_ff` in source code is
 
 The header file `assertions.svh` contains macros that expand to assertion blocks.
 These macros should recduce the effort in writing many assertions and make it
-easier to use them. They are identical with the macros used by [lowrisc](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_assert.sv)
-and just re-implemented here for the sake of easier use in PULP projects (the same include guard is used so they should not clash).
+easier to use them. They are similar to but incompatible with the macros used by [lowrisc](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_assert.sv).
 
 #### Simple Assertion and Cover Macros
 | Macro              | Arguments                                        | Description                                                                |
