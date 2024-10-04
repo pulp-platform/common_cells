@@ -10,6 +10,8 @@
 //
 // Author: Wolfgang Roenninger <wroennin@ethz.ch>
 
+`include "common_cells/assertions.svh"
+
 /// Split memory access over multiple parallel banks, where each bank has its own req/gnt
 /// request and valid response direction.
 module mem_to_banks_detailed #(
@@ -218,18 +220,14 @@ module mem_to_banks_detailed #(
   assign rvalid_o = &(resp_valid | dead_response);
 
   // Assertions
-  `ifndef SYNTHESIS
   `ifndef COMMON_CELLS_ASSERTS_OFF
-  `ifndef SYNTHESIS
     initial begin
-      assume (DataWidth != 0 && (DataWidth & (DataWidth - 1)) == 0)
-        else $fatal(1, "Data width must be a power of two!");
-      assume (DataWidth % NumBanks == 0)
-        else $fatal(1, "Data width must be evenly divisible over banks!");
-      assume ((DataWidth / NumBanks) % 8 == 0)
-        else $fatal(1, "Data width of each bank must be divisible into 8-bit bytes!");
+      `ASSUME_I(datawidth_not_power_of_2, DataWidth != 0 && 2**$clog2(DataWidth) == DataWidth,
+               "Data width must be a power of two!")
+      `ASSUME_I(datawidth_not_divisible_by_banks, DataWidth % NumBanks == 0,
+               "Data width must be evenly divisible over banks!")
+      `ASSUME_I(bank_datawidth_not_divisible_by_8, (DataWidth / NumBanks) % 8 == 0,
+               "Data width of each bank must be divisible into 8-bit bytes!")
     end
-  `endif
-  `endif
   `endif
 endmodule

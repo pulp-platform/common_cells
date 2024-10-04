@@ -14,6 +14,8 @@
 // Description: Pseudo Least Recently Used Tree (PLRU)
 // See: https://en.wikipedia.org/wiki/Pseudo-LRU
 
+`include "common_cells/assertions.svh"
+
 module plru_tree #(
   parameter int unsigned ENTRIES = 16
 ) (
@@ -118,16 +120,11 @@ module plru_tree #(
         end
     end
 
-`ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
-    initial begin
-        assert (ENTRIES == 2**LogEntries) else $error("Entries must be a power of two");
-    end
+    `ASSERT_INIT(entries_not_power_of_2, ENTRIES == 2**LogEntries, "Entries must be a power of two")
 
-    output_onehot : assert property(
-        @(posedge clk_i) disable iff (~rst_ni) ($onehot0(plru_o)))
-        else $fatal (1, "More than one bit set in PLRU output.");
-`endif
+    `ASSERT(output_onehot, $onehot0(plru_o), clk_i, !rst_ni,
+            "More than one bit set in PLRU output.")
 `endif
 
 endmodule

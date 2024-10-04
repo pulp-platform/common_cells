@@ -16,6 +16,8 @@
 // This module has no data ports because stream data does not need to be forked: the data of the
 // input stream can just be applied at all output streams.
 
+`include "common_cells/assertions.svh"
+
 module stream_fork #(
     parameter int unsigned N_OUP = 0    // Synopsys DC requires a default value for parameters.
 ) (
@@ -122,12 +124,8 @@ module stream_fork #(
     assign all_ones = '1;   // Synthesis fix for Vivado, which does not correctly compute the width
                             // of the '1 literal when assigned to a port of parametrized width.
 
-`ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
-    initial begin: p_assertions
-        assert (N_OUP >= 1) else $fatal(1, "Number of outputs must be at least 1!");
-    end
-`endif
+    `ASSERT_INIT(n_oup_0, N_OUP >= 1, "Number of outputs must be at least 1!")
 `endif
 
 endmodule

@@ -11,9 +11,11 @@
 // Authors:
 // - Andreas Kurth <akurth@iis.ee.ethz.ch>
 
+`include "common_cells/registers.svh"
+`include "common_cells/assertions.svh"
+
 /// `stream_to_mem`: Allows to use memories with flow control (`valid`/`ready`) for requests but without flow
 /// control for output data to be used in streams.
-`include "common_cells/registers.svh"
 module stream_to_mem #(
   /// Memory request payload type, usually write enable, write data, etc.
   parameter type         mem_req_t  = logic,
@@ -116,19 +118,17 @@ module stream_to_mem #(
   assign mem_req_o = req_i;
 
 // Assertions
-`ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
   if (BufDepth > 0) begin : gen_buf_asserts
-    assert property (@(posedge clk_i) mem_resp_valid_i |-> buf_ready)
-      else $error("Memory response lost!");
-    assert property (@(posedge clk_i) cnt_q == '0 |=> cnt_q != '1)
-      else $error("Counter underflowed!");
-    assert property (@(posedge clk_i) cnt_q == BufDepth |=> cnt_q != BufDepth + 1)
-      else $error("Counter overflowed!");
+    `ASSERT(memory_response_lost, mem_resp_valid_i |-> buf_ready, clk_i, !rst_ni,
+            "Memory response lost!")
+    `ASSERT(counter_underflowed, cnt_q == '0 |=> cnt_q != '1, clk_i, !rst_ni,
+            "Counter underflowed!")
+    `ASSERT(counter_overflowed, cnt_q == BufDepth |=> cnt_q != BufDepth + 1, clk_i, !rst_ni,
+            "Counter overflowed!")
   end else begin : gen_no_buf_asserts
-    assume property (@(posedge clk_i) mem_req_valid_o & mem_req_ready_i |-> mem_resp_valid_i)
-      else $error("Without BufDepth = 0, the memory must respond in the same cycle!");
+    `ASSUME(no_memory_response, mem_req_valid_o & mem_req_ready_i |-> mem_resp_valid_i,
+            clk_i, !rst_ni, "Without BufDepth = 0, the memory must respond in the same cycle!")
   end
-`endif
 `endif
 endmodule

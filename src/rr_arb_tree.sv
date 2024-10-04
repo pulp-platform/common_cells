@@ -13,6 +13,8 @@
 // Date: 02.04.2019
 // Description: logarithmic arbitration tree with round robin arbitration scheme.
 
+`include "common_cells/assertions.svh"
+
 /// The rr_arb_tree employs non-starving round robin-arbitration - i.e., the priorities
 /// rotate each cycle.
 ///
@@ -109,17 +111,6 @@ module rr_arb_tree #(
   output idx_t                idx_o
 );
 
-  `ifndef SYNTHESIS
-  `ifndef COMMON_CELLS_ASSERTS_OFF
-  `ifndef VERILATOR
-  `ifndef XSIM
-  // Default SVA reset
-  default disable iff (!rst_ni || flush_i);
-  `endif
-  `endif
-  `endif
-  `endif
-
   // just pass through in this corner case
   if (NumIn == unsigned'(1)) begin : gen_pass_through
     assign req_o    = req_i[0];
@@ -170,22 +161,15 @@ module rr_arb_tree #(
           end
         end
 
-        `ifndef SYNTHESIS
         `ifndef COMMON_CELLS_ASSERTS_OFF
-          lock: assert property(
-            @(posedge clk_i) disable iff (!rst_ni || flush_i)
-                LockIn |-> req_o && (!gnt_i && !flush_i) |=> idx_o == $past(idx_o)) else
-                $fatal (1, "Lock implies same arbiter decision in next cycle if output is not \
-                            ready.");
+          `ASSERT(lock, LockIn |-> req_o && (!gnt_i && !flush_i) |=> idx_o == $past(idx_o),
+                  clk_i, !rst_ni || flush_i,
+                  "Lock implies same arbiter decision in next cycle if output is not ready.")
 
           logic [NumIn-1:0] req_tmp;
           assign req_tmp = req_q & req_i;
-          lock_req: assume property(
-            @(posedge clk_i) disable iff (!rst_ni || flush_i)
-                LockIn |-> lock_d |=> req_tmp == req_q) else
-                $fatal (1, "It is disallowed to deassert unserved request signals when LockIn is \
-                            enabled.");
-        `endif
+          `ASSUME(lock_req, LockIn |-> lock_d |=> req_tmp == req_q, clk_i, !rst_ni || flush_i,
+                  "It is disallowed to deassert unserved request signals when LockIn is enabled.")
         `endif
 
         always_ff @(posedge clk_i or negedge rst_ni) begin : p_req_regs
@@ -310,41 +294,25 @@ module rr_arb_tree #(
       end
     end
 
-    `ifndef SYNTHESIS
     `ifndef COMMON_CELLS_ASSERTS_OFF
-    `ifndef XSIM
-    initial begin : p_assert
-      assert(NumIn)
-        else $fatal(1, "Input must be at least one element wide.");
-      assert(!(LockIn && ExtPrio))
-        else $fatal(1,"Cannot use LockIn feature together with external ExtPrio.");
-    end
+    `ASSERT_INIT(numin_0, NumIn, "Input must be at least one element wide.")
+    `ASSERT_INIT(lockin_and_extprio, !(LockIn && ExtPrio),
+                 "Cannot use LockIn feature together with external ExtPrio.")
 
-    hot_one : assert property(
-      @(posedge clk_i) disable iff (!rst_ni || flush_i) $onehot0(gnt_o))
-        else $fatal (1, "Grant signal must be hot1 or zero.");
+    `ASSERT(hot_one, $onehot0(gnt_o), clk_i, !rst_ni || flush_i,
+            "Grant signal must be hot1 or zero.")
 
-    gnt0 : assert property(
-      @(posedge clk_i) disable iff (!rst_ni || flush_i) |gnt_o |-> gnt_i)
-        else $fatal (1, "Grant out implies grant in.");
+    `ASSERT(gnt0, |gnt_o |-> gnt_i, clk_i, !rst_ni || flush_i, "Grant out implies grant in.")
 
-    gnt1 : assert property(
-      @(posedge clk_i) disable iff (!rst_ni || flush_i) req_o |-> gnt_i |-> |gnt_o)
-        else $fatal (1, "Req out and grant in implies grant out.");
+    `ASSERT(gnt1, req_o |-> gnt_i |-> |gnt_o, clk_i, !rst_ni || flush_i,
+            "Req out and grant in implies grant out.")
 
-    gnt_idx : assert property(
-      @(posedge clk_i) disable iff (!rst_ni || flush_i) req_o |->  gnt_i |-> gnt_o[idx_o])
-        else $fatal (1, "Idx_o / gnt_o do not match.");
+    `ASSERT(gnt_idx, req_o |->  gnt_i |-> gnt_o[idx_o], clk_i, !rst_ni || flush_i,
+            "Idx_o / gnt_o do not match.")
 
-    req0 : assert property(
-      @(posedge clk_i) disable iff (!rst_ni || flush_i) |req_i |-> req_o)
-        else $fatal (1, "Req in implies req out.");
+    `ASSERT(req0, |req_i |-> req_o, clk_i, !rst_ni || flush_i, "Req in implies req out.")
 
-    req1 : assert property(
-      @(posedge clk_i) disable iff (!rst_ni || flush_i) req_o |-> |req_i)
-        else $fatal (1, "Req out implies req in.");
-    `endif
-    `endif
+    `ASSERT(req1, req_o |-> |req_i, clk_i, !rst_ni || flush_i, "Req out implies req in.")
     `endif
   end
 

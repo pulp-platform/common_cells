@@ -8,6 +8,8 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
+`include "common_cells/assertions.svh"
+
 /// Stream multiplexer: connects the output to one of `N_INP` data streams with valid-ready
 /// handshaking.
 
@@ -35,12 +37,8 @@ module stream_mux #(
   assign oup_data_o   = inp_data_i[inp_sel_i];
   assign oup_valid_o  = inp_valid_i[inp_sel_i];
 
-`ifndef SYNTHESIS
 `ifndef COMMON_CELLS_ASSERTS_OFF
-  initial begin: p_assertions
-    assert (N_INP >= 1) else $fatal (1, "The number of inputs must be at least 1!");
-  end
-`endif
+  `ASSERT_INIT(n_inp_0, N_INP >= 1, "The number of inputs must be at least 1!")
 `endif
 
 endmodule

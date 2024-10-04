@@ -11,6 +11,8 @@
 //
 // Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
 
+`include "common_cells/assertions.svh"
+
 /// A clock domain crossing FIFO, using 2-phase hand shakes.
 ///
 /// This FIFO has its push and pop ports in two separate clock domains. Its size
@@ -62,10 +64,8 @@ module cdc_fifo_2phase #(
 );
 
   // Check the invariants.
-  `ifndef SYNTHESIS
-  initial begin
-    assert(LOG_DEPTH > 0);
-  end
+  `ifndef COMMON_CELLS_ASSERTS_OFF
+  `ASSERT_INIT(log_depth_0, LOG_DEPTH > 0)
   `endif
 
   localparam int PtrWidth = LOG_DEPTH+1;

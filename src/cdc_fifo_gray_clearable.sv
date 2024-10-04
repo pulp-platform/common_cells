@@ -96,6 +96,7 @@
 /// async] ```
 
 `include "common_cells/registers.svh"
+`include "common_cells/assertions.svh"
 
 (* no_ungroup *)
 (* no_boundary_optimization *)
@@ -254,11 +255,9 @@ module cdc_fifo_gray_clearable #(
   assign dst_clear_pending_o = s_dst_isolate_req;
 
   // Check the invariants.
-  `ifndef SYNTHESIS
   `ifndef COMMON_CELLS_ASSERTS_OFF
-  initial assert(LOG_DEPTH > 0);
-  initial assert(SYNC_STAGES >= 2);
-  `endif
+  `ASSERT_INIT(log_depth_0, LOG_DEPTH > 0)
+  `ASSERT_INIT(sync_stages_lt_2, SYNC_STAGES >= 2)
   `endif
 
 endmodule

@@ -49,6 +49,7 @@
 /* verilator lint_off DECLFILENAME */
 
 `include "common_cells/registers.svh"
+`include "common_cells/assertions.svh"
 
 module cdc_2phase_clearable #(
   parameter type T = logic,
@@ -187,9 +188,7 @@ module cdc_2phase_clearable #(
 
 `ifndef COMMON_CELLS_ASSERTS_OFF
 
-  no_valid_i_during_clear_i : assert property (
-    @(posedge src_clk_i) disable iff (!src_rst_ni) src_clear_i |-> !src_valid_i
-  );
+  `ASSERT(no_valid_i_during_clear_i, src_clear_i |-> !src_valid_i, src_clk_i, !src_rst_ni)
 
 `endif
 
@@ -258,12 +257,8 @@ module cdc_2phase_src_clearable #(
 
 // Assertions
 `ifndef COMMON_CELLS_ASSERTS_OFF
-  `ifndef SYNTHESIS
-  no_clear_and_request: assume property (
-     @(posedge clk_i) disable iff(~rst_ni) (clear_i |-> ~valid_i))
-    else $fatal(1, "No request allowed while clear_i is asserted.");
-
-  `endif
+  `ASSUME(no_clear_and_request, clear_i |-> ~valid_i, clk_i, !rst_ni,
+          "No request allowed while clear_i is asserted.")
 `endif
 
 endmodule

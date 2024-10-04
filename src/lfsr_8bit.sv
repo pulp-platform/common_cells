@@ -13,6 +13,8 @@
 // Date: 12.11.2017
 // Description: 8-bit LFSR
 
+`include "common_cells/assertions.svh"
+
 /// 8 bit Linear Feedback Shift register
 module lfsr_8bit #(
   parameter logic        [7:0] SEED  = 8'b0,
@@ -53,11 +55,7 @@ module lfsr_8bit #(
   end
 
 `ifndef COMMON_CELLS_ASSERTS_OFF
-  `ifndef SYNTHESIS
-  initial begin
-    assert (WIDTH <= 8) else $fatal(1, "WIDTH needs to be less than 8 because of the 8-bit LFSR");
-  end
-  `endif
+  `ASSERT_INIT(width_gt_8, WIDTH <= 8, "WIDTH needs to be less than 8 because of the 8-bit LFSR")
 `endif
 
 endmodule
