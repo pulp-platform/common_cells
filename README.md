@@ -191,7 +191,7 @@ and just re-implemented here for the sake of easier use in PULP projects (the sa
 | Macro          | Arguments                                        | Description                  |
 | -------------- | ------------------------------------------------ | ---------------------------- |
 | `` `ASSUME``   | `__name`, `__prop`, (`__clk`, `__rst`, `__desc`) | Assume a concurrent property |
-| `` `ASSUME_I`` | `__name`, `__prop`, (, `__desc`)                 | Assume an immediate property |
+| `` `ASSUME_I`` | `__name`, `__prop`, (`__desc`)                   | Assume an immediate property |
 - *The name of the clock and reset signals for implicit variants is `clk_i` and `rst_ni`, respectively.*
 - *`__desc` is an optional string argument describing the failure causing the assertion to be violated that is embedded into the error report and defaults to `""`.*
 
@@ -200,7 +200,7 @@ and just re-implemented here for the sake of easier use in PULP projects (the sa
 | Macro              | Arguments                                        | Description                                                  |
 | ------------------ | ------------------------------------------------ | ------------------------------------------------------------ |
 | `` `ASSUME_FPV``   | `__name`, `__prop`, (`__clk`, `__rst`, `__desc`) | Assume a concurrent property during formal verification only |
-| `` `ASSUME_I_FPV`` | `__name`, `__prop`, (, `__desc`)                 | Assume a concurrent property during formal verification only |
+| `` `ASSUME_I_FPV`` | `__name`, `__prop`, (`__desc`)                   | Assume a concurrent property during formal verification only |
 | `` `COVER_FPV``    | `__name`, `__prop`, (`__clk`, `__rst`)           | Cover a concurrent property during formal verification       |
 - *The name of the clock and reset signals for implicit variants is `clk_i` and `rst_ni`, respectively.*
 - *`__desc` is an optional string argument describing the failure causing the assertion to be violated that is embedded into the error report and defaults to `""`.*
