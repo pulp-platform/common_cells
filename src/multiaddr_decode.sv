@@ -132,6 +132,7 @@ module multiaddr_decode #(
 
   // These following assumptions check the validity of the address map.
   // check_idx: Enforces a valid index in the rule.
+  `ifndef SYNTHESIS
   always_comb begin : proc_check_addr_map
     if (!$isunknown(addr_map_i)) begin
       for (int unsigned i = 0; i < NoRules; i++) begin
@@ -146,6 +147,6 @@ module multiaddr_decode #(
       end
     end
   end
-
+  `endif
   `endif
 endmodule

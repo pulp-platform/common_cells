@@ -144,6 +144,7 @@ module addr_decode_dync #(
   // check_start:        Enforces a smaller start than end address.
   // check_idx:          Enforces a valid index in the rule.
   // check_overlap:      Warns if there are overlapping address regions.
+  `ifndef SYNTHESIS
   always_comb begin : proc_check_addr_map
     if (!$isunknown(addr_map_i) && ~config_ongoing_i) begin
       for (int unsigned i = 0; i < NoRules; i++) begin
@@ -182,6 +183,7 @@ module addr_decode_dync #(
       end
     end
   end
+  `endif
   `endif
 
 endmodule
