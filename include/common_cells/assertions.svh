@@ -24,7 +24,7 @@
 // Helper macros //
 ///////////////////
 
-// local helper macro to reduce code clutter. undefined at the end of this file
+// helper macro to reduce code clutter, can be used to hide signal defs only used for assertions
 `ifndef ASSERTS_OFF
 `ifndef SYNTHESIS
 `ifndef XSIM
@@ -206,11 +206,5 @@
    `COVER(__name, __prop, __clk, __rst)                                                     \
 `endif
 
-
-// undefine local helper macros
-`ifdef INC_ASSERT
-`undef INC_ASSERT
-`endif
-`undef ASSERT_STRINGIFY
 
 `endif // COMMON_CELLS_ASSERTIONS_SVH
