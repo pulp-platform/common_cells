@@ -31,7 +31,7 @@ module delta_counter #(
 
         always_ff @(posedge clk_i or negedge rst_ni)
         begin
-            if(rst_ni) begin
+            if(!rst_ni) begin
                 overflow_q <= 1'b0;
             end else begin
                 overflow_q <= overflow_d;
