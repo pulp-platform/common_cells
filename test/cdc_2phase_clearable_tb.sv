@@ -13,7 +13,7 @@
 
 module cdc_2phase_clearable_tb;
 
-  parameter int UNTIL = 100000;
+  parameter int UNTIL = 10_000_000;
   parameter bit INJECT_DELAYS = 1;
   parameter int CLEAR_PPM = 2000;
   parameter int SYNC_STAGES = 3;
@@ -308,11 +308,16 @@ module cdc_2phase_clearable_tb_delay_injector #(
   logic async_ack_o, async_ack_i;
   logic [31:0] async_data_o, async_data_i;
 
-
-  logic        s_src_clear;
+  logic        s_src_clear_req;
+  logic        s_src_clear_ack_q;
   logic        s_src_ready;
-  logic        s_dst_clear;
+  logic        s_src_isolate_req;
+  logic        s_src_isolate_ack_q;
+  logic        s_dst_clear_req;
+  logic        s_dst_clear_ack_q;
   logic        s_dst_valid;
+  logic        s_dst_isolate_req;
+  logic        s_dst_isolate_ack_q;
 
   always @(async_req_o) begin
     automatic time d = $urandom_range(1ps, MAX_DELAY);
@@ -332,49 +337,80 @@ module cdc_2phase_clearable_tb_delay_injector #(
   end
 
   cdc_2phase_src_clearable #(logic [31:0], SYNC_STAGES) i_src (
-    .rst_ni       ( src_rst_ni                 ),
-    .clk_i        ( src_clk_i                  ),
-    .clear_i      ( s_src_clear                ),
-    .data_i       ( src_data_i                 ),
-    .valid_i      ( src_valid_i & !s_src_clear ),
-    .ready_o      ( s_src_ready                ),
-    .async_req_o  ( async_req_o                ),
-    .async_ack_i  ( async_ack_i                ),
-    .async_data_o ( async_data_o               )
+    .rst_ni       ( src_rst_ni                       ),
+    .clk_i        ( src_clk_i                        ),
+    .clear_i      ( s_src_clear_req                  ),
+    .data_i       ( src_data_i                       ),
+    .valid_i      ( src_valid_i & !s_src_isolate_req ),
+    .ready_o      ( s_src_ready                      ),
+    .async_req_o  ( async_req_o                      ),
+    .async_ack_i  ( async_ack_i                      ),
+    .async_data_o ( async_data_o                     )
   );
 
-  assign src_ready_o = s_src_ready & !s_src_clear;
+  assign src_ready_o = s_src_ready & !s_src_isolate_req;
 
   cdc_2phase_dst_clearable #(logic [31:0], SYNC_STAGES) i_dst (
-    .rst_ni       ( dst_rst_ni                 ),
-    .clk_i        ( dst_clk_i                  ),
-    .clear_i      ( s_dst_clear                ),
-    .data_o       ( dst_data_o                 ),
-    .valid_o      ( s_dst_valid                ),
-    .ready_i      ( dst_ready_i & !s_dst_clear ),
-    .async_req_i  ( async_req_i                ),
-    .async_ack_o  ( async_ack_o                ),
-    .async_data_i ( async_data_i               )
+    .rst_ni       ( dst_rst_ni                       ),
+    .clk_i        ( dst_clk_i                        ),
+    .clear_i      ( s_dst_clear_req                  ),
+    .data_o       ( dst_data_o                       ),
+    .valid_o      ( s_dst_valid                      ),
+    .ready_i      ( dst_ready_i & !s_dst_isolate_req ),
+    .async_req_i  ( async_req_i                      ),
+    .async_ack_o  ( async_ack_o                      ),
+    .async_data_i ( async_data_i                     )
   );
 
-  assign dst_valid_o = s_dst_valid & !s_dst_clear;
+  assign dst_valid_o = s_dst_valid & !s_dst_isolate_req;
 
   // Synchronize the clear and reset signaling in both directions (see header of
   // the cdc_reset_ctrlr module for more details.)
   cdc_reset_ctrlr #(
     .SYNC_STAGES(SYNC_STAGES-1)
   ) i_cdc_reset_ctrlr (
-    .a_clk_i   ( src_clk_i   ),
-    .a_rst_ni  ( src_rst_ni  ),
-    .a_clear_i ( src_clear_i ),
-    .a_clear_o ( s_src_clear ),
-    .b_clk_i   ( dst_clk_i   ),
-    .b_rst_ni  ( dst_rst_ni  ),
-    .b_clear_i ( dst_clear_i ),
-    .b_clear_o ( s_dst_clear )
+    .a_clk_i         ( src_clk_i           ),
+    .a_rst_ni        ( src_rst_ni          ),
+    .a_clear_i       ( src_clear_i         ),
+    .a_clear_o       ( s_src_clear_req     ),
+    .a_clear_ack_i   ( s_src_clear_ack_q   ),
+    .a_isolate_o     ( s_src_isolate_req   ),
+    .a_isolate_ack_i ( s_src_isolate_ack_q ),
+    .b_clk_i         ( dst_clk_i           ),
+    .b_rst_ni        ( dst_rst_ni          ),
+    .b_clear_i       ( dst_clear_i         ),
+    .b_clear_o       ( s_dst_clear_req     ),
+    .b_clear_ack_i   ( s_dst_clear_ack_q   ),
+    .b_isolate_o     ( s_dst_isolate_req   ),
+    .b_isolate_ack_i ( s_dst_isolate_ack_q )
   );
 
-  assign src_clear_pending_o = s_src_clear;
-  assign dst_clear_pending_o = s_dst_clear;
+  // Just delay the isolate request by one cycle. We can ensure isolation within
+  // one cycle by just deasserting valid and ready signals on both sides of the CDC.
+  always_ff @(posedge src_clk_i, negedge src_rst_ni) begin
+    if (!src_rst_ni) begin
+      s_src_isolate_ack_q <= 1'b0;
+      s_src_clear_ack_q   <= 1'b0;
+    end else begin
+      s_src_isolate_ack_q <= s_src_isolate_req;
+      s_src_clear_ack_q   <= s_src_clear_req;
+    end
+  end
+
+  always_ff @(posedge dst_clk_i, negedge dst_rst_ni) begin
+    if (!dst_rst_ni) begin
+      s_dst_isolate_ack_q <= 1'b0;
+      s_dst_clear_ack_q   <= 1'b0;
+    end else begin
+      s_dst_isolate_ack_q <= s_dst_isolate_req;
+      s_dst_clear_ack_q   <= s_dst_clear_req;
+    end
+  end
+
+
+  assign src_clear_pending_o = s_src_isolate_req; // The isolate signal stays
+  // asserted during the whole
+  // clear sequence.
+  assign dst_clear_pending_o = s_dst_isolate_req;
 
 endmodule
