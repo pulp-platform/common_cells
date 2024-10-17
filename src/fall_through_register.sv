@@ -9,7 +9,7 @@
 // specific language governing permissions and limitations under the License.
 
 // Fall-through register with a simple stream-like ready/valid handshake.
-// This register does not cut combinatorial paths on any signals: in case the module at its output
+// This register ONLY cuts the ready combinatorial path. In case the module at its output
 // is ready to accept data within the same clock cycle, they are forwarded. Use this module to get a
 // 'default ready' behavior towards the input.
 module fall_through_register #(
