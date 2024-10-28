@@ -23,11 +23,11 @@ call_vsim() {
 	grep "Errors: 0," vsim.log
 }
 
-for PORTS in 1 ; do
-  for LATENCY in 1 ; do
-    for WORDS in 1024; do
-      for DWIDTH in  64; do
-        for BYTEWIDTH in  9; do
+for PORTS in 1 2; do
+  for LATENCY in 0 1 2; do
+    for WORDS in 16 256 512 1024; do
+      for DWIDTH in 1 42  64; do
+        for BYTEWIDTH in 1 8 9; do
           for BANKS in 1 2 4 8; do
             call_vsim mem_multibank_pwrgate_tb -gNumPorts=$PORTS -gLatency=$LATENCY -gNumWords=$WORDS -gDataWidth=$DWIDTH -gByteWidth=$BYTEWIDTH -gNumLogicBanks=$BANKS
           done

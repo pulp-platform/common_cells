@@ -19,15 +19,15 @@
 //   This module is responsible for managing the correct memory addressing
 //
 module mem_multibank_pwrgate #(
-    parameter int unsigned NumWords = 32'd1024,                                   // Number of Words in data array
-    parameter int unsigned DataWidth = 32'd128,                                   // Data signal width
-    parameter int unsigned ByteWidth = 32'd8,                                     // Width of a data byte
-    parameter int unsigned NumPorts = 32'd2,                                      // Number of read and write ports
-    parameter int unsigned Latency = 32'd1,                                       // Latency when the read data is available
-    parameter int unsigned NumLogicBanks = 32'd1,                                 // Logic bank for Power Management
-    parameter              SimInit = "none",                                      // Simulation initialization
-    parameter bit          PrintSimCfg = 1'b0,                                    // Print configuration
-    parameter              ImplKey = "none",                                      // Reference to specific implementation
+    parameter int unsigned NumWords = 32'd1024,   // Number of Words in data array
+    parameter int unsigned DataWidth = 32'd128,   // Data signal width
+    parameter int unsigned ByteWidth = 32'd8,     // Width of a data byte
+    parameter int unsigned NumPorts = 32'd2,      // Number of read and write ports
+    parameter int unsigned Latency = 32'd1,       // Latency when the read data is available
+    parameter int unsigned NumLogicBanks = 32'd1, // Logic bank for Power Management
+    parameter              SimInit = "none",      // Simulation initialization
+    parameter bit          PrintSimCfg = 1'b0,    // Print configuration
+    parameter              ImplKey = "none",      // Reference to specific implementation
     // DEPENDENT PARAMETERS, DO NOT OVERWRITE!
     parameter int unsigned AddrWidth = (NumWords > 32'd1) ? $clog2(NumWords) : 32'd1,
     parameter int unsigned BeWidth = (DataWidth + ByteWidth - 32'd1) / ByteWidth, // ceil_div
@@ -132,10 +132,10 @@ module mem_multibank_pwrgate #(
          always_ff @(posedge clk_i or negedge rst_ni) begin
             for (int PortIdx = 0; PortIdx < NumPorts; PortIdx++) begin
                if (!rst_ni) begin
-                  out_mux_sel_q[PortIdx] = '0;
+                  out_mux_sel_q[PortIdx] <= '0;
                end else begin
                   for (int shift_idx = 0; shift_idx < Latency; shift_idx++) begin
-                     out_mux_sel_q[PortIdx][shift_idx] = out_mux_sel_d[PortIdx][shift_idx];
+                     out_mux_sel_q[PortIdx][shift_idx] <= out_mux_sel_d[PortIdx][shift_idx];
                   end
                end
             end
@@ -145,12 +145,13 @@ module mem_multibank_pwrgate #(
       // Write data Mux Logic
       //
       for (genvar BankIdx = 0; BankIdx < NumLogicBanks; BankIdx++) begin : gen_logic_bank
-         for (genvar PortIdx = 0; PortIdx < NumPorts; PortIdx++) begin
+         for (genvar PortIdx = 0; PortIdx < NumPorts; PortIdx++) begin: gen_port_write_logic
             // DEMUX the input signals to the correct logic bank
             // Assign req channel to the correct logic bank
             assign req_cut[BankIdx][PortIdx] = req_i[PortIdx] && (bank_sel[PortIdx] == BankIdx);
             // Assign lowest part of the address to the correct logic bank
-            assign addr_cut[BankIdx][PortIdx]  = req_cut[BankIdx][PortIdx] ? addr_i[PortIdx][AddrWidth-BankSelWidth-1:0] : '0;
+            assign addr_cut[BankIdx][PortIdx]  = req_cut[BankIdx][PortIdx] ?
+                                                 addr_i[PortIdx][AddrWidth-BankSelWidth-1:0] : '0;
             // Assign data to the correct logic bank
             assign wdata_cut[BankIdx][PortIdx] = req_cut[BankIdx][PortIdx] ? wdata_i[PortIdx] : '0;
             assign we_cut[BankIdx][PortIdx] = req_cut[BankIdx][PortIdx] ? we_i[PortIdx] : '0;
