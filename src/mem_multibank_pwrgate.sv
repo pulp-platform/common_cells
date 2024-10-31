@@ -26,9 +26,9 @@ module mem_multibank_pwrgate #(
     parameter int unsigned NumPorts = 32'd2,      // Number of read and write ports
     parameter int unsigned Latency = 32'd1,       // Latency when the read data is available
     parameter int unsigned NumLogicBanks = 32'd1, // Logic bank for Power Management
-    parameter              SimInit = "none",      // Simulation initialization
+    parameter string       SimInit = "none",      // Simulation initialization
     parameter bit          PrintSimCfg = 1'b0,    // Print configuration
-    parameter              ImplKey = "none",      // Reference to specific implementation
+    parameter string       ImplKey = "none",      // Reference to specific implementation
     // DEPENDENT PARAMETERS, DO NOT OVERWRITE!
     parameter int unsigned AddrWidth = (NumWords > 32'd1) ? $clog2(NumWords) : 32'd1,
     parameter int unsigned BeWidth = (DataWidth + ByteWidth - 32'd1) / ByteWidth, // ceil_div
