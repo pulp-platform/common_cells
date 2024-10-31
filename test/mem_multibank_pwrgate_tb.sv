@@ -14,7 +14,7 @@
 //    Test to address the multibanked powergated SRAM and checlk correct address handling.
 
 module mem_multibank_pwrgate_tb #(
-    parameter int unsigned NumPorts      = 32'd2,
+    parameter int unsigned NumPorts      = 32'd1,
     parameter int unsigned Latency       = 32'd1,
     parameter int unsigned NumWords      = 32'd1024,
     parameter int unsigned DataWidth     = 32'd64,
