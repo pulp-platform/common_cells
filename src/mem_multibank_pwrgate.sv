@@ -18,6 +18,7 @@
 //   address mapping.
 //   This module is responsible for managing the correct memory addressing
 //
+`include "common_cells/assertions.svh"
 module mem_multibank_pwrgate #(
     parameter int unsigned NumWords = 32'd1024,   // Number of Words in data array
     parameter int unsigned DataWidth = 32'd128,   // Data signal width
@@ -85,12 +86,9 @@ module mem_multibank_pwrgate #(
 
    end else begin : gen_logic_bank  // block: gen_simple_sram
       localparam int unsigned LogicBankSize = NumWords / NumLogicBanks;
-      localparam int unsigned BankSelWidth = (NumLogicBanks > 32'd1) ? $clog2(
-          NumLogicBanks
-      ) : 32'd1;
+      localparam int unsigned BankSelWidth = (NumLogicBanks > 32'd1) ?
+                                             $clog2(NumLogicBanks) : 32'd1;
 
-      if (LogicBankSize != 2 ** (AddrWidth - BankSelWidth))
-         $fatal("Logic Bank size is not a power of two: UNSUPPORTED ");
 
       // Signals from/to logic banks
       logic  [NumLogicBanks-1:0][    NumPorts-1:0]                             req_cut;
@@ -101,8 +99,7 @@ module mem_multibank_pwrgate #(
       data_t [NumLogicBanks-1:0][    NumPorts-1:0]                             rdata_cut;
 
       // Signals to select the right bank
-      logic  [     NumPorts-1:0][BankSelWidth-1:0]                             bank_sel;
-      logic [NumPorts-1:0][Latency-1:0][BankSelWidth-1:0] out_mux_sel_d, out_mux_sel_q;
+      logic  [NumPorts-1:0][BankSelWidth-1:0]                             bank_sel;
 
       // Identify bank looking at the BankSelWidth-th MSBs of the Address
       for (genvar PortIdx = 0; PortIdx < NumPorts; PortIdx++) begin : gen_bank_sel
@@ -119,6 +116,9 @@ module mem_multibank_pwrgate #(
             assign rdata_o[PortIdx] = rdata_cut[bank_sel[PortIdx]][PortIdx];
          end
       end else begin : gen_read_latency
+         // Define input/output registers to hold the read value
+         logic  [NumPorts-1:0][Latency-1:0][BankSelWidth-1:0] out_mux_sel_d, out_mux_sel_q;
+
          always_comb begin
             for (int PortIdx = 0; PortIdx < NumPorts; PortIdx++) begin : gen_read_mux_signals
                rdata_o[PortIdx] = rdata_cut[out_mux_sel_q[PortIdx][0]][PortIdx];
@@ -130,15 +130,21 @@ module mem_multibank_pwrgate #(
          end
 
          always_ff @(posedge clk_i or negedge rst_ni) begin
-            for (int PortIdx = 0; PortIdx < NumPorts; PortIdx++) begin
-               if (!rst_ni) begin
-                  out_mux_sel_q[PortIdx] <= '0;
-               end else begin
-                  for (int shift_idx = 0; shift_idx < Latency; shift_idx++) begin
-                     out_mux_sel_q[PortIdx][shift_idx] <= out_mux_sel_d[PortIdx][shift_idx];
-                  end
-               end
+            if (!rst_ni) begin
+               out_mux_sel_q <= '0;
+            end else begin
+               out_mux_sel_q <= out_mux_sel_d;
             end
+
+            // for (int PortIdx = 0; PortIdx < NumPorts; PortIdx++) begin
+            //    if (!rst_ni) begin
+            //       out_mux_sel_q[PortIdx] <= '0;
+            //    end else begin
+            //       for (int shift_idx = 0; shift_idx < Latency; shift_idx++) begin
+            //          out_mux_sel_q[PortIdx][shift_idx] <= out_mux_sel_d[PortIdx][shift_idx];
+            //       end
+            //    end
+            // end
          end
       end : gen_read_latency
 
@@ -181,13 +187,18 @@ module mem_multibank_pwrgate #(
              .be_i   (be_cut[BankIdx]),
              .rdata_o(rdata_cut[BankIdx])
          );
-      end
+      end : gen_logic_bank
+`ifndef COMMON_CELLS_ASSERTS_OFF
+   `ASSERT_INIT(pwr2_bank, LogicBankSize == 2 ** (AddrWidth - BankSelWidth),
+                "Logic Bank size is not a power of two: UNSUPPORTED!")
+`endif
+
    end
 
    // Trigger warnings when power signals (deepsleep_i and powergate_i) are not connected.
    // Usually those signals must be linked through the UPF.
 `ifndef VERILATOR
-`ifndef TARGET_SYNTHESIS
+`ifndef SYNTHESIS
    initial begin
       assert (!$isunknown(deepsleep_i))
       else $warning("deepsleep_i has some unconnected signals");
