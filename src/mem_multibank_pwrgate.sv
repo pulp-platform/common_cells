@@ -26,9 +26,9 @@ module mem_multibank_pwrgate #(
     parameter int unsigned NumPorts = 32'd2,      // Number of read and write ports
     parameter int unsigned Latency = 32'd1,       // Latency when the read data is available
     parameter int unsigned NumLogicBanks = 32'd1, // Logic bank for Power Management
-    parameter string       SimInit = "none",      // Simulation initialization
+    parameter              SimInit = "none",      // Simulation initialization
     parameter bit          PrintSimCfg = 1'b0,    // Print configuration
-    parameter string       ImplKey = "none",      // Reference to specific implementation
+    parameter              ImplKey = "none",      // Reference to specific implementation
     // DEPENDENT PARAMETERS, DO NOT OVERWRITE!
     parameter int unsigned AddrWidth = (NumWords > 32'd1) ? $clog2(NumWords) : 32'd1,
     parameter int unsigned BeWidth = (DataWidth + ByteWidth - 32'd1) / ByteWidth, // ceil_div
@@ -89,14 +89,16 @@ module mem_multibank_pwrgate #(
       localparam int unsigned BankSelWidth = (NumLogicBanks > 32'd1) ?
                                              $clog2(NumLogicBanks) : 32'd1;
 
+      if (LogicBankSize != 2 ** (AddrWidth - BankSelWidth))
+            $error("Logic Bank size is not a power of two: UNSUPPORTED!");
 
       // Signals from/to logic banks
-      logic  [NumLogicBanks-1:0][    NumPorts-1:0]                             req_cut;
-      logic  [NumLogicBanks-1:0][    NumPorts-1:0]                             we_cut;
-      logic  [NumLogicBanks-1:0][    NumPorts-1:0][AddrWidth-BankSelWidth-1:0] addr_cut;
-      data_t [NumLogicBanks-1:0][    NumPorts-1:0]                             wdata_cut;
-      be_t   [NumLogicBanks-1:0][    NumPorts-1:0]                             be_cut;
-      data_t [NumLogicBanks-1:0][    NumPorts-1:0]                             rdata_cut;
+      logic  [NumLogicBanks-1:0][NumPorts-1:0]                             req_cut;
+      logic  [NumLogicBanks-1:0][NumPorts-1:0]                             we_cut;
+      logic  [NumLogicBanks-1:0][NumPorts-1:0][AddrWidth-BankSelWidth-1:0] addr_cut;
+      data_t [NumLogicBanks-1:0][NumPorts-1:0]                             wdata_cut;
+      be_t   [NumLogicBanks-1:0][NumPorts-1:0]                             be_cut;
+      data_t [NumLogicBanks-1:0][NumPorts-1:0]                             rdata_cut;
 
       // Signals to select the right bank
       logic  [NumPorts-1:0][BankSelWidth-1:0]                             bank_sel;
@@ -135,16 +137,6 @@ module mem_multibank_pwrgate #(
             end else begin
                out_mux_sel_q <= out_mux_sel_d;
             end
-
-            // for (int PortIdx = 0; PortIdx < NumPorts; PortIdx++) begin
-            //    if (!rst_ni) begin
-            //       out_mux_sel_q[PortIdx] <= '0;
-            //    end else begin
-            //       for (int shift_idx = 0; shift_idx < Latency; shift_idx++) begin
-            //          out_mux_sel_q[PortIdx][shift_idx] <= out_mux_sel_d[PortIdx][shift_idx];
-            //       end
-            //    end
-            // end
          end
       end : gen_read_latency
 
@@ -188,11 +180,6 @@ module mem_multibank_pwrgate #(
              .rdata_o(rdata_cut[BankIdx])
          );
       end : gen_logic_bank
-`ifndef COMMON_CELLS_ASSERTS_OFF
-   `ASSERT_INIT(pwr2_bank, LogicBankSize == 2 ** (AddrWidth - BankSelWidth),
-                "Logic Bank size is not a power of two: UNSUPPORTED!")
-`endif
-
    end
 
    // Trigger warnings when power signals (deepsleep_i and powergate_i) are not connected.
@@ -201,9 +188,9 @@ module mem_multibank_pwrgate #(
 `ifndef SYNTHESIS
    initial begin
       assert (!$isunknown(deepsleep_i))
-      else $warning("deepsleep_i has some unconnected signals");
+        else $warning("deepsleep_i has some unconnected signals");
       assert (!$isunknown(powergate_i))
-      else $warning("powergate_i has some unconnected signals");
+        else $warning("powergate_i has some unconnected signals");
    end
 `endif
 `endif
