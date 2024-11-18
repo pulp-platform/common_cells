@@ -131,10 +131,10 @@ module rr_arb_tree #(
     localparam int unsigned NumLevels = unsigned'($clog2(NumIn));
 
     /* verilator lint_off UNOPTFLAT */
-    idx_t    [2**NumLevels-2:0] index_nodes; // used to propagate the indices
-    DataType [2**NumLevels-2:0] data_nodes;  // used to propagate the data
-    logic    [2**NumLevels-2:0] gnt_nodes;   // used to propagate the grant to masters
-    logic    [2**NumLevels-2:0] req_nodes;   // used to propagate the requests to slave
+    idx_t    [2**NumLevels-2:0] index_nodes /*verilator split_var*/; // used to propagate the indices
+    DataType [2**NumLevels-2:0] data_nodes /*verilator split_var*/;  // used to propagate the data
+    logic    [2**NumLevels-2:0] gnt_nodes /*verilator split_var*/;   // used to propagate the grant to masters
+    logic    [2**NumLevels-2:0] req_nodes /*verilator split_var*/;   // used to propagate the requests to slave
     /* lint_off */
     idx_t                       rr_q;
     logic [NumIn-1:0]           req_d;

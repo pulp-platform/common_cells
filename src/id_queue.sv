@@ -115,13 +115,13 @@ module id_queue #(
                                     no_out_id_match;
 
     logic [HtCapacity-1:0]         head_tail_free,
-                                    idx_matches_in_id,
+                                    idx_matches_in_id /*verilator split_var*/,
                                     idx_matches_out_id;
 
     logic [CAPACITY-1:0]            exists_match,
                                     linked_data_free;
 
-    id_t                            match_in_id, match_out_id;
+    id_t                            match_in_id /*verilator split_var*/, match_out_id /*verilator split_var*/;
 
     ht_idx_t                        head_tail_free_idx,
                                     match_in_idx,
@@ -358,7 +358,7 @@ module id_queue #(
 
     // Exists Lookup
     for (genvar i = 0; i < CAPACITY; i++) begin: gen_lookup
-        data_t exists_match_bits;
+        data_t exists_match_bits /*verilator split_var*/;
         for (genvar j = 0; j < $bits(data_t); j++) begin: gen_mask
             always_comb begin
                 if (linked_data_q[i].free) begin
