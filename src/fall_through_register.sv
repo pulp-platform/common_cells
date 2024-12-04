@@ -9,9 +9,10 @@
 // specific language governing permissions and limitations under the License.
 
 // Fall-through register with a simple stream-like ready/valid handshake.
-// This register does not cut combinatorial paths on any signals: in case the module at its output
-// is ready to accept data within the same clock cycle, they are forwarded. Use this module to get a
-// 'default ready' behavior towards the input.
+// This register does not cut the combinatorial path on the valid and data signals.
+// It only cuts the combinatorial path on the ready signal.
+// In case the module at its output is ready to accept data within the same clock cycle, they are forwarded.
+// Use this module to get a 'default ready' behavior towards the input.
 module fall_through_register #(
     parameter type T = logic  // Vivado requires a default value for type parameters.
 ) (
