@@ -35,7 +35,7 @@ module popcount_tb;
    logic popcount_w1;
 
    logic [4:0] data_w5;
-   logic [3:0] popcount_w5;
+   logic [2:0] popcount_w5;
 
    logic [15:0] data_w16;
    logic [4:0]  popcount_w16;
@@ -47,7 +47,7 @@ module popcount_tb;
    logic [6:0]  popcount_w64;
 
    logic [980:0] data_w981;
-   logic [10:0]  popcount_w981;
+   logic [9:0]  popcount_w981;
 
    //--------------------- Instantiate MUT ---------------------
   popcount #(.INPUT_WIDTH(1)) i_popcount_w1
