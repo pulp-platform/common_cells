@@ -162,13 +162,13 @@ module rr_arb_tree #(
         end
 
         `ifndef COMMON_CELLS_ASSERTS_OFF
-          `ASSERT(lock, LockIn |-> req_o && (!gnt_i && !flush_i) |=> idx_o == $past(idx_o),
+          `ASSERT(lock, req_o && (!gnt_i && !flush_i) |=> idx_o == $past(idx_o),
                   clk_i, !rst_ni || flush_i,
                   "Lock implies same arbiter decision in next cycle if output is not ready.")
 
           logic [NumIn-1:0] req_tmp;
           assign req_tmp = req_q & req_i;
-          `ASSUME(lock_req, LockIn |-> lock_d |=> req_tmp == req_q, clk_i, !rst_ni || flush_i,
+          `ASSUME(lock_req, lock_d |=> req_tmp == req_q, clk_i, !rst_ni || flush_i,
                   "It is disallowed to deassert unserved request signals when LockIn is enabled.")
         `endif
 
