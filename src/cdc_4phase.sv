@@ -298,27 +298,19 @@ module cdc_4phase_dst #(
     end
   end
 
-  if (DECOUPLED) begin : gen_decoupled
-    // Decouple the output from the asynchronous data bus without introducing
-    // additional latency by inserting a spill register
-    spill_register #(
-      .T(T),
-      .Bypass(1'b0)
-    ) i_spill_register (
-      .clk_i,
-      .rst_ni,
-      .valid_i(data_valid),
-      .ready_o(output_ready),
-      .data_i(async_data_i),
-      .valid_o,
-      .ready_i,
-      .data_o
-    );
-  end else begin : gen_not_decoupled
-    assign valid_o      = data_valid;
-    assign output_ready = ready_i;
-    assign data_o       = async_data_i;
-  end
+  spill_register #(
+    .T(T),
+    .Bypass(1'b0)
+  ) i_spill_register (
+    .clk_i,
+    .rst_ni,
+    .valid_i(data_valid),
+    .ready_o(output_ready),
+    .data_i(async_data_i),
+    .valid_o,
+    .ready_i,
+    .data_o
+  );
 
   // Output assignments.
   assign async_ack_o = ack_dst_q;
