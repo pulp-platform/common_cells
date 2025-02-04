@@ -55,6 +55,9 @@ tests:
         PARAM1: [-GN=1, -GN=2, -GN=3, -GN=4, -GN=8, -GN=16]
       - TOPLEVEL: fifo_tb
         PARAM1: [-GDEPTH=1, -GDEPTH=13, -GDEPTH=32 -GFALL_THROUGH=1]
+      - TOPLEVEL: mem_multibank_pwrgate_tb
+        PARAM1: [-gNumLogicBanks=1, -gNumLogicBanks=2, -gNumLogicBanks=4, -gNumLogicBanks=8]
+        PARAM2: [-gLatency=0, -gLatency=1, -gLatency=2]
       # - TOPLEVEL: [cdc_2phase_tb, cdc_2phase_clearable_tb]
       #   PARAM1: -GUNTIL=1000000
       # - TOPLEVEL: cdc_fifo_tb

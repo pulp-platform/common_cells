@@ -30,6 +30,7 @@ filesets:
       - src/lfsr_8bit.sv
       - src/multiaddr_decode.sv
       - src/mv_filter.sv
+      - src/mem_multibank_pwrgate.sv
       - src/onehot_to_bin.sv
       - src/plru_tree.sv
       - src/passthrough_stream_fifo.sv
