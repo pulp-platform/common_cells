@@ -50,6 +50,7 @@ sources:
       - src/plru_tree.sv
       - src/passthrough_stream_fifo.sv
       - src/popcount.sv
+      - src/ring_buffer.sv
       - src/rr_arb_tree.sv
       - src/rstgen_bypass.sv
       - src/serial_deglitch.sv

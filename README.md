@@ -130,7 +130,6 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | [`unread`](src/unread.sv)                                        | Empty module to sink unconnected outputs into                               | active       |                                                                                                 |
 | [`read`](src/read.sv)                                            | Dummy module that prevents a signal from being removed during synthesis     | active       |                                                                                                 |
 
-
 ## Header Contents
 
 This repository currently contains the following header files.
