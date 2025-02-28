@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 1.38.0 - 2025-02-28
+### Changed
+- Assertions no longer disabled for Verilator. Define `ASSERTS_OFF` to disable.
+- Define `ASSERTS_OVERRIDE_ON` to override any defines that turn assertions off otherwise.
+- `id_queue`: Parametrize number of compare ports.
+- `assertions.svh`: Add optional argument to assertion macros to display custom error message.
+- `stream_to_mem`: Disable assertions during reset.
+- `addr_decode_dync`, `cdc_fifo_gray_clearable`, `multiaddr_decode`, `spill_register_flushable`: Promote `$warning` to `$error`.
+- `rr_arb_tree`, `stream_omega_net`, `stream_xbar`: Remove default assertion disable.
+
+### Fixed
+- `delta_counter`: Fix inverted reset.
+- `stream_join_dynamic`: Handshake only selected streams.
+- Various tool compatibility improvements.
+
 ## 1.37.0 - 2024-07-18
 ### Added
 - `credit_counter`: Add up/down counter for credit.
