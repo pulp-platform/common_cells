@@ -12,6 +12,8 @@
 ///   in_i = 000_0000, empty_o = 1, cnt_o = 6 (mode = 0)
 ///   in_i = 000_0001, empty_o = 0, cnt_o = 0 (mode = 0)
 ///   in_i = 000_1000, empty_o = 0, cnt_o = 3 (mode = 0)
+/// TODO wouldn't it make more sense if cnt_o could count up to WIDTH, for the empty case?
+/// TODO also "Additionally `cnt_o` contains the maximum number of zeros - 1" is not true for WIDTH == 1
 /// Furthermore, this unit contains a more efficient implementation for Verilator (simulation only).
 /// This speeds up simulation significantly.
 module lzc #(
