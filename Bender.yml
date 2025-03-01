@@ -74,6 +74,7 @@ sources:
       - src/cdc_2phase.sv
       - src/cdc_4phase.sv
       - src/clk_int_div_static.sv
+      - src/trip_counter.sv
       # Level 2
       - src/addr_decode.sv
       - src/addr_decode_napot.sv
