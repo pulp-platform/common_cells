@@ -52,17 +52,18 @@ Please note that cells with status *deprecated* are not to be used for new desig
 
 ### Counters and Shift Registers
 
-| Name                | Description                                                       | Status       | Superseded By |
-| ------------------- | ----------------------------------------------------------------- | ------------ | ------------- |
-| `counter`           | Generic up/down counter with overflow detection                   | active       |               |
-| `credit_counter`    | Up/down counter for credit                                        | active       |               |
-| `delta_counter`     | Up/down counter with variable delta and overflow detection        | active       |               |
-| `generic_LFSR_8bit` | 8-bit linear feedback shift register (LFSR)                       | *deprecated* | `lfsr_8bit`   |
-| `lfsr_8bit`         | 8-bit linear feedback shift register (LFSR)                       | active       |               |
-| `lfsr_16bit`        | 16-bit linear feedback shift register (LFSR)                      | active       |               |
-| `lfsr`              | 4...64-bit parametric Galois LFSR with optional whitening feature | active       |               |
-| `max_counter`       | Up/down counter with variable delta that tracks its maximum value | active       |               |
-| `mv_filter`         | **ZARUBAF ADD DESCRIPTION**                                       | active       |               |
+| Name                                   | Description                                                         | Status       | Superseded By |
+| -------------------------------------- | ------------------------------------------------------------------- | ------------ | ------------- |
+| `counter`                              | Generic up/down counter with overflow detection                     | active       |               |
+| `credit_counter`                       | Up/down counter for credit                                          | active       |               |
+| `delta_counter`                        | Up/down counter with variable delta and overflow detection          | active       |               |
+| `generic_LFSR_8bit`                    | 8-bit linear feedback shift register (LFSR)                         | *deprecated* | `lfsr_8bit`   |
+| `lfsr_8bit`                            | 8-bit linear feedback shift register (LFSR)                         | active       |               |
+| `lfsr_16bit`                           | 16-bit linear feedback shift register (LFSR)                        | active       |               |
+| `lfsr`                                 | 4...64-bit parametric Galois LFSR with optional whitening feature   | active       |               |
+| `max_counter`                          | Up/down counter with variable delta that tracks its maximum value   | active       |               |
+| `mv_filter`                            | **ZARUBAF ADD DESCRIPTION**                                         | active       |               |
+| [`trip_counter`](src/trip_counter.sv)  | Counter that resets automatically when it reaches a specified bound | active       |               |
 
 ### Data Path Elements
 
