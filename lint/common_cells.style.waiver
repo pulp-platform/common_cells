@@ -4,6 +4,8 @@ waive --rule=typedef-structs-unions --line=29 --location="src/ecc_encode.sv"
 # That is a known issue with string parameter in Synopsys DC
 waive --rule=explicit-parameter-storage-type --line=19 --location="src/stream_arbiter.sv"
 waive --rule=explicit-parameter-storage-type --line=19 --location="src/stream_arbiter_flushable.sv"
+waive --rule=explicit-parameter-storage-type --line=29 --location="src/mem_multibank_pwrgate.sv"
+waive --rule=explicit-parameter-storage-type --line=31 --location="src/mem_multibank_pwrgate.sv"
 waive --rule=always-ff-non-blocking --line=290 --location="src/clk_int_div.sv"
 waive --rule=always-ff-non-blocking --line=293 --location="src/clk_int_div.sv"
 waive --rule=always-ff-non-blocking --line=302 --location="src/clk_int_div.sv"
