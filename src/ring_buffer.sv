@@ -25,6 +25,8 @@ module ring_buffer #(
     input data_t wdata_i,
 
     // Restricted random access read interface
+    input logic rvalid_i,
+    output logic rready_o,
     input addr_t raddr_i,
     output data_t rdata_o,
 
@@ -86,6 +88,18 @@ module ring_buffer #(
     assign empty_o = wptr_q == rptr_q;
     assign full_o = (wptr_q[AddrWidth-1:0] == rptr_q[AddrWidth-1:0]) && !empty_o;
 
+    // A read request can only be accepted if it is within the range of
+    // valid instructions (i.e. between the read and write pointers).
+    // This ready signal is provided as a backpressure mechanism to wait
+    // for the write pointer to advance, until the requested instruction
+    // is present in the ring buffer.
+    // When rptr_o < wptr_o, the valid range is [rptr_o, wptr_o).
+    // When rptr_o > wptr_o (wrap-around), the valid range is [rptr_o, Depth) U [0, wptr_o).
+    // When rptr_o == wptr_o and !empty (buffer is full), all addresses are valid.
+    assign rready_o = ((rptr_o < wptr_o) && ((raddr_i >= rptr_o) && (raddr_i < wptr_o))) ||
+                      ((rptr_o > wptr_o) && ((raddr_i >= rptr_o) || (raddr_i < wptr_o))) ||
+                      ((rptr_o == wptr_o) && !empty_o);
+
     assign wready_o = !full_o;
     assign rdata_o = mem_q[raddr_i];
 
@@ -93,7 +107,23 @@ module ring_buffer #(
     // Assertions //
     ////////////////
 
+    // When rptr_o < wptr_o, the valid range is [rptr_o, wptr_o).
+    // When rptr_o > wptr_o (wrap-around), the valid range is [rptr_o, Depth) U [0, wptr_o).
+    // When rptr_o == wptr_o and !empty (buffer is full), all addresses are valid.
+    `ASSERT(
+        ReadAddrOutOfBounds,
+        rvalid_i && rready_o |->
+        (
+            ((rptr_o < wptr_o) && ((raddr_i >= rptr_o) && (raddr_i < wptr_o))) ||
+            ((rptr_o > wptr_o) && ((raddr_i >= rptr_o) || (raddr_i < wptr_o))) ||
+            ((rptr_o == wptr_o) && !empty_o)
+        ),
+        clk_i, !rst_ni,
+        "raddr_i is not within the valid range defined by rptr_o and wptr_o"
+    );
+
     // TODO check that read pointer never surpasses write pointer
     // TODO check that write pointer never "doubles" read pointer
+    // TODO add interfaces stable assertions
 
 endmodule
