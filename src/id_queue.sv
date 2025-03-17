@@ -236,7 +236,7 @@ module id_queue #(
                     if (oup_pop_i) begin
                         // Set free bit of linked data entry, all other bits are don't care.
                         linked_data_d[head_tail_q[match_in_idx].head]      = '0;
-                        linked_data_d[head_tail_q[match_in_idx].head][0]   = 1'b1;
+                        linked_data_d[head_tail_q[match_in_idx].head].free = 1'b1;
                         if (head_tail_q[match_in_idx].head == head_tail_q[match_in_idx].tail) begin
                             head_tail_d[match_in_idx] = '{free: 1'b1, default: '0};
                         end else begin
@@ -403,8 +403,8 @@ module id_queue #(
         always_ff @(posedge clk_i, negedge rst_ni) begin
             if (!rst_ni) begin
                 // Set free bit of linked data entries, all other bits are don't care.
-                linked_data_q[i]    <= '0;
-                linked_data_q[i][0] <= 1'b1;
+                linked_data_q[i]      <= '0;
+                linked_data_q[i].free <= 1'b1;
             end else begin
                 linked_data_q[i]    <= linked_data_d[i];
             end
