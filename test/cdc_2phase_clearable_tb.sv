@@ -368,10 +368,16 @@ module cdc_2phase_clearable_tb_delay_injector #(
     .a_rst_ni  ( src_rst_ni  ),
     .a_clear_i ( src_clear_i ),
     .a_clear_o ( s_src_clear ),
+    .a_clear_ack_i  ( '0     ),
+    .a_isolate_o    (        ),
+    .a_isolate_ack_i( '0     ),
     .b_clk_i   ( dst_clk_i   ),
     .b_rst_ni  ( dst_rst_ni  ),
     .b_clear_i ( dst_clear_i ),
-    .b_clear_o ( s_dst_clear )
+    .b_clear_o ( s_dst_clear ),
+    .b_clear_ack_i  ( '0     ),
+    .b_isolate_o    (        ),
+    .b_isolate_ack_i( '0     )
   );
 
   assign src_clear_pending_o = s_src_clear;

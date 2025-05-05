@@ -147,12 +147,15 @@ module fifo_inst_tb #(
         end
     end
 
+// https://github.com/verilator/verilator/issues/5981
+`ifndef VERILATOR
     if (FALL_THROUGH) begin
         // In fall through mode, assert that the output data is equal to the input data when pushing
         // to an empty FIFO.
         assert property (@(posedge clk_i) ((empty & ~push) ##1 push) |-> rdata == wdata)
             else $error("Input did not fall through");
     end
+`endif
 
 endmodule
 
