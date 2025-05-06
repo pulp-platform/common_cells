@@ -261,7 +261,7 @@ module id_queue #(
                         oup_data_popped = 1'b1;
                         // Set free bit of linked data entry, all other bits are don't care.
                         linked_data_d[head_tail_q[match_out_idx].head]      = '0;
-                        linked_data_d[head_tail_q[match_out_idx].head][0]   = 1'b1;
+                        linked_data_d[head_tail_q[match_out_idx].head].free = 1'b1;
                         if (head_tail_q[match_out_idx].head
                                           == head_tail_q[match_out_idx].tail) begin
                             oup_ht_popped = 1'b1;
