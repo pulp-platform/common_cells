@@ -46,6 +46,7 @@ sources:
       - src/lfsr_8bit.sv
       - src/lossy_valid_to_stream.sv
       - src/mv_filter.sv
+      - src/mem_multibank_pwrgate.sv
       - src/onehot_to_bin.sv
       - src/plru_tree.sv
       - src/passthrough_stream_fifo.sv
@@ -129,6 +130,7 @@ sources:
       - test/fifo_tb.sv
       - test/graycode_tb.sv
       - test/id_queue_tb.sv
+      - test/mem_multibank_pwrgate_tb.sv
       - test/passthrough_stream_fifo_tb.sv
       - test/popcount_tb.sv
       - test/rr_arb_tree_tb.sv

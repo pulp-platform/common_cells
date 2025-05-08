@@ -107,6 +107,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | `popcount`                 | Combinatorial popcount (hamming weight)                                                                   | active       |               |
 | `mem_to_banks_detailed`    | Split memory access over multiple parallel banks with detailed response signals                           | active       |               |
 | `mem_to_banks`             | Split memory access over multiple parallel banks                                                          | active       |               |
+| `mem_multibank_pwrgate`    | Power-aware wrapper for memory bank with bank retention and power-off capabilities                        | active       |               |
 
 ### Data Structures
 
