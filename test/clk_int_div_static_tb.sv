@@ -35,6 +35,8 @@ module clk_int_div_static_tb;
     .rst_no ( rstn )
   );
 
+// https://github.com/verilator/verilator/issues/5979
+`ifndef VERILATOR
   property T_clk(real clk_period);
     realtime               current_time;
     realtime               actual_period;
@@ -43,7 +45,7 @@ module clk_int_div_static_tb;
                            ('1, actual_period = $realtime - current_time) |->
                            (($realtime - current_time >= clk_period - t_delta) && ($realtime - current_time < clk_period + t_delta));
   endproperty
-
+`endif
 
   for (genvar i = 1; i < MaxClkDiv; i++) begin :gen_clk_divs
     clk_int_div_static #(
@@ -57,8 +59,10 @@ module clk_int_div_static_tb;
       .clk_o          ( clk_out[i]   )
     );
 
+`ifndef VERILATOR
     assert_period_period: assert property (@(posedge clk_out[i]) T_clk(TClkIn*i)) else
       $error("Output period of div %d clock is incorrect. Should be in range %d to %d.", i, TClkIn*i-t_delta, TClkIn*i+t_delta);
+`endif
 
   end
 
