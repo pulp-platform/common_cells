@@ -52,79 +52,83 @@ Please note that cells with status *deprecated* are not to be used for new desig
 
 ### Counters and Shift Registers
 
-| Name                | Description                                                       | Status       | Superseded By |
-| ------------------- | ----------------------------------------------------------------- | ------------ | ------------- |
-| `counter`           | Generic up/down counter with overflow detection                   | active       |               |
-| `credit_counter`    | Up/down counter for credit                                        | active       |               |
-| `delta_counter`     | Up/down counter with variable delta and overflow detection        | active       |               |
-| `generic_LFSR_8bit` | 8-bit linear feedback shift register (LFSR)                       | *deprecated* | `lfsr_8bit`   |
-| `lfsr_8bit`         | 8-bit linear feedback shift register (LFSR)                       | active       |               |
-| `lfsr_16bit`        | 16-bit linear feedback shift register (LFSR)                      | active       |               |
-| `lfsr`              | 4...64-bit parametric Galois LFSR with optional whitening feature | active       |               |
-| `max_counter`       | Up/down counter with variable delta that tracks its maximum value | active       |               |
-| `mv_filter`         | **ZARUBAF ADD DESCRIPTION**                                       | active       |               |
+| Name                                   | Description                                                         | Status       | Superseded By |
+| -------------------------------------- | ------------------------------------------------------------------- | ------------ | ------------- |
+| `counter`                              | Generic up/down counter with overflow detection                     | active       |               |
+| `credit_counter`                       | Up/down counter for credit                                          | active       |               |
+| `delta_counter`                        | Up/down counter with variable delta and overflow detection          | active       |               |
+| `generic_LFSR_8bit`                    | 8-bit linear feedback shift register (LFSR)                         | *deprecated* | `lfsr_8bit`   |
+| `lfsr_8bit`                            | 8-bit linear feedback shift register (LFSR)                         | active       |               |
+| `lfsr_16bit`                           | 16-bit linear feedback shift register (LFSR)                        | active       |               |
+| `lfsr`                                 | 4...64-bit parametric Galois LFSR with optional whitening feature   | active       |               |
+| `max_counter`                          | Up/down counter with variable delta that tracks its maximum value   | active       |               |
+| `mv_filter`                            | **ZARUBAF ADD DESCRIPTION**                                         | active       |               |
+| [`trip_counter`](src/trip_counter.sv)  | Counter that resets automatically when it reaches a specified bound | active       |               |
 
 ### Data Path Elements
 
-| Name                       | Description                                                                                               | Status       | Superseded By |
-|----------------------------|-----------------------------------------------------------------------------------------------------------|--------------|---------------|
-| `addr_decode`              | Address map decoder                                                                                       | active       |               |
-| `addr_decode_dync`         | Address map decoder extended to support dynamic online configuration                                      | active       |               |
-| `addr_decode_napot`        | Address map decoder using naturally-aligned power of two (NAPOT) regions                                  | active       |               |
-| `multiaddr_decode`         | Address map decoder using NAPOT regions and allowing for multiple address inputs                          | active       |               |
-| `ecc_decode`               | SECDED Decoder (Single Error Correction, Double Error Detection)                                          | active       |               |
-| `ecc_encode`               | SECDED Encoder (Single Error Correction, Double Error Detection)                                          | active       |               |
-| `binary_to_gray`           | Binary to gray code converter                                                                             | active       |               |
-| `find_first_one`           | Leading-one finder / leading-zero counter                                                                 | *deprecated* | `lzc`         |
-| `gray_to_binary`           | Gray code to binary converter                                                                             | active       |               |
-| `lzc`                      | Leading/trailing-zero counter                                                                             | active       |               |
-| `onehot_to_bin`            | One-hot to binary converter                                                                               | active       |               |
-| `shift_reg`                | Shift register for arbitrary types                                                                        | active       |               |
-| `shift_reg_gated`          | Shift register with ICG for arbitrary types                                                               | active       |               |
-| `rr_arb_tree`              | Round-robin arbiter for req/gnt and vld/rdy interfaces with optional priority                             | active       |               |
-| `rrarbiter`                | Round-robin arbiter for req/ack interface with look-ahead                                                 | *deprecated* | `rr_arb_tree` |
-| `prioarbiter`              | Priority arbiter arbiter for req/ack interface with look-ahead                                            | *deprecated* | `rr_arb_tree` |
-| `fall_through_register`    | Fall-through register with ready/valid interface                                                          | active       |               |
-| `spill_register_flushable` | Register with ready/valid interface to cut all combinational interface paths and additional flush signal. | active       |               |
-| `spill_register`           | Register with ready/valid interface to cut all combinational interface paths                              | active       |               |
-| `stream_arbiter`           | Round-robin arbiter for ready/valid stream interface                                                      | active       |               |
-| `stream_arbiter_flushable` | Round-robin arbiter for ready/valid stream interface and flush functionality                              | active       |               |
-| `stream_demux`             | Ready/valid interface demultiplexer                                                                       | active       |               |
-| `lossy_valid_to_stream`    | Convert Valid-only to ready/valid by updating in-flight transaction                                       | active       |               |
-| `stream_join`              | Ready/valid handshake join multiple to one common                                                         | active       |               |
-| `stream_join_dynamic`      | Ready/valid handshake join multiple to one common, dynamically configurable subset selection              | active       |               |
-| `stream_mux`               | Ready/valid interface multiplexer                                                                         | active       |               |
-| `stream_register`          | Register with ready/valid interface                                                                       | active       |               |
-| `stream_fork`              | Ready/valid fork                                                                                          | active       |               |
-| `stream_fork_dynamic`      | Ready/valid fork, with selection mask for partial forking                                                 | active       |               |
-| `stream_filter`            | Ready/valid filter                                                                                        | active       |               |
-| `stream_delay`             | Randomize or delay ready/valid interface                                                                  | active       |               |
-| `stream_to_mem`            | Use memories without flow control for output data in streams.                                             | active       |               |
-| `stream_xbar`              | Fully connected crossbar with ready/valid interface.                                                      | active       |               |
-| `stream_omega_net`         | One-way stream omega-net with ready/valid interface. Isomorphic to a butterfly.                           | active       |               |
-| `stream_throttle`          | Restrict the number of outstanding transfers in a stream.                                                 | active       |               |
-| `sub_per_hash`             | Substitution-permutation hash function                                                                    | active       |               |
-| `popcount`                 | Combinatorial popcount (hamming weight)                                                                   | active       |               |
-| `mem_to_banks_detailed`    | Split memory access over multiple parallel banks with detailed response signals                           | active       |               |
-| `mem_to_banks`             | Split memory access over multiple parallel banks                                                          | active       |               |
+| Name                            | Description                                                                                               | Status       | Superseded By |
+|---------------------------------|-----------------------------------------------------------------------------------------------------------|--------------|---------------|
+| `addr_decode`                   | Address map decoder                                                                                       | active       |               |
+| `addr_decode_dync`              | Address map decoder extended to support dynamic online configuration                                      | active       |               |
+| `addr_decode_napot`             | Address map decoder using naturally-aligned power of two (NAPOT) regions                                  | active       |               |
+| `multiaddr_decode`              | Address map decoder using NAPOT regions and allowing for multiple address inputs                          | active       |               |
+| `ecc_decode`                    | SECDED Decoder (Single Error Correction, Double Error Detection)                                          | active       |               |
+| `ecc_encode`                    | SECDED Encoder (Single Error Correction, Double Error Detection)                                          | active       |               |
+| `binary_to_gray`                | Binary to gray code converter                                                                             | active       |               |
+| `find_first_one`                | Leading-one finder / leading-zero counter                                                                 | *deprecated* | `lzc`         |
+| `gray_to_binary`                | Gray code to binary converter                                                                             | active       |               |
+| `lzc`                           | Leading/trailing-zero counter                                                                             | active       |               |
+| `onehot_to_bin`                 | One-hot to binary converter                                                                               | active       |               |
+| `shift_reg`                     | Shift register for arbitrary types                                                                        | active       |               |
+| `shift_reg_gated`               | Shift register with ICG for arbitrary types                                                               | active       |               |
+| `rr_arb_tree`                   | Round-robin arbiter for req/gnt and vld/rdy interfaces with optional priority                             | active       |               |
+| `rrarbiter`                     | Round-robin arbiter for req/ack interface with look-ahead                                                 | *deprecated* | `rr_arb_tree` |
+| `prioarbiter`                   | Priority arbiter arbiter for req/ack interface with look-ahead                                            | *deprecated* | `rr_arb_tree` |
+| `fall_through_register`         | Fall-through register with ready/valid interface                                                          | active       |               |
+| `spill_register_flushable`      | Register with ready/valid interface to cut all combinational interface paths and additional flush signal. | active       |               |
+| `spill_register`                | Register with ready/valid interface to cut all combinational interface paths                              | active       |               |
+| `stream_arbiter`                | Round-robin arbiter for ready/valid stream interface                                                      | active       |               |
+| `stream_arbiter_flushable`      | Round-robin arbiter for ready/valid stream interface and flush functionality                              | active       |               |
+| `stream_demux`                  | Ready/valid interface demultiplexer                                                                       | active       |               |
+| `lossy_valid_to_stream`         | Convert Valid-only to ready/valid by updating in-flight transaction                                       | active       |               |
+| `stream_join`                   | Ready/valid handshake join multiple to one common                                                         | active       |               |
+| `stream_join_dynamic`           | Ready/valid handshake join multiple to one common, dynamically configurable subset selection              | active       |               |
+| `stream_mux`                    | Ready/valid interface multiplexer                                                                         | active       |               |
+| `stream_register`               | Register with ready/valid interface                                                                       | active       |               |
+| `stream_fork`                   | Ready/valid fork                                                                                          | active       |               |
+| `stream_fork_dynamic`           | Ready/valid fork, with selection mask for partial forking                                                 | active       |               |
+| `stream_filter`                 | Ready/valid filter                                                                                        | active       |               |
+| `stream_delay`                  | Randomize or delay ready/valid interface                                                                  | active       |               |
+| `stream_to_mem`                 | Use memories without flow control for output data in streams.                                             | active       |               |
+| `stream_xbar`                   | Fully connected crossbar with ready/valid interface.                                                      | active       |               |
+| `stream_omega_net`              | One-way stream omega-net with ready/valid interface. Isomorphic to a butterfly.                           | active       |               |
+| `stream_throttle`               | Restrict the number of outstanding transfers in a stream.                                                 | active       |               |
+| `sub_per_hash`                  | Substitution-permutation hash function                                                                    | active       |               |
+| `popcount`                      | Combinatorial popcount (hamming weight)                                                                   | active       |               |
+| `mem_to_banks_detailed`         | Split memory access over multiple parallel banks with detailed response signals                           | active       |               |
+| `mem_to_banks`                  | Split memory access over multiple parallel banks                                                          | active       |               |
+| [`heaviside`](src/heaviside.sv) | Generates a mask obtained by applying the Heaviside step function                                         | active       |               |
+| [`boxcar`](src/boxcar.sv)       | Generates a mask obtained by applying a boxcar function                                                   | active       |               |
 
 ### Data Structures
 
-| Name                       | Description                                                                 | Status       | Superseded By |
-| -------------------------- | --------------------------------------------------------------------------- | ------------ | ------------- |
-| `cb_filter`                | Counting-Bloom-Filter with combinational lookup                             | active       |               |
-| `fifo`                     | FIFO register with upper threshold                                          | *deprecated* | `fifo_v3`     |
-| `fifo_v2`                  | FIFO register with upper and lower threshold                                | *deprecated* | `fifo_v3`     |
-| `fifo_v3`                  | FIFO register with generic fill counts                                      | active       |               |
-| `passthrough_stream_fifo`  | FIFO register with ready/valid interface and same-cycle push/pop when full  | active       |               |
-| `stream_fifo`              | FIFO register with ready/valid interface                                    | active       |               |
-| `stream_fifo_optimal_wrap` | Wrapper that optimally selects either a spill register or a FIFO            | active       |               |
-| `generic_fifo`             | FIFO register without thresholds                                            | *deprecated* | `fifo_v3`     |
-| `generic_fifo_adv`         | FIFO register without thresholds                                            | *deprecated* | `fifo_v3`     |
-| `sram`                     | SRAM behavioral model                                                       | active       |               |
-| `plru_tree`                | Pseudo least recently used tree                                             | active       |               |
-| `unread`                   | Empty module to sink unconnected outputs into                               | active       |               |
-| `read`                     | Dummy module that prevents a signal from being removed during synthesis     | active       |               |
+| Name                                | Description                                                                 | Status       | Superseded By |
+| ----------------------------------- | --------------------------------------------------------------------------- | ------------ | ------------- |
+| `cb_filter`                         | Counting-Bloom-Filter with combinational lookup                             | active       |               |
+| `fifo`                              | FIFO register with upper threshold                                          | *deprecated* | `fifo_v3`     |
+| `fifo_v2`                           | FIFO register with upper and lower threshold                                | *deprecated* | `fifo_v3`     |
+| `fifo_v3`                           | FIFO register with generic fill counts                                      | active       |               |
+| `passthrough_stream_fifo`           | FIFO register with ready/valid interface and same-cycle push/pop when full  | active       |               |
+| [`ring_buffer`](src/ring_buffer.sv) | Ring buffer with sequential write and random-access read interfaces         | active       |               |
+| `stream_fifo`                       | FIFO register with ready/valid interface                                    | active       |               |
+| `stream_fifo_optimal_wrap`          | Wrapper that optimally selects either a spill register or a FIFO            | active       |               |
+| `generic_fifo`                      | FIFO register without thresholds                                            | *deprecated* | `fifo_v3`     |
+| `generic_fifo_adv`                  | FIFO register without thresholds                                            | *deprecated* | `fifo_v3`     |
+| `sram`                              | SRAM behavioral model                                                       | active       |               |
+| `plru_tree`                         | Pseudo least recently used tree                                             | active       |               |
+| `unread`                            | Empty module to sink unconnected outputs into                               | active       |               |
+| `read`                              | Dummy module that prevents a signal from being removed during synthesis     | active       |               |
 
 
 ## Header Contents
@@ -177,11 +181,12 @@ easier to use them. They are similar to but incompatible with the macros used by
 - *`__desc` is an optional string argument describing the failure causing the assertion to be violated that is embedded into the error report and defaults to `""`.*
 
 #### Complex Assertion Macros
-| Macro                 | Arguments                                                    | Description                                                                                       |
-| --------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
-| `` `ASSERT_PULSE``    | `__name`, `__sig`, (`__clk`, `__rst`, `__desc`)              | Assert that signal is an active-high pulse with pulse length of 1 clock cycle                     |
-| `` `ASSERT_IF``       | `__name`, `__prop`, `__enable`, (`__clk`, `__rst`, `__desc`) | Assert that a property is true only when an enable signal is set                                  |
-| `` `ASSERT_KNOWN_IF`` | `__name`, `__sig`, `__enable`, (`__clk`, `__rst`, `__desc`)  | Assert that signal has a known value (each bit is either '0' or '1') after reset if enable is set |
+| Macro                 | Arguments                                                                           | Description                                                                                                |
+| --------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `` `ASSERT_PULSE``    | `__name`, `__sig`, (`__clk`, `__rst`, `__desc`)                                     | Assert that signal is an active-high pulse with pulse length of 1 clock cycle                              |
+| `` `ASSERT_IF``       | `__name`, `__prop`, `__enable`, (`__clk`, `__rst`, `__desc`)                        | Assert that a property is true only when an enable signal is set                                           |
+| `` `ASSERT_KNOWN_IF`` | `__name`, `__sig`, `__enable`, (`__clk`, `__rst`, `__desc`)                         | Assert that signal has a known value (each bit is either '0' or '1') after reset if enable is set          |
+| `` `ASSERT_STABLE``   | `__name`, `__valid`, `__ready`, `__data`, `__enable`, (`__clk`, `__rst`, `__desc`)  | Assert that the data on a ready-valid interface is kept stable after valid is asserted, until ready is too |
 - *The name of the clock and reset signals for implicit variants is `clk_i` and `rst_ni`, respectively.*
 - *`__desc` is an optional string argument describing the failure causing the assertion to be violated that is embedded into the error report and defaults to `""`.*
 
