@@ -39,6 +39,7 @@ sources:
       - src/exp_backoff.sv
       - src/fifo_v3.sv
       - src/gray_to_binary.sv
+      - src/heaviside.sv
       - src/isochronous_4phase_handshake.sv
       - src/isochronous_spill_register.sv
       - src/lfsr.sv
@@ -71,6 +72,7 @@ sources:
       - src/read.sv
       # Level 1
       - src/addr_decode_dync.sv
+      - src/boxcar.sv
       - src/cdc_2phase.sv
       - src/cdc_4phase.sv
       - src/clk_int_div_static.sv
