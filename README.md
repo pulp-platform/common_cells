@@ -67,47 +67,49 @@ Please note that cells with status *deprecated* are not to be used for new desig
 
 ### Data Path Elements
 
-| Name                       | Description                                                                                               | Status       | Superseded By |
-|----------------------------|-----------------------------------------------------------------------------------------------------------|--------------|---------------|
-| `addr_decode`              | Address map decoder                                                                                       | active       |               |
-| `addr_decode_dync`         | Address map decoder extended to support dynamic online configuration                                      | active       |               |
-| `addr_decode_napot`        | Address map decoder using naturally-aligned power of two (NAPOT) regions                                  | active       |               |
-| `multiaddr_decode`         | Address map decoder using NAPOT regions and allowing for multiple address inputs                          | active       |               |
-| `ecc_decode`               | SECDED Decoder (Single Error Correction, Double Error Detection)                                          | active       |               |
-| `ecc_encode`               | SECDED Encoder (Single Error Correction, Double Error Detection)                                          | active       |               |
-| `binary_to_gray`           | Binary to gray code converter                                                                             | active       |               |
-| `find_first_one`           | Leading-one finder / leading-zero counter                                                                 | *deprecated* | `lzc`         |
-| `gray_to_binary`           | Gray code to binary converter                                                                             | active       |               |
-| `lzc`                      | Leading/trailing-zero counter                                                                             | active       |               |
-| `onehot_to_bin`            | One-hot to binary converter                                                                               | active       |               |
-| `shift_reg`                | Shift register for arbitrary types                                                                        | active       |               |
-| `shift_reg_gated`          | Shift register with ICG for arbitrary types                                                               | active       |               |
-| `rr_arb_tree`              | Round-robin arbiter for req/gnt and vld/rdy interfaces with optional priority                             | active       |               |
-| `rrarbiter`                | Round-robin arbiter for req/ack interface with look-ahead                                                 | *deprecated* | `rr_arb_tree` |
-| `prioarbiter`              | Priority arbiter arbiter for req/ack interface with look-ahead                                            | *deprecated* | `rr_arb_tree` |
-| `fall_through_register`    | Fall-through register with ready/valid interface                                                          | active       |               |
-| `spill_register_flushable` | Register with ready/valid interface to cut all combinational interface paths and additional flush signal. | active       |               |
-| `spill_register`           | Register with ready/valid interface to cut all combinational interface paths                              | active       |               |
-| `stream_arbiter`           | Round-robin arbiter for ready/valid stream interface                                                      | active       |               |
-| `stream_arbiter_flushable` | Round-robin arbiter for ready/valid stream interface and flush functionality                              | active       |               |
-| `stream_demux`             | Ready/valid interface demultiplexer                                                                       | active       |               |
-| `lossy_valid_to_stream`    | Convert Valid-only to ready/valid by updating in-flight transaction                                       | active       |               |
-| `stream_join`              | Ready/valid handshake join multiple to one common                                                         | active       |               |
-| `stream_join_dynamic`      | Ready/valid handshake join multiple to one common, dynamically configurable subset selection              | active       |               |
-| `stream_mux`               | Ready/valid interface multiplexer                                                                         | active       |               |
-| `stream_register`          | Register with ready/valid interface                                                                       | active       |               |
-| `stream_fork`              | Ready/valid fork                                                                                          | active       |               |
-| `stream_fork_dynamic`      | Ready/valid fork, with selection mask for partial forking                                                 | active       |               |
-| `stream_filter`            | Ready/valid filter                                                                                        | active       |               |
-| `stream_delay`             | Randomize or delay ready/valid interface                                                                  | active       |               |
-| `stream_to_mem`            | Use memories without flow control for output data in streams.                                             | active       |               |
-| `stream_xbar`              | Fully connected crossbar with ready/valid interface.                                                      | active       |               |
-| `stream_omega_net`         | One-way stream omega-net with ready/valid interface. Isomorphic to a butterfly.                           | active       |               |
-| `stream_throttle`          | Restrict the number of outstanding transfers in a stream.                                                 | active       |               |
-| `sub_per_hash`             | Substitution-permutation hash function                                                                    | active       |               |
-| `popcount`                 | Combinatorial popcount (hamming weight)                                                                   | active       |               |
-| `mem_to_banks_detailed`    | Split memory access over multiple parallel banks with detailed response signals                           | active       |               |
-| `mem_to_banks`             | Split memory access over multiple parallel banks                                                          | active       |               |
+| Name                            | Description                                                                                               | Status       | Superseded By |
+|---------------------------------|-----------------------------------------------------------------------------------------------------------|--------------|---------------|
+| `addr_decode`                   | Address map decoder                                                                                       | active       |               |
+| `addr_decode_dync`              | Address map decoder extended to support dynamic online configuration                                      | active       |               |
+| `addr_decode_napot`             | Address map decoder using naturally-aligned power of two (NAPOT) regions                                  | active       |               |
+| `multiaddr_decode`              | Address map decoder using NAPOT regions and allowing for multiple address inputs                          | active       |               |
+| `ecc_decode`                    | SECDED Decoder (Single Error Correction, Double Error Detection)                                          | active       |               |
+| `ecc_encode`                    | SECDED Encoder (Single Error Correction, Double Error Detection)                                          | active       |               |
+| `binary_to_gray`                | Binary to gray code converter                                                                             | active       |               |
+| `find_first_one`                | Leading-one finder / leading-zero counter                                                                 | *deprecated* | `lzc`         |
+| `gray_to_binary`                | Gray code to binary converter                                                                             | active       |               |
+| `lzc`                           | Leading/trailing-zero counter                                                                             | active       |               |
+| `onehot_to_bin`                 | One-hot to binary converter                                                                               | active       |               |
+| `shift_reg`                     | Shift register for arbitrary types                                                                        | active       |               |
+| `shift_reg_gated`               | Shift register with ICG for arbitrary types                                                               | active       |               |
+| `rr_arb_tree`                   | Round-robin arbiter for req/gnt and vld/rdy interfaces with optional priority                             | active       |               |
+| `rrarbiter`                     | Round-robin arbiter for req/ack interface with look-ahead                                                 | *deprecated* | `rr_arb_tree` |
+| `prioarbiter`                   | Priority arbiter arbiter for req/ack interface with look-ahead                                            | *deprecated* | `rr_arb_tree` |
+| `fall_through_register`         | Fall-through register with ready/valid interface                                                          | active       |               |
+| `spill_register_flushable`      | Register with ready/valid interface to cut all combinational interface paths and additional flush signal. | active       |               |
+| `spill_register`                | Register with ready/valid interface to cut all combinational interface paths                              | active       |               |
+| `stream_arbiter`                | Round-robin arbiter for ready/valid stream interface                                                      | active       |               |
+| `stream_arbiter_flushable`      | Round-robin arbiter for ready/valid stream interface and flush functionality                              | active       |               |
+| `stream_demux`                  | Ready/valid interface demultiplexer                                                                       | active       |               |
+| `lossy_valid_to_stream`         | Convert Valid-only to ready/valid by updating in-flight transaction                                       | active       |               |
+| `stream_join`                   | Ready/valid handshake join multiple to one common                                                         | active       |               |
+| `stream_join_dynamic`           | Ready/valid handshake join multiple to one common, dynamically configurable subset selection              | active       |               |
+| `stream_mux`                    | Ready/valid interface multiplexer                                                                         | active       |               |
+| `stream_register`               | Register with ready/valid interface                                                                       | active       |               |
+| `stream_fork`                   | Ready/valid fork                                                                                          | active       |               |
+| `stream_fork_dynamic`           | Ready/valid fork, with selection mask for partial forking                                                 | active       |               |
+| `stream_filter`                 | Ready/valid filter                                                                                        | active       |               |
+| `stream_delay`                  | Randomize or delay ready/valid interface                                                                  | active       |               |
+| `stream_to_mem`                 | Use memories without flow control for output data in streams.                                             | active       |               |
+| `stream_xbar`                   | Fully connected crossbar with ready/valid interface.                                                      | active       |               |
+| `stream_omega_net`              | One-way stream omega-net with ready/valid interface. Isomorphic to a butterfly.                           | active       |               |
+| `stream_throttle`               | Restrict the number of outstanding transfers in a stream.                                                 | active       |               |
+| `sub_per_hash`                  | Substitution-permutation hash function                                                                    | active       |               |
+| `popcount`                      | Combinatorial popcount (hamming weight)                                                                   | active       |               |
+| `mem_to_banks_detailed`         | Split memory access over multiple parallel banks with detailed response signals                           | active       |               |
+| `mem_to_banks`                  | Split memory access over multiple parallel banks                                                          | active       |               |
+| [`heaviside`](src/heaviside.sv) | Generates a mask obtained by applying the Heaviside step function                                         | active       |               |
+| [`boxcar`](src/boxcar.sv)       | Generates a mask obtained by applying a boxcar function                                                   | active       |               |
 
 ### Data Structures
 
