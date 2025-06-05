@@ -12,7 +12,7 @@
 
 // Description: This module calculates the hamming weight (number of ones) in
 // its input vector. Any unsigned INPUT_WIDTH larger or equal 1 is legal. The output result
-// width is ceil(log2(INPUT_WIDTH))+1.
+// width is ceil(log2(INPUT_WIDTH+1)).
 //
 // This module used to be implemented using a binary added tree. However,
 // the heuristics of modern logic Synthesizers work much better with a flat high
@@ -21,7 +21,7 @@
 
 module popcount #(
     parameter  int unsigned INPUT_WIDTH   = 256,
-    localparam int unsigned PopcountWidth = $clog2(INPUT_WIDTH) + 1
+    localparam int unsigned PopcountWidth = $clog2(INPUT_WIDTH+1)
 ) (
     input  logic [  INPUT_WIDTH-1:0] data_i,
     output logic [PopcountWidth-1:0] popcount_o
