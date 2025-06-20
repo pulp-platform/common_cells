@@ -365,7 +365,8 @@ module id_queue #(
             // For a match, the entry needs to be occupied AND
             // the masked slot data needs to match the masked query data.
             assign exists_match[k][i] = ~linked_data_q[i].free &
-                ((linked_data_q[i].data & exists_mask_i[k]) == (exists_data_i[k] & exists_mask_i[k]));
+                    ((linked_data_q[i].data & exists_mask_i[k]) ==
+                     (exists_data_i[k]      & exists_mask_i[k]));
         end
         always_comb begin
             exists_gnt_o[k] = 1'b0;
