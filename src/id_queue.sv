@@ -362,22 +362,10 @@ module id_queue #(
     // Exists Lookup
     for (genvar k = 0; k < NUM_CMP_PORTS; k++) begin: gen_lookup_port
         for (genvar i = 0; i < CAPACITY; i++) begin: gen_lookup
-            data_t exists_match_bits;
-            for (genvar j = 0; j < $bits(data_t); j++) begin: gen_mask
-                always_comb begin
-                    if (linked_data_q[i].free) begin
-                        exists_match_bits[j] = 1'b0;
-                    end else begin
-                        if (!exists_mask_i[k][j]) begin
-                            exists_match_bits[j] = 1'b1;
-                        end else begin
-                            exists_match_bits[j] =
-                                (linked_data_q[i].data[j] == exists_data_i[k][j]);
-                        end
-                    end
-                end
-            end
-            assign exists_match[k][i] = (&exists_match_bits);
+            // For a match, the entry needs to be occupied AND
+            // the masked slot data needs to match the masked query data.
+            assign exists_match[k][i] = !linked_data_q[i].free &&
+                ((linked_data_q[i].data & exists_mask_i[k]) == (exists_data_i[k] & exists_mask_i[k]));
         end
         always_comb begin
             exists_gnt_o[k] = 1'b0;
