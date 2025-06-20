@@ -230,10 +230,8 @@ module hash_block #(
   // output assignment
   always_comb begin : proc_hash_or
     indicator_o = '0;
-    for (int unsigned i = 0; i < (2**HashWidth); i++) begin
-      for (int unsigned j = 0; j < NoHashes; j++) begin
-        indicator_o[i] = indicator_o[i] | hashes[j][i];
-      end
+    for (int unsigned j = 0; j < NoHashes; j++) begin
+      indicator_o = indicator_o | hashes[j];
     end
   end
 
