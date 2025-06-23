@@ -23,6 +23,21 @@ call_vsim() {
 	grep "Errors: 0," vsim.log
 }
 
+for PORTS in 1 2; do
+  for LATENCY in 0 1 2; do
+    for WORDS in 16 256 512 1024; do
+      for DWIDTH in 1 42  64; do
+        for BYTEWIDTH in 1 8 9; do
+          for BANKS in 1 2 4 8; do
+            call_vsim mem_multibank_pwrgate_tb -gNumPorts=$PORTS -gLatency=$LATENCY -gNumWords=$WORDS -gDataWidth=$DWIDTH -gByteWidth=$BYTEWIDTH -gNumLogicBanks=$BANKS
+          done
+       done
+      done
+    done
+  done
+done
+
+
 #call_vsim cdc_fifo_tb # currently broken
 for tb in cdc_2phase_tb fifo_tb graycode_tb id_queue_tb popcount_tb stream_register_tb addr_decode_tb; do
     call_vsim $tb
