@@ -13,6 +13,8 @@
 // Counter which resets automatically when it reaches a specified bound, i.e.
 // when it "trips". Useful e.g. for implementing hardware loop logic.
 
+`include "common_cells/assertions.svh"
+
 module trip_counter #(
     parameter int unsigned WIDTH = 4
 )(
@@ -43,5 +45,7 @@ module trip_counter #(
 
     assign last_o = (q_o == bound_i);
     assign trip_o = last_o && en_i;
+
+    `ASSERT(CounterExceedsBound, !(en_i && (q_o + delta_i) > bound_i))
 
 endmodule
