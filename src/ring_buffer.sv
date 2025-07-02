@@ -120,6 +120,34 @@ module ring_buffer #(
     // Assertions //
     ////////////////
 
+    // Auxiliary signal for assertion
+    step_t max_step;
+
+    // Calculate maximum allowed step size, beyond which read pointer would overtake write pointer.
+    always_comb begin
+        if (rptr_q[AddrWidth] == wptr_d[AddrWidth])
+            max_step = wptr_d[AddrWidth-1:0] - rptr_q[AddrWidth-1:0];
+        else
+            max_step = Depth - rptr_q[AddrWidth-1:0] + wptr_d[AddrWidth-1:0];
+    end
+
+    // Read pointer should not overtake write pointer.
+    `ASSERT(
+        ReadPtrOvertakesWritePtr,
+        advance_i |-> step_i <= max_step,
+        clk_i, !rst_ni,
+        "Attempting to increment rptr beyond wptr"
+    );
+
+    // Write pointer should not overtake read pointer.
+    `ASSERT(
+        WritePtrOvertakesReadPtr,
+        wvalid_i && wready_o
+            |-> !((wptr_q[AddrWidth-1:0] == rptr_d[AddrWidth-1:0]) && !(wptr_q == rptr_d)),
+        clk_i, !rst_ni,
+        "Attempting to increment wptr beyond rptr"
+    );
+
     // When rptr_o < wptr_o, the valid range is [rptr_o, wptr_o).
     // When rptr_o > wptr_o (wrap-around), the valid range is [rptr_o, Depth) U [0, wptr_o).
     // When rptr_o == wptr_o and !empty (buffer is full), all addresses are valid.
