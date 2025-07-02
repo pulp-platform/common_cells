@@ -139,4 +139,7 @@ module ring_buffer #(
     `ASSERT_STABLE(WriteStable, wvalid_i, wready_o, wdata_i)
     `ASSERT_STABLE(ReadStable, rvalid_i, rready_o, raddr_i)
 
+    // Currently only power-of-2 depths are supported, could be loosened in future
+    `ASSERT_INIT(CheckDepthPow2, cf_math_pkg::is_power_of_2(Depth))
+
 endmodule
