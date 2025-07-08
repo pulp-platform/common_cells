@@ -76,7 +76,10 @@ module id_queue #(
     input  logic    oup_req_i,
     output data_t   oup_data_o,
     output logic    oup_data_valid_o,
-    output logic    oup_gnt_o
+    output logic    oup_gnt_o,
+
+    output logic    full_o,
+    output logic    empty_o
 );
 
     // Capacity of the head-tail table, which associates an ID with corresponding head and tail
@@ -184,8 +187,10 @@ module id_queue #(
         .empty_o (                      )
     );
 
-    // The queue is full if and only if there are no free items in the linked data structure.
+    // The queue is full if and only if there are no free entries in the linked data structure.
     assign full = !(|linked_data_free);
+    // The queue is empty if and only if all entries in the linked data structure are free.
+    assign empty = &linked_data_free;
     // Data potentially freed by the output.
     assign oup_data_free_idx = head_tail_q[match_out_idx].head;
 
@@ -410,6 +415,10 @@ module id_queue #(
             end
         end
     end
+
+    // Status interface
+    assign full_o  = full;
+    assign empty_o = empty;
 
     // Validate parameters.
 `ifndef COMMON_CELLS_ASSERTS_OFF
