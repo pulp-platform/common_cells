@@ -192,10 +192,12 @@ module cdc_fifo_gray_src #(
 
   // Data FIFO.
   assign async_data_o = data_q;
-  for (genvar i = 0; i < 2**LOG_DEPTH; i++) begin : gen_word
-    `FFLNR(data_q[i], src_data_i,
-          src_valid_i & src_ready_o & (wptr_bin[LOG_DEPTH-1:0] == i), src_clk_i)
+
+  always_comb begin
+    data_d                          = data_q;
+    data_d[wptr_bin[LOG_DEPTH-1:0]] = src_data_i;
   end
+  `FFLARN(data_q, data_d, src_valid_i & src_ready_o, '0, src_clk_i, src_rst_ni)
 
   // Read pointer.
   for (genvar i = 0; i < PtrWidth; i++) begin : gen_sync
