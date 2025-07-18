@@ -187,7 +187,7 @@ module cdc_fifo_gray_src #(
   localparam int PtrWidth = LOG_DEPTH+1;
   localparam logic [PtrWidth-1:0] PtrFull = (1 << LOG_DEPTH);
 
-  T [2**LOG_DEPTH-1:0] data_q;
+  T [2**LOG_DEPTH-1:0] data_q, data_d;
   logic [PtrWidth-1:0] wptr_q, wptr_d, wptr_bin, wptr_next, rptr, rptr_bin;
 
   // Data FIFO.
