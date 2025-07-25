@@ -5,20 +5,20 @@
 `include "common_cells/assertions.svh"
 
 /// A trailing zero counter / leading zero counter.
-/// Set MODE to 0 for trailing zero counter => cnt_o is the number of trailing zeros (from the LSB)
-/// Set MODE to 1 for leading zero counter  => cnt_o is the number of leading zeros  (from the MSB)
+/// Set MODE to TRAILING_ZERO_CNT for trailing zero counter => cnt_o is the number of trailing zeros (from the LSB)
+/// Set MODE to LEADING_ZERO_CNT for leading zero counter  => cnt_o is the number of leading zeros  (from the MSB)
 /// If the input does not contain a one, `empty_o` is asserted. Additionally `cnt_o` contains
 /// the maximum number of zeros - 1. For example:
-///   in_i = 000_0000, empty_o = 1, cnt_o = 6 (mode = 0)
-///   in_i = 000_0001, empty_o = 0, cnt_o = 0 (mode = 0)
-///   in_i = 000_1000, empty_o = 0, cnt_o = 3 (mode = 0)
+///   in_i = 000_0000, empty_o = 1, cnt_o = 6 (mode = TRAILING_ZERO_CNT)
+///   in_i = 000_0001, empty_o = 0, cnt_o = 0 (mode = TRAILING_ZERO_CNT)
+///   in_i = 000_1000, empty_o = 0, cnt_o = 3 (mode = TRAILING_ZERO_CNT)
 /// Furthermore, this unit contains a more efficient implementation for Verilator (simulation only).
 /// This speeds up simulation significantly.
-module lzc #(
+module lzc import lzc_pkg::*; #(
   /// The width of the input vector.
   parameter int unsigned WIDTH = 2,
-  /// Mode selection: 0 -> trailing zero, 1 -> leading zero
-  parameter bit          MODE  = 1'b0,
+  /// Trailing or leading zero mode selection
+  parameter lzc_mode_e   MODE  = TRAILING_ZERO_CNT,
   /// Dependent parameter. Do **not** change!
   ///
   /// Width of the output signal with the zero count.
@@ -54,7 +54,7 @@ module lzc #(
     // reverse vector if required
     always_comb begin : flip_vector
       for (int unsigned i = 0; i < WIDTH; i++) begin
-        in_tmp[i] = (MODE) ? in_i[WIDTH-1-i] : in_i[i];
+        in_tmp[i] = (MODE == LEADING_ZERO_CNT) ? in_i[WIDTH-1-i] : in_i[i];
       end
     end
 
