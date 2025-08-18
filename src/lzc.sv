@@ -46,16 +46,21 @@ module lzc #(
   `endif
 
     logic [WIDTH-1:0][NumLevels-1:0] index_lut;
-    logic [2**NumLevels-1:0] sel_nodes;
-    logic [2**NumLevels-1:0][NumLevels-1:0] index_nodes;
+    logic [2**NumLevels-1:0] sel_nodes                  /* verilator split_var */;
+    logic [2**NumLevels-1:0][NumLevels-1:0] index_nodes /* verilator split_var */;
 
     logic [WIDTH-1:0] in_tmp;
 
-    // reverse vector if required
-    always_comb begin : flip_vector
-      for (int unsigned i = 0; i < WIDTH; i++) begin
-        in_tmp[i] = (MODE) ? in_i[WIDTH-1-i] : in_i[i];
+    if (MODE) begin : g_flip
+      // Mode 1 (leading zero): flip input vector
+      always_comb begin : flip_vector
+        for (int unsigned i = 0; i < WIDTH; i++) begin
+          in_tmp[i] = in_i[WIDTH-1-i];
+        end
       end
+    end else begin
+      // Mode 0 (trailing zero)
+      assign in_tmp = in_i;
     end
 
     for (genvar j = 0; unsigned'(j) < WIDTH; j++) begin : g_index_lut
