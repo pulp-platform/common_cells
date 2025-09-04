@@ -156,10 +156,10 @@
   `ASSERT_IF(__name, !$isunknown(__sig), __enable, __clk, __rst, __desc)                                                \
 `endif
 
-// Assert that signal is an active-high pulse with pulse length of 1 clock cycle
-`define ASSERT_STABLE(__name, __valid, __ready, __data, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST, __desc = "") \
-`ifdef INC_ASSERT                                                                                                              \
-  `ASSERT(__name, __valid && !__ready |=> $stable(__data), __clk, __rst, __desc)                                               \
+// Assert that (unmasked parts of) data are stable when valid is high and ready is low.
+`define ASSERT_STABLE(__name, __valid, __ready, __data, __mask = '0, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST, __desc = "") \
+`ifdef INC_ASSERT                                                                                                                           \
+  `ASSERT(__name, (__valid) && !(__ready) |=> $stable((__data) & ~(__mask)), __clk, __rst, __desc)                                          \
 `endif
 
 ///////////////////////
