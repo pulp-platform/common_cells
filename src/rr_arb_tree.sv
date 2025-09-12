@@ -122,10 +122,10 @@ module rr_arb_tree #(
     localparam int unsigned NumLevels = unsigned'($clog2(NumIn));
 
     /* verilator lint_off SPLITVAR */  // disable warning that is issued if bitwidth is 1
-    idx_t    [2**NumLevels-2:0] index_nodes /* verilator split_var */; // used to propagate the indices
-    DataType [2**NumLevels-2:0] data_nodes  /* verilator split_var */; // used to propagate the data
-    logic    [2**NumLevels-2:0] gnt_nodes   /* verilator split_var */; // used to propagate the grant to masters
-    logic    [2**NumLevels-2:0] req_nodes   /* verilator split_var */; // used to propagate the requests to slave
+    idx_t    [2**NumLevels-2:0] index_nodes /* verilator split_var */; // propagates indices
+    DataType [2**NumLevels-2:0] data_nodes  /* verilator split_var */; // propagates data
+    logic    [2**NumLevels-2:0] gnt_nodes   /* verilator split_var */; // propagates gnt to masters
+    logic    [2**NumLevels-2:0] req_nodes   /* verilator split_var */; // propagates reqs to slave
     /* verilator lint_on SPLITVAR */
 
     /* lint_off */
