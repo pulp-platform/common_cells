@@ -58,7 +58,7 @@ module lzc #(
           in_tmp[i] = in_i[WIDTH-1-i];
         end
       end
-    end else begin
+    end else begin : g_no_flip
       // Mode 0 (trailing zero)
       assign in_tmp = in_i;
     end
