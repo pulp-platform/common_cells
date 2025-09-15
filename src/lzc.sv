@@ -32,7 +32,7 @@ module lzc #(
   output logic                 empty_o
 );
 
-  if (WIDTH == 1) begin : gen_degenerate_lzc
+  if (WIDTH <= 1) begin : gen_degenerate_lzc
 
     assign cnt_o[0] = !in_i[0];
     assign empty_o = !in_i[0];
