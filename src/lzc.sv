@@ -32,6 +32,10 @@ module lzc #(
   output logic                 empty_o
 );
 
+  `ifndef COMMON_CELLS_ASSERTS_OFF
+    `ASSERT_INIT(width_0, WIDTH > 0, "input must be at least one bit wide")
+  `endif
+
   if (WIDTH <= 1) begin : gen_degenerate_lzc
 
     assign cnt_o[0] = !in_i[0];
@@ -40,10 +44,6 @@ module lzc #(
   end else begin : gen_lzc
 
     localparam int unsigned NumLevels = $clog2(WIDTH);
-
-  `ifndef COMMON_CELLS_ASSERTS_OFF
-    `ASSERT_INIT(width_0, WIDTH > 0, "input must be at least one bit wide")
-  `endif
 
     logic [WIDTH-1:0][NumLevels-1:0] index_lut;
     logic [2**NumLevels-1:0] sel_nodes                  /* verilator split_var */;
@@ -103,9 +103,5 @@ module lzc #(
     assign empty_o = NumLevels > unsigned'(0) ? ~sel_nodes[0] : ~(|in_i);
 
   end : gen_lzc
-
-`ifndef COMMON_CELLS_ASSERTS_OFF
-  `ASSERT_INIT(width_0, WIDTH >= 1, "The WIDTH must at least be one bit wide!")
-`endif
 
 endmodule : lzc
