@@ -4,7 +4,7 @@
 
 # Common Cells Repository
 
-Maintainer: Nils Wistoff <nwistoff@iis.ee.ethz.ch>
+Maintainer: Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
 This repository contains commonly used cells and headers for use in various projects.
 
