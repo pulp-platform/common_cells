@@ -52,17 +52,18 @@ Please note that cells with status *deprecated* are not to be used for new desig
 
 ### Counters and Shift Registers
 
-| Name                                                       | Description                                                       | Status       | Superseded By                   |
-| ---------------------------------------------------------- | ----------------------------------------------------------------- | ------------ | ------------------------------- |
-| [`counter`](src/counter.sv)                                | Generic up/down counter with overflow detection                   | active       |                                 |
-| [`credit_counter`](src/credit_counter.sv)                  | Up/down counter for credit                                        | active       |                                 |
-| [`delta_counter`](src/delta_counter.sv)                    | Up/down counter with variable delta and overflow detection        | active       |                                 |
-| [`generic_LFSR_8bit`](src/deprecated/generic_LFSR_8bit.sv) | 8-bit linear feedback shift register (LFSR)                       | *deprecated* | [`lfsr_8bit`](src/lfsr_8bit.sv) |
-| [`lfsr_8bit`](src/lfsr_8bit.sv)                            | 8-bit linear feedback shift register (LFSR)                       | active       |                                 |
-| [`lfsr_16bit`](src/lfsr_16bit.sv)                          | 16-bit linear feedback shift register (LFSR)                      | active       |                                 |
-| [`lfsr`](src/lfsr.sv)                                      | 4...64-bit parametric Galois LFSR with optional whitening feature | active       |                                 |
-| [`max_counter`](src/max_counter.sv)                        | Up/down counter with variable delta that tracks its maximum value | active       |                                 |
-| [`mv_filter`](src/mv_filter.sv)                            | **ZARUBAF ADD DESCRIPTION**                                       | active       |                                 |
+| Name                                                       | Description                                                         | Status       | Superseded By                   |
+| ---------------------------------------------------------- | ------------------------------------------------------------------- | ------------ | ------------------------------- |
+| [`counter`](src/counter.sv)                                | Generic up/down counter with overflow detection                     | active       |                                 |
+| [`credit_counter`](src/credit_counter.sv)                  | Up/down counter for credit                                          | active       |                                 |
+| [`delta_counter`](src/delta_counter.sv)                    | Up/down counter with variable delta and overflow detection          | active       |                                 |
+| [`generic_LFSR_8bit`](src/deprecated/generic_LFSR_8bit.sv) | 8-bit linear feedback shift register (LFSR)                         | *deprecated* | [`lfsr_8bit`](src/lfsr_8bit.sv) |
+| [`lfsr_8bit`](src/lfsr_8bit.sv)                            | 8-bit linear feedback shift register (LFSR)                         | active       |                                 |
+| [`lfsr_16bit`](src/lfsr_16bit.sv)                          | 16-bit linear feedback shift register (LFSR)                        | active       |                                 |
+| [`lfsr`](src/lfsr.sv)                                      | 4...64-bit parametric Galois LFSR with optional whitening feature   | active       |                                 |
+| [`max_counter`](src/max_counter.sv)                        | Up/down counter with variable delta that tracks its maximum value   | active       |                                 |
+| [`mv_filter`](src/mv_filter.sv)                            | **ZARUBAF ADD DESCRIPTION**                                         | active       |                                 |
+| [`trip_counter`](src/trip_counter.sv)                      | Counter that resets automatically when it reaches a specified bound | active       |                                 |
 
 ### Data Path Elements
 
@@ -107,6 +108,8 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | [`popcount`](src/popcount.sv)                                  | Combinatorial popcount (hamming weight)                                                                   | active       |                                     |
 | [`mem_to_banks_detailed`](src/mem_to_banks_detailed.sv)        | Split memory access over multiple parallel banks with detailed response signals                           | active       |                                     |
 | [`mem_to_banks`](src/mem_to_banks.sv)                          | Split memory access over multiple parallel banks                                                          | active       |                                     |
+| [`heaviside`](src/heaviside.sv)                                | Generates a mask obtained by applying the Heaviside step function                                         | active       |                                     |
+| [`boxcar`](src/boxcar.sv)                                      | Generates a mask obtained by applying a boxcar function                                                   | active       |                                     |
 
 ### Data Structures
 
@@ -117,6 +120,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | [`fifo_v2`](src/deprecated/fifo_v2.sv)                           | FIFO register with upper and lower threshold                                | *deprecated* | [`fifo_v3`](src/fifo_v3.sv)                                                                     |
 | [`fifo_v3`](src/fifo_v3.sv)                                      | FIFO register with generic fill counts                                      | active       |                                                                                                 |
 | [`passthrough_stream_fifo`](src/passthrough_stream_fifo.sv)      | FIFO register with ready/valid interface and same-cycle push/pop when full  | active       |                                                                                                 |
+| [`ring_buffer`](src/ring_buffer.sv)                              | Ring buffer with sequential write and random-access read interfaces         | active       |                                                                                                 |
 | [`stream_fifo`](src/stream_fifo.sv)                              | FIFO register with ready/valid interface                                    | active       |                                                                                                 |
 | [`stream_fifo_optimal_wrap`](src/stream_fifo_optimal_wrap.sv)    | Wrapper that optimally selects either a spill register or a FIFO            | active       |                                                                                                 |
 | [`generic_fifo`](src/deprecated/generic_fifo.sv)                 | FIFO register without thresholds                                            | *deprecated* | [`fifo_v3`](src/fifo_v3.sv)                                                                     |
@@ -125,7 +129,6 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | [`plru_tree`](src/plru_tree.sv)                                  | Pseudo least recently used tree                                             | active       |                                                                                                 |
 | [`unread`](src/unread.sv)                                        | Empty module to sink unconnected outputs into                               | active       |                                                                                                 |
 | [`read`](src/read.sv)                                            | Dummy module that prevents a signal from being removed during synthesis     | active       |                                                                                                 |
-
 
 ## Header Contents
 
@@ -177,11 +180,12 @@ easier to use them. They are similar to but incompatible with the macros used by
 - *`__desc` is an optional string argument describing the failure causing the assertion to be violated that is embedded into the error report and defaults to `""`.*
 
 #### Complex Assertion Macros
-| Macro                 | Arguments                                                    | Description                                                                                       |
-| --------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
-| `` `ASSERT_PULSE``    | `__name`, `__sig`, (`__clk`, `__rst`, `__desc`)              | Assert that signal is an active-high pulse with pulse length of 1 clock cycle                     |
-| `` `ASSERT_IF``       | `__name`, `__prop`, `__enable`, (`__clk`, `__rst`, `__desc`) | Assert that a property is true only when an enable signal is set                                  |
-| `` `ASSERT_KNOWN_IF`` | `__name`, `__sig`, `__enable`, (`__clk`, `__rst`, `__desc`)  | Assert that signal has a known value (each bit is either '0' or '1') after reset if enable is set |
+| Macro                 | Arguments                                                                           | Description                                                                                                |
+| --------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `` `ASSERT_PULSE``    | `__name`, `__sig`, (`__clk`, `__rst`, `__desc`)                                     | Assert that signal is an active-high pulse with pulse length of 1 clock cycle                              |
+| `` `ASSERT_IF``       | `__name`, `__prop`, `__enable`, (`__clk`, `__rst`, `__desc`)                        | Assert that a property is true only when an enable signal is set                                           |
+| `` `ASSERT_KNOWN_IF`` | `__name`, `__sig`, `__enable`, (`__clk`, `__rst`, `__desc`)                         | Assert that signal has a known value (each bit is either '0' or '1') after reset if enable is set          |
+| `` `ASSERT_STABLE``   | `__name`, `__valid`, `__ready`, `__data`, `__enable`, (`__clk`, `__rst`, `__desc`)  | Assert that the data on a ready-valid interface is kept stable after valid is asserted, until ready is too |
 - *The name of the clock and reset signals for implicit variants is `clk_i` and `rst_ni`, respectively.*
 - *`__desc` is an optional string argument describing the failure causing the assertion to be violated that is embedded into the error report and defaults to `""`.*
 

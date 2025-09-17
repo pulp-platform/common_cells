@@ -18,6 +18,7 @@ common_cells_all:
     - src/exp_backoff.sv
     - src/fifo_v3.sv
     - src/gray_to_binary.sv
+    - src/heaviside.sv
     - src/isochronous_4phase_handshake.sv
     - src/isochronous_spill_register.sv
     - src/lfsr.sv
@@ -29,6 +30,7 @@ common_cells_all:
     - src/plru_tree.sv
     - src/passthrough_stream_fifo.sv
     - src/popcount.sv
+    - src/ring_buffer.sv
     - src/rr_arb_tree.sv
     - src/rstgen_bypass.sv
     - src/serial_deglitch.sv
@@ -51,6 +53,7 @@ common_cells_all:
     - src/cdc_reset_ctrlr_pkg.sv
     # Level 1
     - src/addr_decode_dync.sv
+    - src/boxcar.sv
     - src/cdc_2phase.sv
     - src/cdc_4phase.sv
     - src/cb_filter.sv
@@ -66,6 +69,7 @@ common_cells_all:
     - src/stream_delay.sv
     - src/stream_fifo.sv
     - src/stream_fork_dynamic.sv
+    - src/trip_counter.sv
     - src/clk_mux_glitch_free.sv
     # Level 2
     - src/addr_decode.sv

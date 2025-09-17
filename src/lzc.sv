@@ -7,7 +7,7 @@
 /// A trailing zero counter / leading zero counter.
 /// Set MODE to 0 for trailing zero counter => cnt_o is the number of trailing zeros (from the LSB)
 /// Set MODE to 1 for leading zero counter  => cnt_o is the number of leading zeros  (from the MSB)
-/// If the input does not contain a zero, `empty_o` is asserted. Additionally `cnt_o` contains
+/// If the input does not contain a one, `empty_o` is asserted. Additionally `cnt_o` contains
 /// the maximum number of zeros - 1. For example:
 ///   in_i = 000_0000, empty_o = 1, cnt_o = 6 (mode = 0)
 ///   in_i = 000_0001, empty_o = 0, cnt_o = 0 (mode = 0)
