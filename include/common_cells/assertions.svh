@@ -39,6 +39,34 @@
 `endif
 `endif
 
+// detect and resolve potential collision with lowRISC's prim_assert macros by undefining all of
+// their macros (the variants in here should be backwards compatible with lowRISC's macros)
+`ifdef PRIM_ASSERT_SV
+  `ifdef INC_ASSERT
+    `undef ASSERT_I
+    `undef ASSERT_INIT
+    `undef ASSERT_FINAL
+    `undef ASSERT
+    `undef ASSERT_NEVER
+    `undef ASSERT_KNOWN
+    `undef COVER
+    `undef ASSERT_PULSE
+    `undef ASSERT_IF
+    `ifndef FPV_ON
+      `undef ASSERT_KNOWN_IF
+    `endif
+    `undef ASSUME
+    `undef ASSUME_I
+  `endif
+  `ifdef FPV_ON
+    `undef ASSUME_FPV
+    `undef ASSUME_I_FPV
+    `undef COVER_FPV
+  `endif
+`endif
+// define PRIM_ASSERT_SV to anticipate a later inclusion of lowRISC's prim_assert macros
+`define PRIM_ASSERT_SV
+
 // Converts an arbitrary block of code into a Verilog string
 `define ASSERT_STRINGIFY(__x) `"__x`"
 
