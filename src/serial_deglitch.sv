@@ -32,7 +32,7 @@ module serial_deglitch #(
             if (en_i) begin
                 if (d_i == 1'b1 && count_q != SIZE[SIZE-1:0]) begin
                     count_q <= count_q + 1;
-                end else if (d_i == 1'b0 && count_q != SIZE[SIZE-1:0]) begin
+                end else if (d_i == 1'b0 && count_q != 0) begin
                     count_q <= count_q - 1;
                 end
             end
