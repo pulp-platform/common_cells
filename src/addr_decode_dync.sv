@@ -62,8 +62,10 @@ module addr_decode_dync #(
   /// power of two (NAPOT) region instead of an address range: `start_addr` becomes the base address
   /// and `end_addr` the mask. See the wrapping module `addr_decode_napot` for details.
   parameter type         rule_t    = logic,
-  // Whether this is a NAPOT (base and mask) or regular range decoder
+  /// Whether this is a NAPOT (base and mask) or regular range decoder
   parameter bit          Napot     = 0,
+  /// Whether to assert maximum indices.
+  parameter bit          AssertIndices = 1'b1,
   /// Dependent parameter, do **not** overwite!
   ///
   /// Width of the `idx_o` output port.
@@ -130,7 +132,7 @@ module addr_decode_dync #(
              $sformatf("Input address has %d bits and address map has %d bits.",
                        $bits(addr_i), $bits(addr_map_i[0].start_addr)))
     `ASSUME_I(norules_0, NoRules > 0, $sformatf("At least one rule needed"))
-    `ASSUME_I(noindices_0, NoIndices > 0, $sformatf("At least one index needed"))
+    `ASSUME_I(noindices_0, NoIndices > 0 || !AssertIndices, $sformatf("At least one index needed"))
   end
 
   `ASSERT_FINAL(more_than_1_bit_set, $onehot0(matched_rules) || config_ongoing_i,
@@ -156,7 +158,7 @@ module addr_decode_dync #(
               #####################################################",
               i ,addr_map_i[i].idx, addr_map_i[i].start_addr, addr_map_i[i].end_addr))
         // check the SLV ids
-        `ASSUME_I(check_idx, addr_map_i[i].idx < NoIndices,
+        `ASSUME_I(check_idx, addr_map_i[i].idx < NoIndices|| !AssertIndices,
             $sformatf("This rule has a IDX that is not allowed!!!\n\
             Violating rule %d.\n\
             Rule> IDX: %h START: %h END: %h\n\
