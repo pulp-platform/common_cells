@@ -43,12 +43,13 @@ module addr_decode #(
   /// The address decoder expects three fields in `rule_t`:
   ///
   /// typedef struct packed {
-  ///   int unsigned idx;
-  ///   addr_t       start_addr;
-  ///   addr_t       end_addr;
+  ///   idx_t  idx;
+  ///   addr_t start_addr;
+  ///   addr_t end_addr;
   /// } rule_t;
   ///
-  ///  - `idx`:        index of the rule, has to be < `NoIndices`
+  ///  - `idx`:        The index to be returned for a matching rule. Usually an integer but can
+  ///                  be any type of data.
   ///  - `start_addr`: start address of the range the rule describes, value is included in range
   ///  - `end_addr`:   end address of the range the rule describes, value is NOT included in range
   ///                  if `end_addr == '0` end of address space is assumed
@@ -59,13 +60,10 @@ module addr_decode #(
   parameter type         rule_t    = logic,
   // Whether this is a NAPOT (base and mask) or regular range decoder
   parameter bit          Napot     = 0,
-  /// Dependent parameter, do **not** overwite!
-  ///
-  /// Width of the `idx_o` output port.
+  /// The output index type `idx_t` can be specified either with the width `IdxWidth`
+  /// or directly with the type `idx_t`. By default, it will use the maximum index
+  /// `NoIndices` to calculate the required width.
   parameter int unsigned IdxWidth  = cf_math_pkg::idx_width(NoIndices),
-  /// Dependent parameter, do **not** overwite!
-  ///
-  /// Type of the `idx_o` output port.
   parameter type         idx_t     = logic [IdxWidth-1:0]
 ) (
   /// Address to decode.
@@ -92,11 +90,11 @@ module addr_decode #(
 
   // wraps the dynamic configuration version of the address decoder
   addr_decode_dync #(
-    .NoIndices ( NoIndices ),
     .NoRules   ( NoRules   ),
     .addr_t    ( addr_t    ),
     .rule_t    ( rule_t    ),
-    .Napot     ( Napot     )
+    .Napot     ( Napot     ),
+    .idx_t     ( idx_t     )
   ) i_addr_decode_dync (
     .addr_i,
     .addr_map_i,
