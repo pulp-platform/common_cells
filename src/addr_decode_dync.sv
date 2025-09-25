@@ -48,12 +48,13 @@ module addr_decode_dync #(
   /// The address decoder expects three fields in `rule_t`:
   ///
   /// typedef struct packed {
-  ///   int unsigned idx;
-  ///   addr_t       start_addr;
-  ///   addr_t       end_addr;
+  ///   idx_t  idx;
+  ///   addr_t start_addr;
+  ///   addr_t end_addr;
   /// } rule_t;
   ///
-  ///  - `idx`:        index of the rule, has to be < `NoIndices`
+  ///  - `idx`:        The index to be returned for a matching rule. Usually an integer but can
+  ///                  be any type of data.
   ///  - `start_addr`: start address of the range the rule describes, value is included in range
   ///  - `end_addr`:   end address of the range the rule describes, value is NOT included in range
   ///                  if `end_addr == '0` end of address space is assumed
@@ -62,15 +63,12 @@ module addr_decode_dync #(
   /// power of two (NAPOT) region instead of an address range: `start_addr` becomes the base address
   /// and `end_addr` the mask. See the wrapping module `addr_decode_napot` for details.
   parameter type         rule_t    = logic,
-  // Whether this is a NAPOT (base and mask) or regular range decoder
+  /// Whether this is a NAPOT (base and mask) or regular range decoder
   parameter bit          Napot     = 0,
-  /// Dependent parameter, do **not** overwite!
-  ///
-  /// Width of the `idx_o` output port.
-  parameter int unsigned IdxWidth  = (NoIndices > 1) ? $clog2(NoIndices) : 1,
-  /// Dependent parameter, do **not** overwite!
-  ///
-  /// Type of the `idx_o` output port.
+  /// The output index type `idx_t` can be specified either with the width `IdxWidth`
+  /// or directly with the type `idx_t`. By default, it will use the maximum index
+  /// `NoIndices` to calculate the required width.
+  parameter int unsigned IdxWidth  = cf_math_pkg::idx_width(NoIndices),
   parameter type         idx_t     = logic [IdxWidth-1:0]
 ) (
   /// Address to decode.
@@ -130,7 +128,6 @@ module addr_decode_dync #(
              $sformatf("Input address has %d bits and address map has %d bits.",
                        $bits(addr_i), $bits(addr_map_i[0].start_addr)))
     `ASSUME_I(norules_0, NoRules > 0, $sformatf("At least one rule needed"))
-    `ASSUME_I(noindices_0, NoIndices > 0, $sformatf("At least one index needed"))
   end
 
   `ASSERT_FINAL(more_than_1_bit_set, $onehot0(matched_rules) || config_ongoing_i,
@@ -155,15 +152,6 @@ module addr_decode_dync #(
               Rule> IDX: %h START: %h END: %h\n\
               #####################################################",
               i ,addr_map_i[i].idx, addr_map_i[i].start_addr, addr_map_i[i].end_addr))
-        // check the SLV ids
-        `ASSUME_I(check_idx, addr_map_i[i].idx < NoIndices,
-            $sformatf("This rule has a IDX that is not allowed!!!\n\
-            Violating rule %d.\n\
-            Rule> IDX: %h START: %h END: %h\n\
-            Rule> MAX_IDX: %h\n\
-            #####################################################",
-            i, addr_map_i[i].idx, addr_map_i[i].start_addr, addr_map_i[i].end_addr,
-            (NoIndices-1)))
         for (int unsigned j = i + 1; j < NoRules; j++) begin
           // overlap check
           `ASSUME_I(check_overlap, Napot ||
