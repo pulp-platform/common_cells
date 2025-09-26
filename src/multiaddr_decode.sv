@@ -29,6 +29,14 @@
 /// is set.
 /// For each rule, it also returns the subset of addresses in {`addr_i`, `mask_i`} which
 /// match the rule {`addr_o[i]`, `mask_o[i]`}.
+///
+/// There is the possibility to add a default mapping:
+/// `en_default_idx_i`: Driving this port to `1'b1` maps all input addresses
+/// for which no rule in `addr_map_i` exists to the default index specified by
+/// `default_idx_i`. In this case, `dec_error_o` is always `1'b0`.
+/// Note: `default_idx_i` must carry the rule representing the union of all other
+/// rules' address sets, in order to determine if any address in the input address
+/// doesn't fall in the address set of any rule.
 module multiaddr_decode #(
   /// Highest index which can happen in a rule.
   parameter int unsigned NoIndices = 32'd0,
@@ -62,7 +70,16 @@ module multiaddr_decode #(
   /// to the {addr, mask} representation (and viceversa) using the following equations:
   /// - mask =  {'0, {log2(end - start){1'b1}}}
   /// - addr = start
-  parameter type         rule_t    = logic
+  parameter type         rule_t    = logic,
+  /// Dependent parameter, do **not** overwite!
+  ///
+  /// Width of the `default_idx_i` input port.
+  parameter int unsigned IdxWidth  = cf_math_pkg::idx_width(NoIndices),
+  /// Dependent parameter, do **not** overwite!
+  ///
+  /// Type of the `default_idx_i` input port.
+  parameter type         idx_t     = logic [IdxWidth-1:0]
+
 ) (
   /// Multi-address to decode.
   input  addr_t                 addr_i,
@@ -77,19 +94,35 @@ module multiaddr_decode #(
   /// Decode is valid.
   output logic                  dec_valid_o,
   /// Decode is not valid, no matching rule found.
-  output logic                  dec_error_o
+  output logic                  dec_error_o,
+  /// Enable default port mapping.
+  ///
+  /// When not used, tie to `0`.
+  input  logic                  en_default_idx_i,
+  /// Default port rule.
+  ///
+  /// When `en_default_idx_i` is `1`, this containes the index when the input doesn't
+  /// fully match the other rules. To easily determine if this is the case, this signal
+  /// carries the rule representing the union of all other rules. This is not the default
+  /// slave's rule but actually its complement.
+  ///
+  /// When not used, tie to `0`.
+  input  rule_t                 default_idx_i
 );
 
   logic [NoRules-1:0] matched_rules; // purely for address map debugging
 
   always_comb begin
     // default assignments
-    matched_rules = '0;
-    dec_valid_o   = 1'b0;
-    dec_error_o   = 1'b1;
-    select_o      = '0;
-    addr_o        = '0;
-    mask_o        = '0;
+    matched_rules         = '0;
+    dec_valid_o           = 1'b0;
+    dec_error_o           = en_default_idx_i ? 1'b0 : 1'b1;
+    select_o              = '0;
+    // input address and mask are propagated unchanged to the default slave
+    addr_o                = '0;
+    mask_o                = '0;
+    addr_o[default_idx_i.idx] = en_default_idx_i ? addr_i : '0;
+    mask_o[default_idx_i.idx] = en_default_idx_i ? mask_i : '0;
 
     // Match the rules
     for (int unsigned i = 0; i < NoRules; i++) begin
@@ -119,6 +152,14 @@ module multiaddr_decode #(
         addr_o[idx] = (~mask_i & addr_i) | (mask_i & addr_map_i[i].addr);
       end
     end
+    // Match the default slave rule
+    // An input address set is fully contained in a rule's address set if there is a
+    // match (dec_valid_o) and there are no masked bits in the input address set which
+    // are not masked also in the rule's address set.
+    // If the input address set is not fully contained in the union of all rules'
+    // address sets, forward to default slave.
+    if (en_default_idx_i)
+      select_o[default_idx_i.idx] = (!dec_valid_o || |(mask_i & ~default_idx_i.mask));
   end
 
   // Assumptions and assertions
@@ -131,19 +172,43 @@ module multiaddr_decode #(
   end
 
   // These following assumptions check the validity of the address map.
-  // check_idx: Enforces a valid index in the rule.
+  // check_default_idx: Enforces a valid default idx.
+  // check_rule_idx: Enforces a valid index in the rule.
+  // check_rule_idx_default: Checks that no rule contains the default index.
   `ifndef SYNTHESIS
   always_comb begin : proc_check_addr_map
     if (!$isunknown(addr_map_i)) begin
+
+      // check the default slave index
+      if (en_default_idx_i) begin
+        `ASSUME_I(check_default_idx, default_idx_i.idx < NoIndices,
+          $sformatf("Default index value is not allowed!!!\n\
+          IDX: %h\n\
+          MAX_IDX: %h\n\
+          #####################################################",
+          default_idx_i.idx, NoIndices - 1));
+      end
+
       for (int unsigned i = 0; i < NoRules; i++) begin
-        // check the SLV ids
-        `ASSUME_I(check_idx, addr_map_i[i].idx < NoIndices,
+        // check the slave indices
+        `ASSUME_I(check_rule_idx, addr_map_i[i].idx < NoIndices,
+          $sformatf("This rule has a IDX that is not allowed!!!\n\
+          Violating rule %d.\n\
+          Rule> IDX: %h\n\
+          Rule> MAX_IDX: %h\n\
+          #####################################################",
+          i, addr_map_i[i].idx, NoIndices - 1));
+
+        // check the default rule
+        if (en_default_idx_i) begin
+          `ASSUME_I(check_rule_idx_default, addr_map_i[i].idx != default_idx_i.idx,
             $sformatf("This rule has a IDX that is not allowed!!!\n\
             Violating rule %d.\n\
-            Rule> IDX: %h\n\
-            Rule> MAX_IDX: %h\n\
+            Index: %h\n\
+            Default index> : %h\n\
             #####################################################",
-            i, addr_map_i[i].idx, (NoIndices-1)))
+            i, addr_map_i[i].idx, default_idx_i.idx));
+        end
       end
     end
   end
