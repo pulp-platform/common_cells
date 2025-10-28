@@ -14,9 +14,13 @@
 /// Stream join: Joins a parametrizable number of input streams (i.e., valid-ready handshaking with
 /// dependency rules as in AXI4) to a single output stream.  The output handshake happens only once
 /// all inputs are valid.  The data channel flows outside of this module.
-module stream_join #(
+module stream_join
+  import stream_join_pkg::*;
+#(
   /// Number of input streams
-  parameter int unsigned N_INP = 32'd0 // Synopsys DC requires a default value for parameters.
+  parameter int unsigned N_INP = 32'd0, // Synopsys DC requires a default value for parameters.
+  /// Module mode: By default joints the out only when all inputs are valid (ALL)
+  parameter stream_join_mode_e  MODE = ALL
 ) (
   /// Input streams valid handshakes
   input  logic  [N_INP-1:0] inp_valid_i,
@@ -29,7 +33,8 @@ module stream_join #(
 );
 
   stream_join_dynamic #(
-    .N_INP(N_INP)
+    .N_INP(N_INP),
+    .MODE(MODE)
   ) i_stream_join_dynamic (
     .inp_valid_i(inp_valid_i),
     .inp_ready_o(inp_ready_o),

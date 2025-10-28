@@ -62,6 +62,7 @@ sources:
       - src/stream_filter.sv
       - src/stream_fork.sv
       - src/stream_intf.sv
+      - src/stream_join_pkg.sv
       - src/stream_join_dynamic.sv
       - src/stream_mux.sv
       - src/stream_throttle.sv

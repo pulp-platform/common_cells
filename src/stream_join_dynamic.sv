@@ -17,9 +17,13 @@
 // handshaking with dependency rules as in AXI4) to a single output stream. The subset of streams
 // to join can be configured dynamically via `sel_i`. The output handshake happens only after
 // there has been a handshake. The data channel flows outside of this module.
-module stream_join_dynamic #(
+module stream_join_dynamic
+  import stream_join_pkg::*;
+#(
   /// Number of input streams
-  parameter int unsigned N_INP = 32'd0 // Synopsys DC requires a default value for parameters.
+  parameter int unsigned N_INP = 32'd0, // Synopsys DC requires a default value for parameters.
+  /// Module mode: By default joints the out only when all inputs are valid (ALL)
+  parameter stream_join_mode_e  MODE = ALL
 ) (
   /// Input streams valid handshakes
   input  logic [N_INP-1:0] inp_valid_i,
@@ -33,11 +37,18 @@ module stream_join_dynamic #(
   input  logic             oup_ready_i
 );
 
+
+if (MODE == ALL) begin : gen_all_mode
   // Corner case when `sel_i` is all 0s should not generate valid
   assign oup_valid_o = &(inp_valid_i | ~sel_i) && |sel_i;
-  for (genvar i = 0; i < N_INP; i++) begin : gen_inp_ready
+end else begin : gen_any_mode
+  // Corner case when `sel_i` is all 0s should not generate valid
+  assign oup_valid_o = |(inp_valid_i & sel_i);
+end
+
+for (genvar i = 0; i < N_INP; i++) begin : gen_inp_ready
     assign inp_ready_o[i] = oup_valid_o & oup_ready_i & sel_i[i];
-  end
+end
 
 `ifndef COMMON_CELLS_ASSERTS_OFF
   `ASSERT_INIT(n_inp_0, N_INP >= 1, "N_INP must be at least 1!")
