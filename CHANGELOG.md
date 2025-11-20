@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 1.39.0 - 2025-11-20
+### Added
+- `boxcar`: Add boxcar function to compose bit masks
+- `heaviside`: Add Heaviside function to compose bit masks
+- `ring_buffer`: Add ring buffer with sequential write and random reads
+- `trip_counter`: Add counter with 'trip' output when reaching threshold value
+
+### Changed
+- `cb_filter`, `id_queue`, `lzc`, `rr_arb_tree`: Speed up Verilator simulation
+- `cdc_fifo_gray*`, `isochronous_spill_register`: Change flip-flops without to flip-flops with reset
+- `isochronous_spill_register`: Remove unnecessary data stability assertions
+- `addr_decode*`: Change assumed integer index to arbitrary type (default remains integer)
+
+### Fixed
+- `id_queue`: Fix struct access
+- `cdc_fifo_gray*`: Fix Spyglass linting edge case
+- `lzc`: Fix assertion for degenerate case `WIDTH == 0`
+- Fix Verilator compilation by adding guard statements
+
 ## 1.38.0 - 2025-02-28
 ### Changed
 - Assertions no longer disabled for Verilator. Define `ASSERTS_OFF` to disable.
