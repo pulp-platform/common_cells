@@ -24,6 +24,7 @@ stages:
     PARAM2: ""
   timeout: 10min
   script:
+    - bender checkout
     - bender script vsim -t test > compile.tcl
     - $VSIM -c -quiet -do 'source compile.tcl; quit'
     - $VSIM -c $TOPLEVEL -voptargs="-timescale 1ns/100ps" -do "run -all" $PARAM1 $PARAM2
