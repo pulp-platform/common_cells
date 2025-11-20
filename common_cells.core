@@ -1,6 +1,7 @@
 CAPI=2:
 
 name : pulp-platform.org::common_cells:1.38.0
+description: Common SystemVerilog components
 
 filesets:
   rtl:
