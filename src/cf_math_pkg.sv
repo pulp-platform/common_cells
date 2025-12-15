@@ -64,4 +64,9 @@ package cf_math_pkg;
         return (value != 0) && (value & (value - 1)) == 0;
     endfunction
 
+    // Return either the argument minus 1 or 0 if 0; useful for IO vector width declaration
+    function automatic integer unsigned iomsb (input integer unsigned width);
+        return (width != 32'd0) ? unsigned'(width-1) : 32'd0;
+    endfunction
+
 endpackage
