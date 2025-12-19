@@ -69,4 +69,21 @@ package cf_math_pkg;
         return (width != 32'd0) ? unsigned'(width-1) : 32'd0;
     endfunction
 
+    /// Returns the maximum between two integers
+    function automatic int max(int a, int b);
+        if (a >= b) begin
+            return a;
+        end
+        return b;
+    endfunction
+
+    /// Returns the minimum between two integers
+    function automatic int min(int a, int b);
+        if (a >= b) begin
+            return b;
+        end
+        return a;
+    endfunction
+
+
 endpackage
