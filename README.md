@@ -142,19 +142,19 @@ The use of linter rules that flag explicit uses of `always_ff` in source code is
 
 |    Macro     |                             Arguments                             |                                Description                                |
 | ------------ | ----------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| `` `FF``     | `q_sig`, `d_sig`, `rst_val`, (`clk_sig`, `arstn_sig`)             | Flip-flop with asynchronous active-low reset                              |
-| `` `FFAR``   | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `arst_sig`                | Flip-flop with asynchronous active-high reset                             |
-| `` `FFARN``  | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `arstn_sig`               | *deprecated* Flip-flop with asynchronous active-low reset                 |
-| `` `FFSR``   | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `rst_sig`                 | Flip-flop with synchronous active-high reset                              |
-| `` `FFSRN``  | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `rstn_sig`                | Flip-flop with synchronous active-low reset                               |
-| `` `FFNR``   | `q_sig`, `d_sig`, `clk_sig`                                       | Flip-flop without reset                                                   |
+| <code>`FF</code>     | `q_sig`, `d_sig`, `rst_val`, (`clk_sig`, `arstn_sig`)             | Flip-flop with asynchronous active-low reset                              |
+| <code>`FFAR</code>   | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `arst_sig`                | Flip-flop with asynchronous active-high reset                             |
+| <code>`FFARN</code>  | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `arstn_sig`               | *deprecated* Flip-flop with asynchronous active-low reset                 |
+| <code>`FFSR</code>   | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `rst_sig`                 | Flip-flop with synchronous active-high reset                              |
+| <code>`FFSRN</code>  | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `rstn_sig`                | Flip-flop with synchronous active-low reset                               |
+| <code>`FFNR</code>   | `q_sig`, `d_sig`, `clk_sig`                                       | Flip-flop without reset                                                   |
 |              |                                                                   |                                                                           |
-| `` `FFL``    | `q_sig`, `d_sig`, `load_ena`, `rst_val`, (`clk_sig`, `arstn_sig`) | Flip-flop with load-enable and asynchronous active-low reset              |
-| `` `FFLAR``  | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `arst_sig`    | Flip-flop with load-enable and asynchronous active-high reset             |
-| `` `FFLARN`` | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `arstn_sig`   | *deprecated* Flip-flop with load-enable and asynchronous active-low reset |
-| `` `FFLSR``  | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `rst_sig`     | Flip-flop with load-enable and synchronous active-high reset              |
-| `` `FFLSRN`` | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `rstn_sig`    | Flip-flop with load-enable and synchronous active-low reset               |
-| `` `FFLNR``  | `q_sig`, `d_sig`, `load_ena`, `clk_sig`                           | Flip-flop with load-enable without reset                                  |
+| <code>`FFL</code>    | `q_sig`, `d_sig`, `load_ena`, `rst_val`, (`clk_sig`, `arstn_sig`) | Flip-flop with load-enable and asynchronous active-low reset              |
+| <code>`FFLAR</code>  | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `arst_sig`    | Flip-flop with load-enable and asynchronous active-high reset             |
+| <code>`FFLARN</code> | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `arstn_sig`   | *deprecated* Flip-flop with load-enable and asynchronous active-low reset |
+| <code>`FFLSR</code>  | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `rst_sig`     | Flip-flop with load-enable and synchronous active-high reset              |
+| <code>`FFLSRN</code> | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `rstn_sig`    | Flip-flop with load-enable and synchronous active-low reset               |
+| <code>`FFLNR</code>  | `q_sig`, `d_sig`, `load_ena`, `clk_sig`                           | Flip-flop with load-enable without reset                                  |
 - *The name of the clock and reset signals for implicit variants is `clk_i` and `rst_ni`, respectively.*
 - *Argument suffix `_sig` indicates signal names for present and next state as well as clocks and resets.*
 - *Argument `rst_val` specifies the value literal to be assigned upon reset.*
@@ -169,23 +169,23 @@ easier to use them. They are similar to but incompatible with the macros used by
 #### Simple Assertion and Cover Macros
 | Macro              | Arguments                                        | Description                                                                |
 | ------------------ | ------------------------------------------------ | -------------------------------------------------------------------------- |
-| `` `ASSERT_I``     | `__name`, `__prop`, (`__desc`)                   | Immediate assertion                                                        |
-| `` `ASSERT_INIT``  | `__name`, `__prop`, (`__desc`)                   | Assertion in initial block. Can be used for things like parameter checking |
-| `` `ASSERT_FINAL`` | `__name`, `__prop`, (`__desc`)                   | Assertion in final block                                                   |
-| `` `ASSERT``       | `__name`, `__prop`, (`__clk`, `__rst`, `__desc`) | Assert a concurrent property directly                                      |
-| `` `ASSERT_NEVER`` | `__name`, `__prop`, (`__clk`, `__rst`, `__desc`) | Assert a concurrent property NEVER happens                                 |
-| `` `ASSERT_KNOWN`` | `__name`, `__sig`, (`__clk`, `__rst`, `__desc`)  | Concurrent clocked assertion with custom error message                     |
-| `` `COVER``        | `__name`, `__prop`, (`__clk`, `__rst`)           | Cover a concurrent property                                                |
+| <code>`ASSERT_I</code>     | `__name`, `__prop`, (`__desc`)                   | Immediate assertion                                                        |
+| <code>`ASSERT_INIT</code>  | `__name`, `__prop`, (`__desc`)                   | Assertion in initial block. Can be used for things like parameter checking |
+| <code>`ASSERT_FINAL</code> | `__name`, `__prop`, (`__desc`)                   | Assertion in final block                                                   |
+| <code>`ASSERT</code>       | `__name`, `__prop`, (`__clk`, `__rst`, `__desc`) | Assert a concurrent property directly                                      |
+| <code>`ASSERT_NEVER</code> | `__name`, `__prop`, (`__clk`, `__rst`, `__desc`) | Assert a concurrent property NEVER happens                                 |
+| <code>`ASSERT_KNOWN</code> | `__name`, `__sig`, (`__clk`, `__rst`, `__desc`)  | Concurrent clocked assertion with custom error message                     |
+| <code>`COVER</code>        | `__name`, `__prop`, (`__clk`, `__rst`)           | Cover a concurrent property                                                |
 - *The name of the clock and reset signals for implicit variants is `clk_i` and `rst_ni`, respectively.*
 - *`__desc` is an optional string argument describing the failure causing the assertion to be violated that is embedded into the error report and defaults to `""`.*
 
 #### Complex Assertion Macros
 | Macro                 | Arguments                                                                           | Description                                                                                                |
 | --------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `` `ASSERT_PULSE``    | `__name`, `__sig`, (`__clk`, `__rst`, `__desc`)                                     | Assert that signal is an active-high pulse with pulse length of 1 clock cycle                              |
-| `` `ASSERT_IF``       | `__name`, `__prop`, `__enable`, (`__clk`, `__rst`, `__desc`)                        | Assert that a property is true only when an enable signal is set                                           |
-| `` `ASSERT_KNOWN_IF`` | `__name`, `__sig`, `__enable`, (`__clk`, `__rst`, `__desc`)                         | Assert that signal has a known value (each bit is either '0' or '1') after reset if enable is set          |
-| `` `ASSERT_STABLE``   | `__name`, `__valid`, `__ready`, `__data`, `__enable`, (`__clk`, `__rst`, `__desc`)  | Assert that the data on a ready-valid interface is kept stable after valid is asserted, until ready is too |
+| <code>`ASSERT_PULSE</code>    | `__name`, `__sig`, (`__clk`, `__rst`, `__desc`)                                     | Assert that signal is an active-high pulse with pulse length of 1 clock cycle                              |
+| <code>`ASSERT_IF</code>       | `__name`, `__prop`, `__enable`, (`__clk`, `__rst`, `__desc`)                        | Assert that a property is true only when an enable signal is set                                           |
+| <code>`ASSERT_KNOWN_IF</code> | `__name`, `__sig`, `__enable`, (`__clk`, `__rst`, `__desc`)                         | Assert that signal has a known value (each bit is either '0' or '1') after reset if enable is set          |
+| <code>`ASSERT_STABLE</code>   | `__name`, `__valid`, `__ready`, `__data`, `__enable`, (`__clk`, `__rst`, `__desc`)  | Assert that the data on a ready-valid interface is kept stable after valid is asserted, until ready is too |
 - *The name of the clock and reset signals for implicit variants is `clk_i` and `rst_ni`, respectively.*
 - *`__desc` is an optional string argument describing the failure causing the assertion to be violated that is embedded into the error report and defaults to `""`.*
 
@@ -193,8 +193,8 @@ easier to use them. They are similar to but incompatible with the macros used by
 
 | Macro          | Arguments                                        | Description                  |
 | -------------- | ------------------------------------------------ | ---------------------------- |
-| `` `ASSUME``   | `__name`, `__prop`, (`__clk`, `__rst`, `__desc`) | Assume a concurrent property |
-| `` `ASSUME_I`` | `__name`, `__prop`, (`__desc`)                   | Assume an immediate property |
+| <code>`ASSUME</code>   | `__name`, `__prop`, (`__clk`, `__rst`, `__desc`) | Assume a concurrent property |
+| <code>`ASSUME_I</code> | `__name`, `__prop`, (`__desc`)                   | Assume an immediate property |
 - *The name of the clock and reset signals for implicit variants is `clk_i` and `rst_ni`, respectively.*
 - *`__desc` is an optional string argument describing the failure causing the assertion to be violated that is embedded into the error report and defaults to `""`.*
 
@@ -202,8 +202,8 @@ easier to use them. They are similar to but incompatible with the macros used by
 
 | Macro              | Arguments                                        | Description                                                  |
 | ------------------ | ------------------------------------------------ | ------------------------------------------------------------ |
-| `` `ASSUME_FPV``   | `__name`, `__prop`, (`__clk`, `__rst`, `__desc`) | Assume a concurrent property during formal verification only |
-| `` `ASSUME_I_FPV`` | `__name`, `__prop`, (`__desc`)                   | Assume a concurrent property during formal verification only |
-| `` `COVER_FPV``    | `__name`, `__prop`, (`__clk`, `__rst`)           | Cover a concurrent property during formal verification       |
+| <code>`ASSUME_FPV</code>   | `__name`, `__prop`, (`__clk`, `__rst`, `__desc`) | Assume a concurrent property during formal verification only |
+| <code>`ASSUME_I_FPV</code> | `__name`, `__prop`, (`__desc`)                   | Assume a concurrent property during formal verification only |
+| <code>`COVER_FPV</code>    | `__name`, `__prop`, (`__clk`, `__rst`)           | Cover a concurrent property during formal verification       |
 - *The name of the clock and reset signals for implicit variants is `clk_i` and `rst_ni`, respectively.*
 - *`__desc` is an optional string argument describing the failure causing the assertion to be violated that is embedded into the error report and defaults to `""`.*
