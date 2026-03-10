@@ -17,13 +17,13 @@ module stream_mux #(
   parameter type DATA_T = logic,  // Vivado requires a default value for type parameters.
   parameter integer N_INP = 0,    // Synopsys DC requires a default value for value parameters.
   /// Dependent parameters, DO NOT OVERRIDE!
-  parameter integer LOG_N_INP = $clog2(N_INP)
+  parameter integer SEL_WIDTH = cf_math_pkg::idx_width(N_INP)
 ) (
   input  DATA_T [N_INP-1:0]     inp_data_i,
   input  logic  [N_INP-1:0]     inp_valid_i,
   output logic  [N_INP-1:0]     inp_ready_o,
 
-  input  logic  [LOG_N_INP-1:0] inp_sel_i,
+  input  logic  [SEL_WIDTH-1:0] inp_sel_i,
 
   output DATA_T                 oup_data_o,
   output logic                  oup_valid_o,
