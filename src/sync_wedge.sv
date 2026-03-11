@@ -10,11 +10,14 @@
 
 // Antonio Pullini <pullinia@iis.ee.ethz.ch>
 
+`include "common_cells/registers.svh"
+
 module sync_wedge #(
     parameter int unsigned STAGES = 2
 ) (
     input  logic clk_i,
     input  logic rst_ni,
+    input  logic clr_i,
     input  logic en_i,
     input  logic serial_i,
     output logic r_edge_o,
@@ -33,6 +36,7 @@ module sync_wedge #(
     ) i_sync (
         .clk_i,
         .rst_ni,
+        .clr_i,
         .serial_i,
         .serial_o ( serial )
     );
@@ -44,13 +48,5 @@ module sync_wedge #(
         .clk_o     ( clk  )
     );
 
-    always_ff @(posedge clk, negedge rst_ni) begin
-        if (!rst_ni) begin
-            serial_q <= 1'b0;
-        end else begin
-            if (en_i) begin
-                serial_q <= serial;
-            end
-        end
-    end
+    `FFLARNC(serial_q, serial, en_i, clr_i, 1'b0, clk, rst_ni)
 endmodule

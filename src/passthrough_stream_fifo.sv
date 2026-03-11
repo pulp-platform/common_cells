@@ -26,6 +26,8 @@ module passthrough_stream_fifo #(
     input  logic                 clk_i,
     /// Asynchronous reset active low
     input  logic                 rst_ni,
+    /// Synchronous clear
+    input  logic                 clr_i,
     /// Fifo flush
     input  logic                 flush_i,
     /// Bypass clock gate
@@ -109,10 +111,10 @@ module passthrough_stream_fifo #(
     end
 
     // Flip Flops
-    `FF( read_ptr_q,  read_ptr_d, '0, clk_i, rst_ni)
-    `FF(write_ptr_q, write_ptr_d, '0, clk_i, rst_ni)
+    `FFARNC( read_ptr_q,  read_ptr_d, clr_i, '0, clk_i, rst_ni)
+    `FFARNC(write_ptr_q, write_ptr_d, clr_i, '0, clk_i, rst_ni)
 
-    `FFL(data_q, data_d, load_data, '0, clk_i, rst_ni)
+    `FFLARNC(data_q, data_d, load_data, clr_i, '0, clk_i, rst_ni)
 
     // no full push
     `ASSERT_NEVER(CheckFullPush, (!ready_o & valid_i), clk_i, !rst_ni)

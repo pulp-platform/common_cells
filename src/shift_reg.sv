@@ -19,6 +19,7 @@ module shift_reg #(
 )(
     input  logic clk_i,    // Clock
     input  logic rst_ni,   // Asynchronous reset active low
+    input  logic clr_i,    // Synchronous clear active high
     input  dtype d_i,
     output dtype d_o
 );
@@ -29,6 +30,7 @@ module shift_reg #(
     ) i_shift_reg_gated (
         .clk_i  (clk_i),
         .rst_ni (rst_ni),
+        .clr_i  (clr_i),
         .valid_i(1'b1),
         .data_i (d_i),
         .valid_o(),

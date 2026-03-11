@@ -40,7 +40,8 @@ module fall_through_register #(
     ) i_fifo (
         .clk_i          (clk_i),
         .rst_ni         (rst_ni),
-        .flush_i        (clr_i),
+        .clr_i          (clr_i),
+        .flush_i        (1'b0),
         .testmode_i     (testmode_i),
         .full_o         (fifo_full),
         .empty_o        (fifo_empty),

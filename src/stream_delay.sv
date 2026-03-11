@@ -8,6 +8,8 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
+`include "common_cells/registers.svh"
+
 // Author: Florian Zaruba, zarubaf@iis.ee.ethz.ch
 // Description: Delay (or randomize) AXI-like handshaking
 
@@ -19,6 +21,7 @@ module stream_delay #(
 )(
     input  logic     clk_i,
     input  logic     rst_ni,
+    input  logic     clr_i,
 
     input  payload_t payload_i,
     output logic     ready_o,
@@ -100,6 +103,7 @@ module stream_delay #(
             ) i_lfsr_16bit (
               .clk_i          ( clk_i        ),
               .rst_ni         ( rst_ni       ),
+              .clr_i          ( clr_i        ),
               .en_i           ( load         ),
               .refill_way_oh  (              ),
               .refill_way_bin ( counter_load )
@@ -113,7 +117,7 @@ module stream_delay #(
         ) i_counter (
             .clk_i      ( clk_i        ),
             .rst_ni     ( rst_ni       ),
-            .clear_i    ( 1'b0         ),
+            .clr_i      ( clr_i        ),
             .en_i       ( en           ),
             .load_i     ( load         ),
             .down_i     ( 1'b1         ),
@@ -122,13 +126,7 @@ module stream_delay #(
             .overflow_o (              )
         );
 
-        always_ff @(posedge clk_i or negedge rst_ni) begin
-            if (~rst_ni) begin
-                state_q <= Idle;
-            end else begin
-                state_q <= state_d;
-            end
-        end
+        `FFARNC(state_q, state_d, clr_i, Idle, clk_i, rst_ni)
     end
 
 endmodule

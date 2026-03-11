@@ -30,6 +30,7 @@ module ring_buffer #(
 ) (
     input logic clk_i,
     input logic rst_ni,
+    input logic clr_i,
 
     // Write interface
     input logic wvalid_i,
@@ -65,9 +66,9 @@ module ring_buffer #(
     logic [AddrWidth:0] rptr_d, rptr_q;
     logic [AddrWidth:0] wptr_d, wptr_q;
 
-    `FF(mem_q, mem_d, '0, clk_i, rst_ni)
-    `FF(rptr_q, rptr_d, '0, clk_i, rst_ni)
-    `FF(wptr_q, wptr_d, '0, clk_i, rst_ni)
+    `FFARNC(mem_q, mem_d, clr_i, '0, clk_i, rst_ni)
+    `FFARNC(rptr_q, rptr_d, clr_i, '0, clk_i, rst_ni)
+    `FFARNC(wptr_q, wptr_d, clr_i, '0, clk_i, rst_ni)
 
     ////////////////////////////
     // State transition logic //

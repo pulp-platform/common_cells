@@ -14,6 +14,7 @@
 // Description: logarithmic arbitration tree with round robin arbitration scheme.
 
 `include "common_cells/assertions.svh"
+`include "common_cells/registers.svh"
 
 /// The rr_arb_tree employs non-starving round robin-arbitration - i.e., the priorities
 /// rotate each cycle.
@@ -89,6 +90,8 @@ module rr_arb_tree #(
   input  logic                clk_i,
   /// Asynchronous reset, active low.
   input  logic                rst_ni,
+  /// Synchronous clear, resets all internal state.
+  input  logic                clr_i,
   /// Clears the arbiter state. Only used if `ExtPrio` is `1'b0` or `LockIn` is `1'b1`.
   input  logic                flush_i,
   /// External round-robin priority. Only used if `ExtPrio` is `1'b1.`
@@ -151,17 +154,7 @@ module rr_arb_tree #(
         assign lock_d     = req_o & ~gnt_i;
         assign req_d      = (lock_q) ? req_q : req_i;
 
-        always_ff @(posedge clk_i or negedge rst_ni) begin : p_lock_reg
-          if (!rst_ni) begin
-            lock_q <= '0;
-          end else begin
-            if (flush_i) begin
-              lock_q <= '0;
-            end else begin
-              lock_q <= lock_d;
-            end
-          end
-        end
+        `FFARNC(lock_q, lock_d, clr_i || flush_i, '0, clk_i, rst_ni)
 
         `ifndef COMMON_CELLS_ASSERTS_OFF
           `ASSERT(lock, req_o && (!gnt_i && !flush_i) |=> idx_o == $past(idx_o),
@@ -174,17 +167,7 @@ module rr_arb_tree #(
                   "It is disallowed to deassert unserved request signals when LockIn is enabled.")
         `endif
 
-        always_ff @(posedge clk_i or negedge rst_ni) begin : p_req_regs
-          if (!rst_ni) begin
-            req_q  <= '0;
-          end else begin
-            if (flush_i) begin
-              req_q  <= '0;
-            end else begin
-              req_q  <= req_d;
-            end
-          end
-        end
+        `FFARNC(req_q, req_d, clr_i || flush_i, '0, clk_i, rst_ni)
       end else begin : gen_no_lock
         assign req_d = req_i;
       end
@@ -225,17 +208,7 @@ module rr_arb_tree #(
       end
 
       // this holds the highest priority
-      always_ff @(posedge clk_i or negedge rst_ni) begin : p_rr_regs
-        if (!rst_ni) begin
-          rr_q   <= '0;
-        end else begin
-          if (flush_i) begin
-            rr_q   <= '0;
-          end else begin
-            rr_q   <= rr_d;
-          end
-        end
-      end
+      `FFARNC(rr_q, rr_d, clr_i || flush_i, '0, clk_i, rst_ni)
     end
 
     assign gnt_nodes[0] = gnt_i;

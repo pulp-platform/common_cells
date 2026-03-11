@@ -20,6 +20,7 @@ module stream_arbiter #(
 ) (
     input  logic              clk_i,
     input  logic              rst_ni,
+    input  logic              clr_i,
 
     input  DATA_T [N_INP-1:0] inp_data_i,
     input  logic  [N_INP-1:0] inp_valid_i,
@@ -37,6 +38,7 @@ module stream_arbiter #(
   ) i_arb (
     .clk_i        (clk_i),
     .rst_ni       (rst_ni),
+    .clr_i        (clr_i),
     .flush_i      (1'b0),
     .inp_data_i   (inp_data_i),
     .inp_valid_i  (inp_valid_i),

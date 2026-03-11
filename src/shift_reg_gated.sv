@@ -18,6 +18,7 @@ module shift_reg_gated #(
 ) (
   input  logic clk_i,    // Clock
   input  logic rst_ni,   // Asynchronous reset active low
+  input  logic clr_i,    // Synchronous clear active high
 
   input  logic valid_i,
   input  dtype data_i,
@@ -49,11 +50,11 @@ module shift_reg_gated #(
       end
 
       // shift valid flag without clock gate
-      `FF(valid_q[i], valid_d[i], '0, clk_i, rst_ni)
+      `FFARNC(valid_q[i], valid_d[i], clr_i, '0, clk_i, rst_ni)
 
       // Gate each shift register with a valid flag to enable the synthsis tools to insert ICG for
       // better power comsumption.
-      `FFL(data_q[i], data_d[i], valid_d[i], dtype'('0), clk_i, rst_ni)
+      `FFLARNC(data_q[i], data_d[i], valid_d[i], clr_i, dtype'('0), clk_i, rst_ni)
     end
 
     // Output the shifted result.

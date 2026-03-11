@@ -14,6 +14,7 @@
 // Description: 8-bit LFSR
 
 `include "common_cells/assertions.svh"
+`include "common_cells/registers.svh"
 
 /// 8 bit Linear Feedback Shift register
 module lfsr_8bit #(
@@ -22,6 +23,7 @@ module lfsr_8bit #(
 ) (
   input  logic                     clk_i,
   input  logic                     rst_ni,
+  input  logic                     clr_i,
   input  logic                     en_i,
   output logic [        WIDTH-1:0] refill_way_oh,
   output logic [$clog2(WIDTH)-1:0] refill_way_bin
@@ -46,13 +48,7 @@ module lfsr_8bit #(
     refill_way_bin = shift_q;
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_
-    if (~rst_ni) begin
-      shift_q <= SEED;
-    end else begin
-      shift_q <= shift_d;
-    end
-  end
+  `FFARNC(shift_q, shift_d, clr_i, SEED, clk_i, rst_ni)
 
 `ifndef COMMON_CELLS_ASSERTS_OFF
   `ASSERT_INIT(width_gt_8, WIDTH <= 8, "WIDTH needs to be less than 8 because of the 8-bit LFSR")

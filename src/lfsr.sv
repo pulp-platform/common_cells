@@ -20,6 +20,7 @@
 // of 64bit, since the block cipher has been designed for that block length.
 
 `include "common_cells/assertions.svh"
+`include "common_cells/registers.svh"
 
 module lfsr #(
   parameter int unsigned          LfsrWidth     = 64,   // [4,64]
@@ -32,6 +33,7 @@ module lfsr #(
 ) (
   input  logic                 clk_i,
   input  logic                 rst_ni,
+  input  logic                 clr_i,
   input  logic                 en_i,
   output logic [OutWidth-1:0]  out_o
 );
@@ -238,14 +240,7 @@ logic [LfsrWidth-1:0] lfsr_d, lfsr_q;
 assign lfsr_d =
   (en_i) ? (lfsr_q>>1) ^ ({LfsrWidth{lfsr_q[0]}} & Masks[LfsrWidth][LfsrWidth-1:0]) : lfsr_q;
 
-always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
-  //$display("%b %h", en_i, lfsr_d);
-  if (!rst_ni) begin
-    lfsr_q <= LfsrWidth'(RstVal);
-  end else begin
-    lfsr_q <= lfsr_d;
-  end
-end
+`FFARNC(lfsr_q, lfsr_d, clr_i, LfsrWidth'(RstVal), clk_i, rst_ni)
 
 ////////////////////////////////////////////////////////////////////////
 // block cipher layers
@@ -271,13 +266,7 @@ if (CipherLayers > unsigned'(0)) begin : g_cipher_layers
     assign out_d = (en_i) ? ciph_layer[OutWidth-1:0] : out_q;
     assign out_o = out_q[OutWidth-1:0];
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
-      if (!rst_ni) begin
-        out_q <= '0;
-      end else begin
-        out_q <= out_d;
-      end
-    end
+    `FFARNC(out_q, out_d, clr_i, '0, clk_i, rst_ni)
   // no outreg
   end else begin : g_no_out_reg
     assign out_o  = ciph_layer[OutWidth-1:0];

@@ -12,15 +12,16 @@
 // Date: 10.04.2019
 // Description: exponential backoff counter with randomization.
 //
-// For each failed trial (set_i pulsed), this unit exponentially increases the
+// For each failed trial (set_cnt_i pulsed), this unit exponentially increases the
 // (average) backoff time by masking an LFSR with a shifted mask in order to
 // create the backoff counter initial value.
 //
 // The shift register mask and the counter value are both reset to '0 in case of
-// a successful trial (clr_i).
+// a successful trial (clr_cnt_i).
 //
 
 `include "common_cells/assertions.svh"
+`include "common_cells/registers.svh"
 
 module exp_backoff #(
   /// Seed for 16bit LFSR
@@ -30,10 +31,11 @@ module exp_backoff #(
 ) (
   input  logic clk_i,
   input  logic rst_ni,
-  /// Sets the backoff counter (pulse) -> use when trial did not succeed
-  input  logic set_i,
-  /// Clears the backoff counter (pulse) -> use when trial succeeded
   input  logic clr_i,
+  /// Sets the backoff counter (pulse) -> use when trial did not succeed
+  input  logic set_cnt_i,
+  /// Clears the backoff counter (pulse) -> use when trial succeeded
+  input  logic clr_cnt_i,
   /// Indicates whether the backoff counter is equal to zero and a new trial can be launched
   output logic is_zero_o
 );
@@ -53,31 +55,23 @@ module exp_backoff #(
                 lfsr_q[15-12] ^
                 lfsr_q[15-10];
 
-  assign lfsr_d = (set_i) ? {lfsr, lfsr_q[$high(lfsr_q):1]} :
+  assign lfsr_d = (set_cnt_i) ? {lfsr, lfsr_q[$high(lfsr_q):1]} :
                             lfsr_q;
 
   // mask the wait counts with exponentially increasing mask (shift reg)
-  assign mask_d = (clr_i) ? '0                                :
-                  (set_i) ? {{(WIDTH-MaxExp){1'b0}},mask_q[MaxExp-2:0], 1'b1} :
+  assign mask_d = (clr_cnt_i) ? '0                                :
+                  (set_cnt_i) ? {{(WIDTH-MaxExp){1'b0}},mask_q[MaxExp-2:0], 1'b1} :
                             mask_q;
 
-  assign cnt_d =  (clr_i)      ? '0                :
-                  (set_i)      ? (mask_q & lfsr_q) :
+  assign cnt_d =  (clr_cnt_i)      ? '0                :
+                  (set_cnt_i)      ? (mask_q & lfsr_q) :
                   (!is_zero_o) ? cnt_q - 1'b1      : '0;
 
   assign is_zero_o = (cnt_q=='0);
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
-    if (!rst_ni) begin
-      lfsr_q <= WIDTH'(Seed);
-      mask_q <= '0;
-      cnt_q  <= '0;
-    end else begin
-      lfsr_q <= lfsr_d;
-      mask_q <= mask_d;
-      cnt_q  <= cnt_d;
-    end
-  end
+  `FFARNC(lfsr_q, lfsr_d, clr_i, WIDTH'(Seed), clk_i, rst_ni)
+  `FFARNC(mask_q, mask_d, clr_i, '0, clk_i, rst_ni)
+  `FFARNC(cnt_q, cnt_d, clr_i, '0, clk_i, rst_ni)
 
 ///////////////////////////////////////////////////////
 // assertions

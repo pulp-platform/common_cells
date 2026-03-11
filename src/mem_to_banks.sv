@@ -44,6 +44,8 @@ module mem_to_banks #(
   input  logic                      clk_i,
   /// Asynchronous reset, active low.
   input  logic                      rst_ni,
+  /// Synchronous clear, active high.
+  input  logic                      clr_i,
   /// Memory request to split, request is valid.
   input  logic                      req_i,
   /// Memory request to split, request can be granted.
@@ -95,6 +97,7 @@ module mem_to_banks #(
   ) i_mem_to_banks_detailed (
     .clk_i,
     .rst_ni,
+    .clr_i,
     .req_i,
     .gnt_o,
     .addr_i,

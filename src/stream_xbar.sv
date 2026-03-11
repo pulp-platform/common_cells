@@ -60,6 +60,8 @@ module stream_xbar #(
   input  logic                  clk_i,
   /// Asynchronous reset, active low.
   input  logic                  rst_ni,
+  /// Synchronous clear, active high.
+  input  logic                  clr_i,
   /// Flush the state of the internal `rr_arb_tree` modules.
   /// If not used set to `0`.
   /// Flush should only be used if there are no active `valid_i`, otherwise it will
@@ -135,6 +137,7 @@ module stream_xbar #(
     ) i_rr_arb_tree (
       .clk_i,
       .rst_ni,
+      .clr_i,
       .flush_i,
       .rr_i    ( rr_i[j]      ),
       .req_i   ( out_valid[j] ),
@@ -154,6 +157,7 @@ module stream_xbar #(
     ) i_spill_register (
       .clk_i,
       .rst_ni,
+      .clr_i,
       .valid_i ( arb_valid  ),
       .ready_o ( arb_ready  ),
       .data_i  ( arb        ),

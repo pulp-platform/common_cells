@@ -17,6 +17,7 @@ module serial_deglitch #(
 )(
     input  logic clk_i,    // clock
     input  logic rst_ni,   // asynchronous reset active low
+    input  logic clr_i,    // synchronous clear active high
     input  logic en_i,     // enable
     input  logic d_i,      // serial data in
     output logic q_o       // filtered data out
@@ -26,6 +27,9 @@ module serial_deglitch #(
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if (~rst_ni) begin
+            count_q <= '0;
+            q       <= 1'b0;
+        end else if (clr_i) begin
             count_q <= '0;
             q       <= 1'b0;
         end else begin

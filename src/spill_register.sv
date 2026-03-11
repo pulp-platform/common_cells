@@ -20,6 +20,7 @@ module spill_register #(
 ) (
   input  logic clk_i   ,
   input  logic rst_ni  ,
+  input  logic clr_i   ,
   input  logic valid_i ,
   output logic ready_o ,
   input  T     data_i  ,
@@ -34,6 +35,7 @@ module spill_register #(
   ) spill_register_flushable_i (
     .clk_i,
     .rst_ni,
+    .clr_i,
     .valid_i,
     .flush_i(1'b0),
     .ready_o,

@@ -53,6 +53,7 @@ module cb_filter #(
 ) (
   input  logic                 clk_i,   // Clock
   input  logic                 rst_ni,  // Active low reset
+  input  logic                 clr_i,   // Synchronous clear active high
   // data lookup
   input  logic [InpWidth-1:0]  look_data_i,
   output logic                 look_valid_o,
@@ -159,7 +160,7 @@ module cb_filter #(
     ) i_bucket (
       .clk_i      ( clk_i             ),
       .rst_ni     ( rst_ni            ),
-      .clear_i    ( filter_clear_i    ),
+      .clr_i      ( clr_i             ),
       .en_i       ( bucket_en[i]      ),
       .load_i     ( '0                ),
       .down_i     ( bucket_down[i]    ),
@@ -182,7 +183,7 @@ module cb_filter #(
   ) i_tot_count (
     .clk_i     ( clk_i          ),
     .rst_ni    ( rst_ni         ),
-    .clear_i   ( filter_clear_i ),
+    .clr_i     ( clr_i          ),
     .en_i      ( cnt_en         ),
     .load_i    ( '0             ),
     .down_i    ( cnt_down       ),

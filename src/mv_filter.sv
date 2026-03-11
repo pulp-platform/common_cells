@@ -10,6 +10,8 @@
 
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
+`include "common_cells/registers.svh"
+
 module mv_filter #(
     parameter int unsigned WIDTH     = 4,
     parameter int unsigned THRESHOLD = 10
@@ -17,7 +19,7 @@ module mv_filter #(
     input  logic clk_i,
     input  logic rst_ni,
     input  logic sample_i,
-    input  logic clear_i,
+    input  logic clr_i,
     input  logic d_i,
     output logic q_o
 );
@@ -35,21 +37,8 @@ module mv_filter #(
         end else if (sample_i && d_i) begin
             counter_d = counter_q + 1;
         end
-
-        // sync reset
-        if (clear_i) begin
-            counter_d = '0;
-            d = 1'b0;
-        end
     end
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            counter_q <= '0;
-            q         <= 1'b0;
-        end else begin
-            counter_q <= counter_d;
-            q         <= d;
-        end
-    end
+    `FFARNC(counter_q, counter_d, clr_i, '0, clk_i, rst_ni)
+    `FFARNC(q, d, clr_i, 1'b0, clk_i, rst_ni)
 endmodule

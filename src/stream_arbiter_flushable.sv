@@ -20,6 +20,7 @@ module stream_arbiter_flushable #(
 ) (
     input  logic              clk_i,
     input  logic              rst_ni,
+    input  logic              clr_i,
     input  logic              flush_i,
 
     input  DATA_T [N_INP-1:0] inp_data_i,
@@ -41,6 +42,7 @@ module stream_arbiter_flushable #(
     ) i_arbiter (
       .clk_i,
       .rst_ni,
+      .clr_i,
       .flush_i,
       .rr_i   ('0),
       .req_i  (inp_valid_i),
@@ -62,6 +64,7 @@ module stream_arbiter_flushable #(
     ) i_arbiter (
       .clk_i,
       .rst_ni,
+      .clr_i,
       .flush_i,
       .rr_i   ('0),
       .req_i  (inp_valid_i),

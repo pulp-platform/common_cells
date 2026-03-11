@@ -11,6 +11,7 @@
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
 `include "common_cells/assertions.svh"
+`include "common_cells/registers.svh"
 
 module fifo_v3 #(
     parameter bit          FALL_THROUGH = 1'b0, // fifo is in fall-through mode
@@ -22,6 +23,7 @@ module fifo_v3 #(
 )(
     input  logic  clk_i,            // Clock
     input  logic  rst_ni,           // Asynchronous reset active low
+    input  logic  clr_i,            // synchronous clear
     input  logic  flush_i,          // flush the queue
     input  logic  testmode_i,       // test_mode to bypass clock gating
     // status flags
@@ -113,31 +115,11 @@ module fifo_v3 #(
     end
 
     // sequential process
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if(~rst_ni) begin
-            read_pointer_q  <= '0;
-            write_pointer_q <= '0;
-            status_cnt_q    <= '0;
-        end else begin
-            if (flush_i) begin
-                read_pointer_q  <= '0;
-                write_pointer_q <= '0;
-                status_cnt_q    <= '0;
-             end else begin
-                read_pointer_q  <= read_pointer_n;
-                write_pointer_q <= write_pointer_n;
-                status_cnt_q    <= status_cnt_n;
-            end
-        end
-    end
+    `FFARNC(read_pointer_q, read_pointer_n, clr_i || flush_i, '0, clk_i, rst_ni)
+    `FFARNC(write_pointer_q, write_pointer_n, clr_i || flush_i, '0, clk_i, rst_ni)
+    `FFARNC(status_cnt_q, status_cnt_n, clr_i || flush_i, '0, clk_i, rst_ni)
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if(~rst_ni) begin
-            mem_q <= {FifoDepth{dtype'('0)}};
-        end else if (!gate_clock) begin
-            mem_q <= mem_n;
-        end
-    end
+    `FFLARNC(mem_q, mem_n, !gate_clock, clr_i, {FifoDepth{dtype'('0)}}, clk_i, rst_ni)
 
 `ifndef COMMON_CELLS_ASSERTS_OFF
     `ASSERT_INIT(depth_0, DEPTH > 0, "DEPTH must be greater than 0.")
