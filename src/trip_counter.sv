@@ -20,6 +20,7 @@ module trip_counter #(
 )(
     input  logic             clk_i,
     input  logic             rst_ni,
+    input  logic             clear_i,
     input  logic             en_i,
     input  logic [WIDTH-1:0] delta_i,
     input  logic [WIDTH-1:0] bound_i,
@@ -33,7 +34,7 @@ module trip_counter #(
     ) i_delta_counter (
         .clk_i(clk_i),
         .rst_ni(rst_ni),
-        .clear_i(trip_o),
+        .clear_i(clear_i || trip_o),
         .en_i(en_i),
         .load_i(1'b0),
         .down_i(1'b0),
