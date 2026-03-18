@@ -53,11 +53,11 @@ module stream_fork #(
                         inp_state_d = WAIT;
                     end
                 end else begin
-                    ready_o = 1'b0;
+                    ready_o = oup_ready == all_ones;
                 end
             end
             WAIT: begin
-                if (valid_i && oup_ready == all_ones) begin
+                if (oup_ready == all_ones) begin
                     ready_o = 1'b1;
                     inp_state_d = READY;
                 end else begin
@@ -66,7 +66,7 @@ module stream_fork #(
             end
             default: begin
                 inp_state_d = READY;
-                ready_o = 1'b0;
+                ready_o = oup_ready == all_ones;
             end
         endcase
     end
@@ -102,7 +102,7 @@ module stream_fork #(
                     end
                 end
                 WAIT: begin
-                    if (valid_i && ready_o) begin   // Input handshake
+                    if (ready_o) begin   // Input handshake
                         oup_state_d = READY;
                     end
                 end
