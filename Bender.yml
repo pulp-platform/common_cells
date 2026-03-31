@@ -117,7 +117,7 @@ sources:
       # Level 4
       - src/mem_to_banks.sv
 
-  - target: all(simulation, not(verilator))
+  - target: all(simulation, not(verilator), not(cva6))
     files:
       - src/deprecated/sram.sv
 
