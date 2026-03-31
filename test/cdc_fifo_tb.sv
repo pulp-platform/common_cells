@@ -51,7 +51,7 @@ module cdc_fifo_tb;
     cdc_fifo_2phase #(.T(logic [31:0]), .LOG_DEPTH(DEPTH)) i_dut (.*);
 
   // Mailbox with expected items on destination side.
-  mailbox #(int) dst_mbox = new();
+  mailbox #(integer) dst_mbox = new();
   int num_sent = 0;
   int num_received = 0;
   int num_failed = 0;

@@ -47,7 +47,7 @@ module cdc_2phase_tb;
   end
 
   // Mailbox with expected items on destination side.
-  mailbox #(int) dst_mbox = new();
+  mailbox #(integer) dst_mbox = new();
   int num_sent = 0;
   int num_received = 0;
   int num_failed = 0;
