@@ -160,9 +160,8 @@ module clk_int_div #(
     clear_cycle_counter = 1'b0;
     clear_toggle_flops  = 1'b0;
     toggle_ffs_en       = 1'b1;
-
     gate_en_d           = 1'b0;
-    clk_gate_state_d    = clk_gate_state_q;
+
     case (clk_gate_state_q)
       IDLE: begin
         gate_en_d     = 1'b1;
