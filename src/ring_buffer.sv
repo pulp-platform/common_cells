@@ -131,6 +131,7 @@ module ring_buffer #(
             max_step = Depth - rptr_q[AddrWidth-1:0] + wptr_d[AddrWidth-1:0];
     end
 
+    `ifndef COMMON_CELLS_ASSERTS_OFF
     // Read pointer should not overtake write pointer.
     `ASSERT(
         ReadPtrOvertakesWritePtr,
@@ -169,5 +170,6 @@ module ring_buffer #(
 
     // Currently only power-of-2 depths are supported, could be loosened in future
     `ASSERT_INIT(CheckDepthPow2, cf_math_pkg::is_power_of_2(Depth))
+    `endif
 
 endmodule
