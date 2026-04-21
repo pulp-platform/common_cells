@@ -17,20 +17,20 @@ RM	?= rm
 
 all: fifo_v3.check counter.check fall_through_register.check
 
-fifo_v3.check: fifo_v3.sby ../src/fifo_v3.sv fifo_v3_properties.sv
+fifo_v3.check: fifo_v3.sby ../src/cc_fifo_v3.sv cc_fifo_v3_properties.sv
 	$(SBY) -f $<
 	touch $@
 
-# delta_counter.check: delta_counter.sby ../src/delta_counter.sv delta_counter_properties.sv
+# delta_counter.check: delta_counter.sby ../src/cc_delta_counter.sv cc_delta_counter_properties.sv
 #	$(SBY) -f $<
 #	touch $@
 
-counter.check: counter.sby ../src/counter.sv ../src/delta_counter.sv counter_properties.sv
+counter.check: counter.sby ../src/cc_counter.sv ../src/cc_delta_counter.sv cc_counter_properties.sv
 	$(SBY) -f $<
 	touch $@
 
-fall_through_register.check: fall_through_register.sby ../src/fall_through_register.sv \
-				../src/fifo_v3.sv ../src/deprecated/fifo_v2.sv
+fall_through_register.check: fall_through_register.sby ../src/cc_fall_through_register.sv \
+				../src/cc_fifo_v3.sv ../src/deprecated/cc_fifo_v2.sv
 	$(SBY) -f $<
 	touch $@
 

@@ -6,12 +6,12 @@ depth 100
 smtbmc
 
 [script]
-read -formal delta_counter.sv
-read -formal counter.sv
-read -formal counter_properties.sv
-prep -top counter
+read -formal cc_delta_counter.sv
+read -formal cc_counter.sv
+read -formal cc_counter_properties.sv
+prep -top cc_counter
 
 [files]
-counter_properties.sv
-../src/counter.sv
-../src/delta_counter.sv
+cc_counter_properties.sv
+../src/cc_counter.sv
+../src/cc_delta_counter.sv
