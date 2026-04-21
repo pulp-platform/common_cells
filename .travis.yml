@@ -56,9 +56,9 @@ jobs:
       name: test encode
       script:
         - make
-        - ./obj_dir/Vecc_encode > /dev/zero
+        - ./obj_dir/Vcc_ecc_encode > /dev/zero
     - stage: test
       name: test decode
       script:
         - make
-        - ./obj_dir/Vecc_decode > /dev/zero
+        - ./obj_dir/Vcc_ecc_decode > /dev/zero
