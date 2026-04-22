@@ -15,7 +15,7 @@ module cc_stream_fifo_optimal_wrap #(
     /// Print information when the simulation launches
     parameter bit PrintInfo = 1'b0,
     // DO NOT OVERWRITE THIS PARAMETER
-    parameter int unsigned AddrDepth  = (Depth > 32'd1) ? $clog2(Depth) : 32'd1
+    localparam int unsigned AddrDepth  = (Depth > 32'd1) ? $clog2(Depth) : 32'd1
 ) (
     input  logic                 clk_i,      // Clock
     input  logic                 rst_ni,     // Asynchronous reset active low

@@ -42,19 +42,19 @@ module cc_stream_xbar #(
   /// Derived parameter, do **not** overwrite!
   ///
   /// Width of the output selection signal.
-  parameter int unsigned SelWidth = (NumOut > 32'd1) ? unsigned'($clog2(NumOut)) : 32'd1,
+  localparam int unsigned SelWidth = (NumOut > 32'd1) ? unsigned'($clog2(NumOut)) : 32'd1,
   /// Derived parameter, do **not** overwrite!
   ///
   /// Signal type definition for selecting the output at the inputs.
-  parameter type sel_oup_t = logic[SelWidth-1:0],
+  localparam type sel_oup_t = logic[SelWidth-1:0],
   /// Derived parameter, do **not** overwrite!
   ///
   /// Width of the input index signal.
-  parameter int unsigned IdxWidth = (NumInp > 32'd1) ? unsigned'($clog2(NumInp)) : 32'd1,
+  localparam int unsigned IdxWidth = (NumInp > 32'd1) ? unsigned'($clog2(NumInp)) : 32'd1,
   /// Derived parameter, do **not** overwrite!
   ///
   /// Signal type definition indicating from which input the output came.
-  parameter type idx_inp_t = logic[IdxWidth-1:0]
+  localparam type idx_inp_t = logic[IdxWidth-1:0]
 ) (
   /// Clock, positive edge triggered.
   input  logic                  clk_i,

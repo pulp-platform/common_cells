@@ -18,7 +18,7 @@ module cc_fifo_v3 #(
     parameter int unsigned DEPTH        = 8,    // depth can be arbitrary from 0 to 2**32
     parameter type dtype                = logic [DATA_WIDTH-1:0],
     // DO NOT OVERWRITE THIS PARAMETER
-    parameter int unsigned ADDR_DEPTH   = (DEPTH > 1) ? $clog2(DEPTH) : 1
+    localparam int unsigned ADDR_DEPTH   = (DEPTH > 1) ? $clog2(DEPTH) : 1
 )(
     input  logic  clk_i,            // Clock
     input  logic  rst_ni,           // Asynchronous reset active low
