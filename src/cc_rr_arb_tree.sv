@@ -80,10 +80,10 @@ module cc_rr_arb_tree #(
   parameter bit          FairArb    = 1'b1,
   /// Dependent parameter, do **not** overwrite.
   /// Width of the arbitration priority signal and the arbitrated index.
-  parameter int unsigned IdxWidth   = (NumIn > 32'd1) ? unsigned'($clog2(NumIn)) : 32'd1,
+  localparam int unsigned IdxWidth   = (NumIn > 32'd1) ? unsigned'($clog2(NumIn)) : 32'd1,
   /// Dependent parameter, do **not** overwrite.
   /// Type for defining the arbitration priority and arbitrated index signal.
-  parameter type         idx_t      = logic [IdxWidth-1:0]
+  localparam type         idx_t      = logic [IdxWidth-1:0]
 ) (
   /// Clock, positive edge triggered.
   input  logic                clk_i,

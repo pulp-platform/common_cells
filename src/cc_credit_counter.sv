@@ -13,8 +13,8 @@ module cc_credit_counter #(
   /// Whether credit is full or empty on reset
   parameter bit          InitCreditEmpty = 1'b0,
   /// Derived parameters *Do not override*
-  parameter int unsigned InitNumCredits  = InitCreditEmpty ? '0 : NumCredits,
-  parameter type         credit_cnt_t    = logic [$clog2(NumCredits):0]
+  localparam int unsigned InitNumCredits  = InitCreditEmpty ? '0 : NumCredits,
+  localparam type         credit_cnt_t    = logic [$clog2(NumCredits):0]
 ) (
   input  logic clk_i,
   input  logic rst_ni,

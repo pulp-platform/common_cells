@@ -22,7 +22,7 @@ module cc_lzc import cc_pkg::*; #(
   /// Dependent parameter. Do **not** change!
   ///
   /// Width of the output signal with the zero count.
-  parameter int unsigned CNT_WIDTH = cc_pkg::idx_width(WIDTH)
+  localparam int unsigned CNT_WIDTH = cc_pkg::idx_width(WIDTH)
 ) (
   /// Input vector to be counted.
   input  logic [WIDTH-1:0]     in_i,

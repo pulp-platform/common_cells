@@ -23,10 +23,10 @@ module cc_ecc_encode import cc_pkg::*; #(
   /// Data width of unencoded word.
   parameter  int unsigned DataWidth   = 64,
   // Do not change
-  parameter type data_t         = logic [DataWidth-1:0],
-  parameter type parity_t       = logic [ecc_get_parity_width(DataWidth)-1:0],
-  parameter type code_word_t    = logic [ecc_get_cw_width(DataWidth)-1:0],
-  parameter type encoded_data_t = struct packed {
+  localparam type data_t         = logic [DataWidth-1:0],
+  localparam type parity_t       = logic [ecc_get_parity_width(DataWidth)-1:0],
+  localparam type code_word_t    = logic [ecc_get_cw_width(DataWidth)-1:0],
+  localparam type encoded_data_t = struct packed {
                                     logic parity;
                                     code_word_t code_word;
                                   }

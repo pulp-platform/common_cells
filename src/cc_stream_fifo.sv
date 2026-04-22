@@ -19,7 +19,7 @@ module cc_stream_fifo #(
     parameter int unsigned DEPTH        = 8,
     parameter type         T            = logic [DATA_WIDTH-1:0],
     // DO NOT OVERWRITE THIS PARAMETER
-    parameter int unsigned ADDR_DEPTH  = (DEPTH > 1) ? $clog2(DEPTH) : 1
+    localparam int unsigned ADDR_DEPTH  = (DEPTH > 1) ? $clog2(DEPTH) : 1
 ) (
     input  logic                  clk_i,      // Clock
     input  logic                  rst_ni,     // Asynchronous reset active low

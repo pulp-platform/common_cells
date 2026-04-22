@@ -37,11 +37,11 @@ module cc_addr_decode_napot #(
   /// Dependent parameter, do **not** overwite!
   ///
   /// Width of the `idx_o` output port.
-  parameter int unsigned IdxWidth  = cc_pkg::idx_width(NoIndices),
+  localparam int unsigned IdxWidth  = cc_pkg::idx_width(NoIndices),
   /// Dependent parameter, do **not** overwite!
   ///
   /// Type of the `idx_o` output port.
-  parameter type         idx_t     = logic [IdxWidth-1:0]
+  localparam type         idx_t     = logic [IdxWidth-1:0]
 ) (
   /// Address to decode.
   input  addr_t               addr_i,
