@@ -23,8 +23,8 @@ module cc_ring_buffer #(
     parameter int unsigned Depth = 32,
     parameter type data_t = logic,
     /// Derived parameter *Do not override*
-    localparam int unsigned AddrWidth = cf_math_pkg::idx_width(Depth),
-    localparam int unsigned StepWidth = cf_math_pkg::idx_width(Depth+1),
+    localparam int unsigned AddrWidth = cc_pkg::idx_width(Depth),
+    localparam int unsigned StepWidth = cc_pkg::idx_width(Depth+1),
     localparam type addr_t = logic [AddrWidth-1:0],
     localparam type step_t = logic [StepWidth-1:0]
 ) (
@@ -169,7 +169,7 @@ module cc_ring_buffer #(
     `ASSERT_STABLE(ReadStable, rvalid_i, rready_o, raddr_i)
 
     // Currently only power-of-2 depths are supported, could be loosened in future
-    `ASSERT_INIT(CheckDepthPow2, cf_math_pkg::is_power_of_2(Depth))
+    `ASSERT_INIT(CheckDepthPow2, cc_pkg::is_power_of_2(Depth))
     `endif
 
 endmodule

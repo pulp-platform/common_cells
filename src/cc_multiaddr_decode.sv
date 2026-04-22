@@ -76,7 +76,7 @@ module cc_multiaddr_decode #(
   /// The rule index type `idx_t` can be specified either with the width `IdxWidth`
   /// or directly with the type `idx_t`. By default, it will use the maximum index
   /// `NoIndices` to calculate the required width.
-  parameter int unsigned IdxWidth  = cf_math_pkg::idx_width(NoIndices),
+  parameter int unsigned IdxWidth  = cc_pkg::idx_width(NoIndices),
   parameter type         idx_t     = logic [IdxWidth-1:0]
 
 ) (

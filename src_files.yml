@@ -7,13 +7,11 @@ common_cells_all:
     # levels 1 and 0, etc. Files within a level are ordered alphabetically.
     # Level 0
     - src/cc_binary_to_gray.sv
-    - src/cc_cb_filter_pkg.sv
+    - src/cc_pkg.sv
     - src/cc_onehot.sv
-    - src/cc_cf_math_pkg.sv
     - src/cc_clk_int_div.sv
     - src/cc_credit_counter.sv
     - src/cc_delta_counter.sv
-    - src/cc_ecc_pkg.sv
     - src/cc_edge_propagator_tx.sv
     - src/cc_exp_backoff.sv
     - src/cc_fifo_v3.sv
@@ -50,7 +48,6 @@ common_cells_all:
     - src/cc_sync_wedge.sv
     - src/cc_unread.sv
     - src/cc_read.sv
-    - src/cc_cdc_reset_ctrlr_pkg.sv
     # Level 1
     - src/cc_addr_decode_dync.sv
     - src/cc_boxcar.sv

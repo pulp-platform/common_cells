@@ -32,7 +32,7 @@ module cc_sub_per_hash_tb;
   typedef logic [HashWidth-1:0]    hash_t;
   typedef logic [2**HashWidth-1:0] onehot_hash_t;
 
-  localparam cb_filter_pkg::cb_seed_t [NoHashes-1:0] Seeds = '{
+  localparam cc_pkg::cb_seed_t [NoHashes-1:0] Seeds = '{
     '{PermuteSeed: 32'd299034753, XorSeed: 32'd4094834 },
     '{PermuteSeed: 32'd19921030,  XorSeed: 32'd995713  },
     '{PermuteSeed: 32'd294388,    XorSeed: 32'd65146511}

@@ -19,7 +19,7 @@
 // - Seeding:     The pseudo random generators need seeds at elaboration time to generate
 //                different hashes. In principle any combination of seeds can be used.
 //                But one should look that the hash outputs give sufficient different patterns,
-//                such that the resulting collision rate is low. The package `cb_filter_pkg`
+//                such that the resulting collision rate is low. The package `cc`
 //                contains the struct for seeding the PRG's in the hash functions.
 // - Lookup:
 //   - Ports:       `look_data_i`, `look_valid_o`
@@ -49,7 +49,7 @@ module cc_cb_filter #(
   parameter int unsigned InpWidth    =  32'd32, // Input data width
   parameter int unsigned BucketWidth =  32'd4,  // Width of Bucket counters
   // the seeds used for seeding the PRG's inside each hash, one `cb_seed_t` per hash function.
-  parameter cb_filter_pkg::cb_seed_t [KHashes-1:0] Seeds = cb_filter_pkg::EgSeeds
+  parameter cc_pkg::cb_seed_t [KHashes-1:0] Seeds = cc_pkg::EgSeeds
 ) (
   input  logic                 clk_i,   // Clock
   input  logic                 rst_ni,  // Active low reset
@@ -205,7 +205,7 @@ module cc_hash_block #(
   parameter int unsigned InpWidth                         = 32'd11,
   parameter int unsigned HashWidth                        = 32'd5,
   parameter int unsigned NoRounds                         = 32'd1,
-  parameter cb_filter_pkg::cb_seed_t [NoHashes-1:0] Seeds = cb_filter_pkg::EgSeeds
+  parameter cc_pkg::cb_seed_t [NoHashes-1:0] Seeds = cc_pkg::EgSeeds
 ) (
   input  logic [InpWidth-1:0]     data_i,
   output logic [2**HashWidth-1:0] indicator_o
