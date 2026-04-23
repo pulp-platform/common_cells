@@ -47,6 +47,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | [`pulp_sync`](src/deprecated/pulp_sync.sv)                            | Serial line synchronizer                                                                      | *deprecated* | [`sync`](src/sync.sv)             |
 | [`pulp_sync_wedge`](src/deprecated/pulp_sync_wedge.sv)                | Serial line synchronizer with edge detector                                                   | *deprecated* | [`sync_wedge`](src/sync_wedge.sv) |
 | [`serial_deglitch`](src/serial_deglitch.sv)                           | Update output only after input has remained stable for a number of  cycles                    | active       |                                   |
+| [`majority_vote_filter`](src/majority_vote_filter.sv)                                       | Smooth noisy data using a moving window threshold vote                                        | active       |                                   |
 | [`sync`](src/sync.sv)                                                 | Serial line synchronizer                                                                      | active       |                                   |
 | [`sync_wedge`](src/sync_wedge.sv)                                     | Serial line synchronizer with edge detector                                                   | active       |                                   |
 
@@ -62,7 +63,6 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | [`lfsr_16bit`](src/lfsr_16bit.sv)                          | 16-bit linear feedback shift register (LFSR)                        | active       |                                 |
 | [`lfsr`](src/lfsr.sv)                                      | 4...64-bit parametric Galois LFSR with optional whitening feature   | active       |                                 |
 | [`max_counter`](src/max_counter.sv)                        | Up/down counter with variable delta that tracks its maximum value   | active       |                                 |
-| [`mv_filter`](src/mv_filter.sv)                            | **ZARUBAF ADD DESCRIPTION**                                         | active       |                                 |
 | [`trip_counter`](src/trip_counter.sv)                      | Counter that resets automatically when it reaches a specified bound | active       |                                 |
 
 ### Data Path Elements
