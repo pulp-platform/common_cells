@@ -46,7 +46,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | [`isochronous_4phase_handshake`](src/isochronous_4phase_handshake.sv) | Isochronous four-phase handshake.                                                             | active       |                                   |
 | [`pulp_sync`](src/deprecated/pulp_sync.sv)                            | Serial line synchronizer                                                                      | *deprecated* | [`sync`](src/sync.sv)             |
 | [`pulp_sync_wedge`](src/deprecated/pulp_sync_wedge.sv)                | Serial line synchronizer with edge detector                                                   | *deprecated* | [`sync_wedge`](src/sync_wedge.sv) |
-| [`serial_deglitch`](src/serial_deglitch.sv)                           | Serial line deglitcher                                                                        | active       |                                   |
+| [`serial_deglitch`](src/serial_deglitch.sv)                           | Update output only after input has remained stable for a number of  cycles                    | active       |                                   |
 | [`sync`](src/sync.sv)                                                 | Serial line synchronizer                                                                      | active       |                                   |
 | [`sync_wedge`](src/sync_wedge.sv)                                     | Serial line synchronizer with edge detector                                                   | active       |                                   |
 
