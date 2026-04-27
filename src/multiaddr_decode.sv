@@ -48,12 +48,14 @@ module multiaddr_decode #(
   /// The address decoder expects three fields in `rule_t`:
   ///
   /// typedef struct packed {
-  ///   int unsigned idx;
-  ///   addr_t       addr;
-  ///   addr_t       mask;
+  ///   idx_t  idx;
+  ///   addr_t addr;
+  ///   addr_t mask;
   /// } rule_t;
   ///
-  ///  - `idx`:   index of the rule, has to be < `NoIndices`.
+  ///  - `idx`:   index of the rule. Usually an integer but can be any type of data
+  ///             that can index `select_o`, `addr_o`, and `mask_o`; its value has to
+  ///             be < `NoIndices`.
   ///  - `addr`:  any address in the address space described by the rule
   ///  - `mask`:  a bitmask of the same length as the address which transforms the address
   ///             above in a multi-address encoding. A '1' in this mask indicates that the
@@ -71,13 +73,10 @@ module multiaddr_decode #(
   /// - mask =  {'0, {log2(end - start){1'b1}}}
   /// - addr = start
   parameter type         rule_t    = logic,
-  /// Dependent parameter, do **not** overwite!
-  ///
-  /// Width of the `default_idx_i` input port.
+  /// The rule index type `idx_t` can be specified either with the width `IdxWidth`
+  /// or directly with the type `idx_t`. By default, it will use the maximum index
+  /// `NoIndices` to calculate the required width.
   parameter int unsigned IdxWidth  = cf_math_pkg::idx_width(NoIndices),
-  /// Dependent parameter, do **not** overwite!
-  ///
-  /// Type of the `default_idx_i` input port.
   parameter type         idx_t     = logic [IdxWidth-1:0]
 
 ) (
@@ -126,7 +125,7 @@ module multiaddr_decode #(
 
     // Match the rules
     for (int unsigned i = 0; i < NoRules; i++) begin
-      automatic int unsigned idx = addr_map_i[i].idx;
+      automatic idx_t idx = addr_map_i[i].idx;
       // We have a match if at least one address of the input
       // address set is a part of the rule's address set.
       // We have this condition when all bits in the input address match
