@@ -137,7 +137,7 @@ sources:
       - test/cc_passthrough_stream_fifo_tb.sv
       - test/cc_popcount_tb.sv
       - test/cc_rr_arb_tree_tb.sv
-      - test/cc_stream_test.sv
+      - test/cc_test_pkg.sv
       - test/cc_stream_register_tb.sv
       - test/cc_stream_to_mem_tb.sv
       - test/cc_sub_per_hash_tb.sv

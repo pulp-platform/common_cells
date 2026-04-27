@@ -49,6 +49,6 @@ module cc_synth_bench (
         .rst_ni
     );
 
-    ecc_synth i_ecc ();
+    cc_ecc_synth i_ecc ();
 
 endmodule

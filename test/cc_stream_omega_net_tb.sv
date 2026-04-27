@@ -53,13 +53,13 @@ module cc_stream_omega_net_tb #(
   // check FIFO
   payload_t data_fifo [DutNumInp-1:0][DutNumOut-1:0][$];
 
-  typedef stream_test::stream_driver #(
+  typedef cc_test_pkg::cc_stream_driver #(
     .payload_t (payload_t),
     .TA (CyclTime*0.2),
     .TT (CyclTime*0.8)
   ) stream_driver_in_t;
 
-  typedef stream_test::stream_driver #(
+  typedef cc_test_pkg::cc_stream_driver #(
     .payload_t (payload_t),
     .TA (CyclTime*0.2),
     .TT (CyclTime*0.8)
@@ -69,7 +69,7 @@ module cc_stream_omega_net_tb #(
   logic     [DutNumInp-1:0] inp_valid, inp_ready;
   sel_t     [DutNumInp-1:0] out_sel;
   for (genvar i = 0; i < DutNumInp; i++) begin : gen_inp
-    STREAM_DV #(
+    cc_stream_dv #(
       .payload_t (payload_t)
     ) dut_in (
       .clk_i (clk)
@@ -107,7 +107,7 @@ module cc_stream_omega_net_tb #(
   logic     [DutNumOut-1:0] out_valid, out_ready;
   idx_t     [DutNumOut-1:0] out_idx;
   for (genvar j = 0; j < DutNumOut; j++) begin : gen_out
-    STREAM_DV #(
+    cc_stream_dv #(
       .payload_t (payload_t)
     ) dut_out (
       .clk_i (clk)

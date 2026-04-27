@@ -8,7 +8,7 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-module ecc_synth;
+module cc_ecc_synth;
 
     for (genvar dw = 8; dw < 32; dw += 8) begin
         // codeword + parity bit

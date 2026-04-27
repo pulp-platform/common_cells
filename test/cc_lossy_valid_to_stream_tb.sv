@@ -36,21 +36,21 @@ module cc_lossy_valid_to_stream_tb #(
       .rst_no(rst_n)
   );
 
-  typedef stream_test::stream_driver#(
+  typedef cc_test_pkg::cc_stream_driver#(
       .payload_t(payload_t),
       .TA(CyclTime * 0.2),
       .TT(CyclTime * 0.8)
   ) stream_driver_in_t;
 
-  STREAM_DV #(.payload_t(payload_t)) dut_in (.clk_i(clk));
+  cc_stream_dv #(.payload_t(payload_t)) dut_in (.clk_i(clk));
   stream_driver_in_t stream_source = new(dut_in);
 
-  typedef stream_test::stream_driver#(
+  typedef cc_test_pkg::cc_stream_driver#(
       .payload_t(payload_t),
       .TA(CyclTime * 0.2),
       .TT(CyclTime * 0.8)
   ) stream_driver_out_t;
-  STREAM_DV #(.payload_t(payload_t)) dut_out (.clk_i(clk));
+  cc_stream_dv #(.payload_t(payload_t)) dut_out (.clk_i(clk));
   stream_driver_out_t stream_sink = new(dut_out);
 
 

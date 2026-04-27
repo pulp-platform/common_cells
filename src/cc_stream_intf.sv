@@ -15,7 +15,7 @@
 
 /// A stream interface with custom payload of type `payload_t`.
 /// Handshaking rules as defined in the AXI standard.
-interface STREAM_DV #(
+interface cc_stream_dv #(
   /// Custom payload type.
   parameter type payload_t = logic
 )(

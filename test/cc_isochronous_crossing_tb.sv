@@ -34,25 +34,25 @@ module cc_isochronous_crossing_tb #(
   payload_t data_fifo[$];
   mailbox #(payload_t) data_mbx = new();
 
-  STREAM_DV #(
+  cc_stream_dv #(
     .payload_t (payload_t)
   ) dut_in (
     .clk_i (src_clk)
   );
 
-  STREAM_DV #(
+  cc_stream_dv #(
     .payload_t (payload_t)
   ) dut_out (
     .clk_i (dst_clk)
   );
 
-  typedef stream_test::stream_driver #(
+  typedef cc_test_pkg::cc_stream_driver #(
     .payload_t (payload_t),
     .TA (TCK_SRC_MULT*CyclTime*0.2),
     .TT (TCK_SRC_MULT*CyclTime*0.8)
   ) stream_driver_in_t;
 
-  typedef stream_test::stream_driver #(
+  typedef cc_test_pkg::cc_stream_driver #(
     .payload_t (payload_t),
     .TA (TCK_DST_MULT*CyclTime*0.2),
     .TT (TCK_DST_MULT*CyclTime*0.8)

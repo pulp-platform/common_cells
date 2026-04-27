@@ -11,11 +11,11 @@
 
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
-/// Stream test package containing drivers and common definitions for the
-/// stream interface.
-package stream_test;
+/// Common helpers for common_cells tests.
+package cc_test_pkg;
 
-  class stream_driver #(
+  /// Stream test driver for the stream interface.
+  class cc_stream_driver #(
     /// Payload data type.
     parameter type payload_t = logic,
     /// Stimuli application time.
@@ -23,12 +23,12 @@ package stream_test;
     /// Stimuli test time.
     parameter time TT = 8ns
   );
-    virtual STREAM_DV #(
+    virtual cc_stream_dv #(
       .payload_t (payload_t)
     ) stream;
 
     function new (
-      virtual STREAM_DV #(
+      virtual cc_stream_dv #(
         .payload_t (payload_t)
       ) stream
     );

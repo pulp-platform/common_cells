@@ -18,7 +18,6 @@
 //-----------------------------------------------------------------------------
 
 module cc_clk_int_div_tb;
-  import stream_test::*;
   parameter int unsigned NumTests = 10000;
   parameter time TClkIn = 10ns;
   parameter int  DivWidth = 3;
@@ -53,13 +52,13 @@ module cc_clk_int_div_tb;
   let max(a,b) = (a > b) ? a : b;
   let min(a,b) = (a < b) ? a : b;
 
-  typedef stream_test::stream_driver #(
+  typedef cc_test_pkg::cc_stream_driver #(
     .payload_t (payload_t),
     .TA (TA),
     .TT (TT)
   ) stream_driver_t;
 
-  STREAM_DV #(
+  cc_stream_dv #(
     .payload_t (payload_t)
   ) dut_in (
     .clk_i (clk)
