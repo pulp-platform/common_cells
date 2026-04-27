@@ -12,7 +12,7 @@ module cc_ecc_synth;
 
     for (genvar dw = 8; dw < 32; dw += 8) begin
         // codeword + parity bit
-        logic [cc_pkg::get_cw_width(dw)-1:0] codeword;
+        logic [cc_pkg::ecc_get_cw_width(dw)-1:0] codeword;
         cc_ecc_encode #(.DataWidth(dw)) i_encode (.data_i(), .data_o(codeword));
         cc_ecc_decode #(.DataWidth(dw))
         i_decode (

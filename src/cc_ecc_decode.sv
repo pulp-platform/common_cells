@@ -31,8 +31,8 @@ module cc_ecc_decode import cc_pkg::*; #(
   parameter  int unsigned DataWidth   = 64,
   // Do not change
   parameter type data_t         = logic [DataWidth-1:0],
-  parameter type parity_t       = logic [get_parity_width(DataWidth)-1:0],
-  parameter type code_word_t    = logic [get_cw_width(DataWidth)-1:0],
+  parameter type parity_t       = logic [ecc_get_parity_width(DataWidth)-1:0],
+  parameter type code_word_t    = logic [ecc_get_cw_width(DataWidth)-1:0],
   parameter type encoded_data_t = struct packed {
                                     logic parity;
                                     code_word_t code_word;

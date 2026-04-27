@@ -53,6 +53,27 @@ package cc_pkg;
     return (value != 0) && (value & (value - 1)) == 0;
   endfunction
 
+  // Return either the argument minus 1 or 0 if 0; useful for IO vector width declaration.
+  function automatic integer unsigned iomsb (input integer unsigned width);
+    return (width != 32'd0) ? unsigned'(width-1) : 32'd0;
+  endfunction
+
+  /// Returns the maximum between two integers
+  function automatic int max(int a, int b);
+    if (a >= b) begin
+      return a;
+    end
+    return b;
+  endfunction
+
+  /// Returns the minimum between two integers
+  function automatic int min(int a, int b);
+    if (a >= b) begin
+      return b;
+    end
+    return a;
+  endfunction
+
   //--------------------------------------------------------------------------
   // Bloom filter
   //--------------------------------------------------------------------------
@@ -63,7 +84,7 @@ package cc_pkg;
   } cb_seed_t;
 
   // example seeding struct
-  localparam cb_seed_t [2:0] EgSeeds = '{
+  localparam cb_seed_t [2:0] cb_eg_seeds = '{
     '{PermuteSeed: 32'd299034753, XorSeed: 32'd4094834  },
     '{PermuteSeed: 32'd19921030,  XorSeed: 32'd995713   },
     '{PermuteSeed: 32'd294388,    XorSeed: 32'd65146511 }
@@ -74,7 +95,7 @@ package cc_pkg;
   //--------------------------------------------------------------------------
 
   // Calculate required ECC parity width:
-  function automatic int unsigned get_parity_width (input int unsigned data_width);
+  function automatic int unsigned ecc_get_parity_width (input int unsigned data_width);
     // data_width + cw_width + 1 <= 2**cw_width
     int unsigned cw_width = 2;
     while (unsigned'(2**cw_width) < cw_width + data_width + 1) cw_width++;
@@ -82,10 +103,19 @@ package cc_pkg;
   endfunction
 
   // Calculate required ECC codeword width:
-  function automatic int unsigned get_cw_width (input int unsigned data_width);
+  function automatic int unsigned ecc_get_cw_width (input int unsigned data_width);
     // data width + parity width + one additional parity bit (for double error detection)
-    return data_width + get_parity_width(data_width);
+    return data_width + ecc_get_parity_width(data_width);
   endfunction
+
+  //--------------------------------------------------------------------------
+  // LZC
+  //--------------------------------------------------------------------------
+
+  typedef enum logic {
+    LZC_TRAILING_ZERO_CNT = 1'b0,
+    LZC_LEADING_ZERO_CNT = 1'b1
+  } lzc_mode_e;
 
   //--------------------------------------------------------------------------
   // CDC reset controller

@@ -43,7 +43,6 @@ sources:
       - src/cc_lfsr_16bit.sv
       - src/cc_lfsr_8bit.sv
       - src/cc_lossy_valid_to_stream.sv
-      - src/lzc_pkg.sv
       - src/cc_mv_filter.sv
       - src/cc_onehot_to_bin.sv
       - src/cc_plru_tree.sv
