@@ -24,7 +24,6 @@ module cc_stream_fifo #(
     input  logic                  clk_i,      // Clock
     input  logic                  rst_ni,     // Asynchronous reset active low
     input  logic                  flush_i,    // flush the fifo
-    input  logic                  testmode_i, // test_mode to bypass clock gating
     output logic [ADDR_DEPTH-1:0] usage_o,    // fill pointer
     // input interface
     input  T                      data_i,     // data to push into the fifo
@@ -53,7 +52,6 @@ module cc_stream_fifo #(
         .clk_i,
         .rst_ni,
         .flush_i,
-        .testmode_i,
         .full_o     (full),
         .empty_o    (empty),
         .usage_o,

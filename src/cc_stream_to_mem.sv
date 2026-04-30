@@ -91,7 +91,6 @@ module cc_stream_to_mem #(
       .clk_i,
       .rst_ni,
       .flush_i    ( 1'b0             ),
-      .testmode_i ( 1'b0             ),
       .data_i     ( mem_resp_i       ),
       .valid_i    ( mem_resp_valid_i ),
       .ready_o    ( buf_ready        ),

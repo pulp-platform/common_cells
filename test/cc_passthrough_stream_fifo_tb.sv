@@ -48,7 +48,6 @@ module cc_passthrough_stream_fifo_tb #(
         .clk_i      ( clk ),
         .rst_ni     ( rst_n ),
         .flush_i    ( 1'b0 ),
-        .testmode_i ( 1'b0 ),
 
         .data_i  ( (in_valid && in_ready) ? in_data : 'x ),
         .valid_i ( in_valid && in_ready                  ),

@@ -16,7 +16,6 @@ module cc_fall_through_register_properties #(
     input  logic    clk_i,          // Clock
     input  logic    rst_ni,         // Asynchronous active-low reset
     input  logic    clr_i,          // Synchronous clear
-    input  logic    testmode_i,     // Test mode to bypass clock gating
     // Input port
     input  logic    valid_i,
     input  logic    ready_o,

@@ -23,7 +23,6 @@ module cc_fifo_v3 #(
     input  logic  clk_i,            // Clock
     input  logic  rst_ni,           // Asynchronous reset active low
     input  logic  flush_i,          // flush the queue
-    input  logic  testmode_i,       // test_mode to bypass clock gating
     // status flags
     output logic  full_o,           // queue is full
     output logic  empty_o,          // queue is empty
