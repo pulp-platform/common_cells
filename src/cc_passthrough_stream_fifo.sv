@@ -28,8 +28,6 @@ module cc_passthrough_stream_fifo #(
     input  logic                 rst_ni,
     /// Fifo flush
     input  logic                 flush_i,
-    /// Bypass clock gate
-    input  logic                 testmode_i,
     /// data to push into the FIFO
     input  type_t                data_i,
     /// input data valid

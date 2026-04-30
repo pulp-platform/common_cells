@@ -20,7 +20,6 @@ module cc_stream_fifo_optimal_wrap #(
     input  logic                 clk_i,      // Clock
     input  logic                 rst_ni,     // Asynchronous reset active low
     input  logic                 flush_i,    // flush the fifo
-    input  logic                 testmode_i, // test_mode to bypass clock gating
     output logic [AddrDepth-1:0] usage_o,    // fill pointer
     // input interface
     input  type_t                data_i,     // data to push into the fifo
@@ -103,7 +102,6 @@ module cc_stream_fifo_optimal_wrap #(
             .clk_i,
             .rst_ni,
             .flush_i,
-            .testmode_i,
             .usage_o,
             .data_i,
             .valid_i,

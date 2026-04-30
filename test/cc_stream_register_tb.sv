@@ -30,7 +30,6 @@ module cc_stream_register_tb #(
         .clk_i      (clk),
         .rst_ni     (rst_n),
         .clr_i      (clr),
-        .testmode_i (1'b0),
         .valid_i    (inp_valid),
         .ready_o    (inp_ready),
         .data_i     (inp_data),

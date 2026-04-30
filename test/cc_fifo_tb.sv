@@ -52,7 +52,6 @@ module cc_fifo_inst_tb #(
         .clk_i,
         .rst_ni,
         .flush_i        ( flush         ),
-        .testmode_i     ( 1'b0          ),
         .full_o         ( full          ),
         .empty_o        ( empty         ),
         .usage_o        (               ),

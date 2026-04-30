@@ -19,7 +19,6 @@ module cc_fall_through_register #(
     input  logic    clk_i,          // Clock
     input  logic    rst_ni,         // Asynchronous active-low reset
     input  logic    clr_i,          // Synchronous clear
-    input  logic    testmode_i,     // Test mode to bypass clock gating
     // Input port
     input  logic    valid_i,
     output logic    ready_o,
@@ -41,7 +40,6 @@ module cc_fall_through_register #(
         .clk_i          (clk_i),
         .rst_ni         (rst_ni),
         .flush_i        (clr_i),
-        .testmode_i     (testmode_i),
         .full_o         (fifo_full),
         .empty_o        (fifo_empty),
         .usage_o        (),
