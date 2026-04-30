@@ -39,7 +39,7 @@ module cc_cb_filter_tb;
 
   typedef logic [DataWidth-1:0] data_t;
 
-  localparam cb_filter_pkg::cb_seed_t [NoHashes-1:0] Seeds = '{
+  localparam cc_pkg::cb_seed_t [NoHashes-1:0] Seeds = '{
     '{PermuteSeed: 32'd299034753, XorSeed: 32'd4094834 },
     '{PermuteSeed: 32'd19921030,  XorSeed: 32'd995713  },
     '{PermuteSeed: 32'd294388,    XorSeed: 32'd65146511}

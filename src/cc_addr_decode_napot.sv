@@ -37,7 +37,7 @@ module cc_addr_decode_napot #(
   /// Dependent parameter, do **not** overwite!
   ///
   /// Width of the `idx_o` output port.
-  parameter int unsigned IdxWidth  = cf_math_pkg::idx_width(NoIndices),
+  parameter int unsigned IdxWidth  = cc_pkg::idx_width(NoIndices),
   /// Dependent parameter, do **not** overwite!
   ///
   /// Type of the `idx_o` output port.

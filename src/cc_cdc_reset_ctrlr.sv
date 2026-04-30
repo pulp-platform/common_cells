@@ -107,7 +107,7 @@
 // -----------------------------------------------------------------------------
 
 module cc_cdc_reset_ctrlr
-  import cdc_reset_ctrlr_pkg::*;
+  import cc_pkg::*;
  #(
   /// The number of synchronization stages to use for the
   /// clear signal request/acknowledge. Must be less than the
@@ -138,11 +138,11 @@ module cc_cdc_reset_ctrlr
   (* dont_touch = "true" *)
   logic        async_a2b_req, async_b2a_ack;
   (* dont_touch = "true" *)
-  clear_seq_phase_e async_a2b_next_phase;
+  cdc_clear_seq_phase_e async_a2b_next_phase;
   (* dont_touch = "true" *)
   logic        async_b2a_req, async_a2b_ack;
   (* dont_touch = "true" *)
-  clear_seq_phase_e async_b2a_next_phase;
+  cdc_clear_seq_phase_e async_b2a_next_phase;
 
   cc_cdc_reset_ctrlr_half #(
     .SYNC_STAGES          ( SYNC_STAGES          ),
@@ -185,7 +185,7 @@ endmodule
 
 
 module cc_cdc_reset_ctrlr_half
-  import cdc_reset_ctrlr_pkg::*;
+  import cc_pkg::*;
 #(
   /// The number of synchronization stages to use for the
   /// clear signal request/acknowledge. Must be less than
@@ -196,20 +196,20 @@ module cc_cdc_reset_ctrlr_half
   parameter logic        CLEAR_ON_ASYNC_RESET = 1'b1
 )(
   // Synchronous side
-  input logic                clk_i,
-  input logic                rst_ni,
-  input logic                clear_i,
-  output logic               isolate_o,
-  input logic                isolate_ack_i,
-  output logic               clear_o,
-  input logic                clear_ack_i,
+  input logic                  clk_i,
+  input logic                  rst_ni,
+  input logic                  clear_i,
+  output logic                 isolate_o,
+  input logic                  isolate_ack_i,
+  output logic                 clear_o,
+  input logic                  clear_ack_i,
   // Asynchronous clear sequence hanshaking
-  output clear_seq_phase_e   async_next_phase_o,
-  output logic               async_req_o,
-  input logic                async_ack_i,
-  input clear_seq_phase_e    async_next_phase_i,
-  input logic                async_req_i,
-  output logic               async_ack_o
+  output cdc_clear_seq_phase_e async_next_phase_o,
+  output logic                 async_req_o,
+  input logic                  async_ack_i,
+  input cdc_clear_seq_phase_e  async_next_phase_i,
+  input logic                  async_req_i,
+  output logic                 async_ack_o
 );
 
 
@@ -256,7 +256,7 @@ module cc_cdc_reset_ctrlr_half
 
   // The current phase of the clear sequence, sent to the other side using a
   // 4-phase CDC
-  clear_seq_phase_e          initiator_clear_seq_phase;
+  cdc_clear_seq_phase_e      initiator_clear_seq_phase;
   logic                      initiator_phase_transition_req;
   logic                      initiator_phase_transition_ack;
   logic                      initiator_isolate_out;
@@ -267,7 +267,7 @@ module cc_cdc_reset_ctrlr_half
     initiator_phase_transition_req = 1'b0;
     initiator_isolate_out          = 1'b0;
     initiator_clear_out            = 1'b0;
-    initiator_clear_seq_phase      = CLEAR_PHASE_IDLE;
+    initiator_clear_seq_phase      = CDC_CLEAR_PHASE_IDLE;
 
     case (initiator_state_q)
       IDLE: begin
@@ -278,7 +278,7 @@ module cc_cdc_reset_ctrlr_half
 
       ISOLATE: begin
         initiator_phase_transition_req = 1'b1;
-        initiator_clear_seq_phase      = CLEAR_PHASE_ISOLATE;
+        initiator_clear_seq_phase      = CDC_CLEAR_PHASE_ISOLATE;
         initiator_isolate_out          = 1'b1;
         initiator_clear_out            = 1'b0;
         if (initiator_phase_transition_ack && isolate_ack_i) begin
@@ -293,7 +293,7 @@ module cc_cdc_reset_ctrlr_half
       WAIT_ISOLATE_ACK: begin
         initiator_isolate_out     = 1'b1;
         initiator_clear_out       = 1'b0;
-        initiator_clear_seq_phase = CLEAR_PHASE_ISOLATE;
+        initiator_clear_seq_phase = CDC_CLEAR_PHASE_ISOLATE;
         if (isolate_ack_i) begin
           initiator_state_d = CLEAR;
         end
@@ -301,7 +301,7 @@ module cc_cdc_reset_ctrlr_half
 
       WAIT_ISOLATE_PHASE_ACK: begin
         initiator_phase_transition_req = 1'b1;
-        initiator_clear_seq_phase      = CLEAR_PHASE_ISOLATE;
+        initiator_clear_seq_phase      = CDC_CLEAR_PHASE_ISOLATE;
         initiator_isolate_out          = 1'b1;
         initiator_clear_out            = 1'b0;
         if (initiator_phase_transition_ack) begin
@@ -313,7 +313,7 @@ module cc_cdc_reset_ctrlr_half
         initiator_isolate_out          = 1'b1;
         initiator_clear_out            = 1'b1;
         initiator_phase_transition_req = 1'b1;
-        initiator_clear_seq_phase      = CLEAR_PHASE_CLEAR;
+        initiator_clear_seq_phase      = CDC_CLEAR_PHASE_CLEAR;
         if (initiator_phase_transition_ack && clear_ack_i) begin
           initiator_state_d = POST_CLEAR;
         end else if (initiator_phase_transition_ack) begin
@@ -326,7 +326,7 @@ module cc_cdc_reset_ctrlr_half
       WAIT_CLEAR_ACK: begin
         initiator_isolate_out     = 1'b1;
         initiator_clear_out       = 1'b1;
-        initiator_clear_seq_phase = CLEAR_PHASE_CLEAR;
+        initiator_clear_seq_phase = CDC_CLEAR_PHASE_CLEAR;
         if (clear_ack_i) begin
           initiator_state_d = POST_CLEAR;
         end
@@ -334,7 +334,7 @@ module cc_cdc_reset_ctrlr_half
 
       WAIT_CLEAR_PHASE_ACK: begin
         initiator_phase_transition_req = 1'b1;
-        initiator_clear_seq_phase      = CLEAR_PHASE_CLEAR;
+        initiator_clear_seq_phase      = CDC_CLEAR_PHASE_CLEAR;
         initiator_isolate_out          = 1'b1;
         initiator_clear_out            = 1'b1;
         if (initiator_phase_transition_ack) begin
@@ -346,7 +346,7 @@ module cc_cdc_reset_ctrlr_half
         initiator_isolate_out          = 1'b1;
         initiator_clear_out            = 1'b0;
         initiator_phase_transition_req = 1'b1;
-        initiator_clear_seq_phase      = CLEAR_PHASE_POST_CLEAR;
+        initiator_clear_seq_phase      = CDC_CLEAR_PHASE_POST_CLEAR;
         if (initiator_phase_transition_ack) begin
           initiator_state_d = FINISHED;
         end
@@ -356,7 +356,7 @@ module cc_cdc_reset_ctrlr_half
         initiator_isolate_out          = 1'b1;
         initiator_clear_out            = 1'b0;
         initiator_phase_transition_req = 1'b1;
-        initiator_clear_seq_phase      = CLEAR_PHASE_IDLE;
+        initiator_clear_seq_phase      = CDC_CLEAR_PHASE_IDLE;
         if (initiator_phase_transition_ack) begin
           initiator_state_d = IDLE;
         end
@@ -387,14 +387,14 @@ module cc_cdc_reset_ctrlr_half
   // introduce spurios transactions.
 
   cc_cdc_4phase_src #(
-    .T(clear_seq_phase_e),
+    .T(cdc_clear_seq_phase_e),
     .SYNC_STAGES(2),
     .DECOUPLED(0), // Important! The CDC must not be in decoupled mode.
                    // Otherwise we will proceed to the next state without
                    // waiting for the new state to arrive on the other side.
     .SEND_RESET_MSG(CLEAR_ON_ASYNC_RESET), // Send the ISOLATE phase request immediately on async
                                            // reset if async reset synchronization is enabled.
-    .RESET_MSG(CLEAR_PHASE_ISOLATE)
+    .RESET_MSG(CDC_CLEAR_PHASE_ISOLATE)
   ) i_state_transition_cdc_src(
     .clk_i,
     .rst_ni,
@@ -411,15 +411,15 @@ module cc_cdc_reset_ctrlr_half
   // This part of the circuit receives clear sequence state transitions from the
   // other side.
 
-  clear_seq_phase_e receiver_phase_q;
-  clear_seq_phase_e receiver_next_phase;
+  cdc_clear_seq_phase_e receiver_phase_q;
+  cdc_clear_seq_phase_e receiver_next_phase;
   logic receiver_phase_req, receiver_phase_ack;
 
   logic receiver_isolate_out;
   logic receiver_clear_out;
 
   cc_cdc_4phase_dst #(
-    .T(clear_seq_phase_e),
+    .T(cdc_clear_seq_phase_e),
     .SYNC_STAGES(2),
     .DECOUPLED(0) // Important! The CDC must not be in decoupled mode. Otherwise
                   // we will proceed to the next state without waiting for the
@@ -437,7 +437,7 @@ module cc_cdc_reset_ctrlr_half
 
   always_ff @(posedge clk_i, negedge rst_ni) begin
     if (!rst_ni) begin
-      receiver_phase_q <= CLEAR_PHASE_IDLE;
+      receiver_phase_q <= CDC_CLEAR_PHASE_IDLE;
     end else if (receiver_phase_req && receiver_phase_ack) begin
       receiver_phase_q <= receiver_next_phase;
     end
@@ -451,27 +451,27 @@ module cc_cdc_reset_ctrlr_half
     // If there is a new phase requestd, checkout which one it is and act accordingly
     if (receiver_phase_req) begin
       case (receiver_next_phase)
-        CLEAR_PHASE_IDLE: begin
+        CDC_CLEAR_PHASE_IDLE: begin
           receiver_clear_out   = 1'b0;
           receiver_isolate_out = 1'b0;
           receiver_phase_ack   = 1'b1;
         end
 
-        CLEAR_PHASE_ISOLATE: begin
+        CDC_CLEAR_PHASE_ISOLATE: begin
           receiver_clear_out   = 1'b0;
           receiver_isolate_out = 1'b1;
           // Wait for the isolate to be acknowledged before ack'ing the phase
           receiver_phase_ack = isolate_ack_i;
         end
 
-        CLEAR_PHASE_CLEAR: begin
+        CDC_CLEAR_PHASE_CLEAR: begin
           receiver_clear_out   = 1'b1;
           receiver_isolate_out = 1'b1;
           // Wait for the clear to be acknowledged before ack'ing the phase
           receiver_phase_ack   = clear_ack_i;
         end
 
-        CLEAR_PHASE_POST_CLEAR: begin
+        CDC_CLEAR_PHASE_POST_CLEAR: begin
           receiver_clear_out   = 1'b0;
           receiver_isolate_out = 1'b1;
           receiver_phase_ack   = 1'b1;
@@ -488,22 +488,22 @@ module cc_cdc_reset_ctrlr_half
       // No phase change is requested for the moment. Act according to the
       // current phase signal
       case (receiver_phase_q)
-        CLEAR_PHASE_IDLE: begin
+        CDC_CLEAR_PHASE_IDLE: begin
           receiver_clear_out   = 1'b0;
           receiver_isolate_out = 1'b0;
         end
 
-        CLEAR_PHASE_ISOLATE: begin
+        CDC_CLEAR_PHASE_ISOLATE: begin
           receiver_clear_out   = 1'b0;
           receiver_isolate_out = 1'b1;
         end
 
-        CLEAR_PHASE_CLEAR: begin
+        CDC_CLEAR_PHASE_CLEAR: begin
           receiver_clear_out   = 1'b1;
           receiver_isolate_out = 1'b1;
         end
 
-        CLEAR_PHASE_POST_CLEAR: begin
+        CDC_CLEAR_PHASE_POST_CLEAR: begin
           receiver_clear_out   = 1'b0;
           receiver_isolate_out = 1'b1;
         end

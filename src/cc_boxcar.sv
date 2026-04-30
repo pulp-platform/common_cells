@@ -12,7 +12,7 @@
 module cc_boxcar #(
     parameter int unsigned Width = 32,
     /// Derived parameter *Do not override*
-    localparam int unsigned IdxWidth = cf_math_pkg::idx_width(Width),
+    localparam int unsigned IdxWidth = cc_pkg::idx_width(Width),
     localparam type idx_t = logic [IdxWidth-1:0],
     localparam type mask_t = logic [Width-1:0]
 ) (

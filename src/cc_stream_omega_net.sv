@@ -125,8 +125,8 @@ module cc_stream_omega_net #(
     // Can lead however to RTL simulation overhead.
     // Dividing through the log base 2 of `Radix` leads to a change of base.
     localparam int unsigned NumLanes = (NumOut > NumInp) ?
-        unsigned'(Radix**(cf_math_pkg::ceil_div($clog2(NumOut), $clog2(Radix)))) :
-        unsigned'(Radix**(cf_math_pkg::ceil_div($clog2(NumInp), $clog2(Radix))));
+        unsigned'(Radix**(cc_pkg::ceil_div($clog2(NumOut), $clog2(Radix)))) :
+        unsigned'(Radix**(cc_pkg::ceil_div($clog2(NumInp), $clog2(Radix))));
 
     // Find the number of routing levels needed.
     localparam int unsigned NumLevels = unsigned'(($clog2(NumLanes)+$clog2(Radix)-1)/$clog2(Radix));
