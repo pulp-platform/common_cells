@@ -6,10 +6,10 @@ depth 100
 smtbmc
 
 [script]
-read -formal fifo_v3.sv
-read -formal fifo_v3_properties.sv
-prep -top fifo_v3
+read -formal cc_fifo_v3.sv
+read -formal cc_fifo_v3_properties.sv
+prep -top cc_fifo_v3
 
 [files]
-fifo_v3_properties.sv
-../src/fifo_v3.sv
+cc_fifo_v3_properties.sv
+../src/cc_fifo_v3.sv

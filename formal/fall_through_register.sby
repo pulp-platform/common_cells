@@ -6,14 +6,14 @@ depth 100
 smtbmc
 
 [script]
-read -formal fifo_v3.sv
-read -formal fifo_v2.sv
-read -formal fall_through_register.sv
-read -formal fall_through_register_properties.sv
-prep -top fall_through_register
+read -formal cc_fifo_v3.sv
+read -formal cc_fifo_v2.sv
+read -formal cc_fall_through_register.sv
+read -formal cc_fall_through_register_properties.sv
+prep -top cc_fall_through_register
 
 [files]
-fall_through_register_properties.sv
-../src/fall_through_register.sv
-../src/fifo_v3.sv
-../src/deprecated/fifo_v2.sv
+cc_fall_through_register_properties.sv
+../src/cc_fall_through_register.sv
+../src/cc_fifo_v3.sv
+../src/deprecated/cc_fifo_v2.sv
