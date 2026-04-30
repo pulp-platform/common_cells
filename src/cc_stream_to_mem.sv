@@ -102,7 +102,7 @@ module cc_stream_to_mem #(
     );
 
     // Register
-    `FFARN(cnt_q, cnt_d, '0, clk_i, rst_ni)
+    `FF(cnt_q, cnt_d, '0, clk_i, rst_ni)
 
   end else begin : gen_no_buf
     // Control request, memory request, and response interface handshakes.

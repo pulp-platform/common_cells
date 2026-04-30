@@ -12,11 +12,11 @@
 
 module cc_edge_propagator_ack (
   input  logic clk_tx_i,
-  input  logic rstn_tx_i,
+  input  logic rst_tx_ni,
   input  logic edge_i,
   output logic ack_tx_o,
   input  logic clk_rx_i,
-  input  logic rstn_rx_i,
+  input  logic rst_rx_ni,
   output logic edge_o
 );
 
@@ -30,8 +30,8 @@ module cc_edge_propagator_ack (
 
   assign s_input_reg_next = edge_i | (r_input_reg & ~sync_a[0]);
 
-  always @(negedge rstn_tx_i or posedge clk_tx_i) begin
-    if (~rstn_tx_i) begin
+  always @(negedge rst_tx_ni or posedge clk_tx_i) begin
+    if (~rst_tx_ni) begin
       r_input_reg <= 1'b0;
       sync_a      <= 2'b00;
     end else begin
@@ -40,9 +40,9 @@ module cc_edge_propagator_ack (
     end
   end
 
-  cc_pulp_sync_wedge u_sync_clkb (
+  cc_sync_wedge u_sync_clkb (
     .clk_i    ( clk_rx_i    ),
-    .rstn_i   ( rstn_rx_i   ),
+    .rst_ni   ( rst_rx_ni   ),
     .en_i     ( 1'b1        ),
     .serial_i ( r_input_reg ),
     .r_edge_o ( edge_o      ),

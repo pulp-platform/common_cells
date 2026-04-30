@@ -30,7 +30,7 @@ counter.check: counter.sby ../src/cc_counter.sv ../src/cc_delta_counter.sv cc_co
 	touch $@
 
 fall_through_register.check: fall_through_register.sby ../src/cc_fall_through_register.sv \
-				../src/cc_fifo_v3.sv ../src/deprecated/cc_fifo_v2.sv
+				../src/cc_fifo_v3.sv
 	$(SBY) -f $<
 	touch $@
 

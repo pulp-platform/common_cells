@@ -15,8 +15,6 @@ jobs:
         with:
           paths: |
             ./src
-          exclude_paths: |
-            ./src/deprecated
           extra_args: "--waiver_files lint/common_cells.style.waiver --rules=-interface-name-style --lint_fatal"
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reviewdog_reporter: github-check
