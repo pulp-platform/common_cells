@@ -36,7 +36,8 @@
 `endif
 
 `define REG_DFLT_CLK clk_i
-`define REG_DFLT_RST rst_ni
+`define REG_DFLT_RST rst_i
+`define REG_DFLT_RST_N rst_ni
 
 // Flip-Flop with asynchronous active-low reset
 // __q: Q output of FF
@@ -44,13 +45,13 @@
 // __reset_value: value assigned upon reset
 // (__clk: clock input)
 // (__arst_n: asynchronous reset, active-low)
-`define FF(__q, __d, __reset_value, __clk = `REG_DFLT_CLK, __arst_n = `REG_DFLT_RST) \
-  always_ff @(posedge (__clk) or negedge (__arst_n)) begin                           \
-    if (!__arst_n) begin                                                             \
-      __q <= (__reset_value);                                                        \
-    end else begin                                                                   \
-      __q <= (__d);                                                                  \
-    end                                                                              \
+`define FF(__q, __d, __reset_value, __clk = `REG_DFLT_CLK, __arst_n = `REG_DFLT_RST_N) \
+  always_ff @(posedge (__clk) or negedge (__arst_n)) begin                             \
+    if (!__arst_n) begin                                                               \
+      __q <= (__reset_value);                                                          \
+    end else begin                                                                     \
+      __q <= (__d);                                                                    \
+    end                                                                                \
   end
 
 // Flip-Flop with asynchronous active-high reset
@@ -59,13 +60,13 @@
 // __reset_value: value assigned upon reset
 // __clk: clock input
 // __arst: asynchronous reset, active-high
-`define FFAR(__q, __d, __reset_value, __clk, __arst)     \
-  always_ff @(posedge (__clk) or posedge (__arst)) begin \
-    if (__arst) begin                                    \
-      __q <= (__reset_value);                            \
-    end else begin                                       \
-      __q <= (__d);                                      \
-    end                                                  \
+`define FFAR(__q, __d, __reset_value, __clk = `REG_DFLT_CLK, __arst = `REG_DFLT_RST) \
+  always_ff @(posedge (__clk) or posedge (__arst)) begin                             \
+    if (__arst) begin                                                                \
+      __q <= (__reset_value);                                                        \
+    end else begin                                                                   \
+      __q <= (__d);                                                                  \
+    end                                                                              \
   end
 
 // DEPRECATED - use `FF instead
@@ -110,9 +111,9 @@
 // __q: Q output of FF
 // __d: D input of FF
 // __clk: clock input
-`define FFNR(__q, __d, __clk)        \
-  always_ff @(posedge (__clk)) begin \
-    __q <= (__d);                    \
+`define FFNR(__q, __d, __clk = `REG_DFLT_CLK) \
+  always_ff @(posedge (__clk)) begin          \
+    __q <= (__d);                             \
   end
 
 // Flip-Flop with load-enable and asynchronous active-low reset (implicit clock and reset)
@@ -122,15 +123,15 @@
 // __reset_value: value assigned upon reset
 // (__clk: clock input)
 // (__arst_n: asynchronous reset, active-low)
-`define FFL(__q, __d, __load, __reset_value, __clk = `REG_DFLT_CLK, __arst_n = `REG_DFLT_RST) \
-  always_ff @(posedge (__clk) or negedge (__arst_n)) begin                                    \
-    if (!__arst_n) begin                                                                      \
-      __q <= (__reset_value);                                                                 \
-    end else begin                                                                            \
-      if (__load) begin                                                                       \
-        __q <= (__d);                                                                         \
-      end                                                                                     \
-    end                                                                                       \
+`define FFL(__q, __d, __load, __reset_value, __clk = `REG_DFLT_CLK, __arst_n = `REG_DFLT_RST_N) \
+  always_ff @(posedge (__clk) or negedge (__arst_n)) begin                                      \
+    if (!__arst_n) begin                                                                        \
+      __q <= (__reset_value);                                                                   \
+    end else begin                                                                              \
+      if (__load) begin                                                                         \
+        __q <= (__d);                                                                           \
+      end                                                                                       \
+    end                                                                                         \
   end
 
 // Flip-Flop with load-enable and asynchronous active-high reset
@@ -140,15 +141,15 @@
 // __reset_value: value assigned upon reset
 // __clk: clock input
 // __arst: asynchronous reset, active-high
-`define FFLAR(__q, __d, __load, __reset_value, __clk, __arst) \
-  always_ff @(posedge (__clk) or posedge (__arst)) begin      \
-    if (__arst) begin                                         \
-      __q <= (__reset_value);                                 \
-    end else begin                                            \
-      if (__load) begin                                       \
-        __q <= (__d);                                         \
-      end                                                     \
-    end                                                       \
+`define FFLAR(__q, __d, __load, __reset_value, __clk = `REG_DFLT_CLK, __arst = `REG_DFLT_RST) \
+  always_ff @(posedge (__clk) or posedge (__arst)) begin                                      \
+    if (__arst) begin                                                                         \
+      __q <= (__reset_value);                                                                 \
+    end else begin                                                                            \
+      if (__load) begin                                                                       \
+        __q <= (__d);                                                                         \
+      end                                                                                     \
+    end                                                                                       \
   end
 
 // DEPRECATED - use `FFL instead
@@ -208,20 +209,20 @@
 // __reset_value: value assigned upon reset
 // __clk: clock input
 // __arst_n: asynchronous reset, active-low
-`define FFLARNC(__q, __d, __load, __clear, __reset_value, __clk, __arst_n) \
-    `ifndef NO_SYNOPSYS_FF                                                 \
-  /``* synopsys sync_set_reset `"__clear`" *``/                            \
-    `endif                                                                 \
-  always_ff @(posedge (__clk) or negedge (__arst_n)) begin                 \
-    if (!__arst_n) begin                                                   \
-      __q <= (__reset_value);                                              \
-    end else begin                                                         \
-      if (__clear) begin                                                   \
-        __q <= (__reset_value);                                            \
-      end else if (__load) begin                                           \
-        __q <= (__d);                                                      \
-      end                                                                  \
-    end                                                                    \
+`define FFLARNC(__q, __d, __load, __clear, __reset_value, __clk = `REG_DFLT_CLK, __arst_n = `REG_DFLT_RST_N) \
+    `ifndef NO_SYNOPSYS_FF                                                                                   \
+  /``* synopsys sync_set_reset `"__clear`" *``/                                                              \
+    `endif                                                                                                   \
+  always_ff @(posedge (__clk) or negedge (__arst_n)) begin                                                   \
+    if (!__arst_n) begin                                                                                     \
+      __q <= (__reset_value);                                                                                \
+    end else begin                                                                                           \
+      if (__clear) begin                                                                                     \
+        __q <= (__reset_value);                                                                              \
+      end else if (__load) begin                                                                             \
+        __q <= (__d);                                                                                        \
+      end                                                                                                    \
+    end                                                                                                      \
   end
 
 // Flip-Flop with asynchronous active-low reset and synchronous clear
@@ -231,20 +232,20 @@
 // __reset_value: value assigned upon reset
 // __clk: clock input
 // __arst_n: asynchronous reset, active-low
-`define FFARNC(__q, __d, __clear, __reset_value, __clk, __arst_n) \
-    `ifndef NO_SYNOPSYS_FF                                        \
-  /``* synopsys sync_set_reset `"__clear`" *``/                   \
-    `endif                                                        \
-  always_ff @(posedge (__clk) or negedge (__arst_n)) begin        \
-    if (!__arst_n) begin                                          \
-      __q <= (__reset_value);                                     \
-    end else begin                                                \
-      if (__clear) begin                                          \
-        __q <= (__reset_value);                                   \
-      end else begin                                              \
-        __q <= (__d);                                             \
-      end                                                         \
-    end                                                           \
+`define FFARNC(__q, __d, __clear, __reset_value, __clk = `REG_DFLT_CLK, __arst_n = `REG_DFLT_RST_N) \
+    `ifndef NO_SYNOPSYS_FF                                                                          \
+  /``* synopsys sync_set_reset `"__clear`" *``/                                                     \
+    `endif                                                                                          \
+  always_ff @(posedge (__clk) or negedge (__arst_n)) begin                                          \
+    if (!__arst_n) begin                                                                            \
+      __q <= (__reset_value);                                                                       \
+    end else begin                                                                                  \
+      if (__clear) begin                                                                            \
+        __q <= (__reset_value);                                                                     \
+      end else begin                                                                                \
+        __q <= (__d);                                                                               \
+      end                                                                                           \
+    end                                                                                             \
   end
 
 // Load-enable Flip-Flop without reset
@@ -252,11 +253,11 @@
 // __d: D input of FF
 // __load: load d value into FF
 // __clk: clock input
-`define FFLNR(__q, __d, __load, __clk) \
-  always_ff @(posedge (__clk)) begin   \
-    if (__load) begin                  \
-      __q <= (__d);                    \
-    end                                \
+`define FFLNR(__q, __d, __load, __clk = `REG_DFLT_CLK) \
+  always_ff @(posedge (__clk)) begin                   \
+    if (__load) begin                                  \
+      __q <= (__d);                                    \
+    end                                                \
   end
 
 `endif
