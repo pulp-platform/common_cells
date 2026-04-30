@@ -11,7 +11,7 @@
 // Stream arbiter: Arbitrates a parametrizable number of input streams (i.e., valid-ready
 // handshaking with dependency rules as in AXI4) to a single output stream.  Once `oup_valid_o` is
 // asserted, `oup_data_o` remains invariant until the output handshake has occurred.  The
-// arbitration scheme is round-robin with "look ahead", see the `cc_rrarbiter` for details.
+// arbitration scheme is fair round-robin tree, see `cc_rr_arb_tree` for details.
 
 module cc_stream_arbiter #(
     parameter type      DATA_T = logic,   // Vivado requires a default value for type parameters.

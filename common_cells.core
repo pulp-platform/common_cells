@@ -62,6 +62,8 @@ filesets:
       - src/cc_ecc_decode.sv
       - src/cc_ecc_encode.sv
       - src/cc_edge_detect.sv
+      - src/cc_edge_propagator_ack.sv
+      - src/cc_edge_propagator_rx.sv
       - src/cc_lzc.sv
       - src/cc_majority_vote_filter.sv
       - src/cc_max_counter.sv
@@ -76,6 +78,7 @@ filesets:
       - src/cc_addr_decode_napot.sv
       - src/cc_cdc_reset_ctrlr.sv
       - src/cc_cdc_fifo_gray.sv
+      - src/cc_edge_propagator.sv
       - src/cc_fall_through_register.sv
       - src/cc_id_queue.sv
       - src/cc_stream_to_mem.sv
@@ -93,34 +96,9 @@ filesets:
       - src/cc_mem_to_banks.sv
     file_type : systemVerilogSource
 
-  deprecated:
-    files:
-      # Deprecated modules
-      # Level 0
-      - src/deprecated/cc_clock_divider_counter.sv
-      - src/deprecated/cc_clk_div.sv
-      - src/deprecated/cc_find_first_one.sv
-      - src/deprecated/cc_generic_LFSR_8bit.sv
-      - src/deprecated/cc_generic_fifo.sv
-      - src/deprecated/cc_prioarbiter.sv
-      - src/deprecated/cc_pulp_sync.sv
-      - src/deprecated/cc_pulp_sync_wedge.sv
-      - src/deprecated/cc_rrarbiter.sv
-      # Level 1
-      - src/deprecated/cc_clock_divider.sv
-      - src/deprecated/cc_fifo_v2.sv
-      # Level 2
-      - src/deprecated/cc_fifo_v1.sv
-
-      # Depend on deprecated modules
-      - src/cc_edge_propagator_ack.sv
-      - src/cc_edge_propagator.sv
-      - src/cc_edge_propagator_rx.sv
-    file_type : systemVerilogSource
-
 targets:
   default:
-    filesets : [rtl, deprecated]
+    filesets : [rtl]
     parameters: [COMMON_CELLS_ASSERTS_OFF]
 
 parameters:

@@ -12,20 +12,20 @@
 
 module cc_edge_propagator (
   input  logic clk_tx_i,
-  input  logic rstn_tx_i,
+  input  logic rst_tx_ni,
   input  logic edge_i,
   input  logic clk_rx_i,
-  input  logic rstn_rx_i,
+  input  logic rst_rx_ni,
   output logic edge_o
 );
 
   cc_edge_propagator_ack i_edge_propagator_ack (
     .clk_tx_i,
-    .rstn_tx_i,
+    .rst_tx_ni,
     .edge_i,
     .ack_tx_o (/* unused */),
     .clk_rx_i,
-    .rstn_rx_i,
+    .rst_rx_ni,
     .edge_o
   );
 

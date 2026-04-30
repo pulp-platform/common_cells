@@ -12,15 +12,15 @@
 
 module cc_edge_propagator_rx (
     input  logic clk_i,
-    input  logic rstn_i,
+    input  logic rst_ni,
     input  logic valid_i,
     output logic ack_o,
     output logic valid_o
 );
 
-    cc_pulp_sync_wedge i_sync_clkb (
+    cc_sync_wedge i_sync_clkb (
         .clk_i    ( clk_i   ),
-        .rstn_i   ( rstn_i  ),
+        .rst_ni   ( rst_ni  ),
         .en_i     ( 1'b1    ),
         .serial_i ( valid_i ),
         .r_edge_o ( valid_o ),

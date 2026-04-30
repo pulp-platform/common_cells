@@ -72,10 +72,13 @@ sources:
       - src/cc_cdc_2phase.sv
       - src/cc_cdc_4phase.sv
       - src/cc_clk_int_div_static.sv
+      - src/cc_edge_propagator_ack.sv
+      - src/cc_edge_propagator_rx.sv
       - src/cc_trip_counter.sv
       # Level 2
       - src/cc_addr_decode.sv
       - src/cc_addr_decode_napot.sv
+      - src/cc_edge_propagator.sv
       - src/cc_multiaddr_decode.sv
   - target: not(all(xilinx,vivado_ipx))
     files:
@@ -113,10 +116,6 @@ sources:
       - src/cc_stream_omega_net.sv
       # Level 4
       - src/cc_mem_to_banks.sv
-
-  - target: all(simulation, not(verilator), not(cva6))
-    files:
-      - src/deprecated/cc_sram.sv
 
   - target: test
     files:
@@ -156,25 +155,3 @@ sources:
       - test/cc_ecc_synth.sv
       # Level 1
       - test/cc_synth_bench.sv
-
-  # Deprecated modules
-  # Level 0
-  - src/deprecated/cc_clock_divider_counter.sv
-  - src/deprecated/cc_clk_div.sv
-  - src/deprecated/cc_find_first_one.sv
-  - src/deprecated/cc_generic_LFSR_8bit.sv
-  - src/deprecated/cc_generic_fifo.sv
-  - src/deprecated/cc_prioarbiter.sv
-  - src/deprecated/cc_pulp_sync.sv
-  - src/deprecated/cc_pulp_sync_wedge.sv
-  - src/deprecated/cc_rrarbiter.sv
-  # Level 1
-  - src/deprecated/cc_clock_divider.sv
-  - src/deprecated/cc_fifo_v2.sv
-  # Level 2
-  - src/deprecated/cc_fifo_v1.sv
-
-  # Depend on deprecated modules
-  - src/cc_edge_propagator_ack.sv
-  - src/cc_edge_propagator.sv
-  - src/cc_edge_propagator_rx.sv

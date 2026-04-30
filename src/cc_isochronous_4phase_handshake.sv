@@ -56,16 +56,16 @@ module cc_isochronous_4phase_handshake (
   logic dst_req_q, dst_ack_q;
 
   // source is making a request
-  `FFLARN(src_req_q, ~src_req_q, (src_valid_i && src_ready_o), 1'b0, src_clk_i, src_rst_ni)
+  `FFL(src_req_q, ~src_req_q, (src_valid_i && src_ready_o), 1'b0, src_clk_i, src_rst_ni)
   // "synchronize" the acknowledge into the sending clock-domain
-  `FFARN(src_ack_q, dst_ack_q, 1'b0, src_clk_i, src_rst_ni)
+  `FF(src_ack_q, dst_ack_q, 1'b0, src_clk_i, src_rst_ni)
   // source is ready if the request wasn't yet acknowledged
   assign src_ready_o = (src_req_q == src_ack_q);
 
   // down-stream circuit is acknowledging the handshake
-  `FFLARN(dst_ack_q, ~dst_ack_q, (dst_valid_o && dst_ready_i), 1'b0, dst_clk_i, dst_rst_ni)
+  `FFL(dst_ack_q, ~dst_ack_q, (dst_valid_o && dst_ready_i), 1'b0, dst_clk_i, dst_rst_ni)
   // "synchronize" the request into the receiving clock domain
-  `FFARN(dst_req_q, src_req_q, 1'b0, dst_clk_i, dst_rst_ni)
+  `FF(dst_req_q, src_req_q, 1'b0, dst_clk_i, dst_rst_ni)
   // destination is valid if we didn't yet get acknowledge
   assign dst_valid_o = (dst_req_q != dst_ack_q);
 

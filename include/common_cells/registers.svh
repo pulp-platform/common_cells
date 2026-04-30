@@ -19,13 +19,11 @@
 // Abridged Summary of available FF macros:
 // `FF:      asynchronous active-low reset
 // `FFAR:    asynchronous active-high reset
-// `FFARN:   [deprecated] asynchronous active-low reset
 // `FFSR:    synchronous active-high reset
 // `FFSRN:   synchronous active-low reset
 // `FFNR:    without reset
 // `FFL:     load-enable and asynchronous active-low reset
 // `FFLAR:   load-enable and asynchronous active-high reset
-// `FFLARN:  [deprecated] load-enable and asynchronous active-low reset
 // `FFLARNC: load-enable and asynchronous active-low reset and synchronous active-high clear
 // `FFLSR:   load-enable and synchronous active-high reset
 // `FFLSRN:  load-enable and synchronous active-low reset
@@ -67,16 +65,6 @@
       __q <= (__d);                                      \
     end                                                  \
   end
-
-// DEPRECATED - use `FF instead
-// Flip-Flop with asynchronous active-low reset
-// __q: Q output of FF
-// __d: D input of FF
-// __reset_value: value assigned upon reset
-// __clk: clock input
-// __arst_n: asynchronous reset, active-low
-`define FFARN(__q, __d, __reset_value, __clk, __arst_n) \
-  `FF(__q, __d, __reset_value, __clk, __arst_n)
 
 // Flip-Flop with synchronous active-high reset
 // __q: Q output of FF
@@ -150,17 +138,6 @@
       end                                                     \
     end                                                       \
   end
-
-// DEPRECATED - use `FFL instead
-// Flip-Flop with load-enable and asynchronous active-low reset
-// __q: Q output of FF
-// __d: D input of FF
-// __load: load d value into FF
-// __reset_value: value assigned upon reset
-// __clk: clock input
-// __arst_n: asynchronous reset, active-low
-`define FFLARN(__q, __d, __load, __reset_value, __clk, __arst_n) \
-  `FFL(__q, __d, __load, __reset_value, __clk, __arst_n)
 
 // Flip-Flop with load-enable and synchronous active-high reset
 // __q: Q output of FF
