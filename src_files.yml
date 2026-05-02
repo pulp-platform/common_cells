@@ -23,7 +23,6 @@ common_cells_all:
     - src/cc_lfsr_16bit.sv
     - src/cc_lfsr_8bit.sv
     - src/cc_multiaddr_decode.sv
-    - src/cc_mv_filter.sv
     - src/cc_onehot_to_bin.sv
     - src/cc_plru_tree.sv
     - src/cc_passthrough_stream_fifo.sv
@@ -60,6 +59,7 @@ common_cells_all:
     - src/cc_ecc_encode.sv
     - src/cc_edge_detect.sv
     - src/cc_lzc.sv
+    - src/cc_majority_vote_filter.sv
     - src/cc_max_counter.sv
     - src/cc_rstgen.sv
     - src/cc_spill_register.sv
