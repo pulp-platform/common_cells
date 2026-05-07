@@ -225,6 +225,19 @@ module cc_mem_to_banks_detailed #(
                "Data width must be evenly divisible over banks!")
       `ASSUME_I(bank_datawidth_not_divisible_by_8, (DataWidth / NumBanks) % 8 == 0,
                "Data width of each bank must be divisible into 8-bit bytes!")
+      // With only one bank, zero-strobe writes should pass through to preserve single-bank memory
+      // semantics instead of being hidden and completed internally.
+      `ASSERT_I(num_banks_one_hide_strb, !(NumBanks == 1 && HideStrb),
+               "HideStrb is incompatible with NumBanks == 1.")
     end
+
+    `ifndef SYNTHESIS
+      if (NumBanks == 1) begin : gen_num_banks_one_warning
+        initial begin
+          $warning("cc_mem_to_banks_detailed instantiated with NumBanks == 1. ",
+                   "Consider bypassing this module in the instantiating module.");
+        end
+      end
+    `endif
   `endif
 endmodule
