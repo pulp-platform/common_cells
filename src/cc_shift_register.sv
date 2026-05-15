@@ -13,7 +13,7 @@
 //
 // Description: Simple shift register for arbitrary depth and types
 
-module cc_shift_reg #(
+module cc_shift_register #(
     parameter type dtype         = logic,
     parameter int unsigned Depth = 1
 )(
@@ -23,10 +23,10 @@ module cc_shift_reg #(
     output dtype d_o
 );
 
-    cc_shift_reg_gated #(
+    cc_shift_register_gated #(
         .Depth(Depth),
         .dtype(dtype)
-    ) i_shift_reg_gated (
+    ) i_shift_register_gated (
         .clk_i  (clk_i),
         .rst_ni (rst_ni),
         .valid_i(1'b1),

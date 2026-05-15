@@ -31,8 +31,8 @@ common_cells_all:
     - src/cc_rr_arb_tree.sv
     - src/cc_rstgen_bypass.sv
     - src/cc_serial_deglitch.sv
-    - src/cc_shift_reg.sv
-    - src/cc_shift_reg_gated.sv
+    - src/cc_shift_register.sv
+    - src/cc_shift_register_gated.sv
     - src/cc_spill_register_flushable.sv
     - src/cc_stream_demux.sv
     - src/cc_stream_filter.sv
