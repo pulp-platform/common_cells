@@ -171,7 +171,7 @@ module cc_mem_to_banks_detailed #(
   assign gnt_o = (&req_ready) & (&resp_ready) & !dead_write_fifo_full;
 
   if (HideStrb) begin : gen_dead_write_fifo
-    cc_fifo_v3 #(
+    cc_fifo #(
       .FALL_THROUGH ( 1'b0     ),
       .DEPTH        ( MaxTrans+1 ),
       .DATA_WIDTH   ( NumBanks )

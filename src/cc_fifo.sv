@@ -12,7 +12,7 @@
 
 `include "common_cells/assertions.svh"
 
-module cc_fifo_v3 #(
+module cc_fifo #(
     parameter bit          FALL_THROUGH = 1'b0, // fifo is in fall-through mode
     parameter int unsigned DATA_WIDTH   = 32,   // default data width if the fifo is of type logic
     parameter int unsigned DEPTH        = 8,    // depth can be arbitrary from 0 to 2**32
@@ -148,4 +148,4 @@ module cc_fifo_v3 #(
             "Trying to pop data although the FIFO is empty.")
 `endif
 
-endmodule // cc_fifo_v3
+endmodule // cc_fifo

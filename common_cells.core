@@ -21,7 +21,7 @@ filesets:
       - src/cc_delta_counter.sv
       - src/cc_edge_propagator_tx.sv
       - src/cc_exp_backoff.sv
-      - src/cc_fifo_v3.sv
+      - src/cc_fifo.sv
       - src/cc_gray_to_binary.sv
       - src/cc_isochronous_4phase_handshake.sv
       - src/cc_isochronous_spill_register.sv

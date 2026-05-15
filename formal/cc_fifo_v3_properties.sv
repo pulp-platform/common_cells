@@ -10,7 +10,7 @@
 
 // Author: Robert Balas <balasr@iis.ee.ethz.ch>
 
-module cc_fifo_v3_properties #(
+module cc_fifo_properties #(
     parameter bit          FALL_THROUGH = 1'b0, // fifo is in fall-through mode
     parameter int unsigned DATA_WIDTH   = 32,   // default data width if the fifo is of type logic
     parameter int unsigned DEPTH        = 8,    // depth can be arbitrary from 0 to 2**32
@@ -40,7 +40,7 @@ module cc_fifo_v3_properties #(
 );
 
     localparam int unsigned FIFO_DEPTH = (DEPTH > 0) ? DEPTH : 1;
-    // verbatim from cc_fifo_v3
+    // verbatim from cc_fifo
     localparam int unsigned FIFO_SIZE  = FIFO_DEPTH[ADDR_DEPTH:0];
 
     logic [ADDR_DEPTH-1:0] fill_level;
@@ -127,9 +127,9 @@ module cc_fifo_v3_properties #(
     cover property (@(posedge clk_i)
         empty_o == 1'b1);
 
-endmodule // cc_fifo_v3_properties
+endmodule // cc_fifo_properties
 
-// propagate parameters from cc_fifo_v3 to properties
-bind cc_fifo_v3 cc_fifo_v3_properties #(
+// propagate parameters from cc_fifo to properties
+bind cc_fifo cc_fifo_properties #(
     .FALL_THROUGH(FALL_THROUGH), .DATA_WIDTH(DATA_WIDTH), .DEPTH(DEPTH)
-) i_fifo_v3_properties(.*);
+) i_fifo_properties(.*);

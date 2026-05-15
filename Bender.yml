@@ -34,7 +34,7 @@ sources:
       - src/cc_delta_counter.sv
       - src/cc_edge_propagator_tx.sv
       - src/cc_exp_backoff.sv
-      - src/cc_fifo_v3.sv
+      - src/cc_fifo.sv
       - src/cc_gray_to_binary.sv
       - src/cc_heaviside.sv
       - src/cc_isochronous_4phase_handshake.sv
@@ -132,10 +132,10 @@ sources:
       - test/cc_passthrough_stream_fifo_tb.sv
       - test/cc_popcount_tb.sv
       - test/cc_rr_arb_tree_tb.sv
-      - test/cc_test_pkg.sv
       - test/cc_stream_register_tb.sv
       - test/cc_stream_to_mem_tb.sv
       - test/cc_sub_per_hash_tb.sv
+      - test/cc_test_pkg.sv
       # Level 1
       - test/cc_isochronous_crossing_tb.sv
       - test/cc_stream_omega_net_tb.sv

@@ -32,7 +32,7 @@ module cc_fall_through_register #(
     logic   fifo_empty,
             fifo_full;
 
-    cc_fifo_v3 #(
+    cc_fifo #(
         .FALL_THROUGH   (1'b1),
         .DEPTH          (1),
         .dtype          (T)
