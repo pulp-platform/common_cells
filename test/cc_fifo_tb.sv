@@ -44,7 +44,7 @@ module cc_fifo_inst_tb #(
 
     assign clk = clk_i;
 
-    cc_fifo_v3 #(
+    cc_fifo #(
         .FALL_THROUGH   ( FALL_THROUGH  ),
         .DATA_WIDTH     ( DATA_WIDTH    ),
         .DEPTH          ( DEPTH         )

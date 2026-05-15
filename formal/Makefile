@@ -15,9 +15,9 @@ YOSYS	?= yosys
 SBY	?= sby
 RM	?= rm
 
-all: fifo_v3.check counter.check fall_through_register.check
+all: fifo.check counter.check fall_through_register.check
 
-fifo_v3.check: fifo_v3.sby ../src/cc_fifo_v3.sv cc_fifo_v3_properties.sv
+fifo.check: fifo.sby ../src/cc_fifo.sv cc_fifo_properties.sv
 	$(SBY) -f $<
 	touch $@
 
@@ -30,13 +30,13 @@ counter.check: counter.sby ../src/cc_counter.sv ../src/cc_delta_counter.sv cc_co
 	touch $@
 
 fall_through_register.check: fall_through_register.sby ../src/cc_fall_through_register.sv \
-				../src/cc_fifo_v3.sv
+				../src/cc_fifo.sv
 	$(SBY) -f $<
 	touch $@
 
 .PHONY: clean
 clean:
-	$(RM) -r fifo_v3.check fifo_v3/
+	$(RM) -r fifo.check fifo/
 #	$(RM) -r delta_counter.check delta_counter/
 	$(RM) -r counter.check counter/
 	$(RM) -r fall_through_register.check fall_through_register/

@@ -43,7 +43,7 @@ module cc_stream_fifo #(
     assign ready_o = ~full;
     assign valid_o = ~empty;
 
-    cc_fifo_v3 #(
+    cc_fifo #(
         .FALL_THROUGH   (FALL_THROUGH),
         .DATA_WIDTH     (DATA_WIDTH),
         .DEPTH          (DEPTH),
