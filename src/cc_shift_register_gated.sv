@@ -12,7 +12,7 @@
 
 `include "common_cells/registers.svh"
 
-module cc_shift_reg_gated #(
+module cc_shift_register_gated #(
   parameter int unsigned Depth = 32'd8,
   parameter type         dtype = logic
 ) (
@@ -32,7 +32,7 @@ module cc_shift_reg_gated #(
     assign data_o  = data_i;
 
   // It's a shift register if depth is greater than 0
-  end else begin : gen_shift_reg
+  end else begin : gen_shift_register
 
     logic [Depth-1 : 0] valid_d, valid_q;
     dtype [Depth-1 : 0] data_d, data_q;
