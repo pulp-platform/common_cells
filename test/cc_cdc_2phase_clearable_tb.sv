@@ -30,6 +30,7 @@ module cc_cdc_2phase_clearable_tb;
   parameter int unsigned TCK_DST_PS = 17000;
   parameter int unsigned TIMEOUT_CYCLES = 20000;
   parameter int unsigned SEED = 32'hcdc2_c1ea;
+  parameter bit          CLEAR_ON_ASYNC_RESET = 1'b1;
   parameter bit          INJECT_DELAYS = 1'b0;
   parameter int unsigned MAX_DELAY_PS = 0;
   parameter int unsigned SRC_START_DELAY_PS = 0;
@@ -80,8 +81,9 @@ module cc_cdc_2phase_clearable_tb;
   // by sweeps to perturb every explicit asynchronous channel.
   if (INJECT_DELAYS) begin : gen_delayed_dut
     cc_cdc_2phase_clearable_tb_delay_injector #(
-      .SYNC_STAGES  ( SYNC_STAGES  ),
-      .MAX_DELAY_PS ( MAX_DELAY_PS )
+      .SYNC_STAGES          ( SYNC_STAGES          ),
+      .CLEAR_ON_ASYNC_RESET ( CLEAR_ON_ASYNC_RESET ),
+      .MAX_DELAY_PS         ( MAX_DELAY_PS         )
     ) i_dut (
       .src_rst_ni,
       .src_clk_i,
@@ -100,9 +102,9 @@ module cc_cdc_2phase_clearable_tb;
     );
   end else begin : gen_dut
     cc_cdc_2phase_clearable #(
-      .data_t            ( logic [31:0] ),
-      .SyncStages        ( SYNC_STAGES  ),
-      .ClearOnAsyncReset ( 1            )
+      .data_t            ( logic [31:0]        ),
+      .SyncStages        ( SYNC_STAGES         ),
+      .ClearOnAsyncReset ( CLEAR_ON_ASYNC_RESET )
     ) i_dut (
       .src_rst_ni,
       .src_clk_i,
@@ -447,6 +449,48 @@ module cc_cdc_2phase_clearable_tb;
     drop_window = 1'b0;
   endtask
 
+  task automatic check_no_cross_clear_after_src_reset(input string test_name);
+    $display("%m: %s", test_name);
+    src_valid_i = 1'b0;
+    wait_scoreboard_empty(test_name);
+    wait_src_ready(test_name);
+
+    #(tck_src / 3);
+    src_rst_ni = 1'b0;
+    wait_src_cycles(2);
+    src_rst_ni = 1'b1;
+
+    for (int unsigned i = 0; i < TIMEOUT_CYCLES / 20; i++) begin
+      if (dst_clear_pending_o) begin
+        report_error($sformatf("unexpected destination clear pending in %s", test_name));
+        wait_clear_done(test_name);
+        return;
+      end
+      @(posedge src_clk_i or posedge dst_clk_i);
+    end
+  endtask
+
+  task automatic check_no_cross_clear_after_dst_reset(input string test_name);
+    $display("%m: %s", test_name);
+    src_valid_i = 1'b0;
+    wait_scoreboard_empty(test_name);
+    wait_src_ready(test_name);
+
+    #(tck_dst / 3);
+    dst_rst_ni = 1'b0;
+    wait_dst_cycles(2);
+    dst_rst_ni = 1'b1;
+
+    for (int unsigned i = 0; i < TIMEOUT_CYCLES / 20; i++) begin
+      if (src_clear_pending_o) begin
+        report_error($sformatf("unexpected source clear pending in %s", test_name));
+        wait_clear_done(test_name);
+        return;
+      end
+      @(posedge src_clk_i or posedge dst_clk_i);
+    end
+  endtask
+
   task automatic run_transfer_check(input string test_name, input int unsigned num_words,
                                     input logic [31:0] base,
                                     input dst_ready_mode_e ready_mode);
@@ -587,34 +631,52 @@ module cc_cdc_2phase_clearable_tb;
       wait_active_event_gap();
       event_name = $sformatf("active stress event %0d", i);
 
-      unique case ($urandom_range(0, 4))
-        0: begin
-          sync_dst_clear({event_name, ": destination synchronous clear"});
-        end
-        1: begin
-          async_dst_reset({event_name, ": destination asynchronous reset"});
-        end
-        2: begin
-          pause_active_source({event_name, ": source synchronous clear"});
-          sync_src_clear({event_name, ": source synchronous clear"});
-          resume_active_source();
-        end
-        3: begin
-          pause_active_source({event_name, ": source asynchronous reset"});
-          async_src_reset({event_name, ": source asynchronous reset"});
-          resume_active_source();
-        end
-        4: begin
-          pause_active_source({event_name, ": simultaneous synchronous clear"});
-          sync_both_clear({event_name, ": simultaneous synchronous clear"});
-          resume_active_source();
-        end
-        default: begin
-          pause_active_source({event_name, ": simultaneous synchronous clear"});
-          sync_both_clear({event_name, ": simultaneous synchronous clear"});
-          resume_active_source();
-        end
-      endcase
+      if (CLEAR_ON_ASYNC_RESET) begin
+        unique case ($urandom_range(0, 4))
+          0: begin
+            sync_dst_clear({event_name, ": destination synchronous clear"});
+          end
+          1: begin
+            async_dst_reset({event_name, ": destination asynchronous reset"});
+          end
+          2: begin
+            pause_active_source({event_name, ": source synchronous clear"});
+            sync_src_clear({event_name, ": source synchronous clear"});
+            resume_active_source();
+          end
+          3: begin
+            pause_active_source({event_name, ": source asynchronous reset"});
+            async_src_reset({event_name, ": source asynchronous reset"});
+            resume_active_source();
+          end
+          4: begin
+            pause_active_source({event_name, ": simultaneous synchronous clear"});
+            sync_both_clear({event_name, ": simultaneous synchronous clear"});
+            resume_active_source();
+          end
+          default: begin
+            pause_active_source({event_name, ": simultaneous synchronous clear"});
+            sync_both_clear({event_name, ": simultaneous synchronous clear"});
+            resume_active_source();
+          end
+        endcase
+      end else begin
+        unique case ($urandom_range(0, 2))
+          0: begin
+            sync_dst_clear({event_name, ": destination synchronous clear"});
+          end
+          1: begin
+            pause_active_source({event_name, ": source synchronous clear"});
+            sync_src_clear({event_name, ": source synchronous clear"});
+            resume_active_source();
+          end
+          default: begin
+            pause_active_source({event_name, ": simultaneous synchronous clear"});
+            sync_both_clear({event_name, ": simultaneous synchronous clear"});
+            resume_active_source();
+          end
+        endcase
+      end
 
       num_active_stress_events++;
     end
@@ -672,21 +734,31 @@ module cc_cdc_2phase_clearable_tb;
     sync_both_clear("simultaneous synchronous idle clear");
     run_transfer_check("post-simultaneous-clear transfer", 16, 32'h4000_0000, DstReadyHigh);
 
-    // Idle asynchronous one-sided resets should trigger the same coordinated
-    // clear sequence and leave the CDC usable afterwards.
-    async_src_reset("source asynchronous idle reset");
-    run_transfer_check("post-source-async-reset transfer", 16, 32'h5000_0000, DstReadyHigh);
+    // One-sided asynchronous resets are only a cross-domain clear source when
+    // the feature is enabled.
+    if (CLEAR_ON_ASYNC_RESET) begin
+      async_src_reset("source asynchronous idle reset");
+      run_transfer_check("post-source-async-reset transfer", 16, 32'h5000_0000, DstReadyHigh);
 
-    async_dst_reset("destination asynchronous idle reset");
-    run_transfer_check("post-destination-async-reset transfer", 16, 32'h6000_0000, DstReadyHigh);
+      async_dst_reset("destination asynchronous idle reset");
+      run_transfer_check("post-destination-async-reset transfer", 16, 32'h6000_0000, DstReadyHigh);
+    end else begin
+      check_no_cross_clear_after_src_reset("source asynchronous idle reset without cross-clear");
+      reset_both_domains();
+
+      check_no_cross_clear_after_dst_reset("destination asynchronous idle reset without cross-clear");
+      reset_both_domains();
+    end
 
     // Backpressured destination-visible traffic is the critical case where
     // clear/reset may withdraw valid and drop the staged item.
     run_backpressured_clear_check();
     run_backpressured_source_clear_check();
     run_backpressured_simultaneous_clear_check();
-    run_backpressured_source_reset_check();
-    run_backpressured_destination_reset_check();
+    if (CLEAR_ON_ASYNC_RESET) begin
+      run_backpressured_source_reset_check();
+      run_backpressured_destination_reset_check();
+    end
 
     // Long mixed stress run with random traffic, destination backpressure, and
     // interleaved source/destination clear or reset events.
@@ -792,6 +864,7 @@ module cc_cdc_2phase_clearable_tb_delay_injector
   import cc_pkg::*;
 #(
   parameter int unsigned SYNC_STAGES = 3,
+  parameter bit          CLEAR_ON_ASYNC_RESET = 1'b1,
   parameter int unsigned MAX_DELAY_PS = 0
 )(
   input  logic        src_rst_ni,
@@ -916,8 +989,9 @@ module cc_cdc_2phase_clearable_tb_delay_injector
   // Reuse the production source and destination domain wrappers. The harness
   // only inserts timing delays on the explicit async wires between them.
   cc_cdc_2phase_src_domain_clearable #(
-    .data_t     ( logic [31:0] ),
-    .SyncStages ( SYNC_STAGES  )
+    .data_t            ( logic [31:0]        ),
+    .SyncStages        ( SYNC_STAGES         ),
+    .ClearOnAsyncReset ( CLEAR_ON_ASYNC_RESET )
   ) i_src_domain (
     .src_rst_ni,
     .src_clk_i,
@@ -938,8 +1012,9 @@ module cc_cdc_2phase_clearable_tb_delay_injector
   );
 
   cc_cdc_2phase_dst_domain_clearable #(
-    .data_t     ( logic [31:0] ),
-    .SyncStages ( SYNC_STAGES  )
+    .data_t            ( logic [31:0]        ),
+    .SyncStages        ( SYNC_STAGES         ),
+    .ClearOnAsyncReset ( CLEAR_ON_ASYNC_RESET )
   ) i_dst_domain (
     .dst_rst_ni,
     .dst_clk_i,

@@ -1,11 +1,23 @@
-//-----------------------------------------------------------------------------
-// Title : CDC Clear Signaling Synchronization
-// -----------------------------------------------------------------------------
-// File : cdc_clear_propagator.sv Author : Manuel Eggimann
-// <meggimann@iis.ee.ethz.ch> Created : 22.12.2021
-// -----------------------------------------------------------------------------
-// Description :
+// Copyright 2021 ETH Zurich and University of Bologna.
 //
+// Copyright and related rights are licensed under the Solderpad Hardware
+// License, Version 0.51 (the "License"); you may not use this file except in
+// compliance with the License. You may obtain a copy of the License at
+// http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
+// or agreed to in writing, software, hardware and materials distributed under
+// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, either express or implied. See the License for the
+// specific language governing permissions and limitations under the License.
+//
+// Authors:
+// - Manuel Eggimann <meggimann@iis.ee.ethz.ch>
+// - Philippe Sauter <phsauter@iis.ee.ethz.ch> (formalization and stage cleanup)
+//
+// Description: CDC Clear Signaling Synchronization
+// Coordinate clear and isolate sequencing between two CDC clock domains so
+// one-sided reset or clear requests do not break the protected CDC protocol.
+//
+// Detailed Description:
 // This module is mainly used internally to synchronize the clear requests
 // between both sides of a CDC module. It aims to solve the problem of
 // initiating a CDC clear, reset one-sidedly without running into
@@ -93,19 +105,6 @@
 // side is isolated (depending on protocol this might take several cycles),
 // assert the a/b_isolate_ack_i signal.
 //
-// -----------------------------------------------------------------------------
-// Copyright (C) 2021 ETH Zurich, University of Bologna Copyright and related
-// rights are licensed under the Solderpad Hardware License, Version 0.51 (the
-// "License"); you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law or
-// agreed to in writing, software, hardware and materials distributed under this
-// License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
-// OF ANY KIND, either express or implied. See the License for the specific
-// language governing permissions and limitations under the License.
-// SPDX-License-Identifier: SHL-0.51
-// -----------------------------------------------------------------------------
-
 module cc_cdc_reset_ctrlr
   import cc_pkg::*;
  #(
@@ -262,6 +261,10 @@ module cc_cdc_reset_ctrlr_half
   logic                      initiator_isolate_out;
   logic                      initiator_clear_out;
 
+  // The phase CDC is a real CDC even when callers pass a reduced latency for
+  // synchronous-clear-only configurations.
+  localparam int unsigned ResetSyncStages = (SyncStages > 2) ? SyncStages : 2;
+
   always_comb begin
     initiator_state_d              = initiator_state_q;
     initiator_phase_transition_req = 1'b0;
@@ -388,7 +391,7 @@ module cc_cdc_reset_ctrlr_half
 
   cc_cdc_4phase_src #(
     .data_t(cdc_clear_seq_phase_e),
-    .SyncStages(2),
+    .SyncStages(ResetSyncStages),
     .Decoupled(0), // Important! The CDC must not be in decoupled mode.
                    // Otherwise we will proceed to the next state without
                    // waiting for the new state to arrive on the other side.
@@ -420,7 +423,7 @@ module cc_cdc_reset_ctrlr_half
 
   cc_cdc_4phase_dst #(
     .data_t(cdc_clear_seq_phase_e),
-    .SyncStages(2),
+    .SyncStages(ResetSyncStages),
     .Decoupled(0) // Important! The CDC must not be in decoupled mode. Otherwise
                   // we will proceed to the next state without waiting for the
                   // new state to arrive on the other side.

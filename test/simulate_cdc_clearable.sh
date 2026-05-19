@@ -58,6 +58,14 @@ call_vsim dst_fast \
   -gTCK_SRC_PS=17000 \
   -gTCK_DST_PS=5000
 
+call_vsim no_async_reset_sync_only \
+  -gSEED=4 \
+  -gCLEAR_ON_ASYNC_RESET=0 \
+  -gSYNC_STAGES=2 \
+  -gNUM_RANDOM_TRANSFERS=100 \
+  -gNUM_ACTIVE_STRESS_TRANSFERS=120 \
+  -gNUM_ACTIVE_STRESS_EVENTS=8
+
 call_vsim timed_balanced_250ps \
   -gSEED=11 \
   -gNUM_RANDOM_TRANSFERS=60 \
@@ -87,6 +95,16 @@ call_vsim timed_dst_fast_800ps \
   -gMAX_DELAY_PS=800 \
   -gTCK_SRC_PS=17000 \
   -gTCK_DST_PS=5000
+
+call_vsim timed_no_async_reset_sync_only \
+  -gSEED=10 \
+  -gCLEAR_ON_ASYNC_RESET=0 \
+  -gSYNC_STAGES=2 \
+  -gNUM_RANDOM_TRANSFERS=60 \
+  -gNUM_ACTIVE_STRESS_TRANSFERS=60 \
+  -gNUM_ACTIVE_STRESS_EVENTS=4 \
+  -gINJECT_DELAYS=1 \
+  -gMAX_DELAY_PS=800
 
 call_vsim timed_balanced_offset_1800ps \
   -gSEED=14 \

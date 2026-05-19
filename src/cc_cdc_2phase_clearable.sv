@@ -114,8 +114,9 @@ module cc_cdc_2phase_clearable #(
   // The source-domain wrapper owns the payload CDC half, local clear/isolate
   // acknowledgements, and the local reset-controller half.
   cc_cdc_2phase_src_domain_clearable #(
-    .data_t     ( data_t     ),
-    .SyncStages ( SyncStages )
+    .data_t            ( data_t            ),
+    .SyncStages        ( SyncStages        ),
+    .ClearOnAsyncReset ( ClearOnAsyncReset )
   ) i_src_domain (
     .src_rst_ni                ( src_rst_ni                     ),
     .src_clk_i                 ( src_clk_i                      ),
@@ -139,8 +140,9 @@ module cc_cdc_2phase_clearable #(
   // The destination-domain wrapper owns the payload CDC half, local
   // clear/isolate acknowledgements, and the local reset-controller half.
   cc_cdc_2phase_dst_domain_clearable #(
-    .data_t     ( data_t     ),
-    .SyncStages ( SyncStages )
+    .data_t            ( data_t            ),
+    .SyncStages        ( SyncStages        ),
+    .ClearOnAsyncReset ( ClearOnAsyncReset )
   ) i_dst_domain (
     .dst_rst_ni                ( dst_rst_ni                     ),
     .dst_clk_i                 ( dst_clk_i                      ),
@@ -172,7 +174,8 @@ endmodule
 /// Destination-domain wrapper for the clearable two-phase CDC.
 module cc_cdc_2phase_dst_domain_clearable #(
   parameter type data_t = logic,
-  parameter int unsigned SyncStages = 2
+  parameter int unsigned SyncStages = 2,
+  parameter bit ClearOnAsyncReset = 1
 ) (
   input  logic dst_rst_ni,
   input  logic dst_clk_i,
@@ -198,8 +201,13 @@ module cc_cdc_2phase_dst_domain_clearable #(
   logic dst_isolate_ack_q;
   logic dst_valid;
 
+  // Keep the clear-control path one synchronizer stage ahead of the payload CDC
+  // when async reset propagation is enabled, but never below two stages.
+  localparam int unsigned ResetSyncStages = (SyncStages > 2) ? SyncStages - 1 : 2;
+
   cc_cdc_reset_ctrlr_half #(
-    .SyncStages ( SyncStages-1 )
+    .SyncStages        ( ResetSyncStages    ),
+    .ClearOnAsyncReset ( ClearOnAsyncReset )
   ) i_cdc_reset_ctrlr_half (
     .clk_i              ( dst_clk_i                  ),
     .rst_ni             ( dst_rst_ni                 ),
@@ -252,7 +260,8 @@ endmodule
 /// Source-domain wrapper for the clearable two-phase CDC.
 module cc_cdc_2phase_src_domain_clearable #(
   parameter type data_t = logic,
-  parameter int unsigned SyncStages = 2
+  parameter int unsigned SyncStages = 2,
+  parameter bit ClearOnAsyncReset = 1
 ) (
   input  logic src_rst_ni,
   input  logic src_clk_i,
@@ -278,8 +287,13 @@ module cc_cdc_2phase_src_domain_clearable #(
   logic src_isolate_req;
   logic src_isolate_ack_q;
 
+  // Keep the clear-control path one synchronizer stage ahead of the payload CDC
+  // when async reset propagation is enabled, but never below two stages.
+  localparam int unsigned ResetSyncStages = (SyncStages > 2) ? SyncStages - 1 : 2;
+
   cc_cdc_reset_ctrlr_half #(
-    .SyncStages ( SyncStages-1 )
+    .SyncStages        ( ResetSyncStages    ),
+    .ClearOnAsyncReset ( ClearOnAsyncReset )
   ) i_cdc_reset_ctrlr_half (
     .clk_i              ( src_clk_i                  ),
     .rst_ni             ( src_rst_ni                 ),
