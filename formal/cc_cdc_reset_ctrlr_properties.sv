@@ -37,6 +37,8 @@ module cc_cdc_reset_ctrlr_composed_harness (
   logic a_init_q = 1'b0;
   logic b_init_q = 1'b0;
 
+  // Composed harness: instantiate both halves through the public controller and
+  // model a CDC user that acknowledges isolate/clear one local cycle later.
   cc_cdc_reset_ctrlr #(
     .SyncStages        ( 2    ),
     .ClearOnAsyncReset ( 1'b1 )
@@ -57,6 +59,8 @@ module cc_cdc_reset_ctrlr_composed_harness (
     .b_isolate_ack_i ( b_isolate_ack_q )
   );
 
+  // Each clock domain is independently initialized in reset, then held out of
+  // reset so the proof focuses on the synchronous clear sequence.
   always_ff @(posedge a_clk_i) begin
     a_init_q <= 1'b1;
     if (!a_init_q) begin
@@ -85,6 +89,8 @@ module cc_cdc_reset_ctrlr_composed_harness (
     end
   end
 
+  // Local acknowledgement for side A: the connected CDC side reports
+  // isolate and clear completion one A-clock cycle after the request.
   always_ff @(posedge a_clk_i, negedge a_rst_ni) begin
     if (!a_rst_ni) begin
       a_isolate_ack_q <= 1'b0;
@@ -95,6 +101,8 @@ module cc_cdc_reset_ctrlr_composed_harness (
     end
   end
 
+  // Local acknowledgement for side B mirrors side A, but is sampled on the
+  // independent B clock to preserve the two-domain composition.
   always_ff @(posedge b_clk_i, negedge b_rst_ni) begin
     if (!b_rst_ni) begin
       b_isolate_ack_q <= 1'b0;
@@ -105,6 +113,8 @@ module cc_cdc_reset_ctrlr_composed_harness (
     end
   end
 
+  // Cross-domain contract: clear implies isolate locally, and any active
+  // clear on either side requires both sides to be isolated.
   always_comb begin
     if (a_rst_ni) begin
       assert (!a_clear_o || a_isolate_o);
@@ -119,6 +129,8 @@ module cc_cdc_reset_ctrlr_composed_harness (
     end
   end
 
+  // Side-A sequential checks validate the one-cycle acknowledgement model and
+  // cover a sequence initiated from A that propagates isolation to B.
   always_ff @(posedge a_clk_i) begin
     if (a_rst_ni && $past(a_rst_ni) && a_init_q) begin
       assert (a_isolate_ack_q == $past(a_isolate_o));
@@ -128,6 +140,8 @@ module cc_cdc_reset_ctrlr_composed_harness (
     cover (a_rst_ni && b_rst_ni && a_clear_o && b_isolate_o);
   end
 
+  // Side-B sequential checks mirror the side-A properties and cover a sequence
+  // initiated from B that propagates isolation to A.
   always_ff @(posedge b_clk_i) begin
     if (b_rst_ni && $past(b_rst_ni) && b_init_q) begin
       assert (b_isolate_ack_q == $past(b_isolate_o));

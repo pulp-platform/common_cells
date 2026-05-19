@@ -84,6 +84,8 @@ module cc_cdc_reset_ctrlr_half_properties #(
 
   logic init_q = 1'b0;
 
+  // Reset modeling: force the first sampled cycle into reset so the proof starts
+  // from a reachable reset-controller half state.
   always_ff @(posedge clk_i) begin
     init_q <= 1'b1;
     if (!init_q) begin
@@ -91,6 +93,8 @@ module cc_cdc_reset_ctrlr_half_properties #(
     end
   end
 
+  // Combinational contract: These checks tie the public clear/isolate
+  // outputs to the initiator/receiver halves and validate receiver phase decode.
   always_comb begin
     if (!rst_ni) begin
       if (CLEAR_ON_ASYNC_RESET) begin
@@ -171,6 +175,8 @@ module cc_cdc_reset_ctrlr_half_properties #(
     end
   end
 
+  // Sequential local-state checks. These assert the output contract of each
+  // initiator state and require stalled receiver phases to stay stable.
   always_ff @(posedge clk_i) begin
     if (rst_ni && init_q) begin
       if (receiver_phase_req && !receiver_phase_ack) begin
@@ -228,6 +234,8 @@ module cc_cdc_reset_ctrlr_half_properties #(
       end
     end
 
+    // Initiator transition relation: the next state must match the previous
+    // clear request, phase-CDC acknowledgement, and local isolate/clear ack.
     if (rst_ni && $past(rst_ni) && init_q) begin
       case ($past(initiator_state_q))
         InitIdle: begin
@@ -287,6 +295,8 @@ module cc_cdc_reset_ctrlr_half_properties #(
       endcase
     end
 
+    // Cover the main local and remote clear phases
+    // so bounded runs exercise both sides of the bidirectional half.
     cover (rst_ni && initiator_state_q == InitClear);
     cover (rst_ni && initiator_state_q == InitPostClear);
     cover (rst_ni && receiver_phase_q == PhaseClear);

@@ -78,21 +78,18 @@ module cc_cdc_2phase_clearable #(
   output logic  dst_valid_o,
   input  logic  dst_ready_i
 );
-  logic        s_src_clear_req;
-  logic        s_src_clear_ack_q;
-  logic        s_src_ready;
-  logic        s_src_isolate_req;
-  logic        s_src_isolate_ack_q;
-  logic        s_dst_clear_req;
-  logic        s_dst_clear_ack_q;
-  logic        s_dst_valid;
-  logic        s_dst_isolate_req;
-  logic        s_dst_isolate_ack_q;
+  // Asynchronous payload handshake signals between the source and destination.
+  (* dont_touch = "true" *) logic async_payload_req;
+  (* dont_touch = "true" *) logic async_payload_ack;
+  (* dont_touch = "true" *) data_t async_payload_data;
 
-  // Asynchronous handshake signals between the CDCs
-  (* dont_touch = "true" *) logic  async_req;
-  (* dont_touch = "true" *) logic  async_ack;
-  (* dont_touch = "true" *) data_t async_data;
+  // Asynchronous clear-controller phase handshakes between the domains.
+  (* dont_touch = "true" *) logic async_reset_src2dst_req;
+  (* dont_touch = "true" *) logic async_reset_dst2src_ack;
+  (* dont_touch = "true" *) cc_pkg::cdc_clear_seq_phase_e async_reset_src2dst_next_phase;
+  (* dont_touch = "true" *) logic async_reset_dst2src_req;
+  (* dont_touch = "true" *) logic async_reset_src2dst_ack;
+  (* dont_touch = "true" *) cc_pkg::cdc_clear_seq_phase_e async_reset_dst2src_next_phase;
 
   // Clear/isolate contract:
   // - src/dst_clear_pending_o are the local isolate requests.
@@ -114,98 +111,222 @@ module cc_cdc_2phase_clearable #(
   end
 
 
-  // The sender in the source domain.
-  cc_cdc_2phase_src_clearable #(
-    .data_t      ( data_t     ),
-    .SyncStages  ( SyncStages )
-  ) i_src (
-    .rst_ni       ( src_rst_ni                       ),
-    .clk_i        ( src_clk_i                        ),
-    .clear_i      ( s_src_clear_req                      ),
-    .data_i       ( src_data_i                       ),
-    .valid_i      ( src_valid_i & !s_src_isolate_req ),
-    .ready_o      ( s_src_ready                      ),
-    .async_req_o  ( async_req                        ),
-    .async_ack_i  ( async_ack                        ),
-    .async_data_o ( async_data                       )
+  // The source-domain wrapper owns the payload CDC half, local clear/isolate
+  // acknowledgements, and the local reset-controller half.
+  cc_cdc_2phase_src_domain_clearable #(
+    .data_t     ( data_t     ),
+    .SyncStages ( SyncStages )
+  ) i_src_domain (
+    .src_rst_ni                ( src_rst_ni                     ),
+    .src_clk_i                 ( src_clk_i                      ),
+    .src_clear_i               ( src_clear_i                    ),
+    .src_clear_pending_o       ( src_clear_pending_o            ),
+    .src_data_i                ( src_data_i                     ),
+    .src_valid_i               ( src_valid_i                    ),
+    .src_ready_o               ( src_ready_o                    ),
+    (* async *) .async_payload_req_o  ( async_payload_req  ),
+    (* async *) .async_payload_ack_i  ( async_payload_ack  ),
+    (* async *) .async_payload_data_o ( async_payload_data ),
+    (* async *) .async_reset_next_phase_o ( async_reset_src2dst_next_phase ),
+    (* async *) .async_reset_req_o        ( async_reset_src2dst_req        ),
+    (* async *) .async_reset_ack_i        ( async_reset_dst2src_ack        ),
+    (* async *) .async_reset_next_phase_i ( async_reset_dst2src_next_phase ),
+    (* async *) .async_reset_req_i        ( async_reset_dst2src_req        ),
+    (* async *) .async_reset_ack_o        ( async_reset_src2dst_ack        )
   );
 
-  assign src_ready_o = s_src_ready & !s_src_isolate_req;
 
-
-  // The receiver in the destination domain.
-  cc_cdc_2phase_dst_clearable #(
-    .data_t      ( data_t     ),
-    .SyncStages  ( SyncStages )
-  ) i_dst (
-    .rst_ni       ( dst_rst_ni                       ),
-    .clk_i        ( dst_clk_i                        ),
-    .clear_i      ( s_dst_clear_req                      ),
-    .data_o       ( dst_data_o                       ),
-    .valid_o      ( s_dst_valid                      ),
-    .ready_i      ( dst_ready_i & !s_dst_isolate_req ),
-    .async_req_i  ( async_req                        ),
-    .async_ack_o  ( async_ack                        ),
-    .async_data_i ( async_data                       )
+  // The destination-domain wrapper owns the payload CDC half, local
+  // clear/isolate acknowledgements, and the local reset-controller half.
+  cc_cdc_2phase_dst_domain_clearable #(
+    .data_t     ( data_t     ),
+    .SyncStages ( SyncStages )
+  ) i_dst_domain (
+    .dst_rst_ni                ( dst_rst_ni                     ),
+    .dst_clk_i                 ( dst_clk_i                      ),
+    .dst_clear_i               ( dst_clear_i                    ),
+    .dst_clear_pending_o       ( dst_clear_pending_o            ),
+    .dst_data_o                ( dst_data_o                     ),
+    .dst_valid_o               ( dst_valid_o                    ),
+    .dst_ready_i               ( dst_ready_i                    ),
+    (* async *) .async_payload_req_i  ( async_payload_req  ),
+    (* async *) .async_payload_ack_o  ( async_payload_ack  ),
+    (* async *) .async_payload_data_i ( async_payload_data ),
+    (* async *) .async_reset_next_phase_o ( async_reset_dst2src_next_phase ),
+    (* async *) .async_reset_req_o        ( async_reset_dst2src_req        ),
+    (* async *) .async_reset_ack_i        ( async_reset_src2dst_ack        ),
+    (* async *) .async_reset_next_phase_i ( async_reset_src2dst_next_phase ),
+    (* async *) .async_reset_req_i        ( async_reset_src2dst_req        ),
+    (* async *) .async_reset_ack_o        ( async_reset_dst2src_ack        )
   );
-
-  assign dst_valid_o = s_dst_valid & !s_dst_isolate_req;
-
-  // Synchronize the clear and reset signaling in both directions (see header of
-  // the cc_cdc_reset_ctrlr module for more details.)
-  cc_cdc_reset_ctrlr #(
-    .SyncStages(SyncStages-1)
-  ) i_cdc_reset_ctrlr (
-    .a_clk_i         ( src_clk_i           ),
-    .a_rst_ni        ( src_rst_ni          ),
-    .a_clear_i       ( src_clear_i         ),
-    .a_clear_o       ( s_src_clear_req     ),
-    .a_clear_ack_i   ( s_src_clear_ack_q   ),
-    .a_isolate_o     ( s_src_isolate_req   ),
-    .a_isolate_ack_i ( s_src_isolate_ack_q ),
-    .b_clk_i         ( dst_clk_i           ),
-    .b_rst_ni        ( dst_rst_ni          ),
-    .b_clear_i       ( dst_clear_i         ),
-    .b_clear_o       ( s_dst_clear_req     ),
-    .b_clear_ack_i   ( s_dst_clear_ack_q   ),
-    .b_isolate_o     ( s_dst_isolate_req   ),
-    .b_isolate_ack_i ( s_dst_isolate_ack_q )
-  );
-
-  // Just delay the isolate request by one cycle. We can ensure isolation within
-  // one cycle by just deasserting valid and ready signals on both sides of the CDC.
-  always_ff @(posedge src_clk_i, negedge src_rst_ni) begin
-    if (!src_rst_ni) begin
-      s_src_isolate_ack_q <= 1'b0;
-      s_src_clear_ack_q   <= 1'b0;
-    end else begin
-      s_src_isolate_ack_q <= s_src_isolate_req;
-      s_src_clear_ack_q   <= s_src_clear_req;
-    end
-  end
-
-  always_ff @(posedge dst_clk_i, negedge dst_rst_ni) begin
-    if (!dst_rst_ni) begin
-      s_dst_isolate_ack_q <= 1'b0;
-      s_dst_clear_ack_q   <= 1'b0;
-    end else begin
-      s_dst_isolate_ack_q <= s_dst_isolate_req;
-      s_dst_clear_ack_q   <= s_dst_clear_req;
-    end
-  end
-
-
-  assign src_clear_pending_o = s_src_isolate_req; // The isolate signal stays
-  // asserted during the whole
-  // clear sequence.
-  assign dst_clear_pending_o = s_dst_isolate_req;
-
 
 `ifndef COMMON_CELLS_ASSERTS_OFF
 
   `ASSERT(no_valid_i_during_clear_i, src_clear_i |-> !src_valid_i, src_clk_i, !src_rst_ni)
 
 `endif
+
+endmodule
+
+
+/// Destination-domain wrapper for the clearable two-phase CDC.
+module cc_cdc_2phase_dst_domain_clearable #(
+  parameter type data_t = logic,
+  parameter int unsigned SyncStages = 2
+) (
+  input  logic dst_rst_ni,
+  input  logic dst_clk_i,
+  input  logic dst_clear_i,
+  output logic dst_clear_pending_o,
+  output data_t dst_data_o,
+  output logic dst_valid_o,
+  input  logic dst_ready_i,
+  input  logic async_payload_req_i,
+  output logic async_payload_ack_o,
+  input  data_t async_payload_data_i,
+  output cc_pkg::cdc_clear_seq_phase_e async_reset_next_phase_o,
+  output logic async_reset_req_o,
+  input  logic async_reset_ack_i,
+  input  cc_pkg::cdc_clear_seq_phase_e async_reset_next_phase_i,
+  input  logic async_reset_req_i,
+  output logic async_reset_ack_o
+);
+
+  logic dst_clear_req;
+  logic dst_clear_ack_q;
+  logic dst_isolate_req;
+  logic dst_isolate_ack_q;
+  logic dst_valid;
+
+  cc_cdc_reset_ctrlr_half #(
+    .SyncStages ( SyncStages-1 )
+  ) i_cdc_reset_ctrlr_half (
+    .clk_i              ( dst_clk_i                  ),
+    .rst_ni             ( dst_rst_ni                 ),
+    .clear_i            ( dst_clear_i                ),
+    .clear_o            ( dst_clear_req              ),
+    .clear_ack_i        ( dst_clear_ack_q            ),
+    .isolate_o          ( dst_isolate_req            ),
+    .isolate_ack_i      ( dst_isolate_ack_q          ),
+    (* async *) .async_next_phase_o ( async_reset_next_phase_o ),
+    (* async *) .async_req_o        ( async_reset_req_o        ),
+    (* async *) .async_ack_i        ( async_reset_ack_i        ),
+    (* async *) .async_next_phase_i ( async_reset_next_phase_i ),
+    (* async *) .async_req_i        ( async_reset_req_i        ),
+    (* async *) .async_ack_o        ( async_reset_ack_o        )
+  );
+
+  cc_cdc_2phase_dst_clearable #(
+    .data_t     ( data_t     ),
+    .SyncStages ( SyncStages )
+  ) i_dst (
+    .rst_ni       ( dst_rst_ni                         ),
+    .clk_i        ( dst_clk_i                          ),
+    .clear_i      ( dst_clear_req                      ),
+    .data_o       ( dst_data_o                         ),
+    .valid_o      ( dst_valid                          ),
+    .ready_i      ( dst_ready_i & !dst_isolate_req     ),
+    (* async *) .async_req_i  ( async_payload_req_i  ),
+    (* async *) .async_ack_o  ( async_payload_ack_o  ),
+    (* async *) .async_data_i ( async_payload_data_i )
+  );
+
+  assign dst_valid_o = dst_valid & !dst_isolate_req;
+
+  // Isolation and clear are acknowledged one cycle after the local request.
+  always_ff @(posedge dst_clk_i, negedge dst_rst_ni) begin
+    if (!dst_rst_ni) begin
+      dst_isolate_ack_q <= 1'b0;
+      dst_clear_ack_q   <= 1'b0;
+    end else begin
+      dst_isolate_ack_q <= dst_isolate_req;
+      dst_clear_ack_q   <= dst_clear_req;
+    end
+  end
+
+  assign dst_clear_pending_o = dst_isolate_req;
+
+endmodule
+
+
+/// Source-domain wrapper for the clearable two-phase CDC.
+module cc_cdc_2phase_src_domain_clearable #(
+  parameter type data_t = logic,
+  parameter int unsigned SyncStages = 2
+) (
+  input  logic src_rst_ni,
+  input  logic src_clk_i,
+  input  logic src_clear_i,
+  output logic src_clear_pending_o,
+  input  data_t src_data_i,
+  input  logic src_valid_i,
+  output logic src_ready_o,
+  output logic async_payload_req_o,
+  input  logic async_payload_ack_i,
+  output data_t async_payload_data_o,
+  output cc_pkg::cdc_clear_seq_phase_e async_reset_next_phase_o,
+  output logic async_reset_req_o,
+  input  logic async_reset_ack_i,
+  input  cc_pkg::cdc_clear_seq_phase_e async_reset_next_phase_i,
+  input  logic async_reset_req_i,
+  output logic async_reset_ack_o
+);
+
+  logic src_clear_req;
+  logic src_clear_ack_q;
+  logic src_ready;
+  logic src_isolate_req;
+  logic src_isolate_ack_q;
+
+  cc_cdc_reset_ctrlr_half #(
+    .SyncStages ( SyncStages-1 )
+  ) i_cdc_reset_ctrlr_half (
+    .clk_i              ( src_clk_i                  ),
+    .rst_ni             ( src_rst_ni                 ),
+    .clear_i            ( src_clear_i                ),
+    .clear_o            ( src_clear_req              ),
+    .clear_ack_i        ( src_clear_ack_q            ),
+    .isolate_o          ( src_isolate_req            ),
+    .isolate_ack_i      ( src_isolate_ack_q          ),
+    (* async *) .async_next_phase_o ( async_reset_next_phase_o ),
+    (* async *) .async_req_o        ( async_reset_req_o        ),
+    (* async *) .async_ack_i        ( async_reset_ack_i        ),
+    (* async *) .async_next_phase_i ( async_reset_next_phase_i ),
+    (* async *) .async_req_i        ( async_reset_req_i        ),
+    (* async *) .async_ack_o        ( async_reset_ack_o        )
+  );
+
+  cc_cdc_2phase_src_clearable #(
+    .data_t     ( data_t     ),
+    .SyncStages ( SyncStages )
+  ) i_src (
+    .rst_ni       ( src_rst_ni                         ),
+    .clk_i        ( src_clk_i                          ),
+    .clear_i      ( src_clear_req                      ),
+    .data_i       ( src_data_i                         ),
+    .valid_i      ( src_valid_i & !src_isolate_req     ),
+    .ready_o      ( src_ready                          ),
+    (* async *) .async_req_o  ( async_payload_req_o  ),
+    (* async *) .async_ack_i  ( async_payload_ack_i  ),
+    (* async *) .async_data_o ( async_payload_data_o )
+  );
+
+  assign src_ready_o = src_ready & !src_isolate_req;
+
+  // Isolation and clear are acknowledged one cycle after the local request.
+  always_ff @(posedge src_clk_i, negedge src_rst_ni) begin
+    if (!src_rst_ni) begin
+      src_isolate_ack_q <= 1'b0;
+      src_clear_ack_q   <= 1'b0;
+    end else begin
+      src_isolate_ack_q <= src_isolate_req;
+      src_clear_ack_q   <= src_clear_req;
+    end
+  end
+
+  assign src_clear_pending_o = src_isolate_req; // The isolate signal stays
+                                                // asserted during the whole
+                                                // clear sequence.
 
 endmodule
 
