@@ -9,283 +9,755 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 //
-// Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
+// Authors:
+// - Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
+// - Philippe Sauter <phsauter@iis.ee.ethz.ch>
+//
+// Description: Clearable Two-Phase CDC Testbench
+// Exercise payload ordering, clear/isolate sequencing, async-reset behavior,
+// and timed async-channel delay sweeps for cc_cdc_2phase_clearable.
 
 module cc_cdc_2phase_clearable_tb;
 
-  parameter int UNTIL = 100000;
-  parameter bit INJECT_DELAYS = 1;
-  parameter int CLEAR_PPM = 2000;
-  parameter int SYNC_STAGES = 3;
+  timeunit 1ns;
+  timeprecision 1ps;
 
+  parameter int unsigned NUM_RANDOM_TRANSFERS = 200;
+  parameter int unsigned NUM_ACTIVE_STRESS_TRANSFERS = 160;
+  parameter int unsigned NUM_ACTIVE_STRESS_EVENTS = 8;
+  parameter int unsigned SYNC_STAGES = 3;
+  parameter int unsigned TCK_SRC_PS = 10000;
+  parameter int unsigned TCK_DST_PS = 17000;
+  parameter int unsigned TIMEOUT_CYCLES = 20000;
+  parameter int unsigned SEED = 32'hcdc2_c1ea;
+  parameter bit          INJECT_DELAYS = 1'b0;
+  parameter int unsigned MAX_DELAY_PS = 0;
+  parameter int unsigned SRC_START_DELAY_PS = 0;
+  parameter int unsigned DST_START_DELAY_PS = 0;
 
-  time tck_src                = 10ns;
-  time tck_dst                = 10ns;
-  bit src_done                = 0;
-  bit dst_done                = 0;
-  bit done;
-  assign done = src_done & dst_done;
+  typedef enum logic [1:0] {
+    DstReadyLow,
+    DstReadyHigh,
+    DstReadyRandom
+  } dst_ready_mode_e;
 
-  // Signals of the design under test.
-  logic        src_rst_ni  = 1;
-  logic        src_clk_i   = 0;
-  logic [31:0] src_data_i  = 0;
-  logic        src_clear_i = 0;
+  time tck_src = TCK_SRC_PS * 1ps;
+  time tck_dst = TCK_DST_PS * 1ps;
+
+  logic        src_rst_ni = 1'b1;
+  logic        src_clk_i = 1'b0;
+  logic        src_clear_i = 1'b0;
   logic        src_clear_pending_o;
-  logic        src_valid_i = 0;
+  logic [31:0] src_data_i = '0;
+  logic        src_valid_i = 1'b0;
   logic        src_ready_o;
 
-  logic        dst_rst_ni  = 1;
-  logic        dst_clk_i   = 0;
-  logic        dst_clear_i = 0;
+  logic        dst_rst_ni = 1'b1;
+  logic        dst_clk_i = 1'b0;
+  logic        dst_clear_i = 1'b0;
   logic        dst_clear_pending_o;
   logic [31:0] dst_data_o;
   logic        dst_valid_o;
-  logic        dst_ready_i = 0;
+  logic        dst_ready_i = 1'b0;
 
-  // Instantiate the design under test.
-  if (INJECT_DELAYS) begin : g_dut
-    cc_cdc_2phase_clearable_tb_delay_injector #(0.8ns) i_dut (.*);
-  end else begin : g_dut
-    cc_cdc_2phase_clearable #(logic [31:0]) i_dut (.*);
+  logic [31:0] expected_q[$];
+  // Transactions accepted before/during a clear window may either be dropped or
+  // complete later. They are still checked against this queue to catch truly
+  // spurious or duplicated destination handshakes.
+  logic [31:0] stale_q[$];
+  int unsigned num_src_handshakes = 0;
+  int unsigned num_dst_handshakes = 0;
+  int unsigned num_stale_ignored = 0;
+  int unsigned num_active_stress_events = 0;
+  int unsigned num_errors = 0;
+  bit          drop_window = 1'b0;
+  bit          active_src_pause = 1'b0;
+  bit          active_src_done = 1'b1;
+
+  dst_ready_mode_e dst_ready_mode = DstReadyLow;
+
+  if (INJECT_DELAYS) begin : gen_delayed_dut
+    cc_cdc_2phase_clearable_tb_delay_injector #(
+      .SYNC_STAGES  ( SYNC_STAGES  ),
+      .MAX_DELAY_PS ( MAX_DELAY_PS )
+    ) i_dut (
+      .src_rst_ni,
+      .src_clk_i,
+      .src_clear_i,
+      .src_clear_pending_o,
+      .src_data_i,
+      .src_valid_i,
+      .src_ready_o,
+      .dst_rst_ni,
+      .dst_clk_i,
+      .dst_clear_i,
+      .dst_clear_pending_o,
+      .dst_data_o,
+      .dst_valid_o,
+      .dst_ready_i
+    );
+  end else begin : gen_dut
+    cc_cdc_2phase_clearable #(
+      .data_t            ( logic [31:0] ),
+      .SyncStages        ( SYNC_STAGES  ),
+      .ClearOnAsyncReset ( 1            )
+    ) i_dut (
+      .src_rst_ni,
+      .src_clk_i,
+      .src_clear_i,
+      .src_clear_pending_o,
+      .src_data_i,
+      .src_valid_i,
+      .src_ready_o,
+      .dst_rst_ni,
+      .dst_clk_i,
+      .dst_clear_i,
+      .dst_clear_pending_o,
+      .dst_data_o,
+      .dst_valid_o,
+      .dst_ready_i
+    );
   end
 
-  typedef struct {
-    int          data;
-    bit          is_stale;
-  } item_t;
-
-
-  // Mailbox with expected items on destination side.
-  item_t dst_mbox[$];
-  int num_sent = 0;
-  int num_received = 0;
-  int num_failed = 0;
-
-  // Clock generators.
-  initial begin
-    static int num_items, num_clks;
-    num_items = 10;
-    num_clks = 0;
-    #10ns;
-    src_rst_ni = 0;
-    #10ns;
-    src_rst_ni = 1;
-    #10ns;
-    while (!done) begin
-      src_clk_i = 1;
-      #(tck_src/2);
-      src_clk_i = 0;
-      #(tck_src/2);
-
-      // Modulate the clock frequency.
-      num_clks++;
-      if (num_sent >= num_items && num_clks > 10) begin
-        num_items = num_sent + 10;
-        num_clks = 0;
-        tck_src = $urandom_range(1000, 10000) * 1ps;
-        assert(tck_src > 0);
-      end
-    end
+  initial begin : gen_src_clk
+    #(SRC_START_DELAY_PS * 1ps);
+    forever #(tck_src / 2) src_clk_i = ~src_clk_i;
   end
 
-  initial begin
-    static int num_items, num_clks;
-    num_items = 10;
-    num_clks = 0;
-    #10ns;
-    dst_rst_ni = 0;
-    #10ns;
-    dst_rst_ni = 1;
-    #10ns;
-    while (!done) begin
-      dst_clk_i = 1;
-      #(tck_dst/2);
-      dst_clk_i = 0;
-      #(tck_dst/2);
-
-      // Modulate the clock frequency.
-      num_clks++;
-      if (num_received >= num_items && num_clks > 10) begin
-        num_items = num_received + 10;
-        num_clks = 0;
-        tck_dst = $urandom_range(1000, 10000) * 1ps;
-        assert(tck_dst > 0);
-      end
-    end
+  initial begin : gen_dst_clk
+    #(DST_START_DELAY_PS * 1ps);
+    forever #(tck_dst / 2) dst_clk_i = ~dst_clk_i;
   end
 
-  // Source side sender.
-  task src_cycle_start;
-    #(tck_src*0.8);
-  endtask
-
-  task src_cycle_end;
-    @(posedge src_clk_i);
-  endtask
-
-  initial begin
-    @(negedge src_rst_ni);
-    @(posedge src_rst_ni);
-    repeat(3) @(posedge src_clk_i);
-    for (int i = 0; i < UNTIL; i++) begin
-      static item_t stimulus;
-      static bit     clear_cdc;
-      stimulus.data  = $random();
-      stimulus.is_stale = 1'b0;
-      src_data_i    <= #(tck_src*0.2) stimulus.data;
-      src_valid_i   <= #(tck_src*0.2) 1;
-      dst_mbox.push_front(stimulus);
-      num_sent++;
-      src_cycle_start();
-      while (!src_ready_o) begin
-        src_cycle_end();
-        src_cycle_start();
-        // Ramdomly clear the CDC. During pending transaction
-        clear_cdc = $urandom_range(0,1e6) < CLEAR_PPM;
-        if (clear_cdc && !src_clear_pending_o) begin
-          // The cdc shall be cleared. Mark all items in the mailbox as stale.
-          foreach(dst_mbox[i]) begin
-            if (!dst_mbox[i].is_stale) begin
-              dst_mbox[i].is_stale = 1'b1;
-              num_sent--;
-            end
-          end
-          // Clear the CDC using either asynchronous or synchronous reset
-          if ($urandom_range(0,1) == 1) begin
-            $info("Randomly clearing CDC source-side synchronously");
-            // Now raise the clear signal for one clock cycle.
-            src_cycle_start();
-            src_clear_i = 1'b1;
-            src_valid_i = 1'b0;
-            src_cycle_end();
-            src_clear_i = #(tck_src*0.2) 1'b0;
-          end else begin
-            $info("Randomly resetting CDC source-side asynchronously");
-            // Now assert the async reset signal for one clock cycle.
-            src_cycle_start();
-            src_rst_ni  = 1'b0;
-            src_valid_i = 1'b0;
-            src_cycle_end();
-            src_rst_ni = #(tck_src*0.2) 1'b1;
-          end
-          break;
-        end
-      end
-      src_cycle_end();
-      src_valid_i <= #(tck_src*0.2) 0;
-    end
-    src_done = 1;
+  always @(negedge dst_clk_i) begin
+    case (dst_ready_mode)
+      DstReadyLow:    dst_ready_i <= 1'b0;
+      DstReadyHigh:   dst_ready_i <= 1'b1;
+      DstReadyRandom: dst_ready_i <= ($urandom_range(0, 99) < 70);
+      default:        dst_ready_i <= 1'b0;
+    endcase
   end
 
-  // Destination side receiver.
-  task dst_cycle_start;
-    #(tck_dst*0.8);
-  endtask
-
-  task dst_cycle_end;
-    @(posedge dst_clk_i);
-  endtask
-
-  initial begin
-    @(negedge dst_rst_ni);
-    @(posedge dst_rst_ni);
-    repeat(3) @(posedge dst_clk_i);
-    while (!src_done || dst_mbox.size() > 0) begin
-      static item_t expected;
-      static integer actual;
-      static int cooldown;
-      static bit clear_cdc;
-      //randomly drop the transaction by clearing from the destination side
-      clear_cdc = $urandom_range(0,1e6) < CLEAR_PPM;
-      if (clear_cdc && !dst_clear_pending_o) begin
-        // Clear the CDC using either asynchronous or synchronous reset
-        if ($urandom_range(0,1) == 1) begin
-          $info("Randomly clearing CDC destination-side synchronously");
-          // Now raise the clear signal for one clock cycle.
-          dst_cycle_start();
-          dst_clear_i = 1'b1;
-          dst_ready_i = 1'b0;
-          dst_cycle_end();
-          dst_clear_i = #(tck_dst*0.2) 1'b0;
-        end else begin
-          $info("Randomly resetting CDC destination-side asynchronously");
-          // Now assert the async reset signal for one clock cycle.
-          dst_cycle_start();
-          dst_rst_ni  = 1'b0;
-          dst_ready_i = 1'b0;
-          dst_cycle_end();
-          dst_rst_ni = #(tck_dst*0.2) 1'b1;
-        end
-        // Wait for 1 dst clock cycle + SYNC_STAGES source clock cycles for the clear to propagate to the
-        // other domain before clearing the mailbox (the pending item might be
-        // consumsed by destination before the clear request arrives).
-        @(posedge dst_clk_i);
-        repeat(SYNC_STAGES) @(posedge src_clk_i);
-        // and end the loop iteration at the rising edge of the dst clk
-        dst_cycle_end();
-        // Delete all pending items in the mailbox except for the last one
-        while (dst_mbox.size() > 1) begin
-          expected = dst_mbox.pop_back();
-        end
-      end else begin
-        dst_ready_i <= #(tck_dst*0.2) 1;
-        dst_cycle_start();
-        while (!dst_valid_o) begin
-          dst_cycle_end();
-          dst_cycle_start();
-        end
-        actual = dst_data_o;
-        num_received++;
-        if (dst_mbox.size() == 0) begin
-          $error("unexpected transaction: data=%0h", actual);
-          num_failed++;
-        end else begin
-          expected = dst_mbox.pop_back();
-          if (actual != expected.data) begin
-            // Check if the expected item is a stale item. If so, pop all stale
-            // items until we receive a fresh one and check again.
-            while (dst_mbox.size() > 0  && expected.is_stale && expected.data != actual) begin
-              expected = dst_mbox.pop_back();
-            end
-            if (actual != expected.data) begin
-              $error("transaction mismatch: exp=%0h, act=%0h", expected.data, actual);
-              num_failed++;
-            end else begin
-              if (!expected.is_stale) begin
-                num_received++;
-              end
-            end
-          end else if (expected.is_stale) begin
-            $info("Received stale item after clear. This is expected to happen for some cycles after the clear until the clear propagated to the other side.");
-          end else begin
-            num_received++;
-          end
-        end
-        dst_cycle_end();
-        dst_ready_i <= #(tck_dst*0.2) 0;
-
-        // Insert a random cooldown period.
-        cooldown = $urandom_range(0, 40);
-        if (cooldown < 20) repeat(cooldown) @(posedge dst_clk_i);
-      end
-    end
-
-    if (num_failed > 0) begin
-      $error("%0d/%0d items mismatched", num_failed, num_sent);
+  always @(posedge src_clk_i) begin
+    if (!src_rst_ni) begin
+      // Reset is handled by the DUT. The scoreboard is controlled by the test
+      // sequence because one-sided reset intentionally drops in-flight items.
     end else begin
-      $info("%0d items passed", num_sent);
+      if (src_clear_pending_o && src_ready_o) begin
+        report_error("src_ready_o asserted while src_clear_pending_o is asserted");
+      end
+      if (src_valid_i && src_ready_o) begin
+        num_src_handshakes++;
+        if (drop_window) begin
+          stale_q.push_back(src_data_i);
+        end else begin
+          expected_q.push_back(src_data_i);
+        end
+      end
+    end
+  end
+
+  always @(posedge dst_clk_i) begin
+    logic [31:0] expected;
+
+    if (!dst_rst_ni) begin
+      // See source-side reset comment above.
+    end else begin
+      if (dst_clear_pending_o && dst_valid_o) begin
+        report_error("dst_valid_o asserted while dst_clear_pending_o is asserted");
+      end
+      if (dst_valid_o && dst_ready_i) begin
+        num_dst_handshakes++;
+        if (consume_stale(dst_data_o)) begin
+          num_stale_ignored++;
+        end else if (drop_window) begin
+          report_error($sformatf("unexpected destination transaction during drop window: data=0x%08h stale_pending=%0d",
+                                 dst_data_o, stale_q.size()));
+        end else if (expected_q.size() == 0) begin
+          report_error($sformatf("unexpected destination transaction: data=0x%08h", dst_data_o));
+        end else begin
+          expected = expected_q.pop_front();
+          if (dst_data_o !== expected) begin
+            report_error($sformatf("transaction mismatch: expected=0x%08h actual=0x%08h",
+                                   expected, dst_data_o));
+          end
+        end
+      end
+    end
+  end
+
+  task automatic report_error(input string msg);
+    num_errors++;
+    $error("%s", msg);
+  endtask
+
+  function automatic bit consume_stale(input logic [31:0] data);
+    int match_idx;
+
+    match_idx = -1;
+    foreach (stale_q[i]) begin
+      if ((match_idx < 0) && (stale_q[i] === data)) begin
+        match_idx = int'(i);
+      end
     end
 
-    dst_done = 1;
+    if (match_idx < 0) begin
+      return 1'b0;
+    end
+
+    // Earlier stale items may have been dropped by the clear sequence.
+    repeat (match_idx + 1) begin
+      void'(stale_q.pop_front());
+    end
+    return 1'b1;
+  endfunction
+
+  task automatic wait_src_cycles(input int unsigned cycles);
+    repeat (cycles) begin
+      @(posedge src_clk_i);
+    end
+    #1ps;
+  endtask
+
+  task automatic wait_dst_cycles(input int unsigned cycles);
+    repeat (cycles) begin
+      @(posedge dst_clk_i);
+    end
+    #1ps;
+  endtask
+
+  task automatic begin_drop_window;
+    drop_window = 1'b1;
+    while (expected_q.size() != 0) begin
+      stale_q.push_back(expected_q.pop_front());
+    end
+  endtask
+
+  task automatic reset_both_domains;
+    drop_window = 1'b1;
+    expected_q.delete();
+    stale_q.delete();
+    src_valid_i = 1'b0;
+    src_clear_i = 1'b0;
+    dst_clear_i = 1'b0;
+    active_src_pause = 1'b0;
+    active_src_done = 1'b1;
+    dst_ready_mode = DstReadyLow;
+    src_rst_ni = 1'b0;
+    dst_rst_ni = 1'b0;
+
+    fork
+      wait_src_cycles(4);
+      wait_dst_cycles(4);
+    join
+
+    src_rst_ni = 1'b1;
+    dst_rst_ni = 1'b1;
+
+    fork
+      wait_src_cycles(6);
+      wait_dst_cycles(6);
+    join
+
+    drop_window = 1'b0;
+  endtask
+
+  task automatic wait_pending_seen(input bit expect_src, input bit expect_dst, input string test_name);
+    bit seen_src;
+    bit seen_dst;
+
+    seen_src = !expect_src;
+    seen_dst = !expect_dst;
+
+    for (int unsigned i = 0; i < TIMEOUT_CYCLES; i++) begin
+      if (src_clear_pending_o) begin
+        seen_src = 1'b1;
+      end
+      if (dst_clear_pending_o) begin
+        seen_dst = 1'b1;
+      end
+      if (seen_src && seen_dst) begin
+        return;
+      end
+      @(posedge src_clk_i or posedge dst_clk_i);
+    end
+
+    report_error($sformatf("timeout waiting for clear pending assertion in %s", test_name));
+  endtask
+
+  task automatic wait_clear_done(input string test_name);
+    for (int unsigned i = 0; i < TIMEOUT_CYCLES; i++) begin
+      if (src_rst_ni && dst_rst_ni &&
+          !src_clear_i && !dst_clear_i &&
+          !src_clear_pending_o && !dst_clear_pending_o) begin
+        fork
+          wait_src_cycles(SYNC_STAGES + 4);
+          wait_dst_cycles(SYNC_STAGES + 4);
+        join
+        expected_q.delete();
+        return;
+      end
+      @(posedge src_clk_i or posedge dst_clk_i);
+    end
+
+    report_error($sformatf("timeout waiting for clear completion in %s", test_name));
+  endtask
+
+  task automatic send_word(input logic [31:0] data);
+    src_data_i = data;
+    src_valid_i = 1'b1;
+
+    for (int unsigned i = 0; i < TIMEOUT_CYCLES; i++) begin
+      @(negedge src_clk_i);
+      if (src_ready_o) begin
+        @(posedge src_clk_i);
+        @(negedge src_clk_i);
+        src_valid_i = 1'b0;
+        src_data_i = '0;
+        return;
+      end
+    end
+
+    report_error($sformatf("timeout sending data=0x%08h", data));
+    src_valid_i = 1'b0;
+  endtask
+
+  task automatic wait_scoreboard_empty(input string test_name);
+    for (int unsigned i = 0; i < TIMEOUT_CYCLES; i++) begin
+      if (expected_q.size() == 0) begin
+        return;
+      end
+      @(posedge dst_clk_i or posedge src_clk_i);
+    end
+
+    report_error($sformatf("timeout waiting for scoreboard to drain in %s, pending=%0d",
+                           test_name, expected_q.size()));
+  endtask
+
+  task automatic wait_src_ready(input string test_name);
+    for (int unsigned i = 0; i < TIMEOUT_CYCLES; i++) begin
+      if (src_ready_o) begin
+        return;
+      end
+      @(posedge src_clk_i or posedge dst_clk_i);
+    end
+
+    report_error($sformatf("timeout waiting for source ready in %s", test_name));
+  endtask
+
+  task automatic wait_dst_valid(input string test_name);
+    for (int unsigned i = 0; i < TIMEOUT_CYCLES; i++) begin
+      if (dst_valid_o) begin
+        return;
+      end
+      @(posedge dst_clk_i or posedge src_clk_i);
+    end
+
+    report_error($sformatf("timeout waiting for destination valid in %s", test_name));
+  endtask
+
+  task automatic send_sequence(input int unsigned num_words, input logic [31:0] base);
+    for (int unsigned i = 0; i < num_words; i++) begin
+      send_word(base + i);
+      if ($urandom_range(0, 3) == 0) begin
+        wait_src_cycles($urandom_range(1, 3));
+      end
+    end
+  endtask
+
+  task automatic sync_src_clear(input string test_name);
+    begin_drop_window();
+    src_valid_i = 1'b0;
+    @(negedge src_clk_i);
+    src_clear_i = 1'b1;
+    @(negedge src_clk_i);
+    src_clear_i = 1'b0;
+    wait_pending_seen(1'b1, 1'b1, test_name);
+    wait_clear_done(test_name);
+    drop_window = 1'b0;
+  endtask
+
+  task automatic sync_dst_clear(input string test_name);
+    begin_drop_window();
+    @(negedge dst_clk_i);
+    dst_clear_i = 1'b1;
+    @(negedge dst_clk_i);
+    dst_clear_i = 1'b0;
+    wait_pending_seen(1'b1, 1'b1, test_name);
+    wait_clear_done(test_name);
+    drop_window = 1'b0;
+  endtask
+
+  task automatic sync_both_clear(input string test_name);
+    begin_drop_window();
+    src_valid_i = 1'b0;
+
+    fork
+      begin
+        @(negedge src_clk_i);
+        src_clear_i = 1'b1;
+        @(negedge src_clk_i);
+        src_clear_i = 1'b0;
+      end
+      begin
+        @(negedge dst_clk_i);
+        dst_clear_i = 1'b1;
+        @(negedge dst_clk_i);
+        dst_clear_i = 1'b0;
+      end
+    join
+
+    wait_pending_seen(1'b1, 1'b1, test_name);
+    wait_clear_done(test_name);
+    drop_window = 1'b0;
+  endtask
+
+  task automatic async_src_reset(input string test_name);
+    begin_drop_window();
+    src_valid_i = 1'b0;
+    #(tck_src / 3);
+    src_rst_ni = 1'b0;
+    wait_src_cycles(2);
+    src_rst_ni = 1'b1;
+    wait_pending_seen(1'b1, 1'b1, test_name);
+    wait_clear_done(test_name);
+    drop_window = 1'b0;
+  endtask
+
+  task automatic async_dst_reset(input string test_name);
+    begin_drop_window();
+    #(tck_dst / 3);
+    dst_rst_ni = 1'b0;
+    wait_dst_cycles(2);
+    dst_rst_ni = 1'b1;
+    wait_pending_seen(1'b1, 1'b1, test_name);
+    wait_clear_done(test_name);
+    drop_window = 1'b0;
+  endtask
+
+  task automatic run_transfer_check(input string test_name, input int unsigned num_words,
+                                    input logic [31:0] base,
+                                    input dst_ready_mode_e ready_mode);
+    $display("%m: %s", test_name);
+    dst_ready_mode = ready_mode;
+    send_sequence(num_words, base);
+    wait_scoreboard_empty(test_name);
+    wait_src_ready(test_name);
+    dst_ready_mode = DstReadyLow;
+    wait_dst_cycles(2);
+  endtask
+
+  task automatic run_backpressured_clear_check;
+    $display("%m: destination clear while destination holds a valid item");
+    stage_backpressured_item(32'hc1ea_0001, "destination clear while valid is backpressured");
+
+    sync_dst_clear("destination clear while valid is backpressured");
+    run_transfer_check("post-backpressure-clear transfer", 8, 32'hc1ea_1000, DstReadyHigh);
+  endtask
+
+  task automatic stage_backpressured_item(input logic [31:0] data, input string test_name);
+    dst_ready_mode = DstReadyHigh;
+    wait_src_ready(test_name);
+    send_word(data);
+    dst_ready_mode = DstReadyLow;
+    wait_dst_valid(test_name);
+  endtask
+
+  task automatic run_backpressured_source_clear_check;
+    $display("%m: source clear while destination holds a valid item");
+    stage_backpressured_item(32'hc1ea_2001, "source clear while valid is backpressured");
+
+    sync_src_clear("source clear while valid is backpressured");
+    run_transfer_check("post-source-backpressure-clear transfer", 8, 32'hc1ea_3000, DstReadyHigh);
+  endtask
+
+  task automatic run_backpressured_simultaneous_clear_check;
+    $display("%m: simultaneous clear while destination holds a valid item");
+    stage_backpressured_item(32'hc1ea_4001, "simultaneous clear while valid is backpressured");
+
+    sync_both_clear("simultaneous clear while valid is backpressured");
+    run_transfer_check("post-simultaneous-backpressure-clear transfer", 8, 32'hc1ea_5000,
+                       DstReadyHigh);
+  endtask
+
+  task automatic run_backpressured_source_reset_check;
+    $display("%m: source async reset while destination holds a valid item");
+    stage_backpressured_item(32'hc1ea_6001, "source async reset while valid is backpressured");
+
+    async_src_reset("source async reset while valid is backpressured");
+    run_transfer_check("post-source-backpressure-reset transfer", 8, 32'hc1ea_7000, DstReadyHigh);
+  endtask
+
+  task automatic run_backpressured_destination_reset_check;
+    $display("%m: destination async reset while destination holds a valid item");
+    stage_backpressured_item(32'hc1ea_8001, "destination async reset while valid is backpressured");
+
+    async_dst_reset("destination async reset while valid is backpressured");
+    run_transfer_check("post-destination-backpressure-reset transfer", 8, 32'hc1ea_9000,
+                       DstReadyHigh);
+  endtask
+
+  task automatic pause_active_source(input string test_name);
+    active_src_pause = 1'b1;
+    wait_src_cycles(2);
+    @(negedge src_clk_i);
+    #1ps;
+    src_valid_i = 1'b0;
+    src_data_i = '0;
+    $display("%m: active source paused for %s", test_name);
+  endtask
+
+  task automatic resume_active_source;
+    @(negedge src_clk_i);
+    active_src_pause = 1'b0;
+  endtask
+
+  task automatic drive_active_source(input int unsigned num_words, input logic [31:0] base);
+    int unsigned sent;
+    bit handshake_seen;
+
+    sent = 0;
+    handshake_seen = 1'b0;
+    active_src_done = 1'b0;
+    src_valid_i = 1'b0;
+    src_data_i = '0;
+
+    while (sent < num_words) begin
+      @(negedge src_clk_i);
+      #1ps;
+
+      if (!src_rst_ni || active_src_pause) begin
+        src_valid_i = 1'b0;
+        src_data_i = '0;
+        handshake_seen = 1'b0;
+      end else if (handshake_seen) begin
+        handshake_seen = 1'b0;
+        if ((sent >= num_words) || ($urandom_range(0, 9) == 0)) begin
+          src_valid_i = 1'b0;
+          src_data_i = '0;
+        end else begin
+          src_valid_i = 1'b1;
+          src_data_i = base + sent;
+        end
+      end else if (!src_valid_i && ($urandom_range(0, 3) != 0)) begin
+        src_valid_i = 1'b1;
+        src_data_i = base + sent;
+      end
+
+      @(posedge src_clk_i);
+      if (src_rst_ni && !active_src_pause && src_valid_i && src_ready_o) begin
+        sent++;
+        handshake_seen = 1'b1;
+      end
+    end
+
+    @(negedge src_clk_i);
+    src_valid_i = 1'b0;
+    src_data_i = '0;
+    active_src_done = 1'b1;
+  endtask
+
+  task automatic wait_active_event_gap;
+    repeat ($urandom_range(4, 20)) begin
+      @(posedge src_clk_i or posedge dst_clk_i);
+    end
+    #1ps;
+  endtask
+
+  task automatic run_active_control_events(input int unsigned num_events);
+    string event_name;
+
+    for (int unsigned i = 0; i < num_events; i++) begin
+      wait_active_event_gap();
+      event_name = $sformatf("active stress event %0d", i);
+
+      unique case ($urandom_range(0, 4))
+        0: begin
+          sync_dst_clear({event_name, ": destination synchronous clear"});
+        end
+        1: begin
+          async_dst_reset({event_name, ": destination asynchronous reset"});
+        end
+        2: begin
+          pause_active_source({event_name, ": source synchronous clear"});
+          sync_src_clear({event_name, ": source synchronous clear"});
+          resume_active_source();
+        end
+        3: begin
+          pause_active_source({event_name, ": source asynchronous reset"});
+          async_src_reset({event_name, ": source asynchronous reset"});
+          resume_active_source();
+        end
+        4: begin
+          pause_active_source({event_name, ": simultaneous synchronous clear"});
+          sync_both_clear({event_name, ": simultaneous synchronous clear"});
+          resume_active_source();
+        end
+        default: begin
+          pause_active_source({event_name, ": simultaneous synchronous clear"});
+          sync_both_clear({event_name, ": simultaneous synchronous clear"});
+          resume_active_source();
+        end
+      endcase
+
+      num_active_stress_events++;
+    end
+  endtask
+
+  task automatic run_active_traffic_stress;
+    if ((NUM_ACTIVE_STRESS_TRANSFERS == 0) || (NUM_ACTIVE_STRESS_EVENTS == 0)) begin
+      return;
+    end
+
+    $display("%m: active traffic stress: transfers=%0d events=%0d",
+             NUM_ACTIVE_STRESS_TRANSFERS, NUM_ACTIVE_STRESS_EVENTS);
+    expected_q.delete();
+    stale_q.delete();
+    drop_window = 1'b0;
+    active_src_pause = 1'b0;
+    active_src_done = 1'b0;
+    dst_ready_mode = DstReadyRandom;
+
+    fork
+      drive_active_source(NUM_ACTIVE_STRESS_TRANSFERS, 32'ha000_0000);
+      run_active_control_events(NUM_ACTIVE_STRESS_EVENTS);
+    join
+
+    if (!active_src_done) begin
+      report_error("active source driver did not finish");
+    end
+
+    wait_scoreboard_empty("active traffic stress");
+    wait_src_ready("active traffic stress");
+    dst_ready_mode = DstReadyLow;
+    wait_dst_cycles(2);
+  endtask
+
+  initial begin : run_tests
+    int unsigned seed;
+
+    seed = SEED;
+    seed = $urandom(seed);
+    $display("%m: SEED=0x%08h derived=0x%08h", SEED, seed);
+
+    reset_both_domains();
+
+    run_transfer_check("basic fixed-ready transfer", 32, 32'h1000_0000, DstReadyHigh);
+
+    sync_src_clear("source synchronous idle clear");
+    run_transfer_check("post-source-clear transfer", 16, 32'h2000_0000, DstReadyHigh);
+
+    sync_dst_clear("destination synchronous idle clear");
+    run_transfer_check("post-destination-clear transfer", 16, 32'h3000_0000, DstReadyHigh);
+
+    sync_both_clear("simultaneous synchronous idle clear");
+    run_transfer_check("post-simultaneous-clear transfer", 16, 32'h4000_0000, DstReadyHigh);
+
+    async_src_reset("source asynchronous idle reset");
+    run_transfer_check("post-source-async-reset transfer", 16, 32'h5000_0000, DstReadyHigh);
+
+    async_dst_reset("destination asynchronous idle reset");
+    run_transfer_check("post-destination-async-reset transfer", 16, 32'h6000_0000, DstReadyHigh);
+
+    run_backpressured_clear_check();
+    run_backpressured_source_clear_check();
+    run_backpressured_simultaneous_clear_check();
+    run_backpressured_source_reset_check();
+    run_backpressured_destination_reset_check();
+
+    run_active_traffic_stress();
+
+    run_transfer_check("randomized ready transfer", NUM_RANDOM_TRANSFERS, 32'h7000_0000,
+                       DstReadyRandom);
+
+    if (num_errors != 0) begin
+      $fatal(1, "%m: failed with %0d errors", num_errors);
+    end
+
+    $display("%m: passed: src_handshakes=%0d dst_handshakes=%0d stale_ignored=%0d stale_dropped=%0d active_stress_events=%0d",
+             num_src_handshakes, num_dst_handshakes, num_stale_ignored,
+             stale_q.size(), num_active_stress_events);
+    $finish;
+  end
+
+  bind cc_cdc_reset_ctrlr_half cc_cdc_reset_ctrlr_half_monitor i_monitor (
+    .clk_i,
+    .rst_ni,
+    .isolate_o,
+    .isolate_ack_i,
+    .clear_o,
+    .clear_ack_i,
+    .async_next_phase_o,
+    .async_req_o,
+    .async_next_phase_i,
+    .async_req_i,
+    .initiator_state_q,
+    .initiator_clear_seq_phase,
+    .initiator_phase_transition_req,
+    .initiator_isolate_out,
+    .initiator_clear_out,
+    .receiver_phase_q,
+    .receiver_next_phase,
+    .receiver_phase_req,
+    .receiver_phase_ack,
+    .receiver_isolate_out,
+    .receiver_clear_out
+  );
+
+endmodule
+
+
+module cc_cdc_2phase_clearable_tb_bit_delay #(
+  parameter int unsigned MAX_DELAY_PS = 0
+)(
+  input  logic in_i,
+  output logic out_o
+);
+
+  timeunit 1ns;
+  timeprecision 1ps;
+
+  initial begin
+    out_o = 1'b0;
+  end
+
+  always @(in_i) begin
+    automatic int unsigned delay_ps;
+    delay_ps = (MAX_DELAY_PS == 0) ? 0 : $urandom_range(0, MAX_DELAY_PS);
+    out_o <= #(delay_ps * 1ps) in_i;
   end
 
 endmodule
 
 
-module cc_cdc_2phase_clearable_tb_delay_injector #(
-  parameter time MaxDelay = 0ns,
-  parameter int SyncStages = 3
+module cc_cdc_2phase_clearable_tb_bus_delay #(
+  parameter int unsigned Width = 1,
+  parameter int unsigned MAX_DELAY_PS = 0
+)(
+  input  logic [Width-1:0] in_i,
+  output logic [Width-1:0] out_o
+);
+
+  timeunit 1ns;
+  timeprecision 1ps;
+
+  for (genvar i = 0; i < Width; i++) begin : gen_bit_delay
+    cc_cdc_2phase_clearable_tb_bit_delay #(
+      .MAX_DELAY_PS ( MAX_DELAY_PS )
+    ) i_delay (
+      .in_i  ( in_i[i]  ),
+      .out_o ( out_o[i] )
+    );
+  end
+
+endmodule
+
+
+module cc_cdc_2phase_clearable_tb_delay_injector
+  import cc_pkg::*;
+#(
+  parameter int unsigned SYNC_STAGES = 3,
+  parameter int unsigned MAX_DELAY_PS = 0
 )(
   input  logic        src_rst_ni,
   input  logic        src_clk_i,
@@ -304,83 +776,380 @@ module cc_cdc_2phase_clearable_tb_delay_injector #(
   input  logic        dst_ready_i
 );
 
-  logic async_req_o, async_req_i;
-  logic async_ack_o, async_ack_i;
-  logic [31:0] async_data_o, async_data_i;
+  timeunit 1ns;
+  timeprecision 1ps;
 
+  localparam int unsigned ClearPhaseWidth = $bits(cdc_clear_seq_phase_e);
 
-  logic        s_src_clear;
-  logic        s_src_ready;
-  logic        s_dst_clear;
-  logic        s_dst_valid;
+  logic        payload_req_from_src;
+  logic        payload_req_to_dst;
+  logic        payload_ack_from_dst;
+  logic        payload_ack_to_src;
+  logic [31:0] payload_data_from_src;
+  logic [31:0] payload_data_to_dst;
 
-  always @(async_req_o) begin
-    automatic time d = $urandom_range(1ps, MaxDelay);
-    async_req_i <= #d async_req_o;
-  end
+  logic s_src_clear_req;
+  logic s_src_clear_ack_q;
+  logic s_src_ready;
+  logic s_src_isolate_req;
+  logic s_src_isolate_ack_q;
+  logic s_dst_clear_req;
+  logic s_dst_clear_ack_q;
+  logic s_dst_valid;
+  logic s_dst_isolate_req;
+  logic s_dst_isolate_ack_q;
 
-  always @(async_ack_o) begin
-    automatic time d = $urandom_range(1ps, MaxDelay);
-    async_ack_i <= #d async_ack_o;
-  end
+  cdc_clear_seq_phase_e src2dst_phase_from_src;
+  cdc_clear_seq_phase_e src2dst_phase_to_dst;
+  cdc_clear_seq_phase_e dst2src_phase_from_dst;
+  cdc_clear_seq_phase_e dst2src_phase_to_src;
+  logic [ClearPhaseWidth-1:0] src2dst_phase_from_src_bits;
+  logic [ClearPhaseWidth-1:0] src2dst_phase_to_dst_bits;
+  logic [ClearPhaseWidth-1:0] dst2src_phase_from_dst_bits;
+  logic [ClearPhaseWidth-1:0] dst2src_phase_to_src_bits;
+  logic src2dst_req_from_src;
+  logic src2dst_req_to_dst;
+  logic src2dst_ack_from_dst;
+  logic src2dst_ack_to_src;
+  logic dst2src_req_from_dst;
+  logic dst2src_req_to_src;
+  logic dst2src_ack_from_src;
+  logic dst2src_ack_to_dst;
 
-  for (genvar i = 0; i < 32; i++) begin
-    always @(async_data_o[i]) begin
-      automatic time d = $urandom_range(1ps, MaxDelay);
-      async_data_i[i] <= #d async_data_o[i];
+  assign src2dst_phase_from_src_bits = src2dst_phase_from_src;
+  assign src2dst_phase_to_dst = cdc_clear_seq_phase_e'(src2dst_phase_to_dst_bits);
+  assign dst2src_phase_from_dst_bits = dst2src_phase_from_dst;
+  assign dst2src_phase_to_src = cdc_clear_seq_phase_e'(dst2src_phase_to_src_bits);
+
+  cc_cdc_2phase_clearable_tb_bit_delay #(
+    .MAX_DELAY_PS ( MAX_DELAY_PS )
+  ) i_payload_req_delay (
+    .in_i  ( payload_req_from_src ),
+    .out_o ( payload_req_to_dst   )
+  );
+
+  cc_cdc_2phase_clearable_tb_bit_delay #(
+    .MAX_DELAY_PS ( MAX_DELAY_PS )
+  ) i_payload_ack_delay (
+    .in_i  ( payload_ack_from_dst ),
+    .out_o ( payload_ack_to_src   )
+  );
+
+  cc_cdc_2phase_clearable_tb_bus_delay #(
+    .Width        ( 32           ),
+    .MAX_DELAY_PS ( MAX_DELAY_PS )
+  ) i_payload_data_delay (
+    .in_i  ( payload_data_from_src ),
+    .out_o ( payload_data_to_dst   )
+  );
+
+  cc_cdc_2phase_clearable_tb_bus_delay #(
+    .Width        ( ClearPhaseWidth ),
+    .MAX_DELAY_PS ( MAX_DELAY_PS    )
+  ) i_src2dst_phase_delay (
+    .in_i  ( src2dst_phase_from_src_bits ),
+    .out_o ( src2dst_phase_to_dst_bits   )
+  );
+
+  cc_cdc_2phase_clearable_tb_bit_delay #(
+    .MAX_DELAY_PS ( MAX_DELAY_PS )
+  ) i_src2dst_req_delay (
+    .in_i  ( src2dst_req_from_src ),
+    .out_o ( src2dst_req_to_dst   )
+  );
+
+  cc_cdc_2phase_clearable_tb_bit_delay #(
+    .MAX_DELAY_PS ( MAX_DELAY_PS )
+  ) i_src2dst_ack_delay (
+    .in_i  ( src2dst_ack_from_dst ),
+    .out_o ( src2dst_ack_to_src   )
+  );
+
+  cc_cdc_2phase_clearable_tb_bus_delay #(
+    .Width        ( ClearPhaseWidth ),
+    .MAX_DELAY_PS ( MAX_DELAY_PS    )
+  ) i_dst2src_phase_delay (
+    .in_i  ( dst2src_phase_from_dst_bits ),
+    .out_o ( dst2src_phase_to_src_bits   )
+  );
+
+  cc_cdc_2phase_clearable_tb_bit_delay #(
+    .MAX_DELAY_PS ( MAX_DELAY_PS )
+  ) i_dst2src_req_delay (
+    .in_i  ( dst2src_req_from_dst ),
+    .out_o ( dst2src_req_to_src   )
+  );
+
+  cc_cdc_2phase_clearable_tb_bit_delay #(
+    .MAX_DELAY_PS ( MAX_DELAY_PS )
+  ) i_dst2src_ack_delay (
+    .in_i  ( dst2src_ack_from_src ),
+    .out_o ( dst2src_ack_to_dst   )
+  );
+
+  cc_cdc_2phase_src_clearable #(
+    .data_t     ( logic [31:0] ),
+    .SyncStages ( SYNC_STAGES  )
+  ) i_src (
+    .rst_ni       ( src_rst_ni                     ),
+    .clk_i        ( src_clk_i                      ),
+    .clear_i      ( s_src_clear_req                ),
+    .data_i       ( src_data_i                     ),
+    .valid_i      ( src_valid_i & !s_src_isolate_req ),
+    .ready_o      ( s_src_ready                    ),
+    .async_req_o  ( payload_req_from_src           ),
+    .async_ack_i  ( payload_ack_to_src             ),
+    .async_data_o ( payload_data_from_src          )
+  );
+
+  assign src_ready_o = s_src_ready & !s_src_isolate_req;
+
+  cc_cdc_2phase_dst_clearable #(
+    .data_t     ( logic [31:0] ),
+    .SyncStages ( SYNC_STAGES  )
+  ) i_dst (
+    .rst_ni       ( dst_rst_ni                     ),
+    .clk_i        ( dst_clk_i                      ),
+    .clear_i      ( s_dst_clear_req                ),
+    .data_o       ( dst_data_o                     ),
+    .valid_o      ( s_dst_valid                    ),
+    .ready_i      ( dst_ready_i & !s_dst_isolate_req ),
+    .async_req_i  ( payload_req_to_dst             ),
+    .async_ack_o  ( payload_ack_from_dst           ),
+    .async_data_i ( payload_data_to_dst            )
+  );
+
+  assign dst_valid_o = s_dst_valid & !s_dst_isolate_req;
+
+  cc_cdc_reset_ctrlr_half #(
+    .SyncStages        ( SYNC_STAGES - 1 ),
+    .ClearOnAsyncReset ( 1'b1            )
+  ) i_cdc_reset_ctrlr_half_src (
+    .clk_i              ( src_clk_i                ),
+    .rst_ni             ( src_rst_ni               ),
+    .clear_i            ( src_clear_i              ),
+    .clear_o            ( s_src_clear_req          ),
+    .clear_ack_i        ( s_src_clear_ack_q        ),
+    .isolate_o          ( s_src_isolate_req        ),
+    .isolate_ack_i      ( s_src_isolate_ack_q      ),
+    .async_next_phase_o ( src2dst_phase_from_src   ),
+    .async_req_o        ( src2dst_req_from_src     ),
+    .async_ack_i        ( src2dst_ack_to_src       ),
+    .async_next_phase_i ( dst2src_phase_to_src     ),
+    .async_req_i        ( dst2src_req_to_src       ),
+    .async_ack_o        ( dst2src_ack_from_src     )
+  );
+
+  cc_cdc_reset_ctrlr_half #(
+    .SyncStages        ( SYNC_STAGES - 1 ),
+    .ClearOnAsyncReset ( 1'b1            )
+  ) i_cdc_reset_ctrlr_half_dst (
+    .clk_i              ( dst_clk_i                ),
+    .rst_ni             ( dst_rst_ni               ),
+    .clear_i            ( dst_clear_i              ),
+    .clear_o            ( s_dst_clear_req          ),
+    .clear_ack_i        ( s_dst_clear_ack_q        ),
+    .isolate_o          ( s_dst_isolate_req        ),
+    .isolate_ack_i      ( s_dst_isolate_ack_q      ),
+    .async_next_phase_o ( dst2src_phase_from_dst   ),
+    .async_req_o        ( dst2src_req_from_dst     ),
+    .async_ack_i        ( dst2src_ack_to_dst       ),
+    .async_next_phase_i ( src2dst_phase_to_dst     ),
+    .async_req_i        ( src2dst_req_to_dst       ),
+    .async_ack_o        ( src2dst_ack_from_dst     )
+  );
+
+  always_ff @(posedge src_clk_i, negedge src_rst_ni) begin
+    if (!src_rst_ni) begin
+      s_src_isolate_ack_q <= 1'b0;
+      s_src_clear_ack_q   <= 1'b0;
+    end else begin
+      s_src_isolate_ack_q <= s_src_isolate_req;
+      s_src_clear_ack_q   <= s_src_clear_req;
     end
   end
 
-  cc_cdc_2phase_src_clearable #(logic [31:0], SyncStages) i_src (
-    .rst_ni       ( src_rst_ni                 ),
-    .clk_i        ( src_clk_i                  ),
-    .clear_i      ( s_src_clear                ),
-    .data_i       ( src_data_i                 ),
-    .valid_i      ( src_valid_i & !s_src_clear ),
-    .ready_o      ( s_src_ready                ),
-    .async_req_o  ( async_req_o                ),
-    .async_ack_i  ( async_ack_i                ),
-    .async_data_o ( async_data_o               )
-  );
+  always_ff @(posedge dst_clk_i, negedge dst_rst_ni) begin
+    if (!dst_rst_ni) begin
+      s_dst_isolate_ack_q <= 1'b0;
+      s_dst_clear_ack_q   <= 1'b0;
+    end else begin
+      s_dst_isolate_ack_q <= s_dst_isolate_req;
+      s_dst_clear_ack_q   <= s_dst_clear_req;
+    end
+  end
 
-  assign src_ready_o = s_src_ready & !s_src_clear;
+  assign src_clear_pending_o = s_src_isolate_req;
+  assign dst_clear_pending_o = s_dst_isolate_req;
 
-  cc_cdc_2phase_dst_clearable #(logic [31:0], SyncStages) i_dst (
-    .rst_ni       ( dst_rst_ni                 ),
-    .clk_i        ( dst_clk_i                  ),
-    .clear_i      ( s_dst_clear                ),
-    .data_o       ( dst_data_o                 ),
-    .valid_o      ( s_dst_valid                ),
-    .ready_i      ( dst_ready_i & !s_dst_clear ),
-    .async_req_i  ( async_req_i                ),
-    .async_ack_o  ( async_ack_o                ),
-    .async_data_i ( async_data_i               )
-  );
+endmodule
 
-  assign dst_valid_o = s_dst_valid & !s_dst_clear;
 
-  // Synchronize the clear and reset signaling in both directions (see header of
-  // the cc_cdc_reset_ctrlr module for more details.)
-  cc_cdc_reset_ctrlr #(
-    .SyncStages(SyncStages-1)
-  ) i_cdc_reset_ctrlr (
-    .a_clk_i   ( src_clk_i   ),
-    .a_rst_ni  ( src_rst_ni  ),
-    .a_clear_i ( src_clear_i ),
-    .a_clear_o ( s_src_clear ),
-    .a_clear_ack_i  ( '0     ),
-    .a_isolate_o    (        ),
-    .a_isolate_ack_i( '0     ),
-    .b_clk_i   ( dst_clk_i   ),
-    .b_rst_ni  ( dst_rst_ni  ),
-    .b_clear_i ( dst_clear_i ),
-    .b_clear_o ( s_dst_clear ),
-    .b_clear_ack_i  ( '0     ),
-    .b_isolate_o    (        ),
-    .b_isolate_ack_i( '0     )
-  );
+module cc_cdc_reset_ctrlr_half_monitor
+  import cc_pkg::*;
+(
+  input logic                 clk_i,
+  input logic                 rst_ni,
+  input logic                 isolate_o,
+  input logic                 isolate_ack_i,
+  input logic                 clear_o,
+  input logic                 clear_ack_i,
+  input cdc_clear_seq_phase_e async_next_phase_o,
+  input logic                 async_req_o,
+  input cdc_clear_seq_phase_e async_next_phase_i,
+  input logic                 async_req_i,
+  input logic [3:0]           initiator_state_q,
+  input cdc_clear_seq_phase_e initiator_clear_seq_phase,
+  input logic                 initiator_phase_transition_req,
+  input logic                 initiator_isolate_out,
+  input logic                 initiator_clear_out,
+  input cdc_clear_seq_phase_e receiver_phase_q,
+  input cdc_clear_seq_phase_e receiver_next_phase,
+  input logic                 receiver_phase_req,
+  input logic                 receiver_phase_ack,
+  input logic                 receiver_isolate_out,
+  input logic                 receiver_clear_out
+);
 
-  assign src_clear_pending_o = s_src_clear;
-  assign dst_clear_pending_o = s_dst_clear;
+  timeunit 1ns;
+  timeprecision 1ps;
+
+  localparam logic [3:0] InitIdle                = 4'd0;
+  localparam logic [3:0] InitIsolate             = 4'd1;
+  localparam logic [3:0] InitWaitIsolatePhaseAck = 4'd2;
+  localparam logic [3:0] InitWaitIsolateAck      = 4'd3;
+  localparam logic [3:0] InitClear               = 4'd4;
+  localparam logic [3:0] InitWaitClearPhaseAck   = 4'd5;
+  localparam logic [3:0] InitWaitClearAck        = 4'd6;
+  localparam logic [3:0] InitPostClear           = 4'd7;
+  localparam logic [3:0] InitFinished            = 4'd8;
+
+  function automatic bit valid_phase(input cdc_clear_seq_phase_e phase);
+    return phase inside {
+      CDC_CLEAR_PHASE_IDLE,
+      CDC_CLEAR_PHASE_ISOLATE,
+      CDC_CLEAR_PHASE_CLEAR,
+      CDC_CLEAR_PHASE_POST_CLEAR
+    };
+  endfunction
+
+  function automatic bit valid_initiator_state(input logic [3:0] state);
+    return state inside {
+      InitIdle,
+      InitIsolate,
+      InitWaitIsolatePhaseAck,
+      InitWaitIsolateAck,
+      InitClear,
+      InitWaitClearPhaseAck,
+      InitWaitClearAck,
+      InitPostClear,
+      InitFinished
+    };
+  endfunction
+
+  task automatic check_stable_outputs;
+    if (clear_o && !isolate_o) begin
+      $error("%m: clear_o asserted without isolate_o");
+    end
+
+    if (initiator_clear_out && !initiator_isolate_out) begin
+      $error("%m: initiator clear asserted without initiator isolate");
+    end
+
+    if (receiver_clear_out && !receiver_isolate_out) begin
+      $error("%m: receiver clear asserted without receiver isolate");
+    end
+
+    if (clear_o !== (initiator_clear_out || receiver_clear_out)) begin
+      $error("%m: clear_o does not match initiator/receiver clear outputs");
+    end
+
+    if (isolate_o !== (initiator_isolate_out || receiver_isolate_out)) begin
+      $error("%m: isolate_o does not match initiator/receiver isolate outputs");
+    end
+
+    if (async_req_o && !valid_phase(async_next_phase_o)) begin
+      $error("%m: outgoing clear phase is illegal");
+    end
+
+    if (initiator_phase_transition_req && !valid_phase(initiator_clear_seq_phase)) begin
+      $error("%m: initiator requested an illegal clear phase");
+    end
+
+    if (receiver_phase_req) begin
+      unique case (receiver_next_phase)
+        CDC_CLEAR_PHASE_IDLE: begin
+          if (receiver_clear_out || receiver_isolate_out || !receiver_phase_ack) begin
+            $error("%m: receiver IDLE phase outputs are inconsistent");
+          end
+        end
+        CDC_CLEAR_PHASE_ISOLATE: begin
+          if (receiver_clear_out || !receiver_isolate_out ||
+              (receiver_phase_ack !== isolate_ack_i)) begin
+            $error("%m: receiver ISOLATE phase outputs are inconsistent");
+          end
+        end
+        CDC_CLEAR_PHASE_CLEAR: begin
+          if (!receiver_clear_out || !receiver_isolate_out ||
+              (receiver_phase_ack !== clear_ack_i)) begin
+            $error("%m: receiver CLEAR phase outputs are inconsistent");
+          end
+        end
+        CDC_CLEAR_PHASE_POST_CLEAR: begin
+          if (receiver_clear_out || !receiver_isolate_out || !receiver_phase_ack) begin
+            $error("%m: receiver POST_CLEAR phase outputs are inconsistent");
+          end
+        end
+        default: begin
+          if (receiver_clear_out || receiver_isolate_out || receiver_phase_ack) begin
+            $error("%m: receiver illegal phase was acknowledged or exposed");
+          end
+        end
+      endcase
+    end
+  endtask
+
+  always @(posedge clk_i) begin
+    if (rst_ni) begin
+      #1ps;
+      check_stable_outputs();
+
+      if (!valid_initiator_state(initiator_state_q)) begin
+        $error("%m: illegal initiator FSM state 0x%0h", initiator_state_q);
+      end
+
+      if (!valid_phase(receiver_phase_q)) begin
+        $error("%m: illegal stored receiver phase 0x%0h", receiver_phase_q);
+      end
+
+      if (initiator_state_q inside {
+            InitClear,
+            InitWaitClearPhaseAck,
+            InitWaitClearAck
+          }) begin
+        if (!initiator_clear_out || !initiator_isolate_out) begin
+          $error("%m: initiator clear state without clear/isolate outputs");
+        end
+      end
+
+      if (initiator_state_q inside {
+            InitIsolate,
+            InitWaitIsolatePhaseAck,
+            InitWaitIsolateAck,
+            InitPostClear,
+            InitFinished
+          }) begin
+        if (!initiator_isolate_out || initiator_clear_out) begin
+          $error("%m: initiator isolate-only state has inconsistent outputs");
+        end
+      end
+
+      if (initiator_state_q == InitIdle) begin
+        if (initiator_isolate_out || initiator_clear_out || initiator_phase_transition_req) begin
+          $error("%m: initiator IDLE state has active clear outputs or phase request");
+        end
+      end
+    end
+  end
 
 endmodule
