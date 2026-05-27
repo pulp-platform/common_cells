@@ -201,7 +201,7 @@ module cc_rr_arb_tree #(
 
         cc_lzc #(
           .WIDTH ( NumIn ),
-          .MODE  ( 1'b0  )
+          .MODE  ( cc_pkg::LZC_TRAILING_ZERO_CNT )
         ) i_lzc_upper (
           .in_i    ( upper_mask  ),
           .cnt_o   ( upper_idx   ),
@@ -210,7 +210,7 @@ module cc_rr_arb_tree #(
 
         cc_lzc #(
           .WIDTH ( NumIn ),
-          .MODE  ( 1'b0  )
+          .MODE  ( cc_pkg::LZC_TRAILING_ZERO_CNT )
         ) i_lzc_lower (
           .in_i    ( lower_mask  ),
           .cnt_o   ( lower_idx   ),
