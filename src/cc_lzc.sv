@@ -18,7 +18,7 @@ module cc_lzc import cc_pkg::*; #(
   /// The width of the input vector.
   parameter int unsigned WIDTH = 2,
   /// Trailing or leading zero mode selection
-  parameter lzc_mode_e   MODE  = LZC_TRAILING_ZERO_CNT,
+  parameter lzc_mode_e   MODE  = LZC_LEADING_ZERO_CNT,
   /// Dependent parameter. Do **not** change!
   ///
   /// Width of the output signal with the zero count.
