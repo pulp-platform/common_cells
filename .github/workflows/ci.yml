@@ -1,0 +1,22 @@
+# Copyright 2025 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: ci
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  elaborate:
+    name: Elaborate all RTL modules w/ Verilator
+    runs-on: ubuntu-latest
+    container:
+      image: hpretl/iic-osic-tools:2026.04
+      options: --user root
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Verilator elaboration check
+        run: make elab

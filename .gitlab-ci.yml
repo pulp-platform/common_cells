@@ -4,6 +4,10 @@
 
 # Author: Nils Wistoff <nwistoff@iis.ee.ethz.ch>
 
+default:
+  before_script:
+    - source iis-env.sh
+
 variables:
   VSIM: questa-2022.3 vsim -64
   VLIB: questa-2022.3 vlib
@@ -12,11 +16,12 @@ variables:
   VLOG: questa-2022.3 vlog -64
   VOPT: questa-2022.3 vopt -64
 
-stages:
-  - test
+elab:
+  timeout: 10min
+  script:
+    - make elab
 
 .test-tpl:
-  stage: test
   needs:
   variables:
     TOPLEVEL: ""
@@ -61,3 +66,4 @@ tests:
       # - TOPLEVEL: cc_cdc_fifo_tb
       #   PARAM1: [-GDEPTH=1, -GDEPTH=2, -GDEPTH=3, -GDEPTH=4, -GDEPTH=5]
       #   PARAM2: [-GGRAY=0, -GGRAY=1]
+
