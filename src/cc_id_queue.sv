@@ -167,7 +167,7 @@ module cc_id_queue #(
     end
     cc_lzc #(
         .WIDTH ( HtCapacity ),
-        .MODE  ( 0          ) // Start at index 0.
+        .MODE  ( cc_pkg::LZC_TRAILING_ZERO_CNT )
     ) i_ht_free_lzc (
         .in_i    ( head_tail_free     ),
         .cnt_o   ( head_tail_free_idx ),
@@ -180,7 +180,7 @@ module cc_id_queue #(
     end
     cc_lzc #(
         .WIDTH ( CAPACITY ),
-        .MODE  ( 0        ) // Start at index 0.
+        .MODE  ( cc_pkg::LZC_TRAILING_ZERO_CNT )
     ) i_ld_free_lzc (
         .in_i    ( linked_data_free     ),
         .cnt_o   ( linked_data_free_idx ),
