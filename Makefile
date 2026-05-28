@@ -5,7 +5,9 @@ VERILATOR ?= verilator
 SV_MODULES   = $(patsubst src/%.sv,%,$(shell grep -l "^module " src/*.sv))
 ELAB_TARGETS = $(addprefix elab-,$(SV_MODULES))
 
-.PHONY: elab $(ELAB_TARGETS)
+.PHONY: all elab $(ELAB_TARGETS)
+
+all: elab
 
 # Re-run bender checkout only when Bender.yml changes
 .bender/.checkout: Bender.yml
