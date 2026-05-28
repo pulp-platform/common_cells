@@ -16,10 +16,20 @@ variables:
   VLOG: questa-2022.3 vlog -64
   VOPT: questa-2022.3 vopt -64
 
-elab:
+vlt-elab:
   timeout: 10min
   script:
-    - make elab
+    - make vlt-elab
+
+vsim-elab:
+  timeout: 10min
+  script:
+    - make vsim-elab
+
+vcs-elab:
+  timeout: 10min
+  script:
+    - make vcs-elab
 
 .test-tpl:
   needs:
