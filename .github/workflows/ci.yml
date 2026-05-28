@@ -22,4 +22,4 @@ jobs:
         # Use a login shell to ensure that the environment is set up correctly
         shell: bash -l -e -o pipefail {0}
         run: |
-          make elab
+          make vlt-elab
