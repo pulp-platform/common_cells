@@ -31,7 +31,7 @@ module cc_onehot #(
     logic [LVLS-2:0] carry_array;
 
     // Extend to a power of two.
-    assign sum[0] = $unsigned(d_i);
+    assign sum[0] = d_i;
 
     // generate half adders for each lvl
     // lvl 0 is the input level

@@ -19,9 +19,9 @@
 /// Handshaking rules as defined by the `AMBA AXI` standard on default.
 module cc_stream_omega_net #(
   /// Number of inputs into the network (`> 0`).
-  parameter int unsigned NumInp      = 32'd0,
+  parameter int unsigned NumInp      = 32'd1,
   /// Number of outputs from the network (`> 0`).
-  parameter int unsigned NumOut      = 32'd0,
+  parameter int unsigned NumOut      = 32'd1,
   /// Radix of the individual switch points of the network.
   /// Currently supported are `32'd2` and `32'd4`.
   parameter int unsigned Radix       = 32'd2,

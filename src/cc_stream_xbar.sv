@@ -17,9 +17,9 @@
 /// Handshaking rules as defined by the `AMBA AXI` standard on default.
 module cc_stream_xbar #(
   /// Number of inputs into the crossbar (`> 0`).
-  parameter int unsigned NumInp      = 32'd0,
+  parameter int unsigned NumInp      = 32'd1,
   /// Number of outputs from the crossbar (`> 0`).
-  parameter int unsigned NumOut      = 32'd0,
+  parameter int unsigned NumOut      = 32'd1,
   /// Data width of the stream. Can be overwritten by defining the type parameter `payload_t`.
   parameter int unsigned DataWidth   = 32'd1,
   /// Payload type of the data ports, only usage of parameter `DataWidth`.

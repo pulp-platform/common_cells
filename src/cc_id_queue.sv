@@ -48,8 +48,8 @@
 `include "common_cells/assertions.svh"
 
 module cc_id_queue #(
-    parameter int ID_WIDTH  = 0,
-    parameter int CAPACITY  = 0,
+    parameter int ID_WIDTH  = 1,
+    parameter int CAPACITY  = 1,
     parameter bit FULL_BW   = 0,
     parameter bit CUT_OUP_POP_INP_GNT = 0,
     parameter int NUM_CMP_PORTS = 1,
@@ -154,12 +154,16 @@ module cc_id_queue #(
         .onehot ( idx_matches_in_id ),
         .bin    ( match_in_idx      )
     );
-    cc_onehot_to_bin #(
-        .ONEHOT_WIDTH ( HtCapacity )
-    ) i_id_ohb_out (
-        .onehot ( idx_matches_out_id ),
-        .bin    ( match_out_idx      )
-    );
+    if (FULL_BW) begin : gen_ohb_out
+        cc_onehot_to_bin #(
+            .ONEHOT_WIDTH ( HtCapacity )
+        ) i_id_ohb_out (
+            .onehot ( idx_matches_out_id ),
+            .bin    ( match_out_idx      )
+        );
+    end else begin : gen_ohb_out_tie
+        assign match_out_idx = '0;
+    end
 
     // Find the first free index in the head-tail table.
     for (genvar i = 0; i < HtCapacity; i++) begin: gen_head_tail_free

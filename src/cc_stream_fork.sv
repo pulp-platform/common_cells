@@ -19,7 +19,7 @@
 `include "common_cells/assertions.svh"
 
 module cc_stream_fork #(
-    parameter int unsigned N_OUP = 0    // Synopsys DC requires a default value for parameters.
+    parameter int unsigned N_OUP = 1    // Synopsys DC requires a default value for parameters.
 ) (
     input  logic                clk_i,
     input  logic                rst_ni,

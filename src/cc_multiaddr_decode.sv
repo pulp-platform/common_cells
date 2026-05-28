@@ -39,9 +39,9 @@
 /// doesn't fall in the address set of any rule.
 module cc_multiaddr_decode #(
   /// Highest index which can happen in a rule.
-  parameter int unsigned NoIndices = 32'd0,
+  parameter int unsigned NoIndices = 32'd1,
   /// Total number of rules.
-  parameter int unsigned NoRules   = 32'd0,
+  parameter int unsigned NoRules   = 32'd1,
   /// Address type inside the rules and to decode.
   parameter type         addr_t    = logic,
   /// The rule index type `idx_t` can be specified either with the width `IdxWidth`
@@ -128,7 +128,11 @@ module cc_multiaddr_decode #(
 
     // Match the rules
     for (int unsigned i = 0; i < NoRules; i++) begin
-      automatic idx_t idx = addr_map_i[i].idx;
+      automatic idx_t idx;
+      automatic addr_t dont_care;
+      automatic addr_t matching_bits;
+      automatic logic match;
+      idx = addr_map_i[i].idx;
       // We have a match if at least one address of the input
       // address set is a part of the rule's address set.
       // We have this condition when all bits in the input address match
@@ -136,9 +140,9 @@ module cc_multiaddr_decode #(
       // of those bits which are either masked in the input address
       // or in the addrmap rule. In other words, any bit which is masked
       // either in the input address or in the addrmap rule is treated as a don't care
-      automatic addr_t dont_care = mask_i | addr_map_i[i].mask;
-      automatic addr_t matching_bits = ~(addr_i ^ addr_map_i[i].addr);
-      automatic logic match = &(dont_care | matching_bits);
+      dont_care = mask_i | addr_map_i[i].mask;
+      matching_bits = ~(addr_i ^ addr_map_i[i].addr);
+      match = &(dont_care | matching_bits);
       if (match) begin
         matched_rules[i] = 1'b1;
         dec_valid_o      = 1'b1;
@@ -166,6 +170,7 @@ module cc_multiaddr_decode #(
 
   // Assumptions and assertions
   `ifndef COMMON_CELLS_ASSERTS_OFF
+  `ifndef SYNTHESIS
   initial begin : proc_check_parameters
     `ASSUME_I(norules_0, NoRules > 0, $sformatf("At least one rule needed"))
     `ASSUME_I(addr_width_not_equal, $bits(addr_i) == $bits(addr_map_i[0].addr),
@@ -177,7 +182,6 @@ module cc_multiaddr_decode #(
   // check_default_idx: Enforces a valid default idx.
   // check_rule_idx: Enforces a valid index in the rule.
   // check_rule_idx_default: Checks that no rule contains the default index.
-  `ifndef SYNTHESIS
   always_comb begin : proc_check_addr_map
     if (!$isunknown(addr_map_i)) begin
 

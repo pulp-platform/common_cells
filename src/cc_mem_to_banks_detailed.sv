@@ -16,13 +16,13 @@
 /// request and valid response direction.
 module cc_mem_to_banks_detailed #(
   /// Input address width.
-  parameter int unsigned AddrWidth = 32'd0,
+  parameter int unsigned AddrWidth = 32'd1,
   /// Input data width, must be a power of two.
-  parameter int unsigned DataWidth = 32'd0,
+  parameter int unsigned DataWidth = 32'd8,
   /// Request sideband width.
-  parameter int unsigned WUserWidth = 32'd0,
+  parameter int unsigned WUserWidth = 32'd1,
   /// Response sideband width.
-  parameter int unsigned RUserWidth = 32'd0,
+  parameter int unsigned RUserWidth = 32'd1,
   /// Number of banks at output, must evenly divide `DataWidth`.
   parameter int unsigned NumBanks  = 32'd1,
   /// Remove transactions that have zero strobe
@@ -217,27 +217,28 @@ module cc_mem_to_banks_detailed #(
   assign rvalid_o = &(resp_valid | dead_response);
 
   // Assertions
-  `ifndef COMMON_CELLS_ASSERTS_OFF
-    initial begin
-      `ASSUME_I(datawidth_not_power_of_2, DataWidth != 0 && 2**$clog2(DataWidth) == DataWidth,
-               "Data width must be a power of two!")
-      `ASSUME_I(datawidth_not_divisible_by_banks, DataWidth % NumBanks == 0,
-               "Data width must be evenly divisible over banks!")
-      `ASSUME_I(bank_datawidth_not_divisible_by_8, (DataWidth / NumBanks) % 8 == 0,
-               "Data width of each bank must be divisible into 8-bit bytes!")
-      // With only one bank, zero-strobe writes should pass through to preserve single-bank memory
-      // semantics instead of being hidden and completed internally.
-      `ASSERT_I(num_banks_one_hide_strb, !(NumBanks == 1 && HideStrb),
-               "HideStrb is incompatible with NumBanks == 1.")
-    end
+`ifndef COMMON_CELLS_ASSERTS_OFF
+`ifndef SYNTHESIS
+  initial begin
+    `ASSUME_I(datawidth_not_power_of_2, DataWidth != 0 && 2**$clog2(DataWidth) == DataWidth,
+              "Data width must be a power of two!")
+    `ASSUME_I(datawidth_not_divisible_by_banks, DataWidth % NumBanks == 0,
+              "Data width must be evenly divisible over banks!")
+    `ASSUME_I(bank_datawidth_not_divisible_by_8, (DataWidth / NumBanks) % 8 == 0,
+              "Data width of each bank must be divisible into 8-bit bytes!")
+    // With only one bank, zero-strobe writes should pass through to preserve single-bank memory
+    // semantics instead of being hidden and completed internally.
+    `ASSERT_I(num_banks_one_hide_strb, !(NumBanks == 1 && HideStrb),
+              "HideStrb is incompatible with NumBanks == 1.")
+  end
 
-    `ifndef SYNTHESIS
-      if (NumBanks == 1) begin : gen_num_banks_one_warning
-        initial begin
-          $warning("cc_mem_to_banks_detailed instantiated with NumBanks == 1. ",
-                   "Consider bypassing this module in the instantiating module.");
-        end
-      end
-    `endif
-  `endif
+  if (NumBanks == 1) begin : gen_num_banks_one_warning
+    initial begin
+      $warning("cc_mem_to_banks_detailed instantiated with NumBanks == 1. ",
+                "Consider bypassing this module in the instantiating module.");
+    end
+  end
+`endif
+`endif
+
 endmodule
