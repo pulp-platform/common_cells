@@ -44,6 +44,13 @@ module cc_addr_decode_dync #(
   parameter int unsigned NoRules   = 32'd0,
   /// Address type inside the rules and to decode.
   parameter type         addr_t    = logic,
+  /// Whether this is a NAPOT (base and mask) or regular range decoder
+  parameter bit          Napot     = 0,
+  /// The output index type `idx_t` can be specified either with the width `IdxWidth`
+  /// or directly with the type `idx_t`. By default, it will use the maximum index
+  /// `NoIndices` to calculate the required width.
+  parameter int unsigned IdxWidth  = cc_pkg::idx_width(NoIndices),
+  parameter type         idx_t     = logic [IdxWidth-1:0],
   /// Rule packed struct type.
   /// The address decoder expects three fields in `rule_t`:
   ///
@@ -62,14 +69,11 @@ module cc_addr_decode_dync #(
   /// If `Napot` is 1, The field names remain the same, but the rule describes a naturally-aligned
   /// power of two (NAPOT) region instead of an address range: `start_addr` becomes the base address
   /// and `end_addr` the mask. See the wrapping module `cc_addr_decode_napot` for details.
-  parameter type         rule_t    = logic,
-  /// Whether this is a NAPOT (base and mask) or regular range decoder
-  parameter bit          Napot     = 0,
-  /// The output index type `idx_t` can be specified either with the width `IdxWidth`
-  /// or directly with the type `idx_t`. By default, it will use the maximum index
-  /// `NoIndices` to calculate the required width.
-  parameter int unsigned IdxWidth  = cc_pkg::idx_width(NoIndices),
-  parameter type         idx_t     = logic [IdxWidth-1:0]
+  parameter type         rule_t    = struct packed {
+    idx_t  idx;
+    addr_t start_addr;
+    addr_t end_addr;
+  }
 ) (
   /// Address to decode.
   input  addr_t               addr_i,

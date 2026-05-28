@@ -10,7 +10,7 @@ jobs:
     # This job runs on Linux (fixed ubuntu version)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       - uses: chipsalliance/verible-linter-action@main
         with:
           paths: |

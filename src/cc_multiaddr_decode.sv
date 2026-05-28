@@ -44,6 +44,11 @@ module cc_multiaddr_decode #(
   parameter int unsigned NoRules   = 32'd0,
   /// Address type inside the rules and to decode.
   parameter type         addr_t    = logic,
+  /// The rule index type `idx_t` can be specified either with the width `IdxWidth`
+  /// or directly with the type `idx_t`. By default, it will use the maximum index
+  /// `NoIndices` to calculate the required width.
+  parameter int unsigned IdxWidth  = cc_pkg::idx_width(NoIndices),
+  parameter type         idx_t     = logic [IdxWidth-1:0],
   /// Rule packed struct type.
   /// The address decoder expects three fields in `rule_t`:
   ///
@@ -72,13 +77,11 @@ module cc_multiaddr_decode #(
   /// to the {addr, mask} representation (and viceversa) using the following equations:
   /// - mask =  {'0, {log2(end - start){1'b1}}}
   /// - addr = start
-  parameter type         rule_t    = logic,
-  /// The rule index type `idx_t` can be specified either with the width `IdxWidth`
-  /// or directly with the type `idx_t`. By default, it will use the maximum index
-  /// `NoIndices` to calculate the required width.
-  parameter int unsigned IdxWidth  = cc_pkg::idx_width(NoIndices),
-  parameter type         idx_t     = logic [IdxWidth-1:0]
-
+  parameter type         rule_t    = struct packed {
+    idx_t  idx;
+    addr_t addr;
+    addr_t mask;
+  }
 ) (
   /// Multi-address to decode.
   input  addr_t                 addr_i,

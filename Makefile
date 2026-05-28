@@ -1,9 +1,24 @@
-# SPDX-License-Identifier: Apache-2.0
-
+BENDER    ?= bender
 VERILATOR ?= verilator
 
-all: cc_ecc_encode cc_ecc_decode
+# All modules in src/ with a top-level module declaration, minus skipped ones
+SV_MODULES   = $(patsubst src/%.sv,%,$(shell grep -l "^module " src/*.sv))
+ELAB_TARGETS = $(addprefix elab-,$(SV_MODULES))
 
-cc_ecc_%: test/ecc/ecc_%.cpp test/ecc/ecc.cpp src/cc_pkg.sv src/cc_ecc_%.sv
-	$(VERILATOR) --cc $^ --top-module $@ --trace --exe
-	cd obj_dir && make -f V$@.mk > /dev/zero
+.PHONY: all elab $(ELAB_TARGETS)
+
+all: elab
+
+# Re-run bender checkout only when Bender.yml changes
+.bender/.checkout: Bender.yml
+	$(BENDER) checkout
+	@touch $@
+
+elab: $(ELAB_TARGETS)
+
+$(ELAB_TARGETS): elab-%: .bender/.checkout
+	$(VERILATOR) --cc \
+		$(shell $(BENDER) script verilator -t rtl) \
+		--top-module $* \
+		-Wno-fatal \
+		-j $(shell nproc)

@@ -16,7 +16,7 @@
 /// all inputs are valid.  The data channel flows outside of this module.
 module cc_stream_join #(
   /// Number of input streams
-  parameter int unsigned N_INP = 32'd0 // Synopsys DC requires a default value for parameters.
+  parameter int unsigned N_INP = 32'd1 // Synopsys DC requires a default value for parameters.
 ) (
   /// Input streams valid handshakes
   input  logic  [N_INP-1:0] inp_valid_i,
