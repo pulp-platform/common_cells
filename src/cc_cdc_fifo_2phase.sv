@@ -48,7 +48,7 @@ module cc_cdc_fifo_2phase #(
   /// The data type of the payload transported by the FIFO.
   parameter type T = logic,
   /// The FIFO's depth given as 2**LOG_DEPTH.
-  parameter int LOG_DEPTH = 3
+  parameter int unsigned LOG_DEPTH = 3
 )(
   input  logic src_rst_ni,
   input  logic src_clk_i,
@@ -68,7 +68,7 @@ module cc_cdc_fifo_2phase #(
   `ASSERT_INIT(log_depth_0, LOG_DEPTH > 0)
   `endif
 
-  localparam int PtrWidth = LOG_DEPTH+1;
+  localparam int unsigned PtrWidth = LOG_DEPTH+1;
   typedef logic [PtrWidth-1:0] pointer_t;
   typedef logic [LOG_DEPTH-1:0] index_t;
 
