@@ -13,7 +13,7 @@
 
 /// A gray code to binary converter.
 module cc_gray_to_binary #(
-    parameter int unsigned N = 0
+    parameter int unsigned N = 1
 )(
     input  logic [N-1:0] A,
     output logic [N-1:0] Z
