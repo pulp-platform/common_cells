@@ -12,10 +12,10 @@
 // Description: Delay (or randomize) AXI-like handshaking
 
 module cc_stream_delay #(
-    parameter bit   StallRandom = 0,
-    parameter int   FixedDelay  = 1,
-    parameter type  payload_t  = logic,
-    parameter logic [15:0] Seed = '0
+    parameter bit          StallRandom = 0,
+    parameter int unsigned FixedDelay  = 1,
+    parameter type         payload_t   = logic,
+    parameter logic [15:0] Seed        = '0
 )(
     input  logic     clk_i,
     input  logic     rst_ni,
