@@ -27,14 +27,14 @@ module cc_stream_xbar #(
   /// Adds a spill register stage at each output.
   parameter bit          OutSpillReg = 1'b0,
   /// Use external priority for the individual `rr_arb_trees`.
-  parameter int unsigned ExtPrio     = 1'b0,
+  parameter bit          ExtPrio     = 1'b0,
   /// Use strict AXI valid ready handshaking.
   /// To be protocol conform also the parameter `LockIn` has to be set.
-  parameter int unsigned AxiVldRdy   = 1'b1,
+  parameter bit          AxiVldRdy   = 1'b1,
   /// Lock in the arbitration decision of the `cc_rr_arb_tree`.
   /// When this is set, valids have to be asserted until the corresponding transaction is indicated
   /// by ready.
-  parameter int unsigned LockIn      = 1'b1,
+  parameter bit          LockIn      = 1'b1,
   /// If `AxiVldReady` is 1, which bits of the payload to check for stability on valid inputs.
   /// In some cases, we may want to allow parts of the payload to change depending on the value of
   /// other parts (e.g. write data in read requests), requiring more nuanced external assertions.

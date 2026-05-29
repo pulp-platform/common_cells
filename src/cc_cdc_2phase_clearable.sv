@@ -54,7 +54,7 @@
 module cc_cdc_2phase_clearable #(
   parameter type T = logic,
   parameter int unsigned SYNC_STAGES = 3,
-  parameter int CLEAR_ON_ASYNC_RESET = 1
+  parameter bit CLEAR_ON_ASYNC_RESET = 1
 )(
   input  logic src_rst_ni,
   input  logic src_clk_i,
