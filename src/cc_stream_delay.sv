@@ -101,8 +101,8 @@ module cc_stream_delay #(
               .clk_i          ( clk_i        ),
               .rst_ni         ( rst_ni       ),
               .en_i           ( load         ),
-              .refill_way_oh  (              ),
-              .refill_way_bin ( counter_load )
+              .refill_way_oh_o  (              ),
+              .refill_way_bin_o ( counter_load )
             );
         end else begin : gen_fixed_delay
             assign counter_load = FixedDelay;

@@ -27,8 +27,8 @@ module cc_lfsr_16bit #(
     input  logic                      clk_i,
     input  logic                      rst_ni,
     input  logic                      en_i,
-    output logic [WIDTH-1:0]          refill_way_oh,
-    output logic [$clog2(WIDTH)-1:0]  refill_way_bin
+    output logic [WIDTH-1:0]          refill_way_oh_o,
+    output logic [$clog2(WIDTH)-1:0]  refill_way_bin_o
 );
 
     localparam int unsigned LogWidth = $clog2(WIDTH);
@@ -47,9 +47,9 @@ module cc_lfsr_16bit #(
             shift_d = {shift_q[14:0], shift_in};
 
         // output assignment
-        refill_way_oh = 'b0;
-        refill_way_oh[shift_q[LogWidth-1:0]] = 1'b1;
-        refill_way_bin = shift_q;
+        refill_way_oh_o = 'b0;
+        refill_way_oh_o[shift_q[LogWidth-1:0]] = 1'b1;
+        refill_way_bin_o = shift_q;
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : proc_

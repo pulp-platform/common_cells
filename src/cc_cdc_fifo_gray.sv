@@ -208,12 +208,12 @@ module cc_cdc_fifo_gray_src #(
       .serial_o ( rptr[i]         )
     );
   end
-  cc_gray_to_binary #(PtrWidth) i_rptr_g2b (.A(rptr), .Z(rptr_bin));
+  cc_gray_to_binary #(PtrWidth) i_rptr_g2b (.a_i(rptr), .z_o(rptr_bin));
 
   // Write pointer.
   assign wptr_next = wptr_bin+1;
-  cc_gray_to_binary #(PtrWidth) i_wptr_g2b (.A(wptr_q), .Z(wptr_bin));
-  cc_binary_to_gray #(PtrWidth) i_wptr_b2g (.A(wptr_next), .Z(wptr_d));
+  cc_gray_to_binary #(PtrWidth) i_wptr_g2b (.a_i(wptr_q), .z_o(wptr_bin));
+  cc_binary_to_gray #(PtrWidth) i_wptr_b2g (.a_i(wptr_next), .z_o(wptr_d));
   `FFL(wptr_q, wptr_d, src_valid_i & src_ready_o, '0, src_clk_i, src_rst_ni)
   assign async_wptr_o = wptr_q;
 
@@ -255,8 +255,8 @@ module cc_cdc_fifo_gray_dst #(
 
   // Read pointer.
   assign rptr_next = rptr_bin+1;
-  cc_gray_to_binary #(PtrWidth) i_rptr_g2b (.A(rptr_q), .Z(rptr_bin));
-  cc_binary_to_gray #(PtrWidth) i_rptr_b2g (.A(rptr_next), .Z(rptr_d));
+  cc_gray_to_binary #(PtrWidth) i_rptr_g2b (.a_i(rptr_q), .z_o(rptr_bin));
+  cc_binary_to_gray #(PtrWidth) i_rptr_b2g (.a_i(rptr_next), .z_o(rptr_d));
   `FFL(rptr_q, rptr_d, dst_valid & dst_ready, '0, dst_clk_i, dst_rst_ni)
   assign async_rptr_o = rptr_q;
 
@@ -269,7 +269,7 @@ module cc_cdc_fifo_gray_dst #(
       .serial_o ( wptr[i]         )
     );
   end
-  cc_gray_to_binary #(PtrWidth) i_wptr_g2b (.A(wptr), .Z(wptr_bin));
+  cc_gray_to_binary #(PtrWidth) i_wptr_g2b (.a_i(wptr), .z_o(wptr_bin));
 
   // The pointers into the FIFO are one bit wider than the actual address into
   // the FIFO. This makes detecting critical states very simple: if all but the
