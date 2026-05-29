@@ -151,15 +151,15 @@ module cc_id_queue #(
     cc_onehot_to_bin #(
         .ONEHOT_WIDTH ( HtCapacity )
     ) i_id_ohb_in (
-        .onehot ( idx_matches_in_id ),
-        .bin    ( match_in_idx      )
+        .onehot_i ( idx_matches_in_id ),
+        .bin_o    ( match_in_idx      )
     );
     if (FULL_BW) begin : gen_ohb_out
         cc_onehot_to_bin #(
             .ONEHOT_WIDTH ( HtCapacity )
         ) i_id_ohb_out (
-            .onehot ( idx_matches_out_id ),
-            .bin    ( match_out_idx      )
+            .onehot_i ( idx_matches_out_id ),
+            .bin_o    ( match_out_idx      )
         );
     end else begin : gen_ohb_out_tie
         assign match_out_idx = '0;

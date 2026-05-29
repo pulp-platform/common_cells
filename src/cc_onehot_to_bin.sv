@@ -17,8 +17,8 @@ module cc_onehot_to_bin #(
     // Do Not Change
     localparam int unsigned BIN_WIDTH    = ONEHOT_WIDTH == 1 ? 1 : $clog2(ONEHOT_WIDTH)
 )   (
-    input  logic [ONEHOT_WIDTH-1:0] onehot,
-    output logic [BIN_WIDTH-1:0]    bin
+    input  logic [ONEHOT_WIDTH-1:0] onehot_i,
+    output logic [BIN_WIDTH-1:0]    bin_o
 );
 
     for (genvar j = 0; j < BIN_WIDTH; j++) begin : gen_jl
@@ -28,10 +28,10 @@ module cc_onehot_to_bin #(
                 assign tmp_i = BIN_WIDTH'(i);
                 assign tmp_mask[i] = tmp_i[j];
             end
-        assign bin[j] = |(tmp_mask & onehot);
+        assign bin_o[j] = |(tmp_mask & onehot_i);
     end
 
 `ifndef COMMON_CELLS_ASSERTS_OFF
-    `ASSERT_FINAL(more_than_2_bits, $onehot0(onehot), "More than two bit set in the one-hot signal")
+    `ASSERT_FINAL(more_than_2_bits, $onehot0(onehot_i), "More than two bit set in the one-hot signal")
 `endif
 endmodule
