@@ -106,9 +106,9 @@ module cc_cdc_fifo_gray #(
   /// The data type of the payload transported by the FIFO.
   parameter type T = logic [WIDTH-1:0],
   /// The FIFO's depth given as 2**LOG_DEPTH.
-  parameter int LOG_DEPTH = 3,
+  parameter int unsigned LOG_DEPTH = 3,
   /// The number of synchronization registers to insert on the async pointers.
-  parameter int SYNC_STAGES = 2
+  parameter int unsigned SYNC_STAGES = 2
 ) (
   input  logic src_rst_ni,
   input  logic src_clk_i,
@@ -170,8 +170,8 @@ endmodule
 (* no_boundary_optimization *)
 module cc_cdc_fifo_gray_src #(
   parameter type T = logic,
-  parameter int LOG_DEPTH = 3,
-  parameter int SYNC_STAGES = 2
+  parameter int unsigned LOG_DEPTH = 3,
+  parameter int unsigned SYNC_STAGES = 2
 )(
   input  logic src_rst_ni,
   input  logic src_clk_i,
@@ -184,7 +184,7 @@ module cc_cdc_fifo_gray_src #(
   input  logic [LOG_DEPTH:0]  async_rptr_i
 );
 
-  localparam int PtrWidth = LOG_DEPTH+1;
+  localparam int unsigned PtrWidth = LOG_DEPTH+1;
   localparam logic [PtrWidth-1:0] PtrFull = (1 << LOG_DEPTH);
 
   T [2**LOG_DEPTH-1:0] data_q, data_d;
@@ -230,8 +230,8 @@ endmodule
 (* no_boundary_optimization *)
 module cc_cdc_fifo_gray_dst #(
   parameter type T = logic,
-  parameter int LOG_DEPTH = 3,
-  parameter int SYNC_STAGES = 2
+  parameter int unsigned LOG_DEPTH = 3,
+  parameter int unsigned SYNC_STAGES = 2
 )(
   input  logic dst_rst_ni,
   input  logic dst_clk_i,
@@ -244,7 +244,7 @@ module cc_cdc_fifo_gray_dst #(
   output logic [LOG_DEPTH:0]  async_rptr_o
 );
 
-  localparam int PtrWidth = LOG_DEPTH+1;
+  localparam int unsigned PtrWidth = LOG_DEPTH+1;
   localparam logic [PtrWidth-1:0] PtrEmpty = '0;
 
   T dst_data;

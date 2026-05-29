@@ -25,7 +25,7 @@ module cc_onehot #(
   if (Width == 1) begin : gen_degenerated_onehot
     assign is_onehot_o = d_i;
   end else begin : gen_onehot
-    localparam int LVLS = $clog2(Width) + 1;
+    localparam int unsigned LVLS = $clog2(Width) + 1;
 
     logic [LVLS-1:0][2**(LVLS-1)-1:0] sum, carry;
     logic [LVLS-2:0] carry_array;

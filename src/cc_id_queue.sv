@@ -48,11 +48,11 @@
 `include "common_cells/assertions.svh"
 
 module cc_id_queue #(
-    parameter int ID_WIDTH  = 1,
-    parameter int CAPACITY  = 1,
+    parameter int unsigned ID_WIDTH  = 1,
+    parameter int unsigned CAPACITY  = 1,
     parameter bit FULL_BW   = 0,
     parameter bit CUT_OUP_POP_INP_GNT = 0,
-    parameter int NUM_CMP_PORTS = 1,
+    parameter int unsigned NUM_CMP_PORTS = 1,
     parameter type data_t   = logic[31:0],
     // Dependent parameters, DO NOT OVERRIDE!
     localparam type id_t    = logic[ID_WIDTH-1:0]
@@ -84,8 +84,8 @@ module cc_id_queue #(
 
     // Capacity of the head-tail table, which associates an ID with corresponding head and tail
     // indices.
-    localparam int NIds = 2**ID_WIDTH;
-    localparam int HtCapacity = (NIds <= CAPACITY) ? NIds : CAPACITY;
+    localparam int unsigned NIds = 2**ID_WIDTH;
+    localparam int unsigned HtCapacity = (NIds <= CAPACITY) ? NIds : CAPACITY;
     localparam int unsigned HtIdxWidth = cc_pkg::idx_width(HtCapacity);
     localparam int unsigned LdIdxWidth = cc_pkg::idx_width(CAPACITY);
 
