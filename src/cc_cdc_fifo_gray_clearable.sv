@@ -113,7 +113,7 @@ module cc_cdc_fifo_gray_clearable #(
   /// the async reset. I.e. if CLEAR_ON_ASYNC_RESET==1 -> SYNC_STAGES >= 4 else
   /// SYNC_STAGES >= 2.
   parameter int unsigned SYNC_STAGES = 3,
-  parameter int CLEAR_ON_ASYNC_RESET = 1
+  parameter bit CLEAR_ON_ASYNC_RESET = 1
 ) (
   input  logic src_rst_ni,
   input  logic src_clk_i,
