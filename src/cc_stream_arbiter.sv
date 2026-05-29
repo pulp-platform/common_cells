@@ -15,7 +15,7 @@
 
 module cc_stream_arbiter #(
     parameter type      DATA_T = logic,   // Vivado requires a default value for type parameters.
-    parameter integer   N_INP = 1,        // Synopsys DC requires a default value for parameters.
+    parameter int unsigned N_INP = 1,     // Synopsys DC requires a default value for parameters.
     parameter           ARBITER = "rr"    // "rr" or "prio"
 ) (
     input  logic              clk_i,

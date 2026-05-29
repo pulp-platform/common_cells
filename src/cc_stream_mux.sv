@@ -15,9 +15,9 @@
 
 module cc_stream_mux #(
   parameter type DATA_T = logic,  // Vivado requires a default value for type parameters.
-  parameter integer N_INP = 0,    // Synopsys DC requires a default value for value parameters.
+  parameter int unsigned N_INP = 1,    // Synopsys DC requires a default value for value parameters.
   /// Dependent parameters, DO NOT OVERRIDE!
-  localparam integer SEL_WIDTH = cc_pkg::idx_width(N_INP)
+  localparam int unsigned SEL_WIDTH = cc_pkg::idx_width(N_INP)
 ) (
   input  DATA_T [N_INP-1:0]     inp_data_i,
   input  logic  [N_INP-1:0]     inp_valid_i,
