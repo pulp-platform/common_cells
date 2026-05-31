@@ -12,13 +12,13 @@
 // Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
 
 module cc_graycode_tb #(
-    parameter int N = 9
+    parameter int Width = 9
 );
 
-    logic [N-1:0] a, b, c, bp = '0;
+    logic [Width-1:0] a, b, c, bp = '0;
 
-    cc_binary_to_gray #(N) dut_ab (a,b);
-    cc_gray_to_binary #(N) dut_bc (b,c);
+    cc_binary_to_gray #(Width) dut_ab (a,b);
+    cc_gray_to_binary #(Width) dut_bc (b,c);
 
     task check;
         assert(a == c);
@@ -27,18 +27,18 @@ module cc_graycode_tb #(
     endtask
 
     initial begin : p_stim
-        logic [N:0] i;
+        logic [Width:0] i;
 
         // Count up twice, including overflow.
-        repeat(2) for (i = 0; i < 2**N; i++) begin
+        repeat(2) for (i = 0; i < 2**Width; i++) begin
             a = i;
             #1;
             check();
         end
 
         // Count backwards.
-        for (i = 0; i < 2**N; i++) begin
-            a = N-i-1;
+        for (i = 0; i < 2**Width; i++) begin
+            a = Width-i-1;
             #1;
             check();
         end

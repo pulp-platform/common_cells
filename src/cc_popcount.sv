@@ -11,8 +11,8 @@
 // Author: Manuel Eggimann <meggimann@iis.ee.ethz.ch>
 
 // Description: This module calculates the hamming weight (number of ones) in
-// its input vector. Any unsigned INPUT_WIDTH larger or equal 1 is legal. The output result
-// width is ceil(log2(INPUT_WIDTH+1)).
+// its input vector. Any unsigned InputWidth larger or equal 1 is legal. The output result
+// width is ceil(log2(InputWidth+1)).
 //
 // This module used to be implemented using a binary added tree. However,
 // the heuristics of modern logic Synthesizers work much better with a flat high
@@ -20,19 +20,19 @@
 
 
 module cc_popcount #(
-    parameter  int unsigned INPUT_WIDTH   = 256,
-    localparam int unsigned PopcountWidth = $clog2(INPUT_WIDTH+1)
+    parameter  int unsigned InputWidth    = 256,
+    localparam int unsigned PopcountWidth = $clog2(InputWidth+1)
 ) (
-    input  logic [  INPUT_WIDTH-1:0] data_i,
+    input  logic    [InputWidth-1:0] data_i,
     output logic [PopcountWidth-1:0] popcount_o
 );
 
-  if (INPUT_WIDTH < 1)
-    $error("INPUT_WIDTH must be larger or equal to 1.");
+  if (InputWidth < 1)
+    $error("InputWidth must be larger or equal to 1.");
 
   always_comb begin
     popcount_o = 0;
-    for (int i = 0; i < INPUT_WIDTH; i++) begin
+    for (int i = 0; i < InputWidth; i++) begin
       popcount_o += data_i[i];
     end
   end

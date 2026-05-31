@@ -16,46 +16,46 @@
 /// This speeds up simulation significantly.
 module cc_lzc import cc_pkg::*; #(
   /// The width of the input vector.
-  parameter int unsigned WIDTH = 2,
+  parameter int unsigned Width = 2,
   /// Trailing or leading zero mode selection
-  parameter lzc_mode_e   MODE  = LZC_LEADING_ZERO_CNT,
+  parameter lzc_mode_e   Mode  = LZC_LEADING_ZERO_CNT,
   /// Dependent parameter. Do **not** change!
   ///
   /// Width of the output signal with the zero count.
-  localparam int unsigned CNT_WIDTH = cc_pkg::idx_width(WIDTH)
+  localparam int unsigned CntWidth = cc_pkg::idx_width(Width)
 ) (
   /// Input vector to be counted.
-  input  logic [WIDTH-1:0]     in_i,
+  input  logic [Width-1:0]    in_i,
   /// Count of the leading / trailing zeros.
-  output logic [CNT_WIDTH-1:0] cnt_o,
+  output logic [CntWidth-1:0] cnt_o,
   /// Counter is empty: Asserted if all bits in in_i are zero.
-  output logic                 empty_o
+  output logic                empty_o
 );
 
   `ifndef COMMON_CELLS_ASSERTS_OFF
-    `ASSERT_INIT(width_0, WIDTH > 0, "input must be at least one bit wide")
+    `ASSERT_INIT(width_0, Width > 0, "input must be at least one bit wide")
   `endif
 
-  if (WIDTH <= 1) begin : gen_degenerate_lzc
+  if (Width <= 1) begin : gen_degenerate_lzc
 
     assign cnt_o[0] = !in_i[0];
     assign empty_o = !in_i[0];
 
   end else begin : gen_lzc
 
-    localparam int unsigned NumLevels = $clog2(WIDTH);
+    localparam int unsigned NumLevels = $clog2(Width);
 
-    logic [WIDTH-1:0][NumLevels-1:0] index_lut;
+    logic [Width-1:0][NumLevels-1:0] index_lut;
     logic [2**NumLevels-1:0] sel_nodes                  /* verilator split_var */;
     logic [2**NumLevels-1:0][NumLevels-1:0] index_nodes /* verilator split_var */;
 
-    logic [WIDTH-1:0] in_tmp;
+    logic [Width-1:0] in_tmp;
 
-    if (MODE == LZC_LEADING_ZERO_CNT) begin : g_flip
+    if (Mode == LZC_LEADING_ZERO_CNT) begin : g_flip
       // Mode 1 (leading zero): flip input vector
       always_comb begin : flip_vector
-        for (int unsigned i = 0; i < WIDTH; i++) begin
-          in_tmp[i] = in_i[WIDTH-1-i];
+        for (int unsigned i = 0; i < Width; i++) begin
+          in_tmp[i] = in_i[Width-1-i];
         end
       end
     end else begin : g_no_flip
@@ -63,7 +63,7 @@ module cc_lzc import cc_pkg::*; #(
       assign in_tmp = in_i;
     end
 
-    for (genvar j = 0; unsigned'(j) < WIDTH; j++) begin : g_index_lut
+    for (genvar j = 0; unsigned'(j) < Width; j++) begin : g_index_lut
       assign index_lut[j] = (NumLevels)'(unsigned'(j));
     end
 
@@ -71,19 +71,19 @@ module cc_lzc import cc_pkg::*; #(
       if (unsigned'(level) == NumLevels - 1) begin : g_last_level
         for (genvar k = 0; k < 2 ** level; k++) begin : g_level
           // if two successive indices are still in the vector...
-          if (unsigned'(k) * 2 < WIDTH - 1) begin : g_reduce
+          if (unsigned'(k) * 2 < Width - 1) begin : g_reduce
             assign sel_nodes[2 ** level - 1 + k] = in_tmp[k * 2] | in_tmp[k * 2 + 1];
             assign index_nodes[2 ** level - 1 + k] = (in_tmp[k * 2] == 1'b1)
               ? index_lut[k * 2] :
                 index_lut[k * 2 + 1];
           end
           // if only the first index is still in the vector...
-          if (unsigned'(k) * 2 == WIDTH - 1) begin : g_base
+          if (unsigned'(k) * 2 == Width - 1) begin : g_base
             assign sel_nodes[2 ** level - 1 + k] = in_tmp[k * 2];
             assign index_nodes[2 ** level - 1 + k] = index_lut[k * 2];
           end
           // if index is out of range
-          if (unsigned'(k) * 2 > WIDTH - 1) begin : g_out_of_range
+          if (unsigned'(k) * 2 > Width - 1) begin : g_out_of_range
             assign sel_nodes[2 ** level - 1 + k] = 1'b0;
             assign index_nodes[2 ** level - 1 + k] = '0;
           end
@@ -99,7 +99,7 @@ module cc_lzc import cc_pkg::*; #(
       end
     end
 
-    assign cnt_o = NumLevels > unsigned'(0) ? index_nodes[0] : {($clog2(WIDTH)) {1'b0}};
+    assign cnt_o = NumLevels > unsigned'(0) ? index_nodes[0] : {($clog2(Width)) {1'b0}};
     assign empty_o = NumLevels > unsigned'(0) ? ~sel_nodes[0] : ~(|in_i);
 
   end : gen_lzc

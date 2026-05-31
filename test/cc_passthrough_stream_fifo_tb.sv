@@ -9,7 +9,7 @@
 
 /// This modules verifies basic operation of the cc_passthrough_stream_fifo_tb.
 module cc_passthrough_stream_fifo_tb #(
-    parameter int unsigned TCK              = 10,
+    parameter int unsigned Tck              = 10,
     parameter int unsigned DataWidth        = 8,
     parameter int unsigned Depth            = 10,
     parameter int unsigned NumStims         = 1000,
@@ -31,7 +31,7 @@ module cc_passthrough_stream_fifo_tb #(
 
     //Clock generator
     clk_rst_gen #(
-        .ClkPeriod    ( TCK  ),
+        .ClkPeriod    ( Tck  ),
         .RstClkCycles ( 1     )
     ) i_clk_rst_gen (
         .clk_o        ( clk   ),

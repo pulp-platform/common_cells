@@ -11,7 +11,7 @@
 // Antonio Pullini <pullinia@iis.ee.ethz.ch>
 
 module cc_sync_wedge #(
-    parameter int unsigned STAGES = 2
+    parameter int unsigned Stages = 2
 ) (
     input  logic clk_i,
     input  logic rst_ni,
@@ -29,7 +29,7 @@ module cc_sync_wedge #(
     assign r_edge_o =  serial & (~serial_q);
 
     cc_sync #(
-        .STAGES (STAGES)
+        .Stages (Stages)
     ) i_sync (
         .clk_i,
         .rst_ni,

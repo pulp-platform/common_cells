@@ -49,7 +49,7 @@
 /// inefficient data synchronization.
 ///
 /// The FIFO size must be powers of two, which is why its depth is
-/// given as 2**LOG_DEPTH. LOG_DEPTH must be at least 1.
+/// given as 2**LogDepth. LogDepth must be at least 1.
 
 /// Reset Behavior:
 ///
@@ -73,9 +73,9 @@
 ///    might violate higher level protocols. If you need this feature you would
 ///    have to path the existing implementation to wait with the isolate_ack
 ///    assertion until all open handshakes were acknowledged.
-/// 4. If the parameter CLEAR_ON_ASYNC_RESET is enabled, the same behavior as
+/// 4. If the parameter ClearOnAsyncReset is enabled, the same behavior as
 ///    above is also valid for asynchronous resets on either side. However, this
-///    increases the minimum number of synchronization stages (SYNC_STAGES
+///    increases the minimum number of synchronization stages (SyncStages
 ///    parameter) from 2 to 3 (read the cc_cdc_reset_ctrlr header to figure out
 ///    why).
 ///
@@ -102,18 +102,18 @@
 (* no_boundary_optimization *)
 module cc_cdc_fifo_gray_clearable #(
   /// The width of the default logic type.
-  parameter int unsigned WIDTH = 1,
+  parameter int unsigned Width = 1,
   /// The data type of the payload transported by the FIFO.
-  parameter type T = logic [WIDTH-1:0],
-  /// The FIFO's depth given as 2**LOG_DEPTH.
-  parameter int unsigned LOG_DEPTH = 3,
+  parameter type T = logic [Width-1:0],
+  /// The FIFO's depth given as 2**LogDepth.
+  parameter int unsigned LogDepth = 3,
   /// The number of synchronization registers to insert on the async pointers
-  /// between the FIFOs. If CLEAR_ON_ASYNC reset is enabled, we need at least 4
+  /// between the FIFOs. If ClearOnAsyncReset is enabled, we need at least 4
   /// synchronizer stages to provide the clear synchronizer lower latency than
-  /// the async reset. I.e. if CLEAR_ON_ASYNC_RESET==1 -> SYNC_STAGES >= 4 else
-  /// SYNC_STAGES >= 2.
-  parameter int unsigned SYNC_STAGES = 3,
-  parameter bit CLEAR_ON_ASYNC_RESET = 1
+  /// the async reset. I.e. if ClearOnAsyncReset==1 -> SyncStages >= 4 else
+  /// SyncStages >= 2.
+  parameter int unsigned SyncStages = 3,
+  parameter bit ClearOnAsyncReset = 1
 ) (
   input  logic src_rst_ni,
   input  logic src_clk_i,
@@ -144,33 +144,33 @@ module cc_cdc_fifo_gray_clearable #(
   logic        s_dst_isolate_ack_q;
 
 
-  T [2**LOG_DEPTH-1:0] async_data;
-  logic [LOG_DEPTH:0]  async_wptr;
-  logic [LOG_DEPTH:0]  async_rptr;
+  T [2**LogDepth-1:0] async_data;
+  logic [LogDepth:0]  async_wptr;
+  logic [LogDepth:0]  async_rptr;
 
-  if (CLEAR_ON_ASYNC_RESET) begin : gen_elaboration_assertion
-    if (SYNC_STAGES < 3)
+  if (ClearOnAsyncReset) begin : gen_elaboration_assertion
+    if (SyncStages < 3)
       $error("The clearable CDC FIFO with async reset synchronization requires at least",
              "3 synchronizer stages for the FIFO.");
   end else begin : gen_elaboration_assertion
-    if (SYNC_STAGES < 2) begin : gen_elaboration_assertion
+    if (SyncStages < 2) begin : gen_elaboration_assertion
       $error("A minimum of 2 synchronizer stages is required for proper functionality.");
     end
   end
 
-  if (2*SYNC_STAGES > 2**LOG_DEPTH) begin : gen_elaboration_assertion2
+  if (2*SyncStages > 2**LogDepth) begin : gen_elaboration_assertion2
     $warning("The FIFOs depth of %0d is insufficient to completely hide the latency of",
-             " %0d SYNC_STAGES. The FIFO will stall in the case where f_src ~= f_dst. ",
+             " %0d SyncStages. The FIFO will stall in the case where f_src ~= f_dst. ",
              "It is reccomended to increase the FIFO's log depth to at least %0d.",
-             2**LOG_DEPTH, SYNC_STAGES, $clog2(2*SYNC_STAGES));
+             2**LogDepth, SyncStages, $clog2(2*SyncStages));
   end
 
 
 
   cc_cdc_fifo_gray_src_clearable #(
     .T           ( T           ),
-    .LOG_DEPTH   ( LOG_DEPTH   ),
-    .SYNC_STAGES ( SYNC_STAGES )
+    .LogDepth   ( LogDepth   ),
+    .SyncStages ( SyncStages )
   ) i_src (
     .src_rst_ni,
     .src_clk_i,
@@ -188,8 +188,8 @@ module cc_cdc_fifo_gray_clearable #(
 
   cc_cdc_fifo_gray_dst_clearable #(
     .T           ( T           ),
-    .LOG_DEPTH   ( LOG_DEPTH   ),
-    .SYNC_STAGES ( SYNC_STAGES )
+    .LogDepth   ( LogDepth   ),
+    .SyncStages ( SyncStages )
   ) i_dst (
     .dst_rst_ni,
     .dst_clk_i,
@@ -208,7 +208,7 @@ module cc_cdc_fifo_gray_clearable #(
   // Synchronize the clear and reset signaling in both directions (see header of
   // the cc_cdc_reset_ctrlr module for more details.)
   cc_cdc_reset_ctrlr #(
-    .SYNC_STAGES(SYNC_STAGES-1)
+    .SyncStages(SyncStages-1)
   ) i_cdc_reset_ctrlr (
     .a_clk_i         ( src_clk_i           ),
     .a_rst_ni        ( src_rst_ni          ),
@@ -256,8 +256,8 @@ module cc_cdc_fifo_gray_clearable #(
 
   // Check the invariants.
   `ifndef COMMON_CELLS_ASSERTS_OFF
-  `ASSERT_INIT(log_depth_0, LOG_DEPTH > 0)
-  `ASSERT_INIT(sync_stages_lt_2, SYNC_STAGES >= 2)
+  `ASSERT_INIT(log_depth_0, LogDepth > 0)
+  `ASSERT_INIT(sync_stages_lt_2, SyncStages >= 2)
   `endif
 
 endmodule
@@ -267,8 +267,8 @@ endmodule
 (* no_boundary_optimization *)
 module cc_cdc_fifo_gray_src_clearable #(
   parameter type T = logic,
-  parameter int unsigned LOG_DEPTH = 3,
-  parameter int unsigned SYNC_STAGES = 2
+  parameter int unsigned LogDepth = 3,
+  parameter int unsigned SyncStages = 2
 )(
   input  logic src_rst_ni,
   input  logic src_clk_i,
@@ -277,28 +277,28 @@ module cc_cdc_fifo_gray_src_clearable #(
   input  logic src_valid_i,
   output logic src_ready_o,
 
-  output T [2**LOG_DEPTH-1:0] async_data_o,
-  output logic [LOG_DEPTH:0]  async_wptr_o,
-  input  logic [LOG_DEPTH:0]  async_rptr_i
+  output T [2**LogDepth-1:0] async_data_o,
+  output logic [LogDepth:0]  async_wptr_o,
+  input  logic [LogDepth:0]  async_rptr_i
 );
 
-  localparam int unsigned PtrWidth = LOG_DEPTH+1;
-  localparam logic [PtrWidth-1:0] PtrFull = (1 << LOG_DEPTH);
+  localparam int unsigned PtrWidth = LogDepth+1;
+  localparam logic [PtrWidth-1:0] PtrFull = (1 << LogDepth);
 
-  T [2**LOG_DEPTH-1:0] data_q, data_d;
+  T [2**LogDepth-1:0] data_q, data_d;
   logic [PtrWidth-1:0] wptr_q, wptr_d, wptr_bin, wptr_next, rptr, rptr_bin;
 
   // Data FIFO.
   assign async_data_o = data_q;
   always_comb begin
     data_d                          = data_q;
-    data_d[wptr_bin[LOG_DEPTH-1:0]] = src_data_i;
+    data_d[wptr_bin[LogDepth-1:0]] = src_data_i;
   end
   `FFL(data_q, data_d, src_valid_i & src_ready_o, '0, src_clk_i, src_rst_ni)
 
   // Read pointer.
   for (genvar i = 0; i < PtrWidth; i++) begin : gen_sync
-    cc_sync #(.STAGES(SYNC_STAGES)) i_sync (
+    cc_sync #(.Stages(SyncStages)) i_sync (
       .clk_i    ( src_clk_i       ),
       .rst_ni   ( src_rst_ni      ),
       .serial_i ( async_rptr_i[i] ),
@@ -327,8 +327,8 @@ endmodule
 (* no_boundary_optimization *)
 module cc_cdc_fifo_gray_dst_clearable #(
   parameter type T = logic,
-  parameter int unsigned LOG_DEPTH = 3,
-  parameter int unsigned SYNC_STAGES = 2
+  parameter int unsigned LogDepth = 3,
+  parameter int unsigned SyncStages = 2
 )(
   input  logic dst_rst_ni,
   input  logic dst_clk_i,
@@ -337,19 +337,19 @@ module cc_cdc_fifo_gray_dst_clearable #(
   output logic dst_valid_o,
   input  logic dst_ready_i,
 
-  input  T [2**LOG_DEPTH-1:0] async_data_i,
-  input  logic [LOG_DEPTH:0]  async_wptr_i,
-  output logic [LOG_DEPTH:0]  async_rptr_o
+  input  T [2**LogDepth-1:0] async_data_i,
+  input  logic [LogDepth:0]  async_wptr_i,
+  output logic [LogDepth:0]  async_rptr_o
 );
 
-  localparam int unsigned PtrWidth = LOG_DEPTH+1;
+  localparam int unsigned PtrWidth = LogDepth+1;
   localparam logic [PtrWidth-1:0] PtrEmpty = '0;
 
   T dst_data;
   logic [PtrWidth-1:0] rptr_q, rptr_d, rptr_bin, rptr_next, wptr, wptr_bin;
   logic dst_valid, dst_ready;
   // Data selector and register.
-  assign dst_data = async_data_i[rptr_bin[LOG_DEPTH-1:0]];
+  assign dst_data = async_data_i[rptr_bin[LogDepth-1:0]];
 
   // Read pointer.
   assign rptr_next = rptr_bin+1;
@@ -360,7 +360,7 @@ module cc_cdc_fifo_gray_dst_clearable #(
 
   // Write pointer.
   for (genvar i = 0; i < PtrWidth; i++) begin : gen_sync
-    cc_sync #(.STAGES(SYNC_STAGES)) i_sync (
+    cc_sync #(.Stages(SyncStages)) i_sync (
       .clk_i    ( dst_clk_i       ),
       .rst_ni   ( dst_rst_ni      ),
       .serial_i ( async_wptr_i[i] ),

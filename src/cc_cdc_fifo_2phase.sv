@@ -16,8 +16,8 @@
 /// A clock domain crossing FIFO, using 2-phase hand shakes.
 ///
 /// This FIFO has its push and pop ports in two separate clock domains. Its size
-/// can only be powers of two, which is why its depth is given as 2**LOG_DEPTH.
-/// LOG_DEPTH must be at least 1.
+/// can only be powers of two, which is why its depth is given as 2**LogDepth.
+/// LogDepth must be at least 1.
 ///
 /// # Reset Behavior!!
 ///
@@ -47,8 +47,8 @@
 module cc_cdc_fifo_2phase #(
   /// The data type of the payload transported by the FIFO.
   parameter type T = logic,
-  /// The FIFO's depth given as 2**LOG_DEPTH.
-  parameter int unsigned LOG_DEPTH = 3
+  /// The FIFO's depth given as 2**LogDepth.
+  parameter int unsigned LogDepth = 3
 )(
   input  logic src_rst_ni,
   input  logic src_clk_i,
@@ -65,14 +65,14 @@ module cc_cdc_fifo_2phase #(
 
   // Check the invariants.
   `ifndef COMMON_CELLS_ASSERTS_OFF
-  `ASSERT_INIT(log_depth_0, LOG_DEPTH > 0)
+  `ASSERT_INIT(log_depth_0, LogDepth > 0)
   `endif
 
-  localparam int unsigned PtrWidth = LOG_DEPTH+1;
+  localparam int unsigned PtrWidth = LogDepth+1;
   typedef logic [PtrWidth-1:0] pointer_t;
-  typedef logic [LOG_DEPTH-1:0] index_t;
+  typedef logic [LogDepth-1:0] index_t;
 
-  localparam pointer_t PtrFull  = (1 << LOG_DEPTH);
+  localparam pointer_t PtrFull  = (1 << LogDepth);
   localparam pointer_t PtrEmpty = '0;
 
   // Allocate the registers for the FIFO memory with its separate write and read
@@ -83,11 +83,11 @@ module cc_cdc_fifo_2phase #(
   index_t fifo_widx, fifo_ridx;
   logic fifo_write;
   T fifo_wdata, fifo_rdata;
-  T fifo_data_q [2**LOG_DEPTH];
+  T fifo_data_q [2**LogDepth];
 
   assign fifo_rdata = fifo_data_q[fifo_ridx];
 
-  for (genvar i = 0; i < 2**LOG_DEPTH; i++) begin : g_word
+  for (genvar i = 0; i < 2**LogDepth; i++) begin : g_word
     always_ff @(posedge src_clk_i, negedge src_rst_ni) begin
       if (!src_rst_ni)
         fifo_data_q[i] <= T'('0);

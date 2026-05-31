@@ -17,17 +17,17 @@
 
 /// 8 bit Linear Feedback Shift register
 module cc_lfsr_8bit #(
-  parameter logic        [7:0] SEED  = 8'b0,
-  parameter int unsigned       WIDTH = 8
+  parameter logic        [7:0] Seed  = 8'b0,
+  parameter int unsigned       Width = 8
 ) (
   input  logic                     clk_i,
   input  logic                     rst_ni,
   input  logic                     en_i,
-  output logic [        WIDTH-1:0] refill_way_oh_o,
-  output logic [$clog2(WIDTH)-1:0] refill_way_bin_o
+  output logic [        Width-1:0] refill_way_oh_o,
+  output logic [$clog2(Width)-1:0] refill_way_bin_o
 );
 
-  localparam int unsigned LogWidth = $clog2(WIDTH);
+  localparam int unsigned LogWidth = $clog2(Width);
 
   logic [7:0] shift_d, shift_q;
 
@@ -48,14 +48,14 @@ module cc_lfsr_8bit #(
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_
     if (~rst_ni) begin
-      shift_q <= SEED;
+      shift_q <= Seed;
     end else begin
       shift_q <= shift_d;
     end
   end
 
 `ifndef COMMON_CELLS_ASSERTS_OFF
-  `ASSERT_INIT(width_gt_8, WIDTH <= 8, "WIDTH needs to be less than 8 because of the 8-bit LFSR")
+  `ASSERT_INIT(width_gt_8, Width <= 8, "Width needs to be less than 8 because of the 8-bit LFSR")
 `endif
 
 endmodule

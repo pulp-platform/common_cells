@@ -23,33 +23,33 @@
 /// input stream can just be applied at all output streams.
 module cc_stream_fork_dynamic #(
   /// Number of output streams
-  parameter int unsigned N_OUP = 32'd1 // Synopsys DC requires a default value for parameters.
+  parameter int unsigned NumOup = 32'd1 // Synopsys DC requires a default value for parameters.
 ) (
   /// Clock
-  input  logic             clk_i,
+  input  logic              clk_i,
   /// Asynchronous reset, active low
-  input  logic             rst_ni,
+  input  logic              rst_ni,
   /// Input stream valid handshake,
-  input  logic             valid_i,
+  input  logic              valid_i,
   /// Input stream ready handshake
-  output logic             ready_o,
+  output logic              ready_o,
   /// Selection mask for the output handshake
-  input  logic [N_OUP-1:0] sel_i,
+  input  logic [NumOup-1:0] sel_i,
   /// Selection mask valid
-  input  logic             sel_valid_i,
+  input  logic              sel_valid_i,
   /// Selection mask ready
-  output logic             sel_ready_o,
+  output logic              sel_ready_o,
   /// Output streams valid handshakes
-  output logic [N_OUP-1:0] valid_o,
+  output logic [NumOup-1:0] valid_o,
   /// Output streams ready handshakes
-  input  logic [N_OUP-1:0] ready_i
+  input  logic [NumOup-1:0] ready_i
 );
 
-  logic             int_inp_valid,  int_inp_ready;
-  logic [N_OUP-1:0] int_oup_valid,  int_oup_ready;
+  logic              int_inp_valid, int_inp_ready;
+  logic [NumOup-1:0] int_oup_valid, int_oup_ready;
 
   // Output handshaking
-  for (genvar i = 0; i < N_OUP; i++) begin : gen_oups
+  for (genvar i = 0; i < NumOup; i++) begin : gen_oups
     always_comb begin
       valid_o[i]       = 1'b0;
       int_oup_ready[i] = 1'b0;
@@ -77,7 +77,7 @@ module cc_stream_fork_dynamic #(
   end
 
   cc_stream_fork #(
-    .N_OUP  ( N_OUP )
+    .NumOup  ( NumOup )
   ) i_fork (
     .clk_i,
     .rst_ni,
@@ -88,6 +88,6 @@ module cc_stream_fork_dynamic #(
   );
 
 `ifndef COMMON_CELLS_ASSERTS_OFF
-  `ASSERT_INIT(n_oup_0, N_OUP >= 1, "N_OUP must be at least 1!")
+  `ASSERT_INIT(n_oup_0, NumOup >= 1, "NumOup must be at least 1!")
 `endif
 endmodule

@@ -194,7 +194,7 @@ endmodule
 
 
 module cc_cdc_2phase_tb_delay_injector #(
-  parameter time MAX_DELAY = 0ns
+  parameter time MaxDelay = 0ns
 )(
   input  logic        src_rst_ni,
   input  logic        src_clk_i,
@@ -214,18 +214,18 @@ module cc_cdc_2phase_tb_delay_injector #(
   logic [31:0] async_data_o, async_data_i;
 
   always @(async_req_o) begin
-    automatic time d = $urandom_range(0, MAX_DELAY);
+    automatic time d = $urandom_range(0, MaxDelay);
     async_req_i <= #d async_req_o;
   end
 
   always @(async_ack_o) begin
-    automatic time d = $urandom_range(0, MAX_DELAY);
+    automatic time d = $urandom_range(0, MaxDelay);
     async_ack_i <= #d async_ack_o;
   end
 
   for (genvar i = 0; i < 32; i++) begin
     always @(async_data_o[i]) begin
-      automatic time d = $urandom_range(0, MAX_DELAY);
+      automatic time d = $urandom_range(0, MaxDelay);
       async_data_i[i] <= #d async_data_o[i];
     end
   end

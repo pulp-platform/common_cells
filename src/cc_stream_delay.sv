@@ -95,8 +95,8 @@ module cc_stream_delay #(
 
         if (StallRandom) begin : gen_random_stall
             cc_lfsr_16bit #(
-              .WIDTH ( 16   ),
-              .SEED  ( Seed )
+              .Width ( 16   ),
+              .Seed  ( Seed )
             ) i_lfsr_16bit (
               .clk_i          ( clk_i        ),
               .rst_ni         ( rst_ni       ),
@@ -109,7 +109,7 @@ module cc_stream_delay #(
         end
 
         cc_counter #(
-            .WIDTH      ( CounterBits )
+            .Width      ( CounterBits )
         ) i_counter (
             .clk_i      ( clk_i        ),
             .rst_ni     ( rst_ni       ),

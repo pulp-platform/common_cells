@@ -39,9 +39,9 @@
 ///    might violate higher level protocols. If you need this feature you would
 ///    have to path the existing implementation to wait with the isolate_ack
 ///    assertion until all open handshakes were acknowledged.
-/// 4. If the parameter CLEAR_ON_ASYNC_RESET is enabled, the same behavior as
+/// 4. If the parameter ClearOnAsyncReset is enabled, the same behavior as
 ///    above is also valid for asynchronous resets on either side. However, this
-///    increases the minimum number of synchronization stages (SYNC_STAGES
+///    increases the minimum number of synchronization stages (SyncStages
 ///    parameter) from 2 to 3 (read the cc_cdc_reset_ctrlr header to figure out
 ///    why).
 ///
@@ -53,8 +53,8 @@
 
 module cc_cdc_2phase_clearable #(
   parameter type T = logic,
-  parameter int unsigned SYNC_STAGES = 3,
-  parameter bit CLEAR_ON_ASYNC_RESET = 1
+  parameter int unsigned SyncStages = 3,
+  parameter bit ClearOnAsyncReset = 1
 )(
   input  logic src_rst_ni,
   input  logic src_clk_i,
@@ -88,12 +88,12 @@ module cc_cdc_2phase_clearable #(
   (* dont_touch = "true" *) logic async_ack;
   (* dont_touch = "true" *) T async_data;
 
-  if (CLEAR_ON_ASYNC_RESET) begin : gen_elaboration_assertion
-    if (SYNC_STAGES < 3)
+  if (ClearOnAsyncReset) begin : gen_elaboration_assertion
+    if (SyncStages < 3)
       $error("The clearable 2-phase CDC with async reset",
              "synchronization requires at least 3 synchronizer stages for the FIFO.");
   end else begin : gen_elaboration_assertion
-    if (SYNC_STAGES < 2) begin : gen_elaboration_assertion
+    if (SyncStages < 2) begin : gen_elaboration_assertion
       $error("A minimum of 2 synchronizer stages is required for proper functionality.");
     end
   end
@@ -102,7 +102,7 @@ module cc_cdc_2phase_clearable #(
   // The sender in the source domain.
   cc_cdc_2phase_src_clearable #(
     .T           ( T           ),
-    .SYNC_STAGES ( SYNC_STAGES )
+    .SyncStages ( SyncStages )
   ) i_src (
     .rst_ni       ( src_rst_ni                       ),
     .clk_i        ( src_clk_i                        ),
@@ -121,7 +121,7 @@ module cc_cdc_2phase_clearable #(
   // The receiver in the destination domain.
   cc_cdc_2phase_dst_clearable #(
     .T           ( T           ),
-    .SYNC_STAGES ( SYNC_STAGES )
+    .SyncStages ( SyncStages )
   ) i_dst (
     .rst_ni       ( dst_rst_ni                       ),
     .clk_i        ( dst_clk_i                        ),
@@ -139,7 +139,7 @@ module cc_cdc_2phase_clearable #(
   // Synchronize the clear and reset signaling in both directions (see header of
   // the cc_cdc_reset_ctrlr module for more details.)
   cc_cdc_reset_ctrlr #(
-    .SYNC_STAGES(SYNC_STAGES-1)
+    .SyncStages(SyncStages-1)
   ) i_cdc_reset_ctrlr (
     .a_clk_i         ( src_clk_i           ),
     .a_rst_ni        ( src_rst_ni          ),
@@ -198,7 +198,7 @@ endmodule
 /// Half of the two-phase clock domain crossing located in the source domain.
 module cc_cdc_2phase_src_clearable #(
   parameter type T = logic,
-  parameter int unsigned SYNC_STAGES = 2
+  parameter int unsigned SyncStages = 2
 ) (
   input  logic rst_ni,
   input  logic clk_i,
@@ -218,7 +218,7 @@ module cc_cdc_2phase_src_clearable #(
 
   // Synchronize the async ACK
   cc_sync #(
-    .STAGES(SYNC_STAGES)
+    .Stages(SyncStages)
   ) i_sync(
     .clk_i,
     .rst_ni,
@@ -268,7 +268,7 @@ endmodule
 /// domain.
 module cc_cdc_2phase_dst_clearable #(
   parameter type T = logic,
-  parameter int unsigned SYNC_STAGES = 2
+  parameter int unsigned SyncStages = 2
 )(
   input  logic rst_ni,
   input  logic clk_i,
@@ -290,7 +290,7 @@ module cc_cdc_2phase_dst_clearable #(
 
   //Synchronize the request
   cc_sync #(
-    .STAGES(SYNC_STAGES)
+    .Stages(SyncStages)
   ) i_sync(
     .clk_i,
     .rst_ni,

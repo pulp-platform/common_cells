@@ -76,7 +76,7 @@ module cc_clk_int_div_tb;
   );
 
   cc_clk_int_div #(
-    .DIV_VALUE_WIDTH(DivWidth)
+    .DivValueWidth(DivWidth)
   ) i_dut(
     .clk_i          ( clk          ),
     .rst_ni         ( rstn         ),

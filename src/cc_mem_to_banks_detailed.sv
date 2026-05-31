@@ -132,10 +132,10 @@ module cc_mem_to_banks_detailed #(
     assign bank_req[i].wuser = wuser_i;
     assign bank_req[i].we    = we_i;
     cc_stream_fifo #(
-      .FALL_THROUGH ( 1'b1         ),
-      .DATA_WIDTH   ( $bits(req_t) ),
-      .DEPTH        ( FifoDepth    ),
-      .T            ( req_t        )
+      .FallThrough ( 1'b1         ),
+      .DataWidth   ( $bits(req_t) ),
+      .Depth       ( FifoDepth    ),
+      .T           ( req_t        )
     ) i_ft_reg (
       .clk_i,
       .rst_ni,
@@ -172,9 +172,9 @@ module cc_mem_to_banks_detailed #(
 
   if (HideStrb) begin : gen_dead_write_fifo
     cc_fifo #(
-      .FALL_THROUGH ( 1'b0     ),
-      .DEPTH        ( MaxTrans+1 ),
-      .DATA_WIDTH   ( NumBanks )
+      .FallThrough  ( 1'b0     ),
+      .Depth        ( MaxTrans+1 ),
+      .DataWidth    ( NumBanks )
     ) i_dead_write_fifo (
       .clk_i,
       .rst_ni,
@@ -198,9 +198,9 @@ module cc_mem_to_banks_detailed #(
   // Handle responses.
   for (genvar i = 0; unsigned'(i) < NumBanks; i++) begin : gen_resp_regs
     cc_stream_fifo #(
-      .FALL_THROUGH ( 1'b1              ),
-      .DATA_WIDTH   ( $bits(oup_data_t) + $bits(oup_ruser_t) ),
-      .DEPTH        ( FifoDepth         )
+      .FallThrough ( 1'b1              ),
+      .DataWidth   ( $bits(oup_data_t) + $bits(oup_ruser_t) ),
+      .Depth       ( FifoDepth         )
     ) i_ft_reg (
       .clk_i,
       .rst_ni,

@@ -16,21 +16,21 @@
 `include "common_cells/assertions.svh"
 
 module cc_trip_counter #(
-    parameter int unsigned WIDTH = 4
+    parameter int unsigned Width = 4
 )(
     input  logic             clk_i,
     input  logic             rst_ni,
     input  logic             clear_i,
     input  logic             en_i,
-    input  logic [WIDTH-1:0] delta_i,
-    input  logic [WIDTH-1:0] bound_i,
-    output logic [WIDTH-1:0] q_o,
+    input  logic [Width-1:0] delta_i,
+    input  logic [Width-1:0] bound_i,
+    output logic [Width-1:0] q_o,
     output logic             last_o,
     output logic             trip_o
 );
 
     cc_delta_counter #(
-        .WIDTH(WIDTH)
+        .Width(Width)
     ) i_delta_counter (
         .clk_i(clk_i),
         .rst_ni(rst_ni),
