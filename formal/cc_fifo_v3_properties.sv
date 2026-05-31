@@ -14,7 +14,7 @@ module cc_fifo_properties #(
     parameter bit          FallThrough = 1'b0, // fifo is in fall-through mode
     parameter int unsigned DataWidth   = 32,   // default data width if the fifo is of type logic
     parameter int unsigned Depth       = 8,    // depth can be arbitrary from 0 to 2**32
-    parameter type dtype                = logic [DataWidth-1:0],
+    parameter type         data_t      = logic [DataWidth-1:0],
     // DO NOT OVERWRITE THIS PARAMETER
     localparam int unsigned AddrDepth  = (Depth > 1) ? $clog2(Depth) : 1
 ) (
@@ -131,5 +131,5 @@ endmodule // cc_fifo_properties
 
 // propagate parameters from cc_fifo to properties
 bind cc_fifo cc_fifo_properties #(
-    .FallThrough(FallThrough), .DataWidth(DataWidth), .Depth(Depth)
+    .FallThrough(FallThrough), .DataWidth(DataWidth), .Depth(Depth), .data_t(data_t)
 ) i_fifo_properties(.*);

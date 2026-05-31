@@ -9,10 +9,10 @@
 (* no_ungroup *)
 module cc_read #(
     parameter int unsigned Width = 1,
-    parameter type T = logic [Width-1:0]
+    parameter type data_t = logic [Width-1:0]
 ) (
-    input  T d_i,
-    output T d_o
+    input  data_t d_i,
+    output data_t d_o
 );
 
   assign d_o = d_i;

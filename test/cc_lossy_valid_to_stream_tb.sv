@@ -59,7 +59,7 @@ module cc_lossy_valid_to_stream_tb #(
 
   assign dut_in.ready = 1'b1;
   cc_lossy_valid_to_stream #(
-      .T(payload_t)
+      .data_t(payload_t)
   ) i_lossy_valid_to_stream (
       .clk_i  (clk),
       .rst_ni (rst_n),
@@ -68,7 +68,7 @@ module cc_lossy_valid_to_stream_tb #(
       .data_o (dut_out.data),
       .valid_o(dut_out.valid),
       .ready_i(dut_out.ready),
-      .busy_o(is_busy)
+      .busy_o (is_busy)
   );
 
   initial begin : apply_stimuli

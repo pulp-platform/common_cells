@@ -52,25 +52,25 @@
 `include "common_cells/assertions.svh"
 
 module cc_cdc_2phase_clearable #(
-  parameter type T = logic,
+  parameter type data_t = logic,
   parameter int unsigned SyncStages = 3,
   parameter bit ClearOnAsyncReset = 1
 )(
-  input  logic src_rst_ni,
-  input  logic src_clk_i,
-  input  logic src_clear_i,
-  output logic src_clear_pending_o,
-  input  T     src_data_i,
-  input  logic src_valid_i,
-  output logic src_ready_o,
+  input  logic  src_rst_ni,
+  input  logic  src_clk_i,
+  input  logic  src_clear_i,
+  output logic  src_clear_pending_o,
+  input  data_t src_data_i,
+  input  logic  src_valid_i,
+  output logic  src_ready_o,
 
-  input  logic dst_rst_ni,
-  input  logic dst_clk_i,
-  input  logic dst_clear_i,
-  output logic dst_clear_pending_o,
-  output T     dst_data_o,
-  output logic dst_valid_o,
-  input  logic dst_ready_i
+  input  logic  dst_rst_ni,
+  input  logic  dst_clk_i,
+  input  logic  dst_clear_i,
+  output logic  dst_clear_pending_o,
+  output data_t dst_data_o,
+  output logic  dst_valid_o,
+  input  logic  dst_ready_i
 );
   logic        s_src_clear_req;
   logic        s_src_clear_ack_q;
@@ -84,9 +84,9 @@ module cc_cdc_2phase_clearable #(
   logic        s_dst_isolate_ack_q;
 
   // Asynchronous handshake signals between the CDCs
-  (* dont_touch = "true" *) logic async_req;
-  (* dont_touch = "true" *) logic async_ack;
-  (* dont_touch = "true" *) T async_data;
+  (* dont_touch = "true" *) logic  async_req;
+  (* dont_touch = "true" *) logic  async_ack;
+  (* dont_touch = "true" *) data_t async_data;
 
   if (ClearOnAsyncReset) begin : gen_elaboration_assertion
     if (SyncStages < 3)
@@ -101,8 +101,8 @@ module cc_cdc_2phase_clearable #(
 
   // The sender in the source domain.
   cc_cdc_2phase_src_clearable #(
-    .T           ( T           ),
-    .SyncStages ( SyncStages )
+    .data_t      ( data_t     ),
+    .SyncStages  ( SyncStages )
   ) i_src (
     .rst_ni       ( src_rst_ni                       ),
     .clk_i        ( src_clk_i                        ),
@@ -120,8 +120,8 @@ module cc_cdc_2phase_clearable #(
 
   // The receiver in the destination domain.
   cc_cdc_2phase_dst_clearable #(
-    .T           ( T           ),
-    .SyncStages ( SyncStages )
+    .data_t      ( data_t     ),
+    .SyncStages  ( SyncStages )
   ) i_dst (
     .rst_ni       ( dst_rst_ni                       ),
     .clk_i        ( dst_clk_i                        ),
@@ -197,24 +197,24 @@ endmodule
 
 /// Half of the two-phase clock domain crossing located in the source domain.
 module cc_cdc_2phase_src_clearable #(
-  parameter type T = logic,
+  parameter type data_t = logic,
   parameter int unsigned SyncStages = 2
 ) (
-  input  logic rst_ni,
-  input  logic clk_i,
-  input  logic clear_i,
-  input  T     data_i,
-  input  logic valid_i,
-  output logic ready_o,
-  output logic async_req_o,
-  input  logic async_ack_i,
-  output T     async_data_o
+  input  logic  rst_ni,
+  input  logic  clk_i,
+  input  logic  clear_i,
+  input  data_t data_i,
+  input  logic  valid_i,
+  output logic  ready_o,
+  output logic  async_req_o,
+  input  logic  async_ack_i,
+  output data_t async_data_o
 );
 
   (* dont_touch = "true" *)
   logic  req_src_d, req_src_q, ack_synced;
   (* dont_touch = "true" *)
-  T data_src_d, data_src_q;
+  data_t data_src_d, data_src_q;
 
   // Synchronize the async ACK
   cc_sync #(
@@ -267,25 +267,25 @@ endmodule
 /// Half of the two-phase clock domain crossing located in the destination
 /// domain.
 module cc_cdc_2phase_dst_clearable #(
-  parameter type T = logic,
+  parameter type data_t = logic,
   parameter int unsigned SyncStages = 2
 )(
-  input  logic rst_ni,
-  input  logic clk_i,
-  input  logic clear_i,
-  output T     data_o,
-  output logic valid_o,
-  input  logic ready_i,
-  input  logic async_req_i,
-  output logic async_ack_o,
-  input  T     async_data_i
+  input  logic  rst_ni,
+  input  logic  clk_i,
+  input  logic  clear_i,
+  output data_t data_o,
+  output logic  valid_o,
+  input  logic  ready_i,
+  input  logic  async_req_i,
+  output logic  async_ack_o,
+  input  data_t async_data_i
 );
 
   (* dont_touch = "true" *)
   (* async_reg = "true" *)
- logic ack_dst_d, ack_dst_q, req_synced, req_synced_q1;
+  logic  ack_dst_d, ack_dst_q, req_synced, req_synced_q1;
   (* dont_touch = "true" *)
-  T data_dst_d, data_dst_q;
+  data_t data_dst_d, data_dst_q;
 
 
   //Synchronize the request

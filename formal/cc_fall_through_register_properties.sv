@@ -11,19 +11,19 @@
 // Author: Robert Balas <balasr@iis.ee.ethz.ch>
 
 module cc_fall_through_register_properties #(
-    parameter type T = logic  // Vivado requires a default value for type parameters.
+    parameter type data_t = logic // Vivado requires a default value for type parameters.
 )(
-    input  logic    clk_i,          // Clock
-    input  logic    rst_ni,         // Asynchronous active-low reset
-    input  logic    clr_i,          // Synchronous clear
+    input  logic  clk_i,          // Clock
+    input  logic  rst_ni,         // Asynchronous active-low reset
+    input  logic  clr_i,          // Synchronous clear
     // Input port
-    input  logic    valid_i,
-    input  logic    ready_o,
-    input  T        data_i,
+    input  logic  valid_i,
+    input  logic  ready_o,
+    input  data_t data_i,
     // Output port
-    input  logic    valid_o,
-    input  logic    ready_i,
-    input  T        data_o
+    input  logic  valid_o,
+    input  logic  ready_i,
+    input  data_t data_o
 );
     int    stalls = 0;
     // very first clock indicator
@@ -81,5 +81,5 @@ endmodule // cc_fall_through_register_properties
 
 // propagate parameters from cc_fall_through_register to properties
 bind cc_fall_through_register cc_fall_through_register_properties #(
-    .T(T)
+    .data_t(data_t)
 ) i_fall_through_register_properties(.*);

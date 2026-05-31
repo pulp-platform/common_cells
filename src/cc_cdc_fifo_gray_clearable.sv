@@ -104,7 +104,7 @@ module cc_cdc_fifo_gray_clearable #(
   /// The width of the default logic type.
   parameter int unsigned Width = 1,
   /// The data type of the payload transported by the FIFO.
-  parameter type T = logic [Width-1:0],
+  parameter type data_t = logic [Width-1:0],
   /// The FIFO's depth given as 2**LogDepth.
   parameter int unsigned LogDepth = 3,
   /// The number of synchronization registers to insert on the async pointers
@@ -115,21 +115,21 @@ module cc_cdc_fifo_gray_clearable #(
   parameter int unsigned SyncStages = 3,
   parameter bit ClearOnAsyncReset = 1
 ) (
-  input  logic src_rst_ni,
-  input  logic src_clk_i,
-  input  logic src_clear_i,
-  output logic src_clear_pending_o,
-  input  T     src_data_i,
-  input  logic src_valid_i,
-  output logic src_ready_o,
+  input  logic  src_rst_ni,
+  input  logic  src_clk_i,
+  input  logic  src_clear_i,
+  output logic  src_clear_pending_o,
+  input  data_t src_data_i,
+  input  logic  src_valid_i,
+  output logic  src_ready_o,
 
-  input  logic dst_rst_ni,
-  input  logic dst_clk_i,
-  input  logic dst_clear_i,
-  output logic dst_clear_pending_o,
-  output T     dst_data_o,
-  output logic dst_valid_o,
-  input  logic dst_ready_i
+  input  logic  dst_rst_ni,
+  input  logic  dst_clk_i,
+  input  logic  dst_clear_i,
+  output logic  dst_clear_pending_o,
+  output data_t dst_data_o,
+  output logic  dst_valid_o,
+  input  logic  dst_ready_i
 );
 
   logic        s_src_clear_req;
@@ -144,7 +144,7 @@ module cc_cdc_fifo_gray_clearable #(
   logic        s_dst_isolate_ack_q;
 
 
-  T [2**LogDepth-1:0] async_data;
+  data_t [2**LogDepth-1:0] async_data;
   logic [LogDepth:0]  async_wptr;
   logic [LogDepth:0]  async_rptr;
 
@@ -168,7 +168,7 @@ module cc_cdc_fifo_gray_clearable #(
 
 
   cc_cdc_fifo_gray_src_clearable #(
-    .T           ( T           ),
+    .data_t     ( data_t     ),
     .LogDepth   ( LogDepth   ),
     .SyncStages ( SyncStages )
   ) i_src (
@@ -187,7 +187,7 @@ module cc_cdc_fifo_gray_clearable #(
   assign src_ready_o = s_src_ready & !s_src_isolate_req;
 
   cc_cdc_fifo_gray_dst_clearable #(
-    .T           ( T           ),
+    .data_t     ( data_t     ),
     .LogDepth   ( LogDepth   ),
     .SyncStages ( SyncStages )
   ) i_dst (
@@ -266,26 +266,26 @@ endmodule
 (* no_ungroup *)
 (* no_boundary_optimization *)
 module cc_cdc_fifo_gray_src_clearable #(
-  parameter type T = logic,
+  parameter type data_t = logic,
   parameter int unsigned LogDepth = 3,
   parameter int unsigned SyncStages = 2
 )(
-  input  logic src_rst_ni,
-  input  logic src_clk_i,
-  input  logic src_clear_i,
-  input  T     src_data_i,
-  input  logic src_valid_i,
-  output logic src_ready_o,
+  input  logic  src_rst_ni,
+  input  logic  src_clk_i,
+  input  logic  src_clear_i,
+  input  data_t src_data_i,
+  input  logic  src_valid_i,
+  output logic  src_ready_o,
 
-  output T [2**LogDepth-1:0] async_data_o,
-  output logic [LogDepth:0]  async_wptr_o,
-  input  logic [LogDepth:0]  async_rptr_i
+  output data_t [2**LogDepth-1:0] async_data_o,
+  output logic  [LogDepth:0]      async_wptr_o,
+  input  logic  [LogDepth:0]      async_rptr_i
 );
 
   localparam int unsigned PtrWidth = LogDepth+1;
   localparam logic [PtrWidth-1:0] PtrFull = (1 << LogDepth);
 
-  T [2**LogDepth-1:0] data_q, data_d;
+  data_t [2**LogDepth-1:0] data_q, data_d;
   logic [PtrWidth-1:0] wptr_q, wptr_d, wptr_bin, wptr_next, rptr, rptr_bin;
 
   // Data FIFO.
@@ -326,26 +326,26 @@ endmodule
 (* no_ungroup *)
 (* no_boundary_optimization *)
 module cc_cdc_fifo_gray_dst_clearable #(
-  parameter type T = logic,
+  parameter type data_t = logic,
   parameter int unsigned LogDepth = 3,
   parameter int unsigned SyncStages = 2
 )(
-  input  logic dst_rst_ni,
-  input  logic dst_clk_i,
-  input  logic dst_clear_i,
-  output T     dst_data_o,
-  output logic dst_valid_o,
-  input  logic dst_ready_i,
+  input  logic  dst_rst_ni,
+  input  logic  dst_clk_i,
+  input  logic  dst_clear_i,
+  output data_t dst_data_o,
+  output logic  dst_valid_o,
+  input  logic  dst_ready_i,
 
-  input  T [2**LogDepth-1:0] async_data_i,
-  input  logic [LogDepth:0]  async_wptr_i,
-  output logic [LogDepth:0]  async_rptr_o
+  input  data_t [2**LogDepth-1:0] async_data_i,
+  input  logic  [LogDepth:0]      async_wptr_i,
+  output logic  [LogDepth:0]      async_rptr_o
 );
 
   localparam int unsigned PtrWidth = LogDepth+1;
   localparam logic [PtrWidth-1:0] PtrEmpty = '0;
 
-  T dst_data;
+  data_t dst_data;
   logic [PtrWidth-1:0] rptr_q, rptr_d, rptr_bin, rptr_next, wptr, wptr_bin;
   logic dst_valid, dst_ready;
   // Data selector and register.
@@ -377,7 +377,7 @@ module cc_cdc_fifo_gray_dst_clearable #(
 
   // Cut the combinatorial path with a spill register.
   cc_spill_register_flushable #(
-    .T       ( T           )
+    .data_t  ( data_t )
   ) i_spill_register (
     .clk_i   ( dst_clk_i                ),
     .rst_ni  ( dst_rst_ni               ),

@@ -86,7 +86,7 @@ module cc_stream_to_mem #(
     cc_stream_fifo #(
       .FallThrough ( 1'b1       ),
       .Depth       ( BufDepth   ),
-      .T           ( mem_resp_t )
+      .data_t      ( mem_resp_t )
     ) i_resp_buf (
       .clk_i,
       .rst_ni,

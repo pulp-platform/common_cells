@@ -15,7 +15,7 @@
 /// CDC, it doesn't suffer from the same issues during one sided resets since
 /// the IDLE state doesn't alternate with every transaction.
 ///
-/// Parameters: T - The type of the data to transmit through the CDC.
+/// Parameters: data_t - The type of the data to transmit through the CDC.
 ///
 /// Decoupled - If decoupled is disabled, the 4phase cdc will not consume the
 /// src item until the handshake with the other side is completed. This
@@ -34,32 +34,32 @@
 /// the paths async_req, async_ack, async_data.
 /* verilator lint_off DECLFILENAME */
 module cc_cdc_4phase #(
-  parameter type T = logic,
+  parameter type data_t = logic,
   parameter bit Decoupled = 1'b1,
   parameter bit SendResetMsg = 1'b0,
-  parameter T ResetMsg = T'('0)
+  parameter data_t ResetMsg = data_t'('0)
 )(
-  input  logic src_rst_ni,
-  input  logic src_clk_i,
-  input  T     src_data_i,
-  input  logic src_valid_i,
-  output logic src_ready_o,
+  input  logic  src_rst_ni,
+  input  logic  src_clk_i,
+  input  data_t src_data_i,
+  input  logic  src_valid_i,
+  output logic  src_ready_o,
 
-  input  logic dst_rst_ni,
-  input  logic dst_clk_i,
-  output T     dst_data_o,
-  output logic dst_valid_o,
-  input  logic dst_ready_i
+  input  logic  dst_rst_ni,
+  input  logic  dst_clk_i,
+  output data_t dst_data_o,
+  output logic  dst_valid_o,
+  input  logic  dst_ready_i
 );
 
   // Asynchronous handshake signals.
-  (* dont_touch = "true" *) logic async_req;
-  (* dont_touch = "true" *) logic async_ack;
-  (* dont_touch = "true" *) T async_data;
+  (* dont_touch = "true" *) logic  async_req;
+  (* dont_touch = "true" *) logic  async_ack;
+  (* dont_touch = "true" *) data_t async_data;
 
   // The sender in the source domain.
   cc_cdc_4phase_src #(
-    .T(T),
+    .data_t(data_t),
     .Decoupled(Decoupled),
     .SendResetMsg(SendResetMsg),
     .ResetMsg(ResetMsg)
@@ -75,7 +75,7 @@ module cc_cdc_4phase #(
   );
 
   // The receiver in the destination domain.
-  cc_cdc_4phase_dst #(.T(T), .Decoupled(Decoupled)) i_dst (
+  cc_cdc_4phase_dst #(.data_t(data_t), .Decoupled(Decoupled)) i_dst (
     .rst_ni       ( dst_rst_ni  ),
     .clk_i        ( dst_clk_i   ),
     .data_o       ( dst_data_o  ),
@@ -90,26 +90,26 @@ endmodule
 
 /// Half of the 4-phase clock domain crossing located in the source domain.
 module cc_cdc_4phase_src #(
-  parameter type T = logic,
+  parameter type data_t = logic,
   parameter int unsigned SyncStages = 2,
   parameter bit Decoupled = 1'b1,
   parameter bit SendResetMsg = 1'b0,
-  parameter T ResetMsg = T'('0)
+  parameter data_t ResetMsg = data_t'('0)
 )(
-  input  logic rst_ni,
-  input  logic clk_i,
-  input  T     data_i,
-  input  logic valid_i,
-  output logic ready_o,
-  output logic async_req_o,
-  input  logic async_ack_i,
-  output T     async_data_o
+  input  logic  rst_ni,
+  input  logic  clk_i,
+  input  data_t data_i,
+  input  logic  valid_i,
+  output logic  ready_o,
+  output logic  async_req_o,
+  input  logic  async_ack_i,
+  output data_t async_data_o
 );
 
   (* dont_touch = "true" *)
   logic  req_src_d, req_src_q;
   (* dont_touch = "true" *)
-  T data_src_d, data_src_q;
+  data_t data_src_d, data_src_q;
   (* dont_touch = "true" *)
   logic  ack_synced;
 
@@ -185,7 +185,7 @@ module cc_cdc_4phase_src #(
         data_src_q <= ResetMsg;
       end else begin
         req_src_q  <= 1'b0;
-        data_src_q <= T'('0);
+        data_src_q <= data_t'('0);
       end
     end else begin
       req_src_q  <= req_src_d;
@@ -203,18 +203,18 @@ endmodule
 /// Half of the 4-phase clock domain crossing located in the destination
 /// domain.
 module cc_cdc_4phase_dst #(
-  parameter type T = logic,
+  parameter type data_t = logic,
   parameter int unsigned SyncStages = 2,
   parameter bit Decoupled = 1
 )(
-  input  logic rst_ni,
-  input  logic clk_i,
-  output T     data_o,
-  output logic valid_o,
-  input  logic ready_i,
-  input  logic async_req_i,
-  output logic async_ack_o,
-  input  T     async_data_i
+  input  logic  rst_ni,
+  input  logic  clk_i,
+  output data_t data_o,
+  output logic  valid_o,
+  input  logic  ready_i,
+  input  logic  async_req_i,
+  output logic  async_ack_o,
+  input  data_t async_data_i
 );
 
   (* dont_touch = "true" *)
@@ -302,7 +302,7 @@ module cc_cdc_4phase_dst #(
     // Decouple the output from the asynchronous data bus without introducing
     // additional latency by inserting a spill register
     cc_spill_register #(
-      .T(T),
+      .data_t(data_t),
       .Bypass(1'b0)
     ) i_spill_register (
       .clk_i,

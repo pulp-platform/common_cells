@@ -16,7 +16,7 @@ module cc_fifo #(
     parameter bit          FallThrough = 1'b0, // fifo is in fall-through mode
     parameter int unsigned DataWidth   = 32,   // default data width if the fifo is of type logic
     parameter int unsigned Depth       = 8,    // depth can be arbitrary from 0 to 2**32
-    parameter type dtype               = logic [DataWidth-1:0],
+    parameter type         data_t      = logic [DataWidth-1:0],
     // DO NOT OVERWRITE THIS PARAMETER
     localparam int unsigned AddrDepth = (Depth > 1) ? $clog2(Depth) : 1
 )(
@@ -28,10 +28,10 @@ module cc_fifo #(
     output logic  empty_o,          // queue is empty
     output logic  [AddrDepth-1:0] usage_o,  // fill pointer
     // as long as the queue is not full we can push new data
-    input  dtype  data_i,           // data to push into the queue
+    input  data_t data_i,           // data to push into the queue
     input  logic  push_i,           // data is valid and can be pushed to the queue
     // as long as the queue is not empty we can pop new elements
-    output dtype  data_o,           // output data
+    output data_t data_o,           // output data
     input  logic  pop_i             // pop head from queue
 );
     // local parameter
@@ -45,7 +45,7 @@ module cc_fifo #(
     // this integer will be truncated by the synthesis tool
     logic [AddrDepth:0] status_cnt_n, status_cnt_q;
     // actual memory
-    dtype [FifoDepth - 1:0] mem_n, mem_q;
+    data_t [FifoDepth - 1:0] mem_n, mem_q;
 
     assign usage_o = status_cnt_q[AddrDepth-1:0];
 
@@ -132,7 +132,7 @@ module cc_fifo #(
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
-            mem_q <= {FifoDepth{dtype'('0)}};
+            mem_q <= {FifoDepth{data_t'('0)}};
         end else if (!gate_clock) begin
             mem_q <= mem_n;
         end
