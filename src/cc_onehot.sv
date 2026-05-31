@@ -25,26 +25,26 @@ module cc_onehot #(
   if (Width == 1) begin : gen_degenerated_onehot
     assign is_onehot_o = d_i;
   end else begin : gen_onehot
-    localparam int unsigned LVLS = $clog2(Width) + 1;
+    localparam int unsigned Lvls = $clog2(Width) + 1;
 
-    logic [LVLS-1:0][2**(LVLS-1)-1:0] sum, carry;
-    logic [LVLS-2:0] carry_array;
+    logic [Lvls-1:0][2**(Lvls-1)-1:0] sum, carry;
+    logic [Lvls-2:0] carry_array;
 
     // Extend to a power of two.
     assign sum[0] = d_i;
 
     // generate half adders for each lvl
     // lvl 0 is the input level
-    for (genvar i = 1; i < LVLS; i++) begin : gen_lvl
-      localparam int unsigned LVLWidth = 2**LVLS / 2**i;
-      for (genvar j = 0; j < LVLWidth; j+=2) begin : gen_width
+    for (genvar i = 1; i < Lvls; i++) begin : gen_lvl
+      localparam int unsigned LvlWidth = 2**Lvls / 2**i;
+      for (genvar j = 0; j < LvlWidth; j+=2) begin : gen_width
         assign sum[i][j/2] = sum[i-1][j] ^ sum[i-1][j+1];
         assign carry[i][j/2] = sum[i-1][j] & sum[i-1][j+1];
       end
       // generate carry tree
-      assign carry_array[i-1] = |carry[i][LVLWidth/2-1:0];
+      assign carry_array[i-1] = |carry[i][LvlWidth/2-1:0];
     end
-    assign is_onehot_o = sum[LVLS-1][0] & ~|carry_array;
+    assign is_onehot_o = sum[Lvls-1][0] & ~|carry_array;
   end
 
 endmodule

@@ -9,14 +9,14 @@
 // specific language governing permissions and limitations under the License.
 
 module cc_id_queue_tb #(
-    parameter int ID_WIDTH = 10,
-    parameter int CAPACITY = 30,
-    parameter int unsigned INP_MIN_WAIT_CYCLES = 0,
-    parameter int unsigned INP_MAX_WAIT_CYCLES = 40,
-    parameter int unsigned OUP_MIN_WAIT_CYCLES = 0,
-    parameter int unsigned OUP_MAX_WAIT_CYCLES = INP_MAX_WAIT_CYCLES/2,
-    parameter int unsigned N_CHECKS = 10000,
-    parameter bit VERBOSE = 1'b0,
+    parameter int unsigned IdWidth = 10,
+    parameter int unsigned Capacity = 30,
+    parameter int unsigned InpMinWaitCycles = 0,
+    parameter int unsigned InpMaxWaitCycles = 40,
+    parameter int unsigned OupMinWaitCycles = 0,
+    parameter int unsigned OupMaxWaitCycles = InpMaxWaitCycles/2,
+    parameter int unsigned NumChecks = 10000,
+    parameter bit Verbose = 1'b0,
     parameter type data_t = logic[3:0]
 );
 
@@ -24,7 +24,7 @@ module cc_id_queue_tb #(
     localparam time TA = TCLK * 1/4;
     localparam time TT = TCLK * 3/4;
 
-    typedef logic [ID_WIDTH-1:0] id_t;
+    typedef logic [IdWidth-1:0] id_t;
     typedef logic [$bits(data_t)-1:0] mask_t;
 
     typedef struct packed {
@@ -66,9 +66,9 @@ module cc_id_queue_tb #(
     );
 
     cc_id_queue #(
-        .ID_WIDTH   (ID_WIDTH),
-        .CAPACITY   (CAPACITY),
-        .data_t     (data_t)
+        .IdWidth (IdWidth),
+        .Capacity(Capacity),
+        .data_t  (data_t)
     ) dut (
         .clk_i              (clk),
         .rst_ni             (rst_n),
@@ -95,8 +95,8 @@ module cc_id_queue_tb #(
     // Random Input Driver
     rand_stream_mst #(
         .data_t             (queue_t),
-        .MinWaitCycles      (INP_MIN_WAIT_CYCLES),
-        .MaxWaitCycles      (INP_MAX_WAIT_CYCLES),
+        .MinWaitCycles      (InpMinWaitCycles),
+        .MaxWaitCycles      (InpMaxWaitCycles),
         .ApplDelay          (TA),
         .AcqDelay           (TT)
     ) i_inp_mst (
@@ -113,8 +113,8 @@ module cc_id_queue_tb #(
     // Random Output Driver
     rand_stream_mst #(
         .data_t             (logic),
-        .MinWaitCycles      (OUP_MIN_WAIT_CYCLES),
-        .MaxWaitCycles      (OUP_MAX_WAIT_CYCLES),
+        .MinWaitCycles      (OupMinWaitCycles),
+        .MaxWaitCycles      (OupMaxWaitCycles),
         .ApplDelay          (TA),
         .AcqDelay           (TT)
     ) i_oup_mst (
@@ -129,8 +129,8 @@ module cc_id_queue_tb #(
     // Random Exists Driver
     rand_stream_mst #(
         .data_t             (exists_t),
-        .MinWaitCycles      (OUP_MIN_WAIT_CYCLES),
-        .MaxWaitCycles      (OUP_MAX_WAIT_CYCLES),
+        .MinWaitCycles      (OupMinWaitCycles),
+        .MaxWaitCycles      (OupMaxWaitCycles),
         .ApplDelay          (TA),
         .AcqDelay           (TT)
     ) i_exists_mst (
@@ -146,7 +146,7 @@ module cc_id_queue_tb #(
     import rand_id_queue_pkg::*;
     rand_id_queue #(
         .data_t     (data_t),
-        .ID_WIDTH   (ID_WIDTH)
+        .ID_WIDTH   (IdWidth)
     ) exp_queue = new;
     initial begin
         wait (rst_n);
@@ -154,12 +154,12 @@ module cc_id_queue_tb #(
             @(posedge clk);
             if (inp_req && inp_gnt) begin
                 exp_queue.push(inp_id, inp_data);
-                if (VERBOSE) begin
+                if (Verbose) begin
                     $display("%0t: new entry %0x at ID %0x", $time, inp_data, inp_id);
                 end
             end
             if (oup_req && oup_gnt && oup_pop) begin
-                if (VERBOSE) begin
+                if (Verbose) begin
                     $display("%0t: removed entry from ID %0x", $time, oup_id);
                 end
                 void'(exp_queue.pop_id(oup_id));
@@ -177,7 +177,7 @@ module cc_id_queue_tb #(
                 automatic logic match = 1'b0;
                 automatic mask_t mask = exists_inp.mask;
                 automatic data_t masked_exists = exists_inp.data & mask;
-                for (int unsigned id = 0; id < 2**ID_WIDTH; id++) begin
+                for (int unsigned id = 0; id < 2**IdWidth; id++) begin
                     for (int unsigned idx = 0; idx < exp_queue.queues[id].size(); idx++) begin
                         match = ((exp_queue.queues[id][idx] & mask) == masked_exists);
                         if (match) begin
@@ -204,7 +204,7 @@ module cc_id_queue_tb #(
                     assert (exp_data == oup_data)
                         else $error("Expected to read %0x from ID %0x but got %0x!",
                             exp_data, oup_id, oup_data);
-                    if (VERBOSE) begin
+                    if (Verbose) begin
                         $display("%0t: read %0x at ID %0x!", $time, oup_data, oup_id);
                     end
                 end else begin
@@ -251,7 +251,7 @@ module cc_id_queue_tb #(
                 n_pops++;
             end
             #(TCLK-TT);
-            if (n_pops >= N_CHECKS) begin
+            if (n_pops >= NumChecks) begin
                 $display("Finished with a total of %0d random entries fed through the ID queue.",
                     n_pops);
                 $finish(0);

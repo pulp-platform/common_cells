@@ -17,10 +17,10 @@
 /// This module needs to be compile with `-timescale "1 ns / 1 ps"` as
 /// it doesn't specify an internal timescale.
 module cc_isochronous_crossing_tb #(
-  parameter int unsigned NumReq   = 32'd10000,
-  parameter string DUT            = "spill_register",
-  parameter int unsigned TCK_SRC_MULT = 2,
-  parameter int unsigned TCK_DST_MULT = 6
+  parameter int unsigned NumReq     = 32'd10000,
+  parameter string Dut              = "spill_register",
+  parameter int unsigned TckSrcMult = 2,
+  parameter int unsigned TckDstMult = 6
 );
 
   localparam time CyclTime = 10ns; // smallest possible cycle time
@@ -48,14 +48,14 @@ module cc_isochronous_crossing_tb #(
 
   typedef cc_test_pkg::cc_stream_driver #(
     .payload_t (payload_t),
-    .TA (TCK_SRC_MULT*CyclTime*0.2),
-    .TT (TCK_SRC_MULT*CyclTime*0.8)
+    .TA (TckSrcMult*CyclTime*0.2),
+    .TT (TckSrcMult*CyclTime*0.8)
   ) stream_driver_in_t;
 
   typedef cc_test_pkg::cc_stream_driver #(
     .payload_t (payload_t),
-    .TA (TCK_DST_MULT*CyclTime*0.2),
-    .TT (TCK_DST_MULT*CyclTime*0.8)
+    .TA (TckDstMult*CyclTime*0.2),
+    .TT (TckDstMult*CyclTime*0.8)
   ) stream_driver_out_t;
 
   stream_driver_in_t in_driver = new(dut_in);
@@ -113,18 +113,18 @@ module cc_isochronous_crossing_tb #(
 
   // Clock Generation
   initial begin
-    $display("Simulating %d", DUT);
+    $display("Simulating %d", Dut);
     src_clk = 1'b0;
     dst_clk = 1'b0;
     forever begin
       fork
         forever begin
           src_clk = ~src_clk;
-          #((CyclTime * TCK_SRC_MULT) / 2);
+          #((CyclTime * TckSrcMult) / 2);
         end
         forever begin
           dst_clk = ~dst_clk;
-          #((CyclTime * TCK_DST_MULT) / 2);
+          #((CyclTime * TckDstMult) / 2);
         end
       join
     end
@@ -151,7 +151,7 @@ module cc_isochronous_crossing_tb #(
     dst_rst_n = 1'b1;
   end
 
-  if (DUT == "spill_register") begin
+  if (Dut == "spill_register") begin
     cc_isochronous_spill_register #(
       .T (payload_t)
     ) i_isochronous_spill_register (
@@ -166,7 +166,7 @@ module cc_isochronous_crossing_tb #(
       .dst_ready_i (dut_out.ready),
       .dst_data_o (dut_out.data)
     );
-  end if (DUT == "4phase_handshake") begin
+  end if (Dut == "4phase_handshake") begin
     cc_isochronous_4phase_handshake
     cc_isochronous_4phase_handshake (
       .src_clk_i (dut_in.clk_i),

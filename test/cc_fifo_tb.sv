@@ -11,13 +11,13 @@
 // Testbench for generic FIFO
 module cc_fifo_inst_tb #(
     // FIFO parameters
-    parameter bit           FALL_THROUGH,
-    parameter int unsigned  DEPTH,
-    parameter int unsigned  DATA_WIDTH = 8,
+    parameter bit          FallThrough,
+    parameter int unsigned Depth,
+    parameter int unsigned DataWidth = 8,
     // TB parameters
-    parameter int unsigned  N_CHECKS,
-    parameter time          TA,
-    parameter time          TT
+    parameter int unsigned NumChecks,
+    parameter time         Ta,
+    parameter time         Tt
 ) (
     input  logic    clk_i,
     input  logic    rst_ni,
@@ -26,7 +26,7 @@ module cc_fifo_inst_tb #(
 
     import rand_verif_pkg::rand_wait;
 
-    typedef logic [DATA_WIDTH-1:0] data_t;
+    typedef logic [DataWidth-1:0] data_t;
 
     logic           clk,
                     flush,
@@ -45,9 +45,9 @@ module cc_fifo_inst_tb #(
     assign clk = clk_i;
 
     cc_fifo #(
-        .FALL_THROUGH   ( FALL_THROUGH  ),
-        .DATA_WIDTH     ( DATA_WIDTH    ),
-        .DEPTH          ( DEPTH         )
+        .FallThrough    ( FallThrough   ),
+        .DataWidth      ( DataWidth     ),
+        .Depth          ( Depth         )
     ) dut (
         .clk_i,
         .rst_ni,
@@ -65,8 +65,8 @@ module cc_fifo_inst_tb #(
     // TODO: Better stop after certain coverage is reached.
     initial begin
         done_o = 1'b0;
-        $display("%m: Running test with FALL_THROUGH=%0d, DEPTH=%0d", FALL_THROUGH, DEPTH);
-        wait (n_checks >= N_CHECKS);
+        $display("%m: Running test with FallThrough=%0d, Depth=%0d", FallThrough, Depth);
+        wait (n_checks >= NumChecks);
         done_o = 1'b1;
         $display("%m: Checked %0d stimuli", n_checks);
     end
@@ -97,17 +97,17 @@ module cc_fifo_inst_tb #(
             rand_success = rand_act.randomize(); assert(rand_success);
             case (rand_act.action)
                 0: begin // new random data and try to push
-                    wdata       <= #TA $random();
-                    try_push    <= #TA 1'b1;
+                    wdata       <= #Ta $random();
+                    try_push    <= #Ta 1'b1;
                 end
                 1: begin // new random data but do not try to push
-                    wdata       <= #TA $random();
-                    try_push    <= #TA 1'b0;
+                    wdata       <= #Ta $random();
+                    try_push    <= #Ta 1'b0;
                 end
                 2: begin // flush
-                    flush       <= #TA 1'b1;
+                    flush       <= #Ta 1'b1;
                     rand_wait(1, 8, clk);
-                    flush       <= #TA 1'b0;
+                    flush       <= #Ta 1'b0;
                 end
             endcase
         end
@@ -120,7 +120,7 @@ module cc_fifo_inst_tb #(
         wait (rst_ni);
         forever begin
             rand_wait(1, 8, clk);
-            try_pop <= #TA $random();
+            try_pop <= #Ta $random();
         end
     end
 
@@ -130,7 +130,7 @@ module cc_fifo_inst_tb #(
         wait (rst_ni);
         forever begin
             @(posedge clk_i);
-            #(TT);
+            #(Tt);
             if (flush) begin
                 queue = {};
             end else begin
@@ -148,7 +148,7 @@ module cc_fifo_inst_tb #(
 
 // https://github.com/verilator/verilator/issues/5981
 `ifndef VERILATOR
-    if (FALL_THROUGH) begin
+    if (FallThrough) begin
         // In fall through mode, assert that the output data is equal to the input data when pushing
         // to an empty FIFO.
         assert property (@(posedge clk_i) ((empty & ~push) ##1 push) |-> rdata == wdata)
@@ -161,10 +161,10 @@ endmodule
 // Testbench for different FIFO configurations
 module cc_fifo_tb #(
     // TB parameters
-    parameter int unsigned  N_CHECKS        = 100000,
-    parameter time          TCLK            = 10ns,
-    parameter time          TA              = TCLK * 1/4,
-    parameter time          TT              = TCLK * 3/4
+    parameter int unsigned NumChecks = 100000,
+    parameter time         Tclk      = 10ns,
+    parameter time         Ta        = Tclk * 1/4,
+    parameter time         Tt        = Tclk * 3/4
 );
 
     logic       clk,
@@ -172,81 +172,81 @@ module cc_fifo_tb #(
 
     logic [5:0] done;
 
-    clk_rst_gen #(.ClkPeriod(TCLK), .RstClkCycles(10)) i_clk_rst_gen (
+    clk_rst_gen #(.ClkPeriod(Tclk), .RstClkCycles(10)) i_clk_rst_gen (
         .clk_o    (clk),
         .rst_no   (rst_n)
     );
 
     cc_fifo_inst_tb #(
-        .FALL_THROUGH   (1'b0),
-        .DEPTH          (8),
-        .N_CHECKS       (N_CHECKS),
-        .TA             (TA),
-        .TT             (TT)
+        .FallThrough(1'b0),
+        .Depth      (8),
+        .NumChecks  (NumChecks),
+        .Ta         (Ta),
+        .Tt         (Tt)
     ) i_tb_8 (
-        .clk_i  (clk),
-        .rst_ni (rst_n),
-        .done_o (done[0])
+        .clk_i (clk),
+        .rst_ni(rst_n),
+        .done_o(done[0])
     );
 
     cc_fifo_inst_tb #(
-        .FALL_THROUGH   (1'b1),
-        .DEPTH          (8),
-        .N_CHECKS       (N_CHECKS),
-        .TA             (TA),
-        .TT             (TT)
+        .FallThrough(1'b1),
+        .Depth      (8),
+        .NumChecks  (NumChecks),
+        .Ta         (Ta),
+        .Tt         (Tt)
     ) i_tb_ft_8 (
-        .clk_i  (clk),
-        .rst_ni (rst_n),
-        .done_o (done[1])
+        .clk_i (clk),
+        .rst_ni(rst_n),
+        .done_o(done[1])
     );
 
     cc_fifo_inst_tb #(
-        .FALL_THROUGH   (1'b0),
-        .DEPTH          (1),
-        .N_CHECKS       (N_CHECKS),
-        .TA             (TA),
-        .TT             (TT)
+        .FallThrough(1'b0),
+        .Depth      (1),
+        .NumChecks  (NumChecks),
+        .Ta         (Ta),
+        .Tt         (Tt)
     ) i_tb_1 (
-        .clk_i  (clk),
-        .rst_ni (rst_n),
-        .done_o (done[2])
+        .clk_i (clk),
+        .rst_ni(rst_n),
+        .done_o(done[2])
     );
 
     cc_fifo_inst_tb #(
-        .FALL_THROUGH   (1'b1),
-        .DEPTH          (1),
-        .N_CHECKS       (N_CHECKS),
-        .TA             (TA),
-        .TT             (TT)
+        .FallThrough(1'b1),
+        .Depth      (1),
+        .NumChecks  (NumChecks),
+        .Ta         (Ta),
+        .Tt         (Tt)
     ) i_tb_ft_1 (
-        .clk_i  (clk),
-        .rst_ni (rst_n),
-        .done_o (done[3])
+        .clk_i (clk),
+        .rst_ni(rst_n),
+        .done_o(done[3])
     );
 
     cc_fifo_inst_tb #(
-        .FALL_THROUGH   (1'b0),
-        .DEPTH          (9),
-        .N_CHECKS       (N_CHECKS),
-        .TA             (TA),
-        .TT             (TT)
+        .FallThrough(1'b0),
+        .Depth      (9),
+        .NumChecks  (NumChecks),
+        .Ta         (Ta),
+        .Tt         (Tt)
     ) i_tb_9 (
-        .clk_i  (clk),
-        .rst_ni (rst_n),
-        .done_o (done[4])
+        .clk_i (clk),
+        .rst_ni(rst_n),
+        .done_o(done[4])
     );
 
     cc_fifo_inst_tb #(
-        .FALL_THROUGH   (1'b1),
-        .DEPTH          (9),
-        .N_CHECKS       (N_CHECKS),
-        .TA             (TA),
-        .TT             (TT)
+        .FallThrough(1'b1),
+        .Depth      (9),
+        .NumChecks  (NumChecks),
+        .Ta         (Ta),
+        .Tt         (Tt)
     ) i_tb_ft_9 (
-        .clk_i  (clk),
-        .rst_ni (rst_n),
-        .done_o (done[5])
+        .clk_i (clk),
+        .rst_ni(rst_n),
+        .done_o(done[5])
     );
 
     initial begin

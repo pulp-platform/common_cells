@@ -24,15 +24,15 @@
 // a stable period.
 //
 // A clock switching procedure from clock a to clock b has the following timing behavior:
-// 1. After at most NUM_SYNC_STAGES clock cycle of clock a, the output clock is
+// 1. After at most NumSyncStages clock cycle of clock a, the output clock is
 // disabled with its next falling edge.
-// 2. After clock cycle of clock a and another NUM_SYNC_STAGES clock cycles of clock b, the output is
+// 2. After clock cycle of clock a and another NumSyncStages clock cycles of clock b, the output is
 // enabled with the next rising edge of clock B.
 //
 // So in total, an upper bound for the worst case clock switching delay is 2x
-// NUM_SYNC_STAGES x max(clock_periods)
+// NumSyncStages x max(clock_periods)
 //
-// The design has a parameter (CLOCK_DURING_RESET) that allows the clock
+// The design has a parameter (ClockDuringReset) that allows the clock
 // multiplexer to propagate the selected clock even during reset assertion.
 // However, during reset assertion the glitch filtering and the synchronization
 // registers are bypassed (since the are frozen in reset state). Thus no glitch
@@ -71,14 +71,14 @@
 
 
 module cc_clk_mux_glitch_free #(
-  parameter int unsigned  NUM_INPUTS = 2,
-  parameter int unsigned  NUM_SYNC_STAGES = 2,
-  parameter bit CLOCK_DURING_RESET = 1'b1, //< If 1, alow the selected clock to
-                                           //propagate even during reset
-                                           //assertion.
-  localparam int unsigned SelWidth = $clog2(NUM_INPUTS)
+  parameter int unsigned NumInputs = 2,
+  parameter int unsigned NumSyncStages = 2,
+  parameter bit ClockDuringReset = 1'b1, //< If 1, alow the selected clock to
+                                         //propagate even during reset
+                                         //assertion.
+  localparam int unsigned SelWidth = $clog2(NumInputs)
 ) (
-   input logic [NUM_INPUTS-1:0] clks_i,
+   input logic [NumInputs-1:0] clks_i,
    input logic                  test_clk_i,
    input logic                  test_en_i,
    input logic                  async_rstn_i,
@@ -88,7 +88,7 @@ module cc_clk_mux_glitch_free #(
 
 
 
-  if (NUM_INPUTS<2)
+  if (NumInputs < 2)
     $error("Num inputs must be parametrized to a value >= 2.");
 
   // For each input, we generate an enable signal that enables the clock
@@ -117,20 +117,20 @@ module cc_clk_mux_glitch_free #(
   // signal as a gating signal for the other clock input's onehot signal.
 
   // Internal signals
-  logic [NUM_INPUTS-1:0]        s_sel_onehot;
+  logic [NumInputs-1:0]        s_sel_onehot;
   (*dont_touch*)
   (*async_reg*)
-  logic [NUM_INPUTS-1:0][1:0]   glitch_filter_d, glitch_filter_q;
-  logic [NUM_INPUTS-1:0]        s_gate_enable_unfiltered_async;
-  logic [NUM_INPUTS-1:0]        s_glitch_filter_output_async;
-  logic [NUM_INPUTS-1:0]        s_gate_enable_sync;
-  logic [NUM_INPUTS-1:0]        s_gate_enable;
-  logic [NUM_INPUTS-1:0]        clock_has_been_disabled_q;
-  logic [NUM_INPUTS-1:0]        s_gated_clock;
+  logic [NumInputs-1:0][1:0]   glitch_filter_d, glitch_filter_q;
+  logic [NumInputs-1:0]        s_gate_enable_unfiltered_async;
+  logic [NumInputs-1:0]        s_glitch_filter_output_async;
+  logic [NumInputs-1:0]        s_gate_enable_sync;
+  logic [NumInputs-1:0]        s_gate_enable;
+  logic [NumInputs-1:0]        clock_has_been_disabled_q;
+  logic [NumInputs-1:0]        s_gated_clock;
   logic                         s_output_clock;
 
-  logic [NUM_INPUTS-1:0]        s_reset_synced;
-  logic [NUM_INPUTS-1:0]        async_reset_bypass_active_q;
+  logic [NumInputs-1:0]        s_reset_synced;
+  logic [NumInputs-1:0]        async_reset_bypass_active_q;
 
 
   // Onehot decoder
@@ -140,7 +140,7 @@ module cc_clk_mux_glitch_free #(
   end
 
   // Input stages
-  for (genvar i = 0; i < NUM_INPUTS; i++) begin : gen_input_stages
+  for (genvar i = 0; i < NumInputs; i++) begin : gen_input_stages
     // Synchronize the reset into each clock domain
     cc_rstgen i_rstgen(
       .clk_i       ( clks_i[i]         ),
@@ -153,7 +153,7 @@ module cc_clk_mux_glitch_free #(
     // Gate onehot signal with other clocks' output gate enable
     always_comb begin
       s_gate_enable_unfiltered_async[i] = 1'b1;
-      for (int j = 0; j < NUM_INPUTS; j++) begin
+      for (int j = 0; j < NumInputs; j++) begin
         if (i==j) begin
           s_gate_enable_unfiltered_async[i] &= s_sel_onehot[j];
         end else begin
@@ -177,7 +177,7 @@ module cc_clk_mux_glitch_free #(
                                        s_gate_enable_unfiltered_async[i];
 
     // Synchronize to current clock
-    cc_sync #(.STAGES(NUM_SYNC_STAGES)) i_sync_en(
+    cc_sync #(.Stages(NumSyncStages)) i_sync_en(
       .clk_i    ( clks_i[i]                       ),
       .rst_ni   ( s_reset_synced[i]               ),
       .serial_i ( s_glitch_filter_output_async[i] ),
@@ -188,7 +188,7 @@ module cc_clk_mux_glitch_free #(
     // we have to provide a bypass path that directly connects the unfiltered
     // gate enable signal to the clock gate for as long as the reset is active.
 
-    if (CLOCK_DURING_RESET) begin : gen_async_reset_clock_bypass_logic
+    if (ClockDuringReset) begin : gen_async_reset_clock_bypass_logic
       always_ff @(posedge clks_i[i], negedge s_reset_synced[i]) begin
         if (!s_reset_synced[i]) begin
           async_reset_bypass_active_q[i] <= 1'b1;
@@ -237,7 +237,7 @@ module cc_clk_mux_glitch_free #(
   // are enabled/disabled at the proper time to prevent any glitches from
   // escaping.
 
-  cc_clk_or_tree #(NUM_INPUTS) i_clk_or_tree (
+  cc_clk_or_tree #(NumInputs) i_clk_or_tree (
     .clks_i(s_gated_clock),
     .clk_o(s_output_clock)
   );
@@ -254,17 +254,17 @@ endmodule
 
 // Helper Module to generate an N-input clock OR-gate from a tree of tc_clk_or2 cells.
 module cc_clk_or_tree #(
-  parameter int unsigned NUM_INPUTS
+  parameter int unsigned NumInputs
 ) (
-  input logic [NUM_INPUTS-1:0] clks_i,
+  input logic [NumInputs-1:0] clks_i,
   output logic clk_o
 );
 
-  if (NUM_INPUTS < 1) begin : gen_error
-    $error("Cannot parametrize clk_or with less then 1 input but was %0d", NUM_INPUTS);
-  end else if (NUM_INPUTS == 1) begin : gen_leaf
+  if (NumInputs < 1) begin : gen_error
+    $error("Cannot parametrize clk_or with less then 1 input but was %0d", NumInputs);
+  end else if (NumInputs == 1) begin : gen_leaf
     assign clk_o          = clks_i[0];
-  end else if (NUM_INPUTS == 2) begin : gen_leaf
+  end else if (NumInputs == 2) begin : gen_leaf
     tc_clk_or2 i_clk_or2 (
       .clk0_i(clks_i[0]),
       .clk1_i(clks_i[1]),
@@ -272,13 +272,13 @@ module cc_clk_or_tree #(
     );
   end else begin  : gen_recursive
     logic branch_a, branch_b;
-    cc_clk_or_tree #(NUM_INPUTS/2) i_or_branch_a (
-      .clks_i(clks_i[0+:NUM_INPUTS/2]),
+    cc_clk_or_tree #(NumInputs/2) i_or_branch_a (
+      .clks_i(clks_i[0+:NumInputs/2]),
       .clk_o(branch_a)
     );
 
-    cc_clk_or_tree #(NUM_INPUTS/2 + NUM_INPUTS%2) i_or_branch_b (
-      .clks_i(clks_i[NUM_INPUTS-1:NUM_INPUTS/2]),
+    cc_clk_or_tree #(NumInputs/2 + NumInputs%2) i_or_branch_b (
+      .clks_i(clks_i[NumInputs-1:NumInputs/2]),
       .clk_o(branch_b)
     );
 

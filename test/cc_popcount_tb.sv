@@ -50,27 +50,27 @@ module cc_popcount_tb;
    logic [9:0]  popcount_w981;
 
    //--------------------- Instantiate MUT ---------------------
-  cc_popcount #(.INPUT_WIDTH(1)) i_popcount_w1
+  cc_popcount #(.InputWidth(1)) i_popcount_w1
     (.data_i(data_w1),
      .popcount_o(popcount_w1));
 
-   cc_popcount #(.INPUT_WIDTH(5)) i_popcount_w5
+   cc_popcount #(.InputWidth(5)) i_popcount_w5
      (.data_i(data_w5),
       .popcount_o(popcount_w5));
 
-   cc_popcount #(.INPUT_WIDTH(16)) i_popcount_w16
+   cc_popcount #(.InputWidth(16)) i_popcount_w16
      (.data_i(data_w16),
       .popcount_o(popcount_w16));
 
-   cc_popcount #(.INPUT_WIDTH(32)) i_popcount_w32
+   cc_popcount #(.InputWidth(32)) i_popcount_w32
      (.data_i(data_w32),
       .popcount_o(popcount_w32));
 
-   cc_popcount #(.INPUT_WIDTH(64)) i_popcount_w64
+   cc_popcount #(.InputWidth(64)) i_popcount_w64
      (.data_i(data_w64),
       .popcount_o(popcount_w64));
 
-   cc_popcount #(.INPUT_WIDTH(981)) i_popcount_w981
+   cc_popcount #(.InputWidth(981)) i_popcount_w981
      (.data_i(data_w981),
       .popcount_o(popcount_w981));
 

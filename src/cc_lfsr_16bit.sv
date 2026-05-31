@@ -21,17 +21,17 @@
 // Description: Shift register
 //
 module cc_lfsr_16bit #(
-    parameter logic [15:0] SEED  = 8'b0,
-    parameter int unsigned WIDTH = 16
+    parameter logic [15:0] Seed  = 8'b0,
+    parameter int unsigned Width = 16
 )(
     input  logic                      clk_i,
     input  logic                      rst_ni,
     input  logic                      en_i,
-    output logic [WIDTH-1:0]          refill_way_oh_o,
-    output logic [$clog2(WIDTH)-1:0]  refill_way_bin_o
+    output logic [Width-1:0]          refill_way_oh_o,
+    output logic [$clog2(Width)-1:0]  refill_way_bin_o
 );
 
-    localparam int unsigned LogWidth = $clog2(WIDTH);
+    localparam int unsigned LogWidth = $clog2(Width);
 
     logic [15:0] shift_d, shift_q;
 
@@ -54,15 +54,15 @@ module cc_lfsr_16bit #(
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : proc_
         if(~rst_ni) begin
-            shift_q <= SEED;
+            shift_q <= Seed;
         end else begin
             shift_q <= shift_d;
         end
     end
 
   `ifndef COMMON_CELLS_ASSERTS_OFF
-    `ASSERT_INIT(width_gt_16, WIDTH <= 16,
-                 "WIDTH needs to be less than 16 because of the 16-bit LFSR")
+    `ASSERT_INIT(width_gt_16, Width <= 16,
+                 "Width needs to be less than 16 because of the 16-bit LFSR")
   `endif
 
 endmodule

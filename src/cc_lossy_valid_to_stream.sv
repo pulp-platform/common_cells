@@ -48,8 +48,8 @@
 
 module cc_lossy_valid_to_stream #(
     /// Default data width if the fifo is of type logic
-    parameter int unsigned DATA_WIDTH = 32,
-    parameter type T = logic [DATA_WIDTH-1:0]
+    parameter int unsigned DataWidth = 32,
+    parameter type T = logic [DataWidth-1:0]
 ) (
     input  logic clk_i,
     input  logic rst_ni,

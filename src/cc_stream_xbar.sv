@@ -102,7 +102,7 @@ module cc_stream_xbar #(
   // Generate the input selection
   for (genvar i = 0; unsigned'(i) < NumInp; i++) begin : gen_inps
     cc_stream_demux #(
-      .N_OUP ( NumOut )
+      .NumOup ( NumOut )
     ) i_stream_demux (
       .inp_valid_i ( valid_i[i]   ),
       .inp_ready_o ( ready_o[i]   ),

@@ -13,11 +13,11 @@
 
 /// A gray code to binary converter.
 module cc_gray_to_binary #(
-    parameter int unsigned N = 1
+    parameter int unsigned Width = 1
 )(
-    input  logic [N-1:0] a_i,
-    output logic [N-1:0] z_o
+    input  logic [Width-1:0] a_i,
+    output logic [Width-1:0] z_o
 );
-    for (genvar i = 0; i < N; i++)
-        assign z_o[i] = ^a_i[N-1:i];
+    for (genvar i = 0; i < Width; i++)
+        assign z_o[i] = ^a_i[Width-1:i];
 endmodule

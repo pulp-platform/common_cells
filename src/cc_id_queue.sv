@@ -22,8 +22,8 @@
 // contain an element with the provided ID.
 //
 // The queue can work in two bandwidth modes:
-//  * !FULL_BW: Input and output cannot be performed simultaneously (max bandwidth: 50%).
-//  *  FULL_BW: Input and output can be performed simultaneously and a popped cell can be reused
+//  * !FullBw: Input and output cannot be performed simultaneously (max bandwidth: 50%).
+//  *  FullBw: Input and output can be performed simultaneously and a popped cell can be reused
 //    immediately in the same clock cycle. Area increase typically 5-10%.
 //
 // This ID queue additionally provides the `exists_` port, which searches for an element anywhere in
@@ -34,10 +34,10 @@
 // `exists_` port operates independently of the `inp_` and `oup_` ports. If the `exists_` port is
 // unused, tie `exists_req_i` to `1'b0` and the synthesizer should remove the internal comparators.
 //
-// This ID queue can store at most `CAPACITY` elements, independent of their ID. Let
-// - C = `CAPACITY`
+// This ID queue can store at most `Capacity` elements, independent of their ID. Let
+// - C = `Capacity`
 // - B = $bits(data_t)
-// - I = 2**`ID_WIDTH`
+// - I = 2**`IdWidth`
 // Then
 // - the queue element storage requires O(C * (B + log2(C))) bit
 // - the ID table requires O(H * log2(C)) bit, where H = min(C, I)
@@ -48,14 +48,14 @@
 `include "common_cells/assertions.svh"
 
 module cc_id_queue #(
-    parameter int unsigned ID_WIDTH  = 1,
-    parameter int unsigned CAPACITY  = 1,
-    parameter bit FULL_BW   = 0,
-    parameter bit CUT_OUP_POP_INP_GNT = 0,
-    parameter int unsigned NUM_CMP_PORTS = 1,
-    parameter type data_t   = logic[31:0],
+    parameter int unsigned IdWidth         = 1,
+    parameter int unsigned Capacity        = 1,
+    parameter bit          FullBw          = 0,
+    parameter bit          CutOupPopInpGnt = 0,
+    parameter int unsigned NumCmpPorts     = 1,
+    parameter type         data_t          = logic[31:0],
     // Dependent parameters, DO NOT OVERRIDE!
-    localparam type id_t    = logic[ID_WIDTH-1:0]
+    localparam type        id_t            = logic[IdWidth-1:0]
 ) (
     input  logic    clk_i,
     input  logic    rst_ni,
@@ -65,11 +65,11 @@ module cc_id_queue #(
     input  logic    inp_req_i,
     output logic    inp_gnt_o,
 
-    input  data_t [NUM_CMP_PORTS-1:0] exists_data_i,
-    input  data_t [NUM_CMP_PORTS-1:0] exists_mask_i,
-    input  logic  [NUM_CMP_PORTS-1:0] exists_req_i,
-    output logic  [NUM_CMP_PORTS-1:0] exists_o,
-    output logic  [NUM_CMP_PORTS-1:0] exists_gnt_o,
+    input  data_t [NumCmpPorts-1:0] exists_data_i,
+    input  data_t [NumCmpPorts-1:0] exists_mask_i,
+    input  logic  [NumCmpPorts-1:0] exists_req_i,
+    output logic  [NumCmpPorts-1:0] exists_o,
+    output logic  [NumCmpPorts-1:0] exists_gnt_o,
 
     input  id_t     oup_id_i,
     input  logic    oup_pop_i,
@@ -84,10 +84,10 @@ module cc_id_queue #(
 
     // Capacity of the head-tail table, which associates an ID with corresponding head and tail
     // indices.
-    localparam int unsigned NIds = 2**ID_WIDTH;
-    localparam int unsigned HtCapacity = (NIds <= CAPACITY) ? NIds : CAPACITY;
+    localparam int unsigned NIds = 2**IdWidth;
+    localparam int unsigned HtCapacity = (NIds <= Capacity) ? NIds : Capacity;
     localparam int unsigned HtIdxWidth = cc_pkg::idx_width(HtCapacity);
-    localparam int unsigned LdIdxWidth = cc_pkg::idx_width(CAPACITY);
+    localparam int unsigned LdIdxWidth = cc_pkg::idx_width(Capacity);
 
     // Type for indexing the head-tail table.
     typedef logic [HtIdxWidth-1:0] ht_idx_t;
@@ -112,7 +112,7 @@ module cc_id_queue #(
 
     head_tail_t [HtCapacity-1:0]    head_tail_d,    head_tail_q;
 
-    linked_data_t [CAPACITY-1:0]    linked_data_d,  linked_data_q;
+    linked_data_t [Capacity-1:0]    linked_data_d,  linked_data_q;
 
     logic                           full,
                                     match_in_id_valid,
@@ -124,8 +124,8 @@ module cc_id_queue #(
                                     idx_matches_in_id,
                                     idx_matches_out_id;
 
-    logic [NUM_CMP_PORTS-1:0][CAPACITY-1:0] exists_match;
-    logic [CAPACITY-1:0]            linked_data_free;
+    logic [NumCmpPorts-1:0][Capacity-1:0] exists_match;
+    logic [Capacity-1:0]            linked_data_free;
 
     id_t                            match_in_id, match_out_id;
 
@@ -149,14 +149,14 @@ module cc_id_queue #(
     assign no_in_id_match = !(|idx_matches_in_id);
     assign no_out_id_match = !(|idx_matches_out_id);
     cc_onehot_to_bin #(
-        .ONEHOT_WIDTH ( HtCapacity )
+        .OnehotWidth ( HtCapacity )
     ) i_id_ohb_in (
         .onehot_i ( idx_matches_in_id ),
         .bin_o    ( match_in_idx      )
     );
-    if (FULL_BW) begin : gen_ohb_out
+    if (FullBw) begin : gen_ohb_out
         cc_onehot_to_bin #(
-            .ONEHOT_WIDTH ( HtCapacity )
+            .OnehotWidth ( HtCapacity )
         ) i_id_ohb_out (
             .onehot_i ( idx_matches_out_id ),
             .bin_o    ( match_out_idx      )
@@ -170,8 +170,8 @@ module cc_id_queue #(
         assign head_tail_free[i] = head_tail_q[i].free;
     end
     cc_lzc #(
-        .WIDTH ( HtCapacity ),
-        .MODE  ( cc_pkg::LZC_TRAILING_ZERO_CNT )
+        .Width ( HtCapacity ),
+        .Mode  ( cc_pkg::LZC_TRAILING_ZERO_CNT )
     ) i_ht_free_lzc (
         .in_i    ( head_tail_free     ),
         .cnt_o   ( head_tail_free_idx ),
@@ -179,12 +179,12 @@ module cc_id_queue #(
     );
 
     // Find the first free index in the linked data table.
-    for (genvar i = 0; i < CAPACITY; i++) begin: gen_linked_data_free
+    for (genvar i = 0; i < Capacity; i++) begin: gen_linked_data_free
         assign linked_data_free[i] = linked_data_q[i].free;
     end
     cc_lzc #(
-        .WIDTH ( CAPACITY ),
-        .MODE  ( cc_pkg::LZC_TRAILING_ZERO_CNT )
+        .Width ( Capacity ),
+        .Mode  ( cc_pkg::LZC_TRAILING_ZERO_CNT )
     ) i_ld_free_lzc (
         .in_i    ( linked_data_free     ),
         .cnt_o   ( linked_data_free_idx ),
@@ -199,8 +199,8 @@ module cc_id_queue #(
     assign oup_data_free_idx = head_tail_q[match_out_idx].head;
 
     // Data can be accepted if the linked list pool is not full, or if some data is simultaneously
-    // popped (given FULL_BW & !CUT_OUP_POP_INP_GNT).
-    assign inp_gnt_o = ~full || (oup_data_popped && FULL_BW && ~CUT_OUP_POP_INP_GNT);
+    // popped (given FullBw & !CutOupPopInpGnt).
+    assign inp_gnt_o = ~full || (oup_data_popped && FullBw && ~CutOupPopInpGnt);
     always_comb begin
         match_in_id         = '0;
         match_out_id        = '0;
@@ -214,7 +214,7 @@ module cc_id_queue #(
         oup_data_popped     = 1'b0;
         oup_ht_popped       = 1'b0;
 
-        if (!FULL_BW) begin
+        if (!FullBw) begin
             if (inp_req_i && !full) begin
                 match_in_id = inp_id_i;
                 match_in_id_valid = 1'b1;
@@ -259,7 +259,7 @@ module cc_id_queue #(
                 oup_gnt_o = 1'b1;
             end
         end else begin
-            // FULL_BW
+            // FullBw
             if (oup_req_i) begin
                 match_out_id = oup_id_i;
                 match_out_id_valid = 1'b1;
@@ -369,8 +369,8 @@ module cc_id_queue #(
     end
 
     // Exists Lookup
-    for (genvar k = 0; k < NUM_CMP_PORTS; k++) begin: gen_lookup_port
-        for (genvar i = 0; i < CAPACITY; i++) begin: gen_lookup
+    for (genvar k = 0; k < NumCmpPorts; k++) begin: gen_lookup_port
+        for (genvar i = 0; i < Capacity; i++) begin: gen_lookup
             // For a match, the entry needs to be occupied AND
             // the masked slot data needs to match the masked query data.
             assign exists_match[k][i] = ~linked_data_q[i].free &
@@ -397,7 +397,7 @@ module cc_id_queue #(
             end
         end
     end
-    for (genvar i = 0; i < CAPACITY; i++) begin: gen_data_ffs
+    for (genvar i = 0; i < Capacity; i++) begin: gen_data_ffs
         always_ff @(posedge clk_i, negedge rst_ni) begin
             if (!rst_ni) begin
                 // Set free bit of linked data entries, all other bits are don't care.
@@ -415,8 +415,8 @@ module cc_id_queue #(
 
     // Validate parameters.
 `ifndef COMMON_CELLS_ASSERTS_OFF
-    `ASSERT_INIT(id_width_0, ID_WIDTH >= 1, "The ID must at least be one bit wide!")
-    `ASSERT_INIT(capacity_0, CAPACITY >= 1, "The queue must have capacity of at least one entry!")
+    `ASSERT_INIT(id_width_0, IdWidth >= 1, "The ID must at least be one bit wide!")
+    `ASSERT_INIT(capacity_0, Capacity >= 1, "The queue must have capacity of at least one entry!")
 `endif
 
 endmodule

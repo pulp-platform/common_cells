@@ -13,19 +13,19 @@
 `include "common_cells/assertions.svh"
 
 module cc_onehot_to_bin #(
-    parameter int unsigned ONEHOT_WIDTH = 16,
+    parameter int unsigned  OnehotWidth = 16,
     // Do Not Change
-    localparam int unsigned BIN_WIDTH    = ONEHOT_WIDTH == 1 ? 1 : $clog2(ONEHOT_WIDTH)
+    localparam int unsigned BinWidth    = OnehotWidth == 1 ? 1 : $clog2(OnehotWidth)
 )   (
-    input  logic [ONEHOT_WIDTH-1:0] onehot_i,
-    output logic [BIN_WIDTH-1:0]    bin_o
+    input  logic [OnehotWidth-1:0] onehot_i,
+    output logic [BinWidth-1:0]    bin_o
 );
 
-    for (genvar j = 0; j < BIN_WIDTH; j++) begin : gen_jl
-        logic [ONEHOT_WIDTH-1:0] tmp_mask;
-            for (genvar i = 0; i < ONEHOT_WIDTH; i++) begin : gen_il
-                logic [BIN_WIDTH-1:0] tmp_i;
-                assign tmp_i = BIN_WIDTH'(i);
+    for (genvar j = 0; j < BinWidth; j++) begin : gen_jl
+        logic [OnehotWidth-1:0] tmp_mask;
+            for (genvar i = 0; i < OnehotWidth; i++) begin : gen_il
+                logic [BinWidth-1:0] tmp_i;
+                assign tmp_i = BinWidth'(i);
                 assign tmp_mask[i] = tmp_i[j];
             end
         assign bin_o[j] = |(tmp_mask & onehot_i);

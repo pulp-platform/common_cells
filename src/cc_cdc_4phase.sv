@@ -24,8 +24,8 @@
 /// if you want to ensure that there are no in-flight transactions within the
 /// CDC.
 ///
-/// SEND_RESET_MSG - If send reset msg is enabled, the 4phase cdc starts sending
-/// the RESET_MSG within its' asynchronous reset state. This can be usefull if
+/// SendResetMsg - If send reset msg is enabled, the 4phase cdc starts sending
+/// the ResetMsg within its' asynchronous reset state. This can be usefull if
 /// we need to transmit a message to the other side of the CDC immediately
 /// during an async reset even if there is no clock available. This mode is
 /// required for proper functionality of the cc_cdc_reset_ctrlr module.
@@ -35,9 +35,9 @@
 /* verilator lint_off DECLFILENAME */
 module cc_cdc_4phase #(
   parameter type T = logic,
-  parameter bit DECOUPLED = 1'b1,
-  parameter bit SEND_RESET_MSG = 1'b0,
-  parameter T RESET_MSG = T'('0)
+  parameter bit Decoupled = 1'b1,
+  parameter bit SendResetMsg = 1'b0,
+  parameter T ResetMsg = T'('0)
 )(
   input  logic src_rst_ni,
   input  logic src_clk_i,
@@ -60,9 +60,9 @@ module cc_cdc_4phase #(
   // The sender in the source domain.
   cc_cdc_4phase_src #(
     .T(T),
-    .DECOUPLED(DECOUPLED),
-    .SEND_RESET_MSG(SEND_RESET_MSG),
-    .RESET_MSG(RESET_MSG)
+    .Decoupled(Decoupled),
+    .SendResetMsg(SendResetMsg),
+    .ResetMsg(ResetMsg)
   ) i_src (
     .rst_ni       ( src_rst_ni  ),
     .clk_i        ( src_clk_i   ),
@@ -75,7 +75,7 @@ module cc_cdc_4phase #(
   );
 
   // The receiver in the destination domain.
-  cc_cdc_4phase_dst #(.T(T), .DECOUPLED(DECOUPLED)) i_dst (
+  cc_cdc_4phase_dst #(.T(T), .Decoupled(Decoupled)) i_dst (
     .rst_ni       ( dst_rst_ni  ),
     .clk_i        ( dst_clk_i   ),
     .data_o       ( dst_data_o  ),
@@ -91,10 +91,10 @@ endmodule
 /// Half of the 4-phase clock domain crossing located in the source domain.
 module cc_cdc_4phase_src #(
   parameter type T = logic,
-  parameter int unsigned SYNC_STAGES = 2,
-  parameter bit DECOUPLED = 1'b1,
-  parameter bit SEND_RESET_MSG = 1'b0,
-  parameter T RESET_MSG = T'('0)
+  parameter int unsigned SyncStages = 2,
+  parameter bit Decoupled = 1'b1,
+  parameter bit SendResetMsg = 1'b0,
+  parameter T ResetMsg = T'('0)
 )(
   input  logic rst_ni,
   input  logic clk_i,
@@ -118,7 +118,7 @@ module cc_cdc_4phase_src #(
 
   // Synchronize the async ACK
   cc_sync #(
-    .STAGES(SYNC_STAGES)
+    .Stages(SyncStages)
   ) i_sync(
     .clk_i,
     .rst_ni,
@@ -136,7 +136,7 @@ module cc_cdc_4phase_src #(
       IDLE: begin
         // If decoupling is disabled, defer assertion of ready until the
         // handshake with the dst is completed
-        if (DECOUPLED) begin
+        if (Decoupled) begin
           ready_o = 1'b1;
         end else begin
           ready_o = 1'b0;
@@ -158,7 +158,7 @@ module cc_cdc_4phase_src #(
       WAIT_ACK_DEASSERT: begin
         if (ack_synced == 1'b0) begin
           state_d = IDLE;
-          if (!DECOUPLED) begin
+          if (!Decoupled) begin
             ready_o = 1'b1;
           end
         end
@@ -180,9 +180,9 @@ module cc_cdc_4phase_src #(
   // Sample the data and the request signal to filter combinational glitches
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      if (SEND_RESET_MSG) begin
+      if (SendResetMsg) begin
         req_src_q  <= 1'b1;
-        data_src_q <= RESET_MSG;
+        data_src_q <= ResetMsg;
       end else begin
         req_src_q  <= 1'b0;
         data_src_q <= T'('0);
@@ -204,8 +204,8 @@ endmodule
 /// domain.
 module cc_cdc_4phase_dst #(
   parameter type T = logic,
-  parameter int unsigned SYNC_STAGES = 2,
-  parameter bit DECOUPLED = 1
+  parameter int unsigned SyncStages = 2,
+  parameter bit Decoupled = 1
 )(
   input  logic rst_ni,
   input  logic clk_i,
@@ -232,7 +232,7 @@ module cc_cdc_4phase_dst #(
 
   //Synchronize the request
   cc_sync #(
-    .STAGES(SYNC_STAGES)
+    .Stages(SyncStages)
   ) i_sync(
     .clk_i,
     .rst_ni,
@@ -298,7 +298,7 @@ module cc_cdc_4phase_dst #(
     end
   end
 
-  if (DECOUPLED) begin : gen_decoupled
+  if (Decoupled) begin : gen_decoupled
     // Decouple the output from the asynchronous data bus without introducing
     // additional latency by inserting a spill register
     cc_spill_register #(

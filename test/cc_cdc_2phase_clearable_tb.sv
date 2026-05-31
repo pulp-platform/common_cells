@@ -284,8 +284,8 @@ endmodule
 
 
 module cc_cdc_2phase_clearable_tb_delay_injector #(
-  parameter time MAX_DELAY = 0ns,
-  parameter int SYNC_STAGES = 3
+  parameter time MaxDelay = 0ns,
+  parameter int SyncStages = 3
 )(
   input  logic        src_rst_ni,
   input  logic        src_clk_i,
@@ -315,23 +315,23 @@ module cc_cdc_2phase_clearable_tb_delay_injector #(
   logic        s_dst_valid;
 
   always @(async_req_o) begin
-    automatic time d = $urandom_range(1ps, MAX_DELAY);
+    automatic time d = $urandom_range(1ps, MaxDelay);
     async_req_i <= #d async_req_o;
   end
 
   always @(async_ack_o) begin
-    automatic time d = $urandom_range(1ps, MAX_DELAY);
+    automatic time d = $urandom_range(1ps, MaxDelay);
     async_ack_i <= #d async_ack_o;
   end
 
   for (genvar i = 0; i < 32; i++) begin
     always @(async_data_o[i]) begin
-      automatic time d = $urandom_range(1ps, MAX_DELAY);
+      automatic time d = $urandom_range(1ps, MaxDelay);
       async_data_i[i] <= #d async_data_o[i];
     end
   end
 
-  cc_cdc_2phase_src_clearable #(logic [31:0], SYNC_STAGES) i_src (
+  cc_cdc_2phase_src_clearable #(logic [31:0], SyncStages) i_src (
     .rst_ni       ( src_rst_ni                 ),
     .clk_i        ( src_clk_i                  ),
     .clear_i      ( s_src_clear                ),
@@ -345,7 +345,7 @@ module cc_cdc_2phase_clearable_tb_delay_injector #(
 
   assign src_ready_o = s_src_ready & !s_src_clear;
 
-  cc_cdc_2phase_dst_clearable #(logic [31:0], SYNC_STAGES) i_dst (
+  cc_cdc_2phase_dst_clearable #(logic [31:0], SyncStages) i_dst (
     .rst_ni       ( dst_rst_ni                 ),
     .clk_i        ( dst_clk_i                  ),
     .clear_i      ( s_dst_clear                ),
@@ -362,7 +362,7 @@ module cc_cdc_2phase_clearable_tb_delay_injector #(
   // Synchronize the clear and reset signaling in both directions (see header of
   // the cc_cdc_reset_ctrlr module for more details.)
   cc_cdc_reset_ctrlr #(
-    .SYNC_STAGES(SYNC_STAGES-1)
+    .SyncStages(SyncStages-1)
   ) i_cdc_reset_ctrlr (
     .a_clk_i   ( src_clk_i   ),
     .a_rst_ni  ( src_rst_ni  ),

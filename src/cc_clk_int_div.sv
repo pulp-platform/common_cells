@@ -30,17 +30,17 @@
 //
 // Parameters:
 //
-// DIV_VALUE_WIDTH: The number of bits to use for the internal
+// DivValueWidth: The number of bits to use for the internal
 // counter. Defines the maximum division factor.
 //
-// DEFAULT_DIV_VALUE: The default division factor to use after reset. Use this
+// DefaultDivValue: The default division factor to use after reset. Use this
 // parameter and tie div_valid_i to zero if you don't need at runtime
 // configurability. An elaboration time error will be issued if the supplied
-// default div value is not repressentable with DIV_VALUE_WIDTH bits.
+// default div value is not repressentable with DivValueWidth bits.
 //
-// ENABLE_CLOCK_IN_RESET: If 1'b1, the clock gate will be enabled during reset
+// EnableClockInReset: If 1'b1, the clock gate will be enabled during reset
 // which allows the cc_clk_int_div instance to bypass the clock during reset, IFF
-// the DEFAULT_DIV_VALUE is 1. For all other DEFAULT_DIV_VALUES, the output
+// the DefaultDivValue is 1. For all other DefaultDivValues, the output
 // clock will not be available until rst_ni is deasserted!
 //
 // IMPORTANT!!!
@@ -69,11 +69,11 @@
 
 module cc_clk_int_div #(
   /// The with
-  parameter int unsigned DIV_VALUE_WIDTH = 4,
+  parameter int unsigned DivValueWidth = 4,
   /// The default divider value which is used right after reset
-  parameter int unsigned DEFAULT_DIV_VALUE = 0,
+  parameter int unsigned DefaultDivValue = 0,
   /// If 1'b1, the output clock is enabled during async reset assertion
-  parameter bit          ENABLE_CLOCK_IN_RESET = 1'b0
+  parameter bit          EnableClockInReset = 1'b0
 ) (
   input logic                        clk_i,
   input logic                        rst_ni,
@@ -87,7 +87,7 @@ module cc_clk_int_div #(
   /// Divider select value. The output clock has a frequency of f_clk_i/div_i.
   /// For div_i == 0 or  div_i == 1, the output clock has the same frequency as
   /// th input clock.
-  input logic [DIV_VALUE_WIDTH-1:0]  div_i,
+  input logic [DivValueWidth-1:0]    div_i,
   /// Valid handshake signal. Must not combinationally depend on `div_ready_o`.
   /// Once asserted, the valid signal must not be deasserted until it is
   /// accepted with `div_ready_o`.
@@ -102,43 +102,43 @@ module cc_clk_int_div #(
   output logic                       clk_o,
   /// Current value of the internal cycle counter. Might be usefull if you need
   /// to do some phase shifting relative to the generated clock.
-  output logic [DIV_VALUE_WIDTH-1:0] cycl_count_o
+  output logic [DivValueWidth-1:0]   cycl_count_o
 );
 
-  if ($clog2(DEFAULT_DIV_VALUE+1) > DIV_VALUE_WIDTH) begin : gen_elab_error
+  if ($clog2(DefaultDivValue+1) > DivValueWidth) begin : gen_elab_error
     $error("Default divider value %0d is not representable with the configured",
             "div value width of %0d bits.",
-           DEFAULT_DIV_VALUE, DIV_VALUE_WIDTH);
+           DefaultDivValue, DivValueWidth);
   end
 
   // We have to preset the div_q register with a value larger than one to avoid
   // an infinite loop in the WAIT_END_PERIOD state. If the default state of the
   // clock divider should be bypass, we thus always preset the div_q with 1
   // rather than 1 or zero.
-  localparam int unsigned DivResetValue = (DEFAULT_DIV_VALUE != 0)? DEFAULT_DIV_VALUE: 1;
+  localparam int unsigned DivResetValue = (DefaultDivValue != 0)? DefaultDivValue: 1;
 
-  logic [DIV_VALUE_WIDTH-1:0] div_i_normalized;
-  logic [DIV_VALUE_WIDTH-1:0] div_d, div_q;
-  logic                       toggle_ffs_en;
-  logic                       t_ff1_d, t_ff1_q;
-  logic                       t_ff1_en;
+  logic [DivValueWidth-1:0] div_i_normalized;
+  logic [DivValueWidth-1:0] div_d, div_q;
+  logic toggle_ffs_en;
+  logic t_ff1_d, t_ff1_q;
+  logic t_ff1_en;
 
-  logic                       t_ff2_d, t_ff2_q;
-  logic                       t_ff2_en;
+  logic t_ff2_d, t_ff2_q;
+  logic t_ff2_en;
 
-  logic [DIV_VALUE_WIDTH-1:0]   cycle_cntr_d, cycle_cntr_q;
-  logic                         cycle_counter_en;
-  logic                         clk_div_bypass_en_d, clk_div_bypass_en_q;
-  logic                         odd_clk;
-  logic                         even_clk;
-  logic                         generated_clock;
-  logic                         ungated_output_clock;
+  logic [DivValueWidth-1:0] cycle_cntr_d, cycle_cntr_q;
+  logic cycle_counter_en;
+  logic clk_div_bypass_en_d, clk_div_bypass_en_q;
+  logic odd_clk;
+  logic even_clk;
+  logic generated_clock;
+  logic ungated_output_clock;
 
-  logic                         use_odd_division_d, use_odd_division_q;
-  logic                         gate_en_d, gate_en_q;
-  logic                         gate_is_open_q;
-  logic                         clear_cycle_counter;
-  logic                         clear_toggle_flops;
+  logic use_odd_division_d, use_odd_division_q;
+  logic gate_en_d, gate_en_q;
+  logic gate_is_open_q;
+  logic clear_cycle_counter;
+  logic clear_toggle_flops;
 
   typedef enum logic[1:0] {IDLE, LOAD_DIV, WAIT_END_PERIOD} clk_gate_state_e;
   clk_gate_state_e clk_gate_state_d, clk_gate_state_q;
@@ -222,8 +222,8 @@ module cc_clk_int_div #(
     endcase
   end
 
-  localparam logic UseOddDivisionResetValue = DEFAULT_DIV_VALUE[0];
-  localparam logic ClkDivBypassEnResetValue = (DEFAULT_DIV_VALUE < 2)? 1'b1: 1'b0;
+  localparam logic UseOddDivisionResetValue = DefaultDivValue[0];
+  localparam logic ClkDivBypassEnResetValue = (DefaultDivValue < 2)? 1'b1: 1'b0;
 
   always_ff @(posedge clk_i, negedge rst_ni) begin
     if (!rst_ni) begin
@@ -231,7 +231,7 @@ module cc_clk_int_div #(
       clk_div_bypass_en_q <= ClkDivBypassEnResetValue;
       div_q               <= DivResetValue;
       clk_gate_state_q    <= IDLE;
-      gate_en_q           <= ENABLE_CLOCK_IN_RESET;
+      gate_en_q           <= EnableClockInReset;
     end else begin
       use_odd_division_q  <= use_odd_division_d;
       clk_div_bypass_en_q <= clk_div_bypass_en_d;

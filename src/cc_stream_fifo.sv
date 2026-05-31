@@ -12,27 +12,27 @@
 
 module cc_stream_fifo #(
     /// FIFO is in fall-through mode
-    parameter bit          FALL_THROUGH = 1'b0,
+    parameter bit          FallThrough = 1'b0,
     /// Default data width if the fifo is of type logic
-    parameter int unsigned DATA_WIDTH   = 32,
+    parameter int unsigned DataWidth   = 32,
     /// Depth can be arbitrary from 0 to 2**32
-    parameter int unsigned DEPTH        = 8,
-    parameter type         T            = logic [DATA_WIDTH-1:0],
+    parameter int unsigned Depth       = 8,
+    parameter type         T            = logic [DataWidth-1:0],
     // DO NOT OVERWRITE THIS PARAMETER
-    localparam int unsigned ADDR_DEPTH  = (DEPTH > 1) ? $clog2(DEPTH) : 1
+    localparam int unsigned AddrDepth  = (Depth > 1) ? $clog2(Depth) : 1
 ) (
-    input  logic                  clk_i,      // Clock
-    input  logic                  rst_ni,     // Asynchronous reset active low
-    input  logic                  flush_i,    // flush the fifo
-    output logic [ADDR_DEPTH-1:0] usage_o,    // fill pointer
+    input  logic                 clk_i,      // Clock
+    input  logic                 rst_ni,     // Asynchronous reset active low
+    input  logic                 flush_i,    // flush the fifo
+    output logic [AddrDepth-1:0] usage_o,    // fill pointer
     // input interface
-    input  T                      data_i,     // data to push into the fifo
-    input  logic                  valid_i,    // input data valid
-    output logic                  ready_o,    // fifo is not full
+    input  T                     data_i,     // data to push into the fifo
+    input  logic                 valid_i,    // input data valid
+    output logic                 ready_o,    // fifo is not full
     // output interface
-    output T                      data_o,     // output data
-    output logic                  valid_o,    // fifo is not empty
-    input  logic                  ready_i     // pop head from fifo
+    output T                     data_o,     // output data
+    output logic                 valid_o,    // fifo is not empty
+    input  logic                 ready_i     // pop head from fifo
 );
 
     logic push, pop;
@@ -44,9 +44,9 @@ module cc_stream_fifo #(
     assign valid_o = ~empty;
 
     cc_fifo #(
-        .FALL_THROUGH   (FALL_THROUGH),
-        .DATA_WIDTH     (DATA_WIDTH),
-        .DEPTH          (DEPTH),
+        .FallThrough(FallThrough),
+        .DataWidth  (DataWidth),
+        .Depth      (Depth),
         .dtype(T)
     ) fifo_i (
         .clk_i,

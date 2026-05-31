@@ -11,12 +11,12 @@
 // Author: Robert Balas <balasr@iis.ee.ethz.ch>
 
 module cc_fifo_properties #(
-    parameter bit          FALL_THROUGH = 1'b0, // fifo is in fall-through mode
-    parameter int unsigned DATA_WIDTH   = 32,   // default data width if the fifo is of type logic
-    parameter int unsigned DEPTH        = 8,    // depth can be arbitrary from 0 to 2**32
-    parameter type dtype                = logic [DATA_WIDTH-1:0],
+    parameter bit          FallThrough = 1'b0, // fifo is in fall-through mode
+    parameter int unsigned DataWidth   = 32,   // default data width if the fifo is of type logic
+    parameter int unsigned Depth       = 8,    // depth can be arbitrary from 0 to 2**32
+    parameter type dtype                = logic [DataWidth-1:0],
     // DO NOT OVERWRITE THIS PARAMETER
-    parameter int unsigned ADDR_DEPTH   = (DEPTH > 1) ? $clog2(DEPTH) : 1
+    localparam int unsigned AddrDepth  = (Depth > 1) ? $clog2(Depth) : 1
 ) (
     input logic                    clk_i, // Clock
     input logic                    rst_ni, // Asynchronous reset active low
@@ -24,30 +24,30 @@ module cc_fifo_properties #(
     // status flags
     input logic                    full_o, // queue is full
     input logic                    empty_o, // queue is empty
-    input logic [ADDR_DEPTH-1:0]   usage_o, // fill pointer
+    input logic [AddrDepth-1:0]    usage_o, // fill pointer
     // as long as the queue is not full we can push new data
     input logic                    push_i, // data is valid and can be pushed to the queue
     // as long as the queue is not empty we can pop new elements
     input logic                    pop_i, // pop head from queue
 
-    input logic [ADDR_DEPTH - 1:0] read_pointer_n,
-    input logic [ADDR_DEPTH - 1:0] read_pointer_q,
-    input logic [ADDR_DEPTH - 1:0] write_pointer_n,
-    input logic [ADDR_DEPTH - 1:0] write_pointer_q,
+    input logic [AddrDepth-1:0]    read_pointer_n,
+    input logic [AddrDepth-1:0]    read_pointer_q,
+    input logic [AddrDepth-1:0]    write_pointer_n,
+    input logic [AddrDepth-1:0]    write_pointer_q,
 
-    input logic [ADDR_DEPTH:0]     status_cnt_n, // counter to keep track of the current queue status
-    input logic [ADDR_DEPTH:0]     status_cnt_q
+    input logic [AddrDepth:0]      status_cnt_n, // counter to keep track of the current queue status
+    input logic [AddrDepth:0]      status_cnt_q
 );
 
-    localparam int unsigned FIFO_DEPTH = (DEPTH > 0) ? DEPTH : 1;
+    localparam int unsigned FifoDepth = (Depth > 0) ? Depth : 1;
     // verbatim from cc_fifo
-    localparam int unsigned FIFO_SIZE  = FIFO_DEPTH[ADDR_DEPTH:0];
+    localparam int unsigned FifoSize  = FifoDepth[AddrDepth:0];
 
-    logic [ADDR_DEPTH-1:0] fill_level;
-    logic                  read_incr;
-    logic                  write_incr;
-    int                    writes = 0; // number of writes to fifo
-    int                    reads  = 0; // number of reads from fifo
+    logic [AddrDepth-1:0] fill_level;
+    logic                 read_incr;
+    logic                 write_incr;
+    int                   writes = 0; // number of writes to fifo
+    int                   reads  = 0; // number of reads from fifo
 
     // We use this as a workaround to trigger and initial event at the beginning
     // of the simulation. I can't think of a better way with the subset of sv
@@ -59,8 +59,8 @@ module cc_fifo_properties #(
     // any way
     assume property (@(posedge clk_i) (!init) |-> !rst_ni);
 
-    // we don't have tests for FALL_THROUGH mode
-    always_comb assert (FALL_THROUGH == 1'b0);
+    // we don't have tests for FallThrough mode
+    always_comb assert (FallThrough == 1'b0);
 
     // assume we are good boys and dont try to mess with the queue
     // It doesn't look like we need these assumptions
@@ -106,20 +106,20 @@ module cc_fifo_properties #(
         (writes >= reads));
     // don't overflow
     assert property (@(posedge clk_i)
-        ((writes - reads) <= FIFO_SIZE));
+        ((writes - reads) <= FifoSize));
 
     // do we set fill indicators properly
     assert property (@(posedge clk_i)
         ((writes == reads) |-> empty_o));
     assert property (@(posedge clk_i)
-        (((writes - reads) == FIFO_SIZE) |-> full_o));
+        (((writes - reads) == FifoSize) |-> full_o));
     // check if we compute fill level correctly
     assert property (@(posedge clk_i)
         disable iff (!rst_ni) (fill_level == usage_o));
 
     // sanity of internal vars
     assert property (@(posedge clk_i)
-        status_cnt_q <= FIFO_SIZE);
+        status_cnt_q <= FifoSize);
 
     // make sure we hit the interesting cases
     cover property (@(posedge clk_i)
@@ -131,5 +131,5 @@ endmodule // cc_fifo_properties
 
 // propagate parameters from cc_fifo to properties
 bind cc_fifo cc_fifo_properties #(
-    .FALL_THROUGH(FALL_THROUGH), .DATA_WIDTH(DATA_WIDTH), .DEPTH(DEPTH)
+    .FallThrough(FallThrough), .DataWidth(DataWidth), .Depth(Depth)
 ) i_fifo_properties(.*);

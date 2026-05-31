@@ -8,7 +8,7 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-// Stream fork: Connects the input stream (ready-valid) handshake to *all* of `N_OUP` output stream
+// Stream fork: Connects the input stream (ready-valid) handshake to *all* of `NumOup` output stream
 // handshakes. For each input stream handshake, every output stream handshakes exactly once. The
 // input stream only handshakes when all output streams have handshaked, but the output streams do
 // not have to handshake simultaneously.
@@ -19,20 +19,19 @@
 `include "common_cells/assertions.svh"
 
 module cc_stream_fork #(
-    parameter int unsigned N_OUP = 1    // Synopsys DC requires a default value for parameters.
+    parameter int unsigned NumOup = 1    // Synopsys DC requires a default value for parameters.
 ) (
-    input  logic                clk_i,
-    input  logic                rst_ni,
-    input  logic                valid_i,
-    output logic                ready_o,
-    output logic [N_OUP-1:0]    valid_o,
-    input  logic [N_OUP-1:0]    ready_i
+    input  logic              clk_i,
+    input  logic              rst_ni,
+    input  logic              valid_i,
+    output logic              ready_o,
+    output logic [NumOup-1:0] valid_o,
+    input  logic [NumOup-1:0] ready_i
 );
 
     typedef enum logic {READY, WAIT} state_t;
 
-    logic [N_OUP-1:0]   oup_ready,
-                        all_ones;
+    logic [NumOup-1:0] oup_ready, all_ones;
 
     state_t inp_state_d, inp_state_q;
 
@@ -80,7 +79,7 @@ module cc_stream_fork #(
     end
 
     // Output control FSM
-    for (genvar i = 0; i < N_OUP; i++) begin: gen_oup_state
+    for (genvar i = 0; i < NumOup; i++) begin: gen_oup_state
         state_t oup_state_d, oup_state_q;
 
         always_comb begin
@@ -125,7 +124,7 @@ module cc_stream_fork #(
                             // of the '1 literal when assigned to a port of parametrized width.
 
 `ifndef COMMON_CELLS_ASSERTS_OFF
-    `ASSERT_INIT(n_oup_0, N_OUP >= 1, "Number of outputs must be at least 1!")
+    `ASSERT_INIT(n_oup_0, NumOup >= 1, "Number of outputs must be at least 1!")
 `endif
 
 endmodule

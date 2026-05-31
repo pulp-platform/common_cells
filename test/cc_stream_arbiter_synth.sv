@@ -22,7 +22,7 @@ module cc_stream_arbiter_synth (
 
         cc_stream_arbiter #(
             .DATA_T     (data_t),
-            .N_INP      (n),
+            .NumInp     (n),
             .ARBITER    ("rr")
         ) i_rr_arb (
             .clk_i,
@@ -37,7 +37,7 @@ module cc_stream_arbiter_synth (
 
         cc_stream_arbiter #(
             .DATA_T     (data_t),
-            .N_INP      (n),
+            .NumInp     (n),
             .ARBITER    ("prio")
         ) i_prio_arb (
             .clk_i,

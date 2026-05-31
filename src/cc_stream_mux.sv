@@ -10,20 +10,20 @@
 
 `include "common_cells/assertions.svh"
 
-/// Stream multiplexer: connects the output to one of `N_INP` data streams with valid-ready
+/// Stream multiplexer: connects the output to one of `NumInp` data streams with valid-ready
 /// handshaking.
 
 module cc_stream_mux #(
   parameter type DATA_T = logic,  // Vivado requires a default value for type parameters.
-  parameter int unsigned N_INP = 1,    // Synopsys DC requires a default value for value parameters.
+  parameter int unsigned NumInp = 1,    // Synopsys DC requires a default value for value parameters.
   /// Dependent parameters, DO NOT OVERRIDE!
-  localparam int unsigned SEL_WIDTH = cc_pkg::idx_width(N_INP)
+  localparam int unsigned SelWidth = cc_pkg::idx_width(NumInp)
 ) (
-  input  DATA_T [N_INP-1:0]     inp_data_i,
-  input  logic  [N_INP-1:0]     inp_valid_i,
-  output logic  [N_INP-1:0]     inp_ready_o,
+  input  DATA_T [NumInp-1:0]     inp_data_i,
+  input  logic  [NumInp-1:0]     inp_valid_i,
+  output logic  [NumInp-1:0]     inp_ready_o,
 
-  input  logic  [SEL_WIDTH-1:0] inp_sel_i,
+  input  logic  [SelWidth-1:0] inp_sel_i,
 
   output DATA_T                 oup_data_o,
   output logic                  oup_valid_o,
@@ -38,7 +38,7 @@ module cc_stream_mux #(
   assign oup_valid_o  = inp_valid_i[inp_sel_i];
 
 `ifndef COMMON_CELLS_ASSERTS_OFF
-  `ASSERT_INIT(n_inp_0, N_INP >= 1, "The number of inputs must be at least 1!")
+  `ASSERT_INIT(n_inp_0, NumInp >= 1, "The number of inputs must be at least 1!")
 `endif
 
 endmodule
