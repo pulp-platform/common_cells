@@ -155,7 +155,7 @@ module cc_cb_filter #(
   for (genvar i = 0; i < NoCounters; i++) begin : gen_buckets
     logic [BucketWidth-1:0] bucket_content;
     cc_counter #(
-      .WIDTH( BucketWidth )
+      .Width( BucketWidth )
     ) i_bucket (
       .clk_i      ( clk_i             ),
       .rst_ni     ( rst_ni            ),
@@ -178,7 +178,7 @@ module cc_cb_filter #(
   assign cnt_en   = incr_valid_i ^ decr_valid_i;
   assign cnt_down = decr_valid_i;
   cc_counter #(
-    .WIDTH ( HashWidth )
+    .Width ( HashWidth )
   ) i_tot_count (
     .clk_i     ( clk_i          ),
     .rst_ni    ( rst_ni         ),

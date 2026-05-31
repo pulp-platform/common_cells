@@ -84,20 +84,20 @@ module cc_stream_to_mem #(
 
     // Buffer responses.
     cc_stream_fifo #(
-      .FALL_THROUGH ( 1'b1       ),
-      .DEPTH        ( BufDepth   ),
-      .T            ( mem_resp_t )
+      .FallThrough ( 1'b1       ),
+      .Depth       ( BufDepth   ),
+      .T           ( mem_resp_t )
     ) i_resp_buf (
       .clk_i,
       .rst_ni,
-      .flush_i    ( 1'b0             ),
-      .data_i     ( mem_resp_i       ),
-      .valid_i    ( mem_resp_valid_i ),
-      .ready_o    ( buf_ready        ),
-      .data_o     ( resp_o           ),
-      .valid_o    ( resp_valid_o     ),
-      .ready_i    ( resp_ready_i     ),
-      .usage_o    ( /* unused */     )
+      .flush_i ( 1'b0             ),
+      .data_i  ( mem_resp_i       ),
+      .valid_i ( mem_resp_valid_i ),
+      .ready_o ( buf_ready        ),
+      .data_o  ( resp_o           ),
+      .valid_o ( resp_valid_o     ),
+      .ready_i ( resp_ready_i     ),
+      .usage_o ( /* unused */     )
     );
 
     // Register

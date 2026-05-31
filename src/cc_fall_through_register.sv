@@ -33,8 +33,8 @@ module cc_fall_through_register #(
             fifo_full;
 
     cc_fifo #(
-        .FALL_THROUGH   (1'b1),
-        .DEPTH          (1),
+        .FallThrough    (1'b1),
+        .Depth          (1),
         .dtype          (T)
     ) i_fifo (
         .clk_i          (clk_i),

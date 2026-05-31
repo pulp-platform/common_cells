@@ -57,10 +57,10 @@
 // sequence to the other domain. We use a 4-phase rather than a 2-phase CDC to
 // avoid the issues of one-sided async reset that might trigger spurious
 // transactions. Furthermore, the 4-phase CDC within this module is operated in
-// a special mode: DECOUPLED=0 ensures that there are no in-flight transactions.
+// a special mode: Decoupled=0 ensures that there are no in-flight transactions.
 // The src side only consumes the item once the destination side acknowledged
 // the receiption. This property is required to transition through the phases in
-// lock-step. Furthermore, (SEND_RESET_MSG=1) will cause the src side of the
+// lock-step. Furthermore, (SendResetMsg=1) will cause the src side of the
 // 4-phase CDC to immediately initiate the isolation phase in the dst domain
 // upon asynchronous reset regardless how long the async reset stays asserted or
 // whether the source clock is gated. Both sides of this module independently
@@ -73,7 +73,7 @@
 //
 // The time it takes to complete an entire clear sequence can be bounded as follows:
 //
-// t_clear <= 20*T+16*SYNC_STAGES*T, with T=max(T_a, T_b) (clock periods of src and dst)
+// t_clear <= 20*T+16*SyncStages*T, with T=max(T_a, T_b) (clock periods of src and dst)
 //
 // How to Use the Module
 //
@@ -81,10 +81,10 @@
 // asyncrhonous a/b_rst_ni and the synchronous a/b_clear_i signals. The 'a' and
 // 'b' port are entirely symetric so it doesn't matter whether you connect src
 // to 'a' or 'b'. If you enable support for async reset
-// (CLEAR_ON_ASYNC_RESET==1), parametrize the number of synchronization stages
+// (ClearOnAsyncReset==1), parametrize the number of synchronization stages
 // (for metastability resolution) to be strictly less than the latency of the
 // CDC. E.g. if your CDC uses 3 (the minimum) sync stages, parametrize this
-// module with SYNC_STAGES < 2! Your CDC must implement a src/dst_clear_i port
+// module with SyncStages < 2! Your CDC must implement a src/dst_clear_i port
 // that SYNCHRONOUSLY clears all FFs on the respective side. Connect the CDC's
 // src/dst_clear ports to this module's a/b_clear_o port. Once the a/b_isolate_o
 // signal is asserted, the respective CDC side (src/dst) must be isolated from
@@ -112,10 +112,10 @@ module cc_cdc_reset_ctrlr
   /// The number of synchronization stages to use for the
   /// clear signal request/acknowledge. Must be less than the
   /// number of sync stages used in the CDC.
-  parameter int unsigned SYNC_STAGES = 2,
+  parameter int unsigned SyncStages = 2,
   /// Whether an asynchronous reset shall cause a clear
   /// request to be sent to the other side.
-  parameter logic        CLEAR_ON_ASYNC_RESET = 1'b1
+  parameter logic        ClearOnAsyncReset = 1'b1
 )(
   // Side A (both sides are symmetric)
   input logic  a_clk_i,
@@ -145,8 +145,8 @@ module cc_cdc_reset_ctrlr
   cdc_clear_seq_phase_e async_b2a_next_phase;
 
   cc_cdc_reset_ctrlr_half #(
-    .SYNC_STAGES          ( SYNC_STAGES          ),
-    .CLEAR_ON_ASYNC_RESET ( CLEAR_ON_ASYNC_RESET )
+    .SyncStages        ( SyncStages        ),
+    .ClearOnAsyncReset ( ClearOnAsyncReset )
   ) i_cdc_reset_ctrlr_half_a (
     .clk_i              ( a_clk_i              ),
     .rst_ni             ( a_rst_ni             ),
@@ -164,8 +164,8 @@ module cc_cdc_reset_ctrlr
   );
 
     cc_cdc_reset_ctrlr_half #(
-    .SYNC_STAGES          ( SYNC_STAGES          ),
-    .CLEAR_ON_ASYNC_RESET ( CLEAR_ON_ASYNC_RESET )
+    .SyncStages        ( SyncStages        ),
+    .ClearOnAsyncReset ( ClearOnAsyncReset )
   ) i_cdc_reset_ctrlr_half_b (
     .clk_i              ( b_clk_i              ),
     .rst_ni             ( b_rst_ni             ),
@@ -190,10 +190,10 @@ module cc_cdc_reset_ctrlr_half
   /// The number of synchronization stages to use for the
   /// clear signal request/acknowledge. Must be less than
   /// the number of sync stages used in the CDC
-  parameter int unsigned SYNC_STAGES = 2,
+  parameter int unsigned SyncStages = 2,
   /// Whether an asynchronous reset shall cause a clear
   /// request to be sent to the other side.
-  parameter logic        CLEAR_ON_ASYNC_RESET = 1'b1
+  parameter logic        ClearOnAsyncReset = 1'b1
 )(
   // Synchronous side
   input logic                  clk_i,
@@ -370,7 +370,7 @@ module cc_cdc_reset_ctrlr_half
 
   always_ff @(posedge clk_i, negedge rst_ni) begin
     if (!rst_ni) begin
-      if (CLEAR_ON_ASYNC_RESET) begin
+      if (ClearOnAsyncReset) begin
         initiator_state_q <= ISOLATE; // Start in the ISOLATE state which is
                                         // the first state of a clear sequence.
       end else begin
@@ -388,13 +388,13 @@ module cc_cdc_reset_ctrlr_half
 
   cc_cdc_4phase_src #(
     .T(cdc_clear_seq_phase_e),
-    .SYNC_STAGES(2),
-    .DECOUPLED(0), // Important! The CDC must not be in decoupled mode.
+    .SyncStages(2),
+    .Decoupled(0), // Important! The CDC must not be in decoupled mode.
                    // Otherwise we will proceed to the next state without
                    // waiting for the new state to arrive on the other side.
-    .SEND_RESET_MSG(CLEAR_ON_ASYNC_RESET), // Send the ISOLATE phase request immediately on async
-                                           // reset if async reset synchronization is enabled.
-    .RESET_MSG(CDC_CLEAR_PHASE_ISOLATE)
+    .SendResetMsg(ClearOnAsyncReset), // Send the ISOLATE phase request immediately on async
+                                      // reset if async reset synchronization is enabled.
+    .ResetMsg(CDC_CLEAR_PHASE_ISOLATE)
   ) i_state_transition_cdc_src(
     .clk_i,
     .rst_ni,
@@ -420,8 +420,8 @@ module cc_cdc_reset_ctrlr_half
 
   cc_cdc_4phase_dst #(
     .T(cdc_clear_seq_phase_e),
-    .SYNC_STAGES(2),
-    .DECOUPLED(0) // Important! The CDC must not be in decoupled mode. Otherwise
+    .SyncStages(2),
+    .Decoupled(0) // Important! The CDC must not be in decoupled mode. Otherwise
                   // we will proceed to the next state without waiting for the
                   // new state to arrive on the other side.
   ) i_state_transition_cdc_dst(

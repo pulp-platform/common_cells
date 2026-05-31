@@ -11,8 +11,8 @@
 // Up/down counter with variable delta
 
 module cc_delta_counter #(
-    parameter int unsigned WIDTH = 4,
-    parameter bit STICKY_OVERFLOW = 1'b0
+    parameter int unsigned Width = 4,
+    parameter bit StickyOverflow = 1'b0
 )(
     input  logic             clk_i,
     input  logic             rst_ni,
@@ -20,13 +20,13 @@ module cc_delta_counter #(
     input  logic             en_i,    // enable the counter
     input  logic             load_i,  // load a new value
     input  logic             down_i,  // downcount, default is up
-    input  logic [WIDTH-1:0] delta_i,
-    input  logic [WIDTH-1:0] d_i,
-    output logic [WIDTH-1:0] q_o,
+    input  logic [Width-1:0] delta_i,
+    input  logic [Width-1:0] d_i,
+    output logic [Width-1:0] q_o,
     output logic             overflow_o
 );
-    logic [WIDTH:0] counter_q, counter_d;
-    if (STICKY_OVERFLOW) begin : gen_sticky_overflow
+    logic [Width:0] counter_q, counter_d;
+    if (StickyOverflow) begin : gen_sticky_overflow
         logic overflow_d, overflow_q;
 
         always_ff @(posedge clk_i or negedge rst_ni)
@@ -44,18 +44,18 @@ module cc_delta_counter #(
                 overflow_d = 1'b0;
             end else if (!overflow_q && en_i) begin
                 if (down_i) begin
-                    overflow_d = delta_i > counter_q[WIDTH-1:0];
+                    overflow_d = delta_i > counter_q[Width-1:0];
                 end else begin
-                    overflow_d = counter_q[WIDTH-1:0] > ({WIDTH{1'b1}} - delta_i);
+                    overflow_d = counter_q[Width-1:0] > ({Width{1'b1}} - delta_i);
                 end
             end
         end
         assign overflow_o = overflow_q;
     end else begin : gen_transient_overflow
         // counter overflowed if the MSB is set
-        assign overflow_o = counter_q[WIDTH];
+        assign overflow_o = counter_q[Width];
     end
-    assign q_o = counter_q[WIDTH-1:0];
+    assign q_o = counter_q[Width-1:0];
 
     always_comb begin
         counter_d = counter_q;

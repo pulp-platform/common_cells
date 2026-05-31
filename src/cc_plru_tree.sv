@@ -17,17 +17,17 @@
 `include "common_cells/assertions.svh"
 
 module cc_plru_tree #(
-  parameter int unsigned ENTRIES = 16
+  parameter int unsigned Entries = 16
 ) (
   input  logic               clk_i,
   input  logic               rst_ni,
-  input  logic [ENTRIES-1:0] used_i, // element i was used (one hot)
-  output logic [ENTRIES-1:0] plru_o  // element i is the least recently used (one hot)
+  input  logic [Entries-1:0] used_i, // element i was used (one hot)
+  output logic [Entries-1:0] plru_o  // element i is the least recently used (one hot)
 );
 
-    localparam int unsigned LogEntries = $clog2(ENTRIES);
+    localparam int unsigned LogEntries = $clog2(Entries);
 
-    logic [2*(ENTRIES-1)-1:0] plru_tree_q, plru_tree_d;
+    logic [2*(Entries-1)-1:0] plru_tree_q, plru_tree_d;
 
     always_comb begin : plru_replacement
         automatic int unsigned idx_base, shift;
@@ -59,7 +59,7 @@ module cc_plru_tree #(
         // used_i[0]: plru_tree_d[0, 1, 3] = {0, 0, 0};
         // default: begin /* No hit */ end
         // endcase
-        for (int unsigned i = 0; i < ENTRIES; i++) begin
+        for (int unsigned i = 0; i < Entries; i++) begin
             // we got a hit so update the pointer as it was least recently used
             if (used_i[i]) begin
                 // Set the nodes to the values we would expect
@@ -96,7 +96,7 @@ module cc_plru_tree #(
         // For each entry traverse the tree. If every tree-node matches,
         // the corresponding bit of the entry's index, this is
         // the next entry to replace.
-        for (int unsigned i = 0; i < ENTRIES; i += 1) begin
+        for (int unsigned i = 0; i < Entries; i += 1) begin
             for (int unsigned lvl = 0; lvl < LogEntries; lvl++) begin
                 idx_base = $unsigned((2**lvl)-1);
                 // lvl0 <=> MSB, lvl1 <=> MSB-1, ...
@@ -121,7 +121,7 @@ module cc_plru_tree #(
     end
 
 `ifndef COMMON_CELLS_ASSERTS_OFF
-    `ASSERT_INIT(entries_not_power_of_2, ENTRIES == 2**LogEntries, "Entries must be a power of two")
+    `ASSERT_INIT(entries_not_power_of_2, Entries == 2**LogEntries, "Entries must be a power of two")
 
     `ASSERT(output_onehot, $onehot0(plru_o), clk_i, !rst_ni,
             "More than one bit set in PLRU output.")

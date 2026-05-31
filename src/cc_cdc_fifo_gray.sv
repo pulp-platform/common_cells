@@ -48,7 +48,7 @@
 /// inefficient data synchronization.
 ///
 /// The FIFO size must be powers of two, which is why its depth is
-/// given as 2**LOG_DEPTH. LOG_DEPTH must be at least 1.
+/// given as 2**LogDepth. LogDepth must be at least 1.
 ///
 /// # Reset Behavior!!
 ///
@@ -102,13 +102,13 @@
 (* no_boundary_optimization *)
 module cc_cdc_fifo_gray #(
   /// The width of the default logic type.
-  parameter int unsigned WIDTH = 1,
+  parameter int unsigned Width = 1,
   /// The data type of the payload transported by the FIFO.
-  parameter type T = logic [WIDTH-1:0],
-  /// The FIFO's depth given as 2**LOG_DEPTH.
-  parameter int unsigned LOG_DEPTH = 3,
+  parameter type T = logic [Width-1:0],
+  /// The FIFO's depth given as 2**LogDepth.
+  parameter int unsigned LogDepth = 3,
   /// The number of synchronization registers to insert on the async pointers.
-  parameter int unsigned SYNC_STAGES = 2
+  parameter int unsigned SyncStages = 2
 ) (
   input  logic src_rst_ni,
   input  logic src_clk_i,
@@ -123,13 +123,13 @@ module cc_cdc_fifo_gray #(
   input  logic dst_ready_i
 );
 
-  T [2**LOG_DEPTH-1:0] async_data;
-  logic [LOG_DEPTH:0]  async_wptr;
-  logic [LOG_DEPTH:0]  async_rptr;
+  T [2**LogDepth-1:0] async_data;
+  logic [LogDepth:0]  async_wptr;
+  logic [LogDepth:0]  async_rptr;
 
   cc_cdc_fifo_gray_src #(
     .T         ( T         ),
-    .LOG_DEPTH ( LOG_DEPTH )
+    .LogDepth ( LogDepth )
   ) i_src (
     .src_rst_ni,
     .src_clk_i,
@@ -144,7 +144,7 @@ module cc_cdc_fifo_gray #(
 
   cc_cdc_fifo_gray_dst #(
     .T         ( T         ),
-    .LOG_DEPTH ( LOG_DEPTH )
+    .LogDepth ( LogDepth )
   ) i_dst (
     .dst_rst_ni,
     .dst_clk_i,
@@ -159,8 +159,8 @@ module cc_cdc_fifo_gray #(
 
   // Check the invariants.
   `ifndef COMMON_CELLS_ASSERTS_OFF
-  `ASSERT_INIT(log_depth_0, LOG_DEPTH > 0)
-  `ASSERT_INIT(sync_stages_gt_2, SYNC_STAGES >= 2)
+  `ASSERT_INIT(log_depth_0, LogDepth > 0)
+  `ASSERT_INIT(sync_stages_gt_2, SyncStages >= 2)
   `endif
 
 endmodule
@@ -170,8 +170,8 @@ endmodule
 (* no_boundary_optimization *)
 module cc_cdc_fifo_gray_src #(
   parameter type T = logic,
-  parameter int unsigned LOG_DEPTH = 3,
-  parameter int unsigned SYNC_STAGES = 2
+  parameter int unsigned LogDepth = 3,
+  parameter int unsigned SyncStages = 2
 )(
   input  logic src_rst_ni,
   input  logic src_clk_i,
@@ -179,15 +179,15 @@ module cc_cdc_fifo_gray_src #(
   input  logic src_valid_i,
   output logic src_ready_o,
 
-  output T [2**LOG_DEPTH-1:0] async_data_o,
-  output logic [LOG_DEPTH:0]  async_wptr_o,
-  input  logic [LOG_DEPTH:0]  async_rptr_i
+  output T [2**LogDepth-1:0] async_data_o,
+  output logic [LogDepth:0]  async_wptr_o,
+  input  logic [LogDepth:0]  async_rptr_i
 );
 
-  localparam int unsigned PtrWidth = LOG_DEPTH+1;
-  localparam logic [PtrWidth-1:0] PtrFull = (1 << LOG_DEPTH);
+  localparam int unsigned PtrWidth = LogDepth+1;
+  localparam logic [PtrWidth-1:0] PtrFull = (1 << LogDepth);
 
-  T [2**LOG_DEPTH-1:0] data_q, data_d;
+  T [2**LogDepth-1:0] data_q, data_d;
   logic [PtrWidth-1:0] wptr_q, wptr_d, wptr_bin, wptr_next, rptr, rptr_bin;
 
   // Data FIFO.
@@ -195,13 +195,13 @@ module cc_cdc_fifo_gray_src #(
 
   always_comb begin
     data_d                          = data_q;
-    data_d[wptr_bin[LOG_DEPTH-1:0]] = src_data_i;
+    data_d[wptr_bin[LogDepth-1:0]] = src_data_i;
   end
   `FFL(data_q, data_d, src_valid_i & src_ready_o, '0, src_clk_i, src_rst_ni)
 
   // Read pointer.
   for (genvar i = 0; i < PtrWidth; i++) begin : gen_sync
-    cc_sync #(.STAGES(SYNC_STAGES)) i_sync (
+    cc_sync #(.Stages(SyncStages)) i_sync (
       .clk_i    ( src_clk_i       ),
       .rst_ni   ( src_rst_ni      ),
       .serial_i ( async_rptr_i[i] ),
@@ -230,8 +230,8 @@ endmodule
 (* no_boundary_optimization *)
 module cc_cdc_fifo_gray_dst #(
   parameter type T = logic,
-  parameter int unsigned LOG_DEPTH = 3,
-  parameter int unsigned SYNC_STAGES = 2
+  parameter int unsigned LogDepth = 3,
+  parameter int unsigned SyncStages = 2
 )(
   input  logic dst_rst_ni,
   input  logic dst_clk_i,
@@ -239,19 +239,19 @@ module cc_cdc_fifo_gray_dst #(
   output logic dst_valid_o,
   input  logic dst_ready_i,
 
-  input  T [2**LOG_DEPTH-1:0] async_data_i,
-  input  logic [LOG_DEPTH:0]  async_wptr_i,
-  output logic [LOG_DEPTH:0]  async_rptr_o
+  input  T [2**LogDepth-1:0] async_data_i,
+  input  logic [LogDepth:0]  async_wptr_i,
+  output logic [LogDepth:0]  async_rptr_o
 );
 
-  localparam int unsigned PtrWidth = LOG_DEPTH+1;
+  localparam int unsigned PtrWidth = LogDepth+1;
   localparam logic [PtrWidth-1:0] PtrEmpty = '0;
 
   T dst_data;
   logic [PtrWidth-1:0] rptr_q, rptr_d, rptr_bin, rptr_bin_d, rptr_next, wptr, wptr_bin;
   logic dst_valid, dst_ready;
   // Data selector and register.
-  assign dst_data = async_data_i[rptr_bin[LOG_DEPTH-1:0]];
+  assign dst_data = async_data_i[rptr_bin[LogDepth-1:0]];
 
   // Read pointer.
   assign rptr_next = rptr_bin+1;
@@ -262,7 +262,7 @@ module cc_cdc_fifo_gray_dst #(
 
   // Write pointer.
   for (genvar i = 0; i < PtrWidth; i++) begin : gen_sync
-    cc_sync #(.STAGES(SYNC_STAGES)) i_sync (
+    cc_sync #(.Stages(SyncStages)) i_sync (
       .clk_i    ( dst_clk_i       ),
       .rst_ni   ( dst_rst_ni      ),
       .serial_i ( async_wptr_i[i] ),

@@ -23,12 +23,12 @@
 //
 // Parameters:
 //
-// DIV_VALUE: The integer value by which the clock shall be divided. Must be
+// DivValue: The integer value by which the clock shall be divided. Must be
 // non-zero integer smaller than 2^32-1.
 //
-// ENABLE_CLOCK_IN_RESET: If 1'b1, the clock gate will be enabled during reset
+// EnableClockInReset: If 1'b1, the clock gate will be enabled during reset
 // which allows the cc_clk_int_div instance to bypass the clock during reset, IFF
-// the DEFAULT_DIV_VALUE is 1. For all other DEFAULT_DIV_VALUES, the output
+// the DefaultDivValue is 1. For all other DefaultDivValues, the output
 // clock will not be available until rst_ni is deasserted!
 //
 // IMPORTANT!!!
@@ -58,8 +58,8 @@
 
 
 module cc_clk_int_div_static #(
-  parameter int unsigned DIV_VALUE = 1,
-  parameter bit ENABLE_CLOCK_IN_RESET = 1'b1
+  parameter int unsigned DivValue = 1,
+  parameter bit EnableClockInReset = 1'b1
 ) (
   input logic  clk_i,
   input logic  rst_ni,
@@ -67,19 +67,19 @@ module cc_clk_int_div_static #(
   input logic  test_mode_en_i,
   output logic clk_o
 );
-  if (DIV_VALUE == 0) begin : gen_elab_error
-    $error("DIV_VALUE must be strictly larger than 0.");
+  if (DivValue == 0) begin : gen_elab_error
+    $error("DivValue must be strictly larger than 0.");
   end
 
-  localparam int unsigned DivValueWidth = $clog2(DIV_VALUE+1);
+  localparam int unsigned DivValueWidth = $clog2(DivValue+1);
 
   logic [DivValueWidth-1:0] div_value;
-  assign div_value = DIV_VALUE;
+  assign div_value = DivValue;
 
   cc_clk_int_div #(
-    .DIV_VALUE_WIDTH       ( DivValueWidth         ),
-    .DEFAULT_DIV_VALUE     ( DIV_VALUE             ),
-    .ENABLE_CLOCK_IN_RESET ( ENABLE_CLOCK_IN_RESET )
+    .DivValueWidth      ( DivValueWidth      ),
+    .DefaultDivValue    ( DivValue           ),
+    .EnableClockInReset ( EnableClockInReset )
   ) i_clk_int_div (
     .clk_i,
     .rst_ni,

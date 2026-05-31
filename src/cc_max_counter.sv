@@ -11,7 +11,7 @@
 // Up/down counter that tracks its maximum value
 
 module cc_max_counter #(
-    parameter int unsigned WIDTH = 4
+    parameter int unsigned Width = 4
 ) (
     input  logic             clk_i,
     input  logic             rst_ni,
@@ -20,19 +20,19 @@ module cc_max_counter #(
     input  logic             en_i,          // enable the counter
     input  logic             load_i,        // load a new value
     input  logic             down_i,        // downcount, default is up
-    input  logic [WIDTH-1:0] delta_i,       // counter delta
-    input  logic [WIDTH-1:0] d_i,
-    output logic [WIDTH-1:0] q_o,
-    output logic [WIDTH-1:0] max_o,
+    input  logic [Width-1:0] delta_i,       // counter delta
+    input  logic [Width-1:0] d_i,
+    output logic [Width-1:0] q_o,
+    output logic [Width-1:0] max_o,
     output logic             overflow_o,
     output logic             overflow_max_o
 );
-    logic [WIDTH-1:0] max_d, max_q;
+    logic [Width-1:0] max_d, max_q;
     logic overflow_max_d, overflow_max_q;
 
     cc_delta_counter #(
-        .WIDTH           (WIDTH),
-        .STICKY_OVERFLOW (1'b1)
+        .Width          (Width),
+        .StickyOverflow (1'b1)
     ) i_counter (
         .clk_i,
         .rst_ni,

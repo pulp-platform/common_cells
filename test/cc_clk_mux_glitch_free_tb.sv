@@ -110,7 +110,7 @@ module cc_clk_mux_glitch_free_tb;
   end // block: check_clock
 
   cc_clk_mux_glitch_free #(
-    .NUM_INPUTS(NUM_INPUTS)
+    .NumInputs(NUM_INPUTS)
   ) i_dut (
     .clks_i       ( s_clocks       ),
     .test_clk_i   ( 1'b0           ),

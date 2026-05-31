@@ -13,12 +13,12 @@
 `include "common_cells/assertions.svh"
 
 module cc_fifo #(
-    parameter bit          FALL_THROUGH = 1'b0, // fifo is in fall-through mode
-    parameter int unsigned DATA_WIDTH   = 32,   // default data width if the fifo is of type logic
-    parameter int unsigned DEPTH        = 8,    // depth can be arbitrary from 0 to 2**32
-    parameter type dtype                = logic [DATA_WIDTH-1:0],
+    parameter bit          FallThrough = 1'b0, // fifo is in fall-through mode
+    parameter int unsigned DataWidth   = 32,   // default data width if the fifo is of type logic
+    parameter int unsigned Depth       = 8,    // depth can be arbitrary from 0 to 2**32
+    parameter type dtype               = logic [DataWidth-1:0],
     // DO NOT OVERWRITE THIS PARAMETER
-    localparam int unsigned ADDR_DEPTH   = (DEPTH > 1) ? $clog2(DEPTH) : 1
+    localparam int unsigned AddrDepth = (Depth > 1) ? $clog2(Depth) : 1
 )(
     input  logic  clk_i,            // Clock
     input  logic  rst_ni,           // Asynchronous reset active low
@@ -26,7 +26,7 @@ module cc_fifo #(
     // status flags
     output logic  full_o,           // queue is full
     output logic  empty_o,          // queue is empty
-    output logic  [ADDR_DEPTH-1:0] usage_o,  // fill pointer
+    output logic  [AddrDepth-1:0] usage_o,  // fill pointer
     // as long as the queue is not full we can push new data
     input  dtype  data_i,           // data to push into the queue
     input  logic  push_i,           // data is valid and can be pushed to the queue
@@ -36,25 +36,25 @@ module cc_fifo #(
 );
     // local parameter
     // FIFO depth - handle the case of pass-through, synthesizer will do constant propagation
-    localparam int unsigned FifoDepth = (DEPTH > 0) ? DEPTH : 1;
+    localparam int unsigned FifoDepth = (Depth > 0) ? Depth : 1;
     // clock gating control
     logic gate_clock;
     // pointer to the read and write section of the queue
-    logic [ADDR_DEPTH - 1:0] read_pointer_n, read_pointer_q, write_pointer_n, write_pointer_q;
+    logic [AddrDepth - 1:0] read_pointer_n, read_pointer_q, write_pointer_n, write_pointer_q;
     // keep a counter to keep track of the current queue status
     // this integer will be truncated by the synthesis tool
-    logic [ADDR_DEPTH:0] status_cnt_n, status_cnt_q;
+    logic [AddrDepth:0] status_cnt_n, status_cnt_q;
     // actual memory
     dtype [FifoDepth - 1:0] mem_n, mem_q;
 
-    assign usage_o = status_cnt_q[ADDR_DEPTH-1:0];
+    assign usage_o = status_cnt_q[AddrDepth-1:0];
 
-    if (DEPTH == 0) begin : gen_pass_through
+    if (Depth == 0) begin : gen_pass_through
         assign empty_o     = ~push_i;
         assign full_o      = ~pop_i;
     end else begin : gen_fifo
-        assign full_o       = (status_cnt_q == FifoDepth[ADDR_DEPTH:0]);
-        assign empty_o      = (status_cnt_q == 0) & ~(FALL_THROUGH & push_i);
+        assign full_o       = (status_cnt_q == FifoDepth[AddrDepth:0]);
+        assign empty_o      = (status_cnt_q == 0) & ~(FallThrough & push_i);
     end
     // status flags
 
@@ -64,7 +64,7 @@ module cc_fifo #(
         read_pointer_n  = read_pointer_q;
         write_pointer_n = write_pointer_q;
         status_cnt_n    = status_cnt_q;
-        data_o          = (DEPTH == 0) ? data_i : mem_q[read_pointer_q];
+        data_o          = (Depth == 0) ? data_i : mem_q[read_pointer_q];
         mem_n           = mem_q;
         gate_clock      = 1'b1;
 
@@ -75,8 +75,8 @@ module cc_fifo #(
             // un-gate the clock, we want to write something
             gate_clock = 1'b0;
             // increment the write counter
-            // this is dead code when DEPTH is a power of two
-            if (write_pointer_q == FifoDepth[ADDR_DEPTH-1:0] - 1)
+            // this is dead code when Depth is a power of two
+            if (write_pointer_q == FifoDepth[AddrDepth-1:0] - 1)
                 write_pointer_n = '0;
             else
                 write_pointer_n = write_pointer_q + 1;
@@ -87,8 +87,8 @@ module cc_fifo #(
         if (pop_i && ~empty_o) begin
             // read from the queue is a default assignment
             // but increment the read pointer...
-            // this is dead code when DEPTH is a power of two
-            if (read_pointer_n == FifoDepth[ADDR_DEPTH-1:0] - 1)
+            // this is dead code when Depth is a power of two
+            if (read_pointer_n == FifoDepth[AddrDepth-1:0] - 1)
                 read_pointer_n = '0;
             else
                 read_pointer_n = read_pointer_q + 1;
@@ -101,7 +101,7 @@ module cc_fifo #(
             status_cnt_n   = status_cnt_q;
 
         // FIFO is in pass through mode -> do not change the pointers
-        if (FALL_THROUGH && (status_cnt_q == 0) && push_i) begin
+        if (FallThrough && (status_cnt_q == 0) && push_i) begin
             data_o = data_i;
             if (pop_i) begin
                 status_cnt_n = status_cnt_q;
@@ -139,7 +139,7 @@ module cc_fifo #(
     end
 
 `ifndef COMMON_CELLS_ASSERTS_OFF
-    `ASSERT_INIT(depth_0, DEPTH > 0, "DEPTH must be greater than 0.")
+    `ASSERT_INIT(depth_0, Depth > 0, "Depth must be greater than 0.")
 
     `ASSERT(full_write, full_o |-> ~push_i, clk_i, !rst_ni,
             "Trying to push new data although the FIFO is full.")

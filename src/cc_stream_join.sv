@@ -16,12 +16,12 @@
 /// all inputs are valid.  The data channel flows outside of this module.
 module cc_stream_join #(
   /// Number of input streams
-  parameter int unsigned N_INP = 32'd1 // Synopsys DC requires a default value for parameters.
+  parameter int unsigned NumInp = 32'd1 // Synopsys DC requires a default value for parameters.
 ) (
   /// Input streams valid handshakes
-  input  logic  [N_INP-1:0] inp_valid_i,
+  input  logic [NumInp-1:0] inp_valid_i,
   /// Input streams ready handshakes
-  output logic  [N_INP-1:0] inp_ready_o,
+  output logic [NumInp-1:0] inp_ready_o,
   /// Output stream valid handshake
   output logic              oup_valid_o,
   /// Output stream ready handshake
@@ -29,11 +29,11 @@ module cc_stream_join #(
 );
 
   cc_stream_join_dynamic #(
-    .N_INP(N_INP)
+    .NumInp(NumInp)
   ) i_stream_join_dynamic (
     .inp_valid_i(inp_valid_i),
     .inp_ready_o(inp_ready_o),
-    .sel_i      ({N_INP{1'b1}}),
+    .sel_i      ({NumInp{1'b1}}),
     .oup_valid_o(oup_valid_o),
     .oup_ready_i(oup_ready_i)
   );

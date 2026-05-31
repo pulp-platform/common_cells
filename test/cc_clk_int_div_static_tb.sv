@@ -49,8 +49,8 @@ module cc_clk_int_div_static_tb;
 
   for (genvar i = 1; i < MaxClkDiv; i++) begin :gen_clk_divs
     cc_clk_int_div_static #(
-      .DIV_VALUE(i),
-      .ENABLE_CLOCK_IN_RESET(1'b1)
+      .DivValue(i),
+      .EnableClockInReset(1'b1)
     ) i_dut(
       .clk_i          ( clk          ),
       .rst_ni         ( rstn         ),
