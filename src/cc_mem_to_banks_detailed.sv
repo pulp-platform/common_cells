@@ -135,7 +135,7 @@ module cc_mem_to_banks_detailed #(
       .FallThrough ( 1'b1         ),
       .DataWidth   ( $bits(req_t) ),
       .Depth       ( FifoDepth    ),
-      .T           ( req_t        )
+      .data_t      ( req_t        )
     ) i_ft_reg (
       .clk_i,
       .rst_ni,

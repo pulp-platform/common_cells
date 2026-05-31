@@ -14,26 +14,26 @@
 /// This register does not cut combinatorial paths on all control signals; if you need a complete
 /// cut, use the `cc_spill_register`.
 module cc_stream_register #(
-    parameter type T = logic  // Vivado requires a default value for type parameters.
+    parameter type data_t = logic  // Vivado requires a default value for type parameters.
 ) (
-    input  logic    clk_i,          // Clock
-    input  logic    rst_ni,         // Asynchronous active-low reset
-    input  logic    clr_i,          // Synchronous clear
+    input  logic  clk_i,          // Clock
+    input  logic  rst_ni,         // Asynchronous active-low reset
+    input  logic  clr_i,          // Synchronous clear
     // Input port
-    input  logic    valid_i,
-    output logic    ready_o,
-    input  T        data_i,
+    input  logic  valid_i,
+    output logic  ready_o,
+    input  data_t data_i,
     // Output port
-    output logic    valid_o,
-    input  logic    ready_i,
-    output T        data_o
+    output logic  valid_o,
+    input  logic  ready_i,
+    output data_t data_o
 );
 
     logic reg_ena;
     assign ready_o = ready_i | ~valid_o;
     assign reg_ena = valid_i & ready_o;
     // Load-enable FFs with synch clear
-    `FFLARNC(valid_o, valid_i, ready_o, clr_i, 1'b0  , clk_i, rst_ni)
-    `FFLARNC(data_o,   data_i, reg_ena, clr_i, T'('0), clk_i, rst_ni)
+    `FFLARNC(valid_o, valid_i, ready_o, clr_i, 1'b0, clk_i, rst_ni)
+    `FFLARNC(data_o, data_i, reg_ena, clr_i, data_t'('0), clk_i, rst_ni)
 
 endmodule

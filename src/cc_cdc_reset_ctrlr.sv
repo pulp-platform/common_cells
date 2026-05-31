@@ -387,7 +387,7 @@ module cc_cdc_reset_ctrlr_half
   // introduce spurios transactions.
 
   cc_cdc_4phase_src #(
-    .T(cdc_clear_seq_phase_e),
+    .data_t(cdc_clear_seq_phase_e),
     .SyncStages(2),
     .Decoupled(0), // Important! The CDC must not be in decoupled mode.
                    // Otherwise we will proceed to the next state without
@@ -419,7 +419,7 @@ module cc_cdc_reset_ctrlr_half
   logic receiver_clear_out;
 
   cc_cdc_4phase_dst #(
-    .T(cdc_clear_seq_phase_e),
+    .data_t(cdc_clear_seq_phase_e),
     .SyncStages(2),
     .Decoupled(0) // Important! The CDC must not be in decoupled mode. Otherwise
                   // we will proceed to the next state without waiting for the

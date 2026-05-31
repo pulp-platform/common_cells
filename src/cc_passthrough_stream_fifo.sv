@@ -20,7 +20,7 @@ module cc_passthrough_stream_fifo #(
     /// If the FIFO is full, allow reading and writing in the same cycle
     parameter bit          SameCycleRW = 1'b1,
     /// Type of the FIFO
-    parameter type         type_t      = logic
+    parameter type         data_t      = logic
 ) (
     /// Clock
     input  logic                 clk_i,
@@ -29,13 +29,13 @@ module cc_passthrough_stream_fifo #(
     /// Fifo flush
     input  logic                 flush_i,
     /// data to push into the FIFO
-    input  type_t                data_i,
+    input  data_t                data_i,
     /// input data valid
     input  logic                 valid_i,
     /// FIFO is not full
     output logic                 ready_o,
     /// output data
-    output type_t                data_o,
+    output data_t                data_o,
     /// FIFO is not empty
     output logic                 valid_o,
     /// pop head from FIFO
@@ -50,7 +50,7 @@ module cc_passthrough_stream_fifo #(
     logic [PointerWidth-1:0] write_ptr_d, write_ptr_q;
 
     // Data
-    type_t [Depth-1 :0] data_d, data_q;
+    data_t [Depth-1:0] data_d, data_q;
 
     // Enable storage
     logic load_data;

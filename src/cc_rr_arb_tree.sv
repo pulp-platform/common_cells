@@ -49,10 +49,10 @@
 module cc_rr_arb_tree #(
   /// Number of inputs to be arbitrated.
   parameter int unsigned NumIn      = 64,
-  /// Data width of the payload in bits. Not needed if `DataType` is overwritten.
+  /// Data width of the payload in bits. Not needed if `data_t` is overwritten.
   parameter int unsigned DataWidth  = 32,
   /// Data type of the payload, can be overwritten with custom type. Only use of `DataWidth`.
-  parameter type         DataType   = logic [DataWidth-1:0],
+  parameter type         data_t     = logic [DataWidth-1:0],
   /// The `ExtPrio` option allows to override the internal round robin counter via the
   /// `rr_i` signal. This can be useful in case multiple arbiters need to have
   /// rotating priorities that are operating in lock-step. If static priority arbitration
@@ -100,13 +100,13 @@ module cc_rr_arb_tree #(
   output logic    [NumIn-1:0] gnt_o,
   /* verilator lint_on UNOPTFLAT */
   /// Input data for arbitration.
-  input  DataType [NumIn-1:0] data_i,
+  input  data_t   [NumIn-1:0] data_i,
   /// Output request is valid.
   output logic                req_o,
   /// Output request is granted.
   input  logic                gnt_i,
   /// Output data.
-  output DataType             data_o,
+  output data_t               data_o,
   /// Index from which input the data came from.
   output idx_t                idx_o
 );
@@ -123,7 +123,7 @@ module cc_rr_arb_tree #(
 
     /* verilator lint_off SPLITVAR */  // disable warning that is issued if bitwidth is 1
     idx_t    [2**NumLevels-2:0] index_nodes /* verilator split_var */; // propagates indices
-    DataType [2**NumLevels-2:0] data_nodes  /* verilator split_var */; // propagates data
+    data_t   [2**NumLevels-2:0] data_nodes  /* verilator split_var */; // propagates data
     logic    [2**NumLevels-2:0] gnt_nodes   /* verilator split_var */; // propagates gnt to masters
     logic    [2**NumLevels-2:0] req_nodes   /* verilator split_var */; // propagates reqs to slave
     /* verilator lint_on SPLITVAR */
@@ -274,7 +274,7 @@ module cc_rr_arb_tree #(
           if (unsigned'(l) * 2 > NumIn-1) begin : gen_out_of_range
             assign req_nodes[Idx0]   = 1'b0;
             assign index_nodes[Idx0] = idx_t'('0);
-            assign data_nodes[Idx0]  = DataType'('0);
+            assign data_nodes[Idx0]  = data_t'('0);
           end
         //////////////////////////////////////////////////////////////
         // general case for other levels within the tree

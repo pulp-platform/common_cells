@@ -50,7 +50,7 @@ module cc_cdc_fifo_clearable_tb;
   assert property (@(posedge dst_clk_i) dst_valid_o |-> !$isunknown(dst_data_o));
 
   // Instantiate the design under test.
-  cc_cdc_fifo_gray_clearable #(.T(logic [31:0]), .LogDepth(DEPTH)) i_dut (.*);
+  cc_cdc_fifo_gray_clearable #(.data_t(logic [31:0]), .LogDepth(DEPTH)) i_dut (.*);
 
   typedef struct {
     int          data;

@@ -11,7 +11,7 @@ module cc_stream_fifo_optimal_wrap #(
     /// Depth can be arbitrary from 2 to 2**32
     parameter int unsigned Depth = 32'd8,
     /// Type of the FIFO
-    parameter type type_t = logic,
+    parameter type data_t = logic,
     /// Print information when the simulation launches
     parameter bit PrintInfo = 1'b0,
     // DO NOT OVERWRITE THIS PARAMETER
@@ -22,11 +22,11 @@ module cc_stream_fifo_optimal_wrap #(
     input  logic                 flush_i,    // flush the fifo
     output logic [AddrDepth-1:0] usage_o,    // fill pointer
     // input interface
-    input  type_t                data_i,     // data to push into the fifo
+    input  data_t                data_i,     // data to push into the fifo
     input  logic                 valid_i,    // input data valid
     output logic                 ready_o,    // fifo is not full
     // output interface
-    output type_t                data_o,     // output data
+    output data_t                data_o,     // output data
     output logic                 valid_o,    // fifo is not empty
     input  logic                 ready_i     // pop head from fifo
 );
@@ -60,8 +60,8 @@ module cc_stream_fifo_optimal_wrap #(
 
         // spill register
         cc_spill_register_flushable #(
-            .T       ( type_t ),
-            .Bypass  ( 1'b0   )
+            .data_t ( data_t ),
+            .Bypass ( 1'b0   )
         ) i_spill_register_flushable (
             .clk_i,
             .rst_ni,
@@ -96,8 +96,8 @@ module cc_stream_fifo_optimal_wrap #(
 
         // stream fifo
         cc_stream_fifo #(
-            .Depth ( Depth  ),
-            .T     ( type_t )
+            .Depth  ( Depth  ),
+            .data_t ( data_t )
         ) i_stream_fifo (
             .clk_i,
             .rst_ni,

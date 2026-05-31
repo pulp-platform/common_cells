@@ -128,7 +128,7 @@ module cc_stream_xbar #(
 
     cc_rr_arb_tree #(
       .NumIn     ( NumInp    ),
-      .DataType  ( payload_t ),
+      .data_t    ( payload_t ),
       .ExtPrio   ( ExtPrio   ),
       .AxiVldRdy ( AxiVldRdy ),
       .LockIn    ( LockIn    )
@@ -149,7 +149,7 @@ module cc_stream_xbar #(
     spill_data_t spill;
 
     cc_spill_register #(
-      .T      ( spill_data_t ),
+      .data_t ( spill_data_t ),
       .Bypass ( !OutSpillReg )
     ) i_spill_register (
       .clk_i,
