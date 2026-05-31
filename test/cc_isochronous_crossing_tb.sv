@@ -153,7 +153,7 @@ module cc_isochronous_crossing_tb #(
 
   if (Dut == "spill_register") begin
     cc_isochronous_spill_register #(
-      .T (payload_t)
+      .data_t (payload_t)
     ) i_isochronous_spill_register (
       .src_clk_i (dut_in.clk_i),
       .src_rst_ni (src_rst_n),

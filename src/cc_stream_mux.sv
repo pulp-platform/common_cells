@@ -14,20 +14,20 @@
 /// handshaking.
 
 module cc_stream_mux #(
-  parameter type DATA_T = logic,  // Vivado requires a default value for type parameters.
-  parameter int unsigned NumInp = 1,    // Synopsys DC requires a default value for value parameters.
+  parameter type         data_t = logic, // Vivado requires a default value for type parameters.
+  parameter int unsigned NumInp = 1,     // Synopsys DC requires a default value for value parameters.
   /// Dependent parameters, DO NOT OVERRIDE!
   localparam int unsigned SelWidth = cc_pkg::idx_width(NumInp)
 ) (
-  input  DATA_T [NumInp-1:0]     inp_data_i,
-  input  logic  [NumInp-1:0]     inp_valid_i,
-  output logic  [NumInp-1:0]     inp_ready_o,
+  input  data_t [NumInp-1:0]   inp_data_i,
+  input  logic  [NumInp-1:0]   inp_valid_i,
+  output logic  [NumInp-1:0]   inp_ready_o,
 
   input  logic  [SelWidth-1:0] inp_sel_i,
 
-  output DATA_T                 oup_data_o,
-  output logic                  oup_valid_o,
-  input  logic                  oup_ready_i
+  output data_t                oup_data_o,
+  output logic                 oup_valid_o,
+  input  logic                 oup_ready_i
 );
 
   always_comb begin

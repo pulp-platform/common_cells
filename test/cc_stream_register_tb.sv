@@ -10,32 +10,32 @@
 
 /// Testbench for Stream Register
 module cc_stream_register_tb #(
-    parameter type T    = logic[7:0]
+    parameter type data_t = logic[7:0]
 );
 
-    logic   clk,
-            rst_n,
-            clr,
-            inp_valid, inp_ready,
-            oup_valid, oup_ready;
+    logic clk,
+          rst_n,
+          clr,
+          inp_valid, inp_ready,
+          oup_valid, oup_ready;
 
-    T       inp_data,
-            oup_data;
+    data_t inp_data,
+           oup_data;
 
     int unsigned nr_checks;
 
     cc_stream_register #(
-        .T  (T)
+        .data_t(data_t)
     ) dut (
-        .clk_i      (clk),
-        .rst_ni     (rst_n),
-        .clr_i      (clr),
-        .valid_i    (inp_valid),
-        .ready_o    (inp_ready),
-        .data_i     (inp_data),
-        .valid_o    (oup_valid),
-        .ready_i    (oup_ready),
-        .data_o     (oup_data)
+        .clk_i  (clk),
+        .rst_ni (rst_n),
+        .clr_i  (clr),
+        .valid_i(inp_valid),
+        .ready_o(inp_ready),
+        .data_i (inp_data),
+        .valid_o(oup_valid),
+        .ready_i(oup_ready),
+        .data_o (oup_data)
     );
 
     initial begin
@@ -133,7 +133,7 @@ module cc_stream_register_tb #(
     // Monitor && Checker
     // -------------------
     initial begin
-        automatic T data;
+        automatic data_t data;
         nr_checks = 0;
         forever begin
             @(pck)

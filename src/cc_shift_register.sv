@@ -14,18 +14,18 @@
 // Description: Simple shift register for arbitrary depth and types
 
 module cc_shift_register #(
-    parameter type dtype         = logic,
-    parameter int unsigned Depth = 1
+    parameter type         data_t = logic,
+    parameter int unsigned Depth  = 1
 )(
-    input  logic clk_i,    // Clock
-    input  logic rst_ni,   // Asynchronous reset active low
-    input  dtype d_i,
-    output dtype d_o
+    input  logic  clk_i,    // Clock
+    input  logic  rst_ni,   // Asynchronous reset active low
+    input  data_t d_i,
+    output data_t d_o
 );
 
     cc_shift_register_gated #(
         .Depth(Depth),
-        .dtype(dtype)
+        .data_t(data_t)
     ) i_shift_register_gated (
         .clk_i  (clk_i),
         .rst_ni (rst_ni),

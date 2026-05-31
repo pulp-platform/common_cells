@@ -41,7 +41,7 @@ module cc_passthrough_stream_fifo_tb #(
     // DUT
     cc_passthrough_stream_fifo #(
         .Depth       ( Depth       ),
-        .type_t      ( data_t      ),
+        .data_t      ( data_t      ),
         .PrintInfo   ( 1'b1        ),
         .SameCycleRW ( SameCycleRW )
     ) i_passthrough_stream_fifo (

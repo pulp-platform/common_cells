@@ -46,21 +46,21 @@
 /// delay path needs to be specified from fifo_data_q to dst_data_o.
 module cc_cdc_fifo_2phase #(
   /// The data type of the payload transported by the FIFO.
-  parameter type T = logic,
+  parameter type data_t = logic,
   /// The FIFO's depth given as 2**LogDepth.
   parameter int unsigned LogDepth = 3
 )(
-  input  logic src_rst_ni,
-  input  logic src_clk_i,
-  input  T     src_data_i,
-  input  logic src_valid_i,
-  output logic src_ready_o,
+  input  logic  src_rst_ni,
+  input  logic  src_clk_i,
+  input  data_t src_data_i,
+  input  logic  src_valid_i,
+  output logic  src_ready_o,
 
-  input  logic dst_rst_ni,
-  input  logic dst_clk_i,
-  output T     dst_data_o,
-  output logic dst_valid_o,
-  input  logic dst_ready_i
+  input  logic  dst_rst_ni,
+  input  logic  dst_clk_i,
+  output data_t dst_data_o,
+  output logic  dst_valid_o,
+  input  logic  dst_ready_i
 );
 
   // Check the invariants.
@@ -82,15 +82,15 @@ module cc_cdc_fifo_2phase #(
   // - read: fifo_ridx, fifo_rdata
   index_t fifo_widx, fifo_ridx;
   logic fifo_write;
-  T fifo_wdata, fifo_rdata;
-  T fifo_data_q [2**LogDepth];
+  data_t fifo_wdata, fifo_rdata;
+  data_t fifo_data_q [2**LogDepth];
 
   assign fifo_rdata = fifo_data_q[fifo_ridx];
 
   for (genvar i = 0; i < 2**LogDepth; i++) begin : g_word
     always_ff @(posedge src_clk_i, negedge src_rst_ni) begin
       if (!src_rst_ni)
-        fifo_data_q[i] <= T'('0);
+        fifo_data_q[i] <= data_t'('0);
       else if (fifo_write && fifo_widx == i)
         fifo_data_q[i] <= fifo_wdata;
     end
@@ -121,7 +121,7 @@ module cc_cdc_fifo_2phase #(
   assign dst_valid_o = ((dst_rptr_q ^ dst_wptr) != PtrEmpty);
 
   // Transport the read and write pointers across the clock domain boundary.
-  cc_cdc_2phase #( .T(pointer_t) ) i_cdc_wptr (
+  cc_cdc_2phase #( .data_t(pointer_t) ) i_cdc_wptr (
     .src_rst_ni  ( src_rst_ni ),
     .src_clk_i   ( src_clk_i  ),
     .src_data_i  ( src_wptr_q ),
@@ -134,7 +134,7 @@ module cc_cdc_fifo_2phase #(
     .dst_ready_i ( 1'b1       )
   );
 
-  cc_cdc_2phase #( .T(pointer_t) ) i_cdc_rptr (
+  cc_cdc_2phase #( .data_t(pointer_t) ) i_cdc_rptr (
     .src_rst_ni  ( dst_rst_ni ),
     .src_clk_i   ( dst_clk_i  ),
     .src_data_i  ( dst_rptr_q ),

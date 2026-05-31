@@ -17,7 +17,7 @@ module cc_stream_fifo #(
     parameter int unsigned DataWidth   = 32,
     /// Depth can be arbitrary from 0 to 2**32
     parameter int unsigned Depth       = 8,
-    parameter type         T            = logic [DataWidth-1:0],
+    parameter type         data_t      = logic [DataWidth-1:0],
     // DO NOT OVERWRITE THIS PARAMETER
     localparam int unsigned AddrDepth  = (Depth > 1) ? $clog2(Depth) : 1
 ) (
@@ -26,11 +26,11 @@ module cc_stream_fifo #(
     input  logic                 flush_i,    // flush the fifo
     output logic [AddrDepth-1:0] usage_o,    // fill pointer
     // input interface
-    input  T                     data_i,     // data to push into the fifo
+    input  data_t                data_i,     // data to push into the fifo
     input  logic                 valid_i,    // input data valid
     output logic                 ready_o,    // fifo is not full
     // output interface
-    output T                     data_o,     // output data
+    output data_t                data_o,     // output data
     output logic                 valid_o,    // fifo is not empty
     input  logic                 ready_i     // pop head from fifo
 );
@@ -47,18 +47,18 @@ module cc_stream_fifo #(
         .FallThrough(FallThrough),
         .DataWidth  (DataWidth),
         .Depth      (Depth),
-        .dtype(T)
+        .data_t     (data_t)
     ) fifo_i (
         .clk_i,
         .rst_ni,
         .flush_i,
-        .full_o     (full),
-        .empty_o    (empty),
+        .full_o (full),
+        .empty_o(empty),
         .usage_o,
         .data_i,
-        .push_i     (push),
+        .push_i (push),
         .data_o,
-        .pop_i      (pop)
+        .pop_i  (pop)
     );
 
 endmodule

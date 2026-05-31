@@ -14,36 +14,36 @@
 // arbitration scheme is fair round-robin tree, see `cc_rr_arb_tree` for details.
 
 module cc_stream_arbiter #(
-    parameter type      DATA_T = logic,   // Vivado requires a default value for type parameters.
+    parameter type         data_t = logic, // Vivado requires a default value for type parameters.
     parameter int unsigned NumInp = 1,     // Synopsys DC requires a default value for parameters.
     parameter           ARBITER = "rr"    // "rr" or "prio"
 ) (
-    input  logic              clk_i,
-    input  logic              rst_ni,
+    input  logic               clk_i,
+    input  logic               rst_ni,
 
-    input  DATA_T [NumInp-1:0] inp_data_i,
+    input  data_t [NumInp-1:0] inp_data_i,
     input  logic  [NumInp-1:0] inp_valid_i,
     output logic  [NumInp-1:0] inp_ready_o,
 
-    output DATA_T             oup_data_o,
-    output logic              oup_valid_o,
-    input  logic              oup_ready_i
+    output data_t              oup_data_o,
+    output logic               oup_valid_o,
+    input  logic               oup_ready_i
 );
 
   cc_stream_arbiter_flushable #(
-    .DATA_T   (DATA_T),
-    .NumInp   (NumInp),
-    .ARBITER  (ARBITER)
+    .data_t (data_t),
+    .NumInp (NumInp),
+    .ARBITER(ARBITER)
   ) i_arb (
-    .clk_i        (clk_i),
-    .rst_ni       (rst_ni),
-    .flush_i      (1'b0),
-    .inp_data_i   (inp_data_i),
-    .inp_valid_i  (inp_valid_i),
-    .inp_ready_o  (inp_ready_o),
-    .oup_data_o   (oup_data_o),
-    .oup_valid_o  (oup_valid_o),
-    .oup_ready_i  (oup_ready_i)
+    .clk_i      (clk_i),
+    .rst_ni     (rst_ni),
+    .flush_i    (1'b0),
+    .inp_data_i (inp_data_i),
+    .inp_valid_i(inp_valid_i),
+    .inp_ready_o(inp_ready_o),
+    .oup_data_o (oup_data_o),
+    .oup_valid_o(oup_valid_o),
+    .oup_ready_i(oup_ready_i)
   );
 
 endmodule

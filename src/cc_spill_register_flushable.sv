@@ -16,18 +16,18 @@
 /// A register with handshakes that completely cuts any combinational paths
 /// between the input and output. This spill register can be flushed.
 module cc_spill_register_flushable #(
-  parameter type T           = logic,
-  parameter bit  Bypass      = 1'b0   // make this spill register transparent
+  parameter type data_t = logic,
+  parameter bit  Bypass = 1'b0   // make this spill register transparent
 ) (
-  input  logic clk_i   ,
-  input  logic rst_ni  ,
-  input  logic valid_i ,
-  input  logic flush_i ,
-  output logic ready_o ,
-  input  T     data_i  ,
-  output logic valid_o ,
-  input  logic ready_i ,
-  output T     data_o
+  input  logic  clk_i   ,
+  input  logic  rst_ni  ,
+  input  logic  valid_i ,
+  input  logic  flush_i ,
+  output logic  ready_o ,
+  input  data_t data_i  ,
+  output logic  valid_o ,
+  input  logic  ready_i ,
+  output data_t data_o
 );
 
   if (Bypass) begin : gen_bypass
@@ -36,13 +36,13 @@ module cc_spill_register_flushable #(
     assign data_o  = data_i;
   end else begin : gen_spill_reg
     // The A register.
-    T a_data_q;
+    data_t a_data_q;
     logic a_full_q;
     logic a_fill, a_drain;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : ps_a_data
       if (!rst_ni)
-        a_data_q <= T'('0);
+        a_data_q <= data_t'('0);
       else if (a_fill)
         a_data_q <= data_i;
     end
@@ -55,13 +55,13 @@ module cc_spill_register_flushable #(
     end
 
     // The B register.
-    T b_data_q;
+    data_t b_data_q;
     logic b_full_q;
     logic b_fill, b_drain;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : ps_b_data
       if (!rst_ni)
-        b_data_q <= T'('0);
+        b_data_q <= data_t'('0);
       else if (b_fill)
         b_data_q <= a_data_q;
     end

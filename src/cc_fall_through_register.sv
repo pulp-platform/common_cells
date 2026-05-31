@@ -14,39 +14,39 @@
 // In case the module at its output is ready to accept data within the same clock cycle, they are forwarded.
 // Use this module to get a 'default ready' behavior towards the input.
 module cc_fall_through_register #(
-    parameter type T = logic  // Vivado requires a default value for type parameters.
+    parameter type data_t = logic // Vivado requires a default value for type parameters.
 ) (
-    input  logic    clk_i,          // Clock
-    input  logic    rst_ni,         // Asynchronous active-low reset
-    input  logic    clr_i,          // Synchronous clear
+    input  logic  clk_i,          // Clock
+    input  logic  rst_ni,         // Asynchronous active-low reset
+    input  logic  clr_i,          // Synchronous clear
     // Input port
-    input  logic    valid_i,
-    output logic    ready_o,
-    input  T        data_i,
+    input  logic  valid_i,
+    output logic  ready_o,
+    input  data_t data_i,
     // Output port
-    output logic    valid_o,
-    input  logic    ready_i,
-    output T        data_o
+    output logic  valid_o,
+    input  logic  ready_i,
+    output data_t data_o
 );
 
     logic   fifo_empty,
             fifo_full;
 
     cc_fifo #(
-        .FallThrough    (1'b1),
-        .Depth          (1),
-        .dtype          (T)
+        .FallThrough(1'b1),
+        .Depth      (1),
+        .data_t     (data_t)
     ) i_fifo (
-        .clk_i          (clk_i),
-        .rst_ni         (rst_ni),
-        .flush_i        (clr_i),
-        .full_o         (fifo_full),
-        .empty_o        (fifo_empty),
-        .usage_o        (),
-        .data_i         (data_i),
-        .push_i         (valid_i & ~fifo_full),
-        .data_o         (data_o),
-        .pop_i          (ready_i & ~fifo_empty)
+        .clk_i  (clk_i),
+        .rst_ni (rst_ni),
+        .flush_i(clr_i),
+        .full_o (fifo_full),
+        .empty_o(fifo_empty),
+        .usage_o(),
+        .data_i (data_i),
+        .push_i (valid_i & ~fifo_full),
+        .data_o (data_o),
+        .pop_i  (ready_i & ~fifo_empty)
     );
 
     assign ready_o = ~fifo_full;
