@@ -85,7 +85,7 @@ module cc_sub_per_hash #(
   // output assignment, take the bottom bits of the last round
   assign hash_o = xored[NoRounds-1][HashWidth-1:0];
   // for onehot run trough a decoder
-  assign hash_onehot_o = 1 << hash_o;
+  assign hash_onehot_o = 1'b1 << hash_o;
 
   // PRG is MLCG (multiplicative linear congruential generator)
   // Constant values the same as RtlUniform from Native API

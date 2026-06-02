@@ -21,11 +21,16 @@ module cc_addr_decode_napot #(
   parameter int unsigned NoRules   = 32'd1,
   /// Address type inside the rules and to decode.
   parameter type         addr_t    = logic,
+  /// The output index type `idx_t` can be specified either with the width `IdxWidth`
+  /// or directly with the type `idx_t`. By default, it will use the maximum index
+  /// `NoIndices` to calculate the required width.
+  parameter int unsigned IdxWidth  = cc_pkg::idx_width(NoIndices),
+  parameter type         idx_t     = logic [IdxWidth-1:0],
   /// Rule packed struct type.
   /// The NAPOT address decoder expects three fields in `rule_t`:
   ///
   /// typedef struct packed {
-  ///   int unsigned idx;
+  ///   idx_t        idx;
   ///   addr_t       base;
   ///   addr_t       mask;
   /// } rule_t;
@@ -33,15 +38,11 @@ module cc_addr_decode_napot #(
   ///  - `idx`:   index of the rule, has to be < `NoIndices`.
   ///  - `base`:  base address whose specified bits should match `addr_i`.
   ///  - `mask`:  set for bits which are to be checked to determine a match.
-  parameter type         rule_t    = logic,
-  /// Dependent parameter, do **not** overwite!
-  ///
-  /// Width of the `idx_o` output port.
-  localparam int unsigned IdxWidth  = cc_pkg::idx_width(NoIndices),
-  /// Dependent parameter, do **not** overwite!
-  ///
-  /// Type of the `idx_o` output port.
-  localparam type         idx_t     = logic [IdxWidth-1:0]
+  parameter type         rule_t    = struct packed {
+    idx_t        idx;
+    addr_t       base;
+    addr_t       mask;
+  }
 ) (
   /// Address to decode.
   input  addr_t               addr_i,
@@ -67,10 +68,18 @@ module cc_addr_decode_napot #(
 
   // Rename struct field names to those expected by `cc_addr_decode`
   typedef struct packed {
-    int unsigned  idx;
-    addr_t        start_addr;
-    addr_t        end_addr;
+    idx_t  idx;
+    addr_t start_addr;
+    addr_t end_addr;
   } rule_range_t;
+
+  rule_range_t [NoRules-1:0] range_addr_map;
+
+  for (genvar i = 0; i < NoRules; i++) begin : gen_rule_assign
+    assign range_addr_map[i].idx        = addr_map_i[i].idx;
+    assign range_addr_map[i].start_addr = addr_map_i[i].base;
+    assign range_addr_map[i].end_addr   = addr_map_i[i].mask;
+  end
 
   cc_addr_decode_dync #(
     .NoIndices ( NoIndices    ) ,
@@ -80,7 +89,7 @@ module cc_addr_decode_napot #(
     .Napot     ( 1            )
   ) i_addr_decode_dync (
     .addr_i,
-    .addr_map_i,
+    .addr_map_i ( range_addr_map ),
     .idx_o,
     .dec_valid_o,
     .dec_error_o,
