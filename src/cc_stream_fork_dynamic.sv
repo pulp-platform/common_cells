@@ -23,7 +23,7 @@
 /// input stream can just be applied at all output streams.
 module cc_stream_fork_dynamic #(
   /// Number of output streams
-  parameter int unsigned N_OUP = 32'd0 // Synopsys DC requires a default value for parameters.
+  parameter int unsigned N_OUP = 32'd1 // Synopsys DC requires a default value for parameters.
 ) (
   /// Clock
   input  logic             clk_i,

@@ -36,7 +36,7 @@ module cc_addr_decode #(
   /// Highest index which can happen in a rule.
   parameter int unsigned NoIndices = 32'd0,
   /// Total number of rules.
-  parameter int unsigned NoRules   = 32'd0,
+  parameter int unsigned NoRules   = 32'd1,
   /// Address type inside the rules and to decode.
   parameter type         addr_t    = logic,
   // Whether this is a NAPOT (base and mask) or regular range decoder

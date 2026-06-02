@@ -41,7 +41,7 @@ module cc_addr_decode_dync #(
   /// Highest index which can happen in a rule.
   parameter int unsigned NoIndices = 32'd0,
   /// Total number of rules.
-  parameter int unsigned NoRules   = 32'd0,
+  parameter int unsigned NoRules   = 32'd1,
   /// Address type inside the rules and to decode.
   parameter type         addr_t    = logic,
   /// Whether this is a NAPOT (base and mask) or regular range decoder
@@ -127,6 +127,7 @@ module cc_addr_decode_dync #(
 
   // Assumptions and assertions
   `ifndef COMMON_CELLS_ASSERTS_OFF
+  `ifndef SYNTHESIS
   initial begin : proc_check_parameters
     `ASSUME_I(addr_width_mismatch, $bits(addr_i) == $bits(addr_map_i[0].start_addr),
              $sformatf("Input address has %d bits and address map has %d bits.",
@@ -145,7 +146,6 @@ module cc_addr_decode_dync #(
   // check_start:        Enforces a smaller start than end address.
   // check_idx:          Enforces a valid index in the rule.
   // check_overlap:      Warns if there are overlapping address regions.
-  `ifndef SYNTHESIS
   always_comb begin : proc_check_addr_map
     if (!$isunknown(addr_map_i) && ~config_ongoing_i) begin
       for (int unsigned i = 0; i < NoRules; i++) begin
