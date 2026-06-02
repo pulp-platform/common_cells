@@ -34,7 +34,7 @@ vcs-elab:
 sg-lint:
   timeout: 30min
   script:
-    - make sg-lint
+    - make sg-lint -j 4
 
 .test-tpl:
   needs:
