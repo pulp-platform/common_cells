@@ -401,8 +401,7 @@ module cc_id_queue #(
         always_ff @(posedge clk_i, negedge rst_ni) begin
             if (!rst_ni) begin
                 // Set free bit of linked data entries, all other bits are don't care.
-                linked_data_q[i]      <= '0;
-                linked_data_q[i].free <= 1'b1;
+                linked_data_q[i] <= '{free: 1'b1, default: '0};
             end else begin
                 linked_data_q[i]    <= linked_data_d[i];
             end
