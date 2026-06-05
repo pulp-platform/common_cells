@@ -15,47 +15,59 @@ package cc_pkg;
   /// Ceiled Division of Two Natural Numbers
   ///
   /// Returns the quotient of two natural numbers, rounded towards plus infinity.
-  function automatic integer ceil_div (input longint dividend, input longint divisor);
-    automatic longint remainder;
+  function automatic longint unsigned ceil_div (
+    input longint unsigned dividend,
+    input longint unsigned divisor
+  );
+    automatic longint unsigned quotient = 0;
 
     `ifndef SYNTHESIS
     `ifndef COMMON_CELLS_ASSERTS_OFF
-    if (dividend < 0) begin
-      $fatal(1, "Dividend %0d is not a natural number!", dividend);
-    end
-
-    if (divisor < 0) begin
-      $fatal(1, "Divisor %0d is not a natural number!", divisor);
-    end
-
     if (divisor == 0) begin
       $fatal(1, "Division by zero!");
     end
     `endif
     `endif
 
-    remainder = dividend;
-    for (ceil_div = 0; remainder > 0; ceil_div++) begin
-      remainder = remainder - divisor;
+    quotient = dividend / divisor;
+    if ((dividend % divisor) != 0) begin
+      quotient++;
     end
+
+    return quotient;
   endfunction
 
   /// Index width required to be able to represent up to `num_idx` indices as a binary
   /// encoded signal.
   /// Ensures that the minimum width if an index signal is `1`, regardless of parametrization.
-  function automatic integer unsigned idx_width (input integer unsigned num_idx);
-    return (num_idx > 32'd1) ? unsigned'($clog2(num_idx)) : 32'd1;
+  function automatic int unsigned idx_width (input int unsigned num_idx);
+    if (num_idx > 32'd1) begin
+      return unsigned'($clog2(num_idx));
+    end else begin
+      return 32'd1;
+    end
   endfunction
 
   /// Checks if a value is a power of 2 (and is not 0)
   /// Returns 1 if the input value is a power of 2, else 0
-  function automatic bit is_power_of_2 (input integer unsigned value);
-    return (value != 0) && (value & (value - 1)) == 0;
+  function automatic bit is_power_of_2 (input int unsigned value);
+    automatic int unsigned value_without_lowest_set_bit;
+
+    if (value == 32'd0) begin
+      return 1'b0;
+    end
+
+    value_without_lowest_set_bit = value & (value - 32'd1);
+    return (value_without_lowest_set_bit == 32'd0);
   endfunction
 
   // Return either the argument minus 1 or 0 if 0; useful for IO vector width declaration.
-  function automatic integer unsigned iomsb (input integer unsigned width);
-    return (width != 32'd0) ? unsigned'(width-1) : 32'd0;
+  function automatic int unsigned iomsb (input int unsigned width);
+    if (width != 32'd0) begin
+      return unsigned'(width-1);
+    end else begin
+      return 32'd0;
+    end
   endfunction
 
   /// Returns the maximum between two integers
