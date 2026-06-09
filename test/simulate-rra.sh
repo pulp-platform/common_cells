@@ -16,11 +16,11 @@ set -e
 [ ! -z "$VSIM" ] || VSIM=vsim
 
 # Simulation arguments
-TB_TOP=rr_arb_tree_tb
+TB_TOP=cc_rr_arb_tree_tb
 VOPT_ARGS="+acc +cover=bcesfx"
 SUPPRESS_ID=vsim-3009
 
-GUI_MODE=1
+GUI_MODE=0
 
 # Exploration parameters
 NUM_INPUTS=5 # Set to 5 as FlooNoC router
