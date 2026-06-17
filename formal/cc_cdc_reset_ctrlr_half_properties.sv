@@ -17,7 +17,12 @@
 // including phase decode, output consistency, and initiator state transitions.
 
 module cc_cdc_reset_ctrlr_half_properties #(
-  parameter logic CLEAR_ON_ASYNC_RESET = 1'b1
+  parameter logic CLEAR_ON_ASYNC_RESET = 1'b1,
+`ifdef CC_CDC_RESET_CTRLR_ASSUME_REMOTE_PHASE
+  parameter logic ASSUME_REMOTE_PHASE = 1'b1
+`else
+  parameter logic ASSUME_REMOTE_PHASE = 1'b0
+`endif
 )(
   input wire       clk_i,
   input wire       rst_ni,
@@ -120,7 +125,11 @@ module cc_cdc_reset_ctrlr_half_properties #(
       end
 
       if (receiver_phase_req) begin
-        assume (valid_phase(receiver_next_phase));
+        if (ASSUME_REMOTE_PHASE) begin
+          assume (valid_phase(receiver_next_phase));
+        end else begin
+          assert (valid_phase(receiver_next_phase));
+        end
 
         case (receiver_next_phase)
           PhaseIdle: begin
@@ -174,7 +183,11 @@ module cc_cdc_reset_ctrlr_half_properties #(
   always_ff @(posedge clk_i) begin
     if (rst_ni && init_q) begin
       if (receiver_phase_req && !receiver_phase_ack) begin
-        assume (receiver_next_phase == $past(receiver_next_phase));
+        if (ASSUME_REMOTE_PHASE) begin
+          assume (receiver_next_phase == $past(receiver_next_phase));
+        end else begin
+          assert (receiver_next_phase == $past(receiver_next_phase));
+        end
       end
 
       if (initiator_state_q == InitIdle) begin

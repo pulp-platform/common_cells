@@ -17,6 +17,15 @@
 // Exercise payload ordering, clear/isolate sequencing, async-reset behavior,
 // and timed async-channel delay sweeps for cc_cdc_2phase_clearable.
 
+package cc_cdc_2phase_clearable_tb_monitor_pkg;
+  int unsigned monitor_errors = 0;
+
+  task automatic report_monitor_error(input string msg);
+    monitor_errors++;
+    $error("%s", msg);
+  endtask
+endpackage
+
 module cc_cdc_2phase_clearable_tb;
 
   timeunit 1ns;
@@ -41,6 +50,14 @@ module cc_cdc_2phase_clearable_tb;
     DstReadyHigh,
     DstReadyRandom
   } dst_ready_mode_e;
+
+  typedef enum logic [2:0] {
+    EventSrcClear,
+    EventDstClear,
+    EventBothClear,
+    EventSrcReset,
+    EventDstReset
+  } control_event_e;
 
   time tck_src = TCK_SRC_PS * 1ps;
   time tck_dst = TCK_DST_PS * 1ps;
@@ -367,114 +384,121 @@ module cc_cdc_2phase_clearable_tb;
     end
   endtask
 
-  task automatic sync_src_clear(input string test_name);
-    begin_drop_window();
-    src_valid_i = 1'b0;
-    @(negedge src_clk_i);
-    src_clear_i = 1'b1;
-    @(negedge src_clk_i);
-    src_clear_i = 1'b0;
-    wait_pending_seen(1'b1, 1'b1, test_name);
-    wait_clear_done(test_name);
-    drop_window = 1'b0;
-  endtask
+  function automatic string control_event_name(input control_event_e ctrl_event);
+    unique case (ctrl_event)
+      EventSrcClear: control_event_name = "source synchronous clear";
+      EventDstClear: control_event_name = "destination synchronous clear";
+      EventBothClear: control_event_name = "simultaneous synchronous clear";
+      EventSrcReset: control_event_name = "source asynchronous reset";
+      EventDstReset: control_event_name = "destination asynchronous reset";
+      default: control_event_name = "unknown control event";
+    endcase
+  endfunction
 
-  task automatic sync_dst_clear(input string test_name);
-    begin_drop_window();
-    @(negedge dst_clk_i);
-    dst_clear_i = 1'b1;
-    @(negedge dst_clk_i);
-    dst_clear_i = 1'b0;
-    wait_pending_seen(1'b1, 1'b1, test_name);
-    wait_clear_done(test_name);
-    drop_window = 1'b0;
-  endtask
+  function automatic bit event_touches_source(input control_event_e ctrl_event);
+    return ctrl_event inside {EventSrcClear, EventBothClear, EventSrcReset};
+  endfunction
 
-  task automatic sync_both_clear(input string test_name);
-    begin_drop_window();
-    src_valid_i = 1'b0;
-
-    fork
-      begin
+  task automatic pulse_control_event(input control_event_e ctrl_event);
+    unique case (ctrl_event)
+      EventSrcClear: begin
         @(negedge src_clk_i);
         src_clear_i = 1'b1;
         @(negedge src_clk_i);
         src_clear_i = 1'b0;
       end
-      begin
+      EventDstClear: begin
         @(negedge dst_clk_i);
         dst_clear_i = 1'b1;
         @(negedge dst_clk_i);
         dst_clear_i = 1'b0;
       end
-    join
-
-    wait_pending_seen(1'b1, 1'b1, test_name);
-    wait_clear_done(test_name);
-    drop_window = 1'b0;
-  endtask
-
-  task automatic async_src_reset(input string test_name);
-    begin_drop_window();
-    src_valid_i = 1'b0;
-    #(tck_src / 3);
-    src_rst_ni = 1'b0;
-    wait_src_cycles(2);
-    src_rst_ni = 1'b1;
-    wait_pending_seen(1'b1, 1'b1, test_name);
-    wait_clear_done(test_name);
-    drop_window = 1'b0;
-  endtask
-
-  task automatic async_dst_reset(input string test_name);
-    begin_drop_window();
-    #(tck_dst / 3);
-    dst_rst_ni = 1'b0;
-    wait_dst_cycles(2);
-    dst_rst_ni = 1'b1;
-    wait_pending_seen(1'b1, 1'b1, test_name);
-    wait_clear_done(test_name);
-    drop_window = 1'b0;
-  endtask
-
-  task automatic check_no_cross_clear_after_src_reset(input string test_name);
-    $display("%m: %s", test_name);
-    src_valid_i = 1'b0;
-    wait_scoreboard_empty(test_name);
-    wait_src_ready(test_name);
-
-    #(tck_src / 3);
-    src_rst_ni = 1'b0;
-    wait_src_cycles(2);
-    src_rst_ni = 1'b1;
-
-    for (int unsigned i = 0; i < TIMEOUT_CYCLES / 20; i++) begin
-      if (dst_clear_pending_o) begin
-        report_error($sformatf("unexpected destination clear pending in %s", test_name));
-        wait_clear_done(test_name);
-        return;
+      EventBothClear: begin
+        fork
+          begin
+            @(negedge src_clk_i);
+            src_clear_i = 1'b1;
+            @(negedge src_clk_i);
+            src_clear_i = 1'b0;
+          end
+          begin
+            @(negedge dst_clk_i);
+            dst_clear_i = 1'b1;
+            @(negedge dst_clk_i);
+            dst_clear_i = 1'b0;
+          end
+        join
       end
-      @(posedge src_clk_i or posedge dst_clk_i);
+      EventSrcReset: begin
+        #(tck_src / 3);
+        src_rst_ni = 1'b0;
+        wait_src_cycles(2);
+        src_rst_ni = 1'b1;
+      end
+      EventDstReset: begin
+        #(tck_dst / 3);
+        dst_rst_ni = 1'b0;
+        wait_dst_cycles(2);
+        dst_rst_ni = 1'b1;
+      end
+      default: begin
+      end
+    endcase
+  endtask
+
+  // Run a control event with the expected cross-domain clear sequence. The drop
+  // window covers accepted items that may be intentionally discarded.
+  task automatic run_control_event(input control_event_e ctrl_event, input string test_name,
+                                   input bit pause_source_driver = 1'b0);
+    if (pause_source_driver) begin
+      pause_active_source(test_name);
+    end
+
+    begin_drop_window();
+    if (event_touches_source(ctrl_event)) begin
+      src_valid_i = 1'b0;
+    end
+
+    pulse_control_event(ctrl_event);
+    wait_pending_seen(1'b1, 1'b1, test_name);
+    wait_clear_done(test_name);
+    drop_window = 1'b0;
+
+    if (pause_source_driver) begin
+      resume_active_source();
     end
   endtask
 
-  task automatic check_no_cross_clear_after_dst_reset(input string test_name);
+  task automatic check_no_cross_clear_after_reset(input control_event_e ctrl_event,
+                                                  input string test_name);
     $display("%m: %s", test_name);
     src_valid_i = 1'b0;
     wait_scoreboard_empty(test_name);
     wait_src_ready(test_name);
 
-    #(tck_dst / 3);
-    dst_rst_ni = 1'b0;
-    wait_dst_cycles(2);
-    dst_rst_ni = 1'b1;
+    pulse_control_event(ctrl_event);
 
     for (int unsigned i = 0; i < TIMEOUT_CYCLES / 20; i++) begin
-      if (src_clear_pending_o) begin
-        report_error($sformatf("unexpected source clear pending in %s", test_name));
-        wait_clear_done(test_name);
-        return;
-      end
+      unique case (ctrl_event)
+        EventSrcReset: begin
+          if (dst_clear_pending_o) begin
+            report_error($sformatf("unexpected destination clear pending in %s", test_name));
+            wait_clear_done(test_name);
+            return;
+          end
+        end
+        EventDstReset: begin
+          if (src_clear_pending_o) begin
+            report_error($sformatf("unexpected source clear pending in %s", test_name));
+            wait_clear_done(test_name);
+            return;
+          end
+        end
+        default: begin
+          report_error($sformatf("unsupported no-cross-clear event in %s", test_name));
+          return;
+        end
+      endcase
       @(posedge src_clk_i or posedge dst_clk_i);
     end
   endtask
@@ -491,14 +515,6 @@ module cc_cdc_2phase_clearable_tb;
     wait_dst_cycles(2);
   endtask
 
-  task automatic run_backpressured_clear_check;
-    $display("%m: destination clear while destination holds a valid item");
-    stage_backpressured_item(32'hc1ea_0001, "destination clear while valid is backpressured");
-
-    sync_dst_clear("destination clear while valid is backpressured");
-    run_transfer_check("post-backpressure-clear transfer", 8, 32'hc1ea_1000, DstReadyHigh);
-  endtask
-
   task automatic stage_backpressured_item(input logic [31:0] data, input string test_name);
     dst_ready_mode = DstReadyHigh;
     wait_src_ready(test_name);
@@ -507,37 +523,19 @@ module cc_cdc_2phase_clearable_tb;
     wait_dst_valid(test_name);
   endtask
 
-  task automatic run_backpressured_source_clear_check;
-    $display("%m: source clear while destination holds a valid item");
-    stage_backpressured_item(32'hc1ea_2001, "source clear while valid is backpressured");
+  // Backpressure tests stage one valid destination item, withhold ready, and
+  // then trigger clear/reset to exercise the exposed valid-withdrawal contract.
+  task automatic run_backpressured_control_check(input control_event_e ctrl_event,
+                                                 input logic [31:0] staged_data,
+                                                 input logic [31:0] post_base);
+    string event_name;
 
-    sync_src_clear("source clear while valid is backpressured");
-    run_transfer_check("post-source-backpressure-clear transfer", 8, 32'hc1ea_3000, DstReadyHigh);
-  endtask
-
-  task automatic run_backpressured_simultaneous_clear_check;
-    $display("%m: simultaneous clear while destination holds a valid item");
-    stage_backpressured_item(32'hc1ea_4001, "simultaneous clear while valid is backpressured");
-
-    sync_both_clear("simultaneous clear while valid is backpressured");
-    run_transfer_check("post-simultaneous-backpressure-clear transfer", 8, 32'hc1ea_5000,
-                       DstReadyHigh);
-  endtask
-
-  task automatic run_backpressured_source_reset_check;
-    $display("%m: source async reset while destination holds a valid item");
-    stage_backpressured_item(32'hc1ea_6001, "source async reset while valid is backpressured");
-
-    async_src_reset("source async reset while valid is backpressured");
-    run_transfer_check("post-source-backpressure-reset transfer", 8, 32'hc1ea_7000, DstReadyHigh);
-  endtask
-
-  task automatic run_backpressured_destination_reset_check;
-    $display("%m: destination async reset while destination holds a valid item");
-    stage_backpressured_item(32'hc1ea_8001, "destination async reset while valid is backpressured");
-
-    async_dst_reset("destination async reset while valid is backpressured");
-    run_transfer_check("post-destination-backpressure-reset transfer", 8, 32'hc1ea_9000,
+    event_name = control_event_name(ctrl_event);
+    $display("%m: %s while destination holds a valid item", event_name);
+    stage_backpressured_item(staged_data,
+                             {event_name, " while valid is backpressured"});
+    run_control_event(ctrl_event, {event_name, " while valid is backpressured"});
+    run_transfer_check({"post-", event_name, "-backpressure transfer"}, 8, post_base,
                        DstReadyHigh);
   endtask
 
@@ -610,57 +608,30 @@ module cc_cdc_2phase_clearable_tb;
 
   task automatic run_active_control_events(input int unsigned num_events);
     string event_name;
+    control_event_e ctrl_event;
 
     for (int unsigned i = 0; i < num_events; i++) begin
       wait_active_event_gap();
-      event_name = $sformatf("active stress event %0d", i);
-
       if (CLEAR_ON_ASYNC_RESET) begin
-        unique case ($urandom_range(0, 4))
-          0: begin
-            sync_dst_clear({event_name, ": destination synchronous clear"});
-          end
-          1: begin
-            async_dst_reset({event_name, ": destination asynchronous reset"});
-          end
-          2: begin
-            pause_active_source({event_name, ": source synchronous clear"});
-            sync_src_clear({event_name, ": source synchronous clear"});
-            resume_active_source();
-          end
-          3: begin
-            pause_active_source({event_name, ": source asynchronous reset"});
-            async_src_reset({event_name, ": source asynchronous reset"});
-            resume_active_source();
-          end
-          4: begin
-            pause_active_source({event_name, ": simultaneous synchronous clear"});
-            sync_both_clear({event_name, ": simultaneous synchronous clear"});
-            resume_active_source();
-          end
-          default: begin
-            pause_active_source({event_name, ": simultaneous synchronous clear"});
-            sync_both_clear({event_name, ": simultaneous synchronous clear"});
-            resume_active_source();
-          end
+        unique case (i)
+          0: ctrl_event = EventDstClear;
+          1: ctrl_event = EventDstReset;
+          2: ctrl_event = EventSrcClear;
+          3: ctrl_event = EventSrcReset;
+          4: ctrl_event = EventBothClear;
+          default: ctrl_event = control_event_e'($urandom_range(0, 4));
         endcase
       end else begin
-        unique case ($urandom_range(0, 2))
-          0: begin
-            sync_dst_clear({event_name, ": destination synchronous clear"});
-          end
-          1: begin
-            pause_active_source({event_name, ": source synchronous clear"});
-            sync_src_clear({event_name, ": source synchronous clear"});
-            resume_active_source();
-          end
-          default: begin
-            pause_active_source({event_name, ": simultaneous synchronous clear"});
-            sync_both_clear({event_name, ": simultaneous synchronous clear"});
-            resume_active_source();
-          end
+        unique case (i)
+          0: ctrl_event = EventDstClear;
+          1: ctrl_event = EventSrcClear;
+          2: ctrl_event = EventBothClear;
+          default: ctrl_event = control_event_e'($urandom_range(0, 2));
         endcase
       end
+
+      event_name = $sformatf("active stress event %0d: %s", i, control_event_name(ctrl_event));
+      run_control_event(ctrl_event, event_name, event_touches_source(ctrl_event));
 
       num_active_stress_events++;
     end
@@ -706,35 +677,41 @@ module cc_cdc_2phase_clearable_tb;
 
     run_transfer_check("basic fixed-ready transfer", 32, 32'h1000_0000, DstReadyHigh);
 
-    sync_src_clear("source synchronous idle clear");
+    // Idle synchronous clears from source, destination, and both domains,
+    // followed by fresh transfers to check post-clear recovery.
+    run_control_event(EventSrcClear, "source synchronous idle clear");
     run_transfer_check("post-source-clear transfer", 16, 32'h2000_0000, DstReadyHigh);
 
-    sync_dst_clear("destination synchronous idle clear");
+    run_control_event(EventDstClear, "destination synchronous idle clear");
     run_transfer_check("post-destination-clear transfer", 16, 32'h3000_0000, DstReadyHigh);
 
-    sync_both_clear("simultaneous synchronous idle clear");
+    run_control_event(EventBothClear, "simultaneous synchronous idle clear");
     run_transfer_check("post-simultaneous-clear transfer", 16, 32'h4000_0000, DstReadyHigh);
 
     if (CLEAR_ON_ASYNC_RESET) begin
-      async_src_reset("source asynchronous idle reset");
+      run_control_event(EventSrcReset, "source asynchronous idle reset");
       run_transfer_check("post-source-async-reset transfer", 16, 32'h5000_0000, DstReadyHigh);
 
-      async_dst_reset("destination asynchronous idle reset");
+      run_control_event(EventDstReset, "destination asynchronous idle reset");
       run_transfer_check("post-destination-async-reset transfer", 16, 32'h6000_0000, DstReadyHigh);
     end else begin
-      check_no_cross_clear_after_src_reset("source asynchronous idle reset without cross-clear");
+      check_no_cross_clear_after_reset(EventSrcReset,
+                                       "source asynchronous idle reset without cross-clear");
       reset_both_domains();
 
-      check_no_cross_clear_after_dst_reset("destination asynchronous idle reset without cross-clear");
+      check_no_cross_clear_after_reset(EventDstReset,
+                                       "destination asynchronous idle reset without cross-clear");
       reset_both_domains();
     end
 
-    run_backpressured_clear_check();
-    run_backpressured_source_clear_check();
-    run_backpressured_simultaneous_clear_check();
+    // Backpressured destination-visible traffic is the critical case where
+    // clear/reset may withdraw valid and drop the staged item.
+    run_backpressured_control_check(EventDstClear, 32'hc1ea_0001, 32'hc1ea_1000);
+    run_backpressured_control_check(EventSrcClear, 32'hc1ea_2001, 32'hc1ea_3000);
+    run_backpressured_control_check(EventBothClear, 32'hc1ea_4001, 32'hc1ea_5000);
     if (CLEAR_ON_ASYNC_RESET) begin
-      run_backpressured_source_reset_check();
-      run_backpressured_destination_reset_check();
+      run_backpressured_control_check(EventSrcReset, 32'hc1ea_6001, 32'hc1ea_7000);
+      run_backpressured_control_check(EventDstReset, 32'hc1ea_8001, 32'hc1ea_9000);
     end
 
     run_active_traffic_stress();
@@ -742,8 +719,10 @@ module cc_cdc_2phase_clearable_tb;
     run_transfer_check("randomized ready transfer", NUM_RANDOM_TRANSFERS, 32'h7000_0000,
                        DstReadyRandom);
 
-    if (num_errors != 0) begin
-      $fatal(1, "%m: failed with %0d errors", num_errors);
+    if ((num_errors != 0) ||
+        (cc_cdc_2phase_clearable_tb_monitor_pkg::monitor_errors != 0)) begin
+      $fatal(1, "%m: failed with %0d testbench errors and %0d monitor errors",
+             num_errors, cc_cdc_2phase_clearable_tb_monitor_pkg::monitor_errors);
     end
 
     $display("%m: passed: src_handshakes=%0d dst_handshakes=%0d stale_ignored=%0d stale_dropped=%0d active_stress_events=%0d",
@@ -1084,6 +1063,8 @@ module cc_cdc_reset_ctrlr_half_monitor
   input logic                 receiver_clear_out
 );
 
+  import cc_cdc_2phase_clearable_tb_monitor_pkg::report_monitor_error;
+
   timeunit 1ns;
   timeprecision 1ps;
 
@@ -1122,60 +1103,63 @@ module cc_cdc_reset_ctrlr_half_monitor
 
   task automatic check_stable_outputs;
     if (clear_o && !isolate_o) begin
-      $error("%m: clear_o asserted without isolate_o");
+      report_monitor_error($sformatf("%m: clear_o asserted without isolate_o"));
     end
 
     if (initiator_clear_out && !initiator_isolate_out) begin
-      $error("%m: initiator clear asserted without initiator isolate");
+      report_monitor_error($sformatf("%m: initiator clear asserted without initiator isolate"));
     end
 
     if (receiver_clear_out && !receiver_isolate_out) begin
-      $error("%m: receiver clear asserted without receiver isolate");
+      report_monitor_error($sformatf("%m: receiver clear asserted without receiver isolate"));
     end
 
     if (clear_o !== (initiator_clear_out || receiver_clear_out)) begin
-      $error("%m: clear_o does not match initiator/receiver clear outputs");
+      report_monitor_error($sformatf("%m: clear_o does not match initiator/receiver clear outputs"));
     end
 
     if (isolate_o !== (initiator_isolate_out || receiver_isolate_out)) begin
-      $error("%m: isolate_o does not match initiator/receiver isolate outputs");
+      report_monitor_error(
+          $sformatf("%m: isolate_o does not match initiator/receiver isolate outputs"));
     end
 
     if (async_req_o && !valid_phase(async_next_phase_o)) begin
-      $error("%m: outgoing clear phase is illegal");
+      report_monitor_error($sformatf("%m: outgoing clear phase is illegal"));
     end
 
     if (initiator_phase_transition_req && !valid_phase(initiator_clear_seq_phase)) begin
-      $error("%m: initiator requested an illegal clear phase");
+      report_monitor_error($sformatf("%m: initiator requested an illegal clear phase"));
     end
 
     if (receiver_phase_req) begin
       unique case (receiver_next_phase)
         CDC_CLEAR_PHASE_IDLE: begin
           if (receiver_clear_out || receiver_isolate_out || !receiver_phase_ack) begin
-            $error("%m: receiver IDLE phase outputs are inconsistent");
+            report_monitor_error($sformatf("%m: receiver IDLE phase outputs are inconsistent"));
           end
         end
         CDC_CLEAR_PHASE_ISOLATE: begin
           if (receiver_clear_out || !receiver_isolate_out ||
               (receiver_phase_ack !== isolate_ack_i)) begin
-            $error("%m: receiver ISOLATE phase outputs are inconsistent");
+            report_monitor_error($sformatf("%m: receiver ISOLATE phase outputs are inconsistent"));
           end
         end
         CDC_CLEAR_PHASE_CLEAR: begin
           if (!receiver_clear_out || !receiver_isolate_out ||
               (receiver_phase_ack !== clear_ack_i)) begin
-            $error("%m: receiver CLEAR phase outputs are inconsistent");
+            report_monitor_error($sformatf("%m: receiver CLEAR phase outputs are inconsistent"));
           end
         end
         CDC_CLEAR_PHASE_POST_CLEAR: begin
           if (receiver_clear_out || !receiver_isolate_out || !receiver_phase_ack) begin
-            $error("%m: receiver POST_CLEAR phase outputs are inconsistent");
+            report_monitor_error(
+                $sformatf("%m: receiver POST_CLEAR phase outputs are inconsistent"));
           end
         end
         default: begin
           if (receiver_clear_out || receiver_isolate_out || receiver_phase_ack) begin
-            $error("%m: receiver illegal phase was acknowledged or exposed");
+            report_monitor_error(
+                $sformatf("%m: receiver illegal phase was acknowledged or exposed"));
           end
         end
       endcase
@@ -1188,11 +1172,13 @@ module cc_cdc_reset_ctrlr_half_monitor
       check_stable_outputs();
 
       if (!valid_initiator_state(initiator_state_q)) begin
-        $error("%m: illegal initiator FSM state 0x%0h", initiator_state_q);
+        report_monitor_error($sformatf("%m: illegal initiator FSM state 0x%0h",
+                                       initiator_state_q));
       end
 
       if (!valid_phase(receiver_phase_q)) begin
-        $error("%m: illegal stored receiver phase 0x%0h", receiver_phase_q);
+        report_monitor_error($sformatf("%m: illegal stored receiver phase 0x%0h",
+                                       receiver_phase_q));
       end
 
       if (initiator_state_q inside {
@@ -1201,7 +1187,8 @@ module cc_cdc_reset_ctrlr_half_monitor
             InitWaitClearAck
           }) begin
         if (!initiator_clear_out || !initiator_isolate_out) begin
-          $error("%m: initiator clear state without clear/isolate outputs");
+          report_monitor_error(
+              $sformatf("%m: initiator clear state without clear/isolate outputs"));
         end
       end
 
@@ -1213,13 +1200,15 @@ module cc_cdc_reset_ctrlr_half_monitor
             InitFinished
           }) begin
         if (!initiator_isolate_out || initiator_clear_out) begin
-          $error("%m: initiator isolate-only state has inconsistent outputs");
+          report_monitor_error(
+              $sformatf("%m: initiator isolate-only state has inconsistent outputs"));
         end
       end
 
       if (initiator_state_q == InitIdle) begin
         if (initiator_isolate_out || initiator_clear_out || initiator_phase_transition_req) begin
-          $error("%m: initiator IDLE state has active clear outputs or phase request");
+          report_monitor_error(
+              $sformatf("%m: initiator IDLE state has active clear outputs or phase request"));
         end
       end
     end
