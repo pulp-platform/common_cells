@@ -21,7 +21,12 @@
 /// A two-phase clock domain crossing.
 ///
 /// CONSTRAINT: Requires max_delay of min_period(src_clk_i, dst_clk_i) through
-/// the paths async_req, async_ack, async_data.
+/// all asynchronous paths between the domains. The payload CDC uses
+/// async_payload_req, async_payload_ack, and async_payload_data for the actual
+/// data handshake. The clear sequencer CDCs use async_reset_src2dst_req,
+/// async_reset_dst2src_ack, async_reset_src2dst_next_phase,
+/// async_reset_dst2src_req, async_reset_src2dst_ack, and
+/// async_reset_dst2src_next_phase to handshake the clearing state machines.
 ///
 ///
 /// Reset Behavior:
@@ -201,6 +206,16 @@ module cc_cdc_2phase_dst_domain_clearable #(
   logic dst_isolate_ack_q;
   logic dst_valid;
 
+  if (ClearOnAsyncReset) begin : gen_elaboration_assertion
+    if (SyncStages < 3)
+      $error("The clearable 2-phase CDC with async reset",
+             "synchronization requires at least 3 synchronizer stages for the FIFO.");
+  end else begin : gen_elaboration_assertion
+    if (SyncStages < 2) begin : gen_sync_stage_assertion
+      $error("A minimum of 2 synchronizer stages is required for proper functionality.");
+    end
+  end
+
   // Keep the clear-control path one synchronizer stage ahead of the payload CDC
   // when async reset propagation is enabled, but never below two stages.
   localparam int unsigned ResetSyncStages = (SyncStages > 2) ? SyncStages - 1 : 2;
@@ -286,6 +301,16 @@ module cc_cdc_2phase_src_domain_clearable #(
   logic src_ready;
   logic src_isolate_req;
   logic src_isolate_ack_q;
+
+  if (ClearOnAsyncReset) begin : gen_elaboration_assertion
+    if (SyncStages < 3)
+      $error("The clearable 2-phase CDC with async reset",
+             "synchronization requires at least 3 synchronizer stages for the FIFO.");
+  end else begin : gen_elaboration_assertion
+    if (SyncStages < 2) begin : gen_sync_stage_assertion
+      $error("A minimum of 2 synchronizer stages is required for proper functionality.");
+    end
+  end
 
   // Keep the clear-control path one synchronizer stage ahead of the payload CDC
   // when async reset propagation is enabled, but never below two stages.
