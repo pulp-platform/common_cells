@@ -49,7 +49,7 @@ module cc_cb_filter #(
   parameter int unsigned InpWidth    =  32'd32, // Input data width
   parameter int unsigned BucketWidth =  32'd4,  // Width of Bucket counters
   // the seeds used for seeding the PRG's inside each hash, one `cb_seed_t` per hash function.
-  parameter cc_pkg::cb_seed_t [KHashes-1:0] Seeds = cc_pkg::cb_eg_seeds
+  parameter cc_pkg::cb_seed_t [KHashes-1:0] Seeds = cc_pkg::CbEgSeeds
 ) (
   input  logic                 clk_i,   // Clock
   input  logic                 rst_ni,  // Active low reset
@@ -205,7 +205,7 @@ module cc_hash_block #(
   parameter int unsigned InpWidth                         = 32'd11,
   parameter int unsigned HashWidth                        = 32'd5,
   parameter int unsigned NoRounds                         = 32'd1,
-  parameter cc_pkg::cb_seed_t [NoHashes-1:0] Seeds = cc_pkg::cb_eg_seeds
+  parameter cc_pkg::cb_seed_t [NoHashes-1:0] Seeds = cc_pkg::CbEgSeeds
 ) (
   input  logic [InpWidth-1:0]     data_i,
   output logic [2**HashWidth-1:0] indicator_o

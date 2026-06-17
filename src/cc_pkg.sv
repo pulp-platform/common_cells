@@ -96,7 +96,7 @@ package cc_pkg;
   } cb_seed_t;
 
   // example seeding struct
-  localparam cb_seed_t [2:0] cb_eg_seeds = '{
+  localparam cb_seed_t [2:0] CbEgSeeds = '{
     '{PermuteSeed: 32'd299034753, XorSeed: 32'd4094834  },
     '{PermuteSeed: 32'd19921030,  XorSeed: 32'd995713   },
     '{PermuteSeed: 32'd294388,    XorSeed: 32'd65146511 }

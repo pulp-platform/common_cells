@@ -64,6 +64,7 @@ module cc_addr_decode #(
   /// If `Napot` is 1, The field names remain the same, but the rule describes a naturally-aligned
   /// power of two (NAPOT) region instead of an address range: `start_addr` becomes the base address
   /// and `end_addr` the mask. See the wrapping module `cc_addr_decode_napot` for details.
+  // verilog_lint: waive typedef-structs-unions
   parameter type         rule_t    = struct packed {
     idx_t  idx;
     addr_t start_addr;

@@ -38,6 +38,7 @@ module cc_addr_decode_napot #(
   ///  - `idx`:   index of the rule, has to be < `NoIndices`.
   ///  - `base`:  base address whose specified bits should match `addr_i`.
   ///  - `mask`:  set for bits which are to be checked to determine a match.
+  // verilog_lint: waive typedef-structs-unions
   parameter type         rule_t    = struct packed {
     idx_t        idx;
     addr_t       base;
