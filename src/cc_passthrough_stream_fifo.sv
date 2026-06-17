@@ -118,5 +118,5 @@ module cc_passthrough_stream_fifo #(
     // empty pop
     `ASSERT_NEVER(CheckEmptyPop, (!valid_o & ready_i), clk_i, !rst_ni)
     `endif
-    
+
 endmodule

@@ -32,6 +32,7 @@ module cc_onehot_to_bin #(
     end
 
 `ifndef COMMON_CELLS_ASSERTS_OFF
-    `ASSERT_FINAL(more_than_2_bits, $onehot0(onehot_i), "More than two bit set in the one-hot signal")
+    `ASSERT_FINAL(more_than_2_bits, $onehot0(onehot_i),
+                  "More than two bit set in the one-hot signal")
 `endif
 endmodule

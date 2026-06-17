@@ -14,8 +14,8 @@
 // arbitration scheme is fair round-robin tree, see `cc_rr_arb_tree` for details.
 
 module cc_stream_arbiter #(
-    parameter type               data_t  = logic, // Vivado requires a default value for type parameters.
-    parameter int unsigned       NumInp  = 1,     // Synopsys DC requires a default value for parameters.
+    parameter type               data_t  = logic, // Vivado requires a default value.
+    parameter int unsigned       NumInp  = 1,     // Synopsys DC requires a default value.
     parameter cc_pkg::arb_mode_e ArbMode = cc_pkg::ARB_RR
 ) (
     input  logic               clk_i,

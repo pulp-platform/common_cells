@@ -286,9 +286,11 @@ module cc_clk_int_div #(
 
   always_ff @(posedge clk_i, negedge rst_ni) begin
     if (!rst_ni) begin
+      // verilog_lint: waive always-ff-non-blocking
       t_ff1_q = '0; // Intentional blocking assignment! Do not replace!
     end else begin
       if (t_ff1_en) begin
+        // verilog_lint: waive always-ff-non-blocking
         t_ff1_q = t_ff1_d; // Intentional blocking assignment! Do not replace!
       end
     end
@@ -298,9 +300,11 @@ module cc_clk_int_div #(
   // negative edge tirggered.
   always_ff @(negedge clk_i, negedge rst_ni) begin
     if (!rst_ni) begin
+      // verilog_lint: waive always-ff-non-blocking
       t_ff2_q = '0; // Intentional blocking assignment! Do not replace!
     end else begin
       if (t_ff2_en) begin
+        // verilog_lint: waive always-ff-non-blocking
         t_ff2_q = t_ff2_d; // Intentional blocking assignment! Do not replace!
       end
     end

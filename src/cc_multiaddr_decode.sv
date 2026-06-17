@@ -77,6 +77,7 @@ module cc_multiaddr_decode #(
   /// to the {addr, mask} representation (and viceversa) using the following equations:
   /// - mask =  {'0, {log2(end - start){1'b1}}}
   /// - addr = start
+  // verilog_lint: waive typedef-structs-unions
   parameter type         rule_t    = struct packed {
     idx_t  idx;
     addr_t addr;
