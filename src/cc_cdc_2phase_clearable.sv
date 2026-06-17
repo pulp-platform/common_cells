@@ -9,8 +9,14 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 //
-// Fabian Schuiki <fschuiki@iis.ee.ethz.ch> (original CDC)
-// Manuel Eggimann <meggiman@iis.ee.ethz.ch> (clearability feature)
+// Authors:
+// - Fabian Schuiki <fschuiki@iis.ee.ethz.ch> (original CDC)
+// - Manuel Eggimann <meggimann@iis.ee.ethz.ch> (clearability feature)
+// - Philippe Sauter <phsauter@iis.ee.ethz.ch> (verification)
+//
+// Description: Clearable Two-Phase CDC
+// Transfer payloads with a two-phase handshake while coordinating synchronous
+// and optional asynchronous one-sided clears across source and destination.
 
 /// A two-phase clock domain crossing.
 ///
@@ -88,6 +94,15 @@ module cc_cdc_2phase_clearable #(
   (* dont_touch = "true" *) logic  async_ack;
   (* dont_touch = "true" *) data_t async_data;
 
+  // Clear/isolate contract:
+  // - src/dst_clear_pending_o are the local isolate requests.
+  // - local isolate and clear acknowledgements are one-cycle delayed copies of
+  //   the corresponding local requests.
+  // - isolate gates the external valid/ready interface on both sides.
+  // - transactions accepted before or during a clear sequence may complete or
+  //   be dropped, but fresh post-clear traffic must not be duplicated,
+  //   reordered, or corrupted.
+
   if (ClearOnAsyncReset) begin : gen_elaboration_assertion
     if (SyncStages < 3)
       $error("The clearable 2-phase CDC with async reset",
@@ -139,7 +154,8 @@ module cc_cdc_2phase_clearable #(
   // Synchronize the clear and reset signaling in both directions (see header of
   // the cc_cdc_reset_ctrlr module for more details.)
   cc_cdc_reset_ctrlr #(
-    .SyncStages(SyncStages-1)
+    .SyncStages        ( SyncStages - 1    ),
+    .ClearOnAsyncReset ( ClearOnAsyncReset )
   ) i_cdc_reset_ctrlr (
     .a_clk_i         ( src_clk_i           ),
     .a_rst_ni        ( src_rst_ni          ),

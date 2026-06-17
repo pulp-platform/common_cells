@@ -1,0 +1,38 @@
+# Copyright 2026 ETH Zurich and University of Bologna.
+#
+# Copyright and related rights are licensed under the Solderpad Hardware
+# License, Version 0.51 (the "License"); you may not use this file except in
+# compliance with the License. You may obtain a copy of the License at
+# http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
+# or agreed to in writing, software, hardware and materials distributed under
+# this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+# CONDITIONS OF ANY KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations under the License.
+#
+# Authors:
+# - Philippe Sauter <phsauter@iis.ee.ethz.ch>
+#
+# Description: Composed Reset-Controller Proof Configuration
+# Configure the SymbiYosys proof for the two-half reset-controller harness.
+
+[options]
+mode prove
+depth 48
+
+[engines]
+abc pdr
+
+[script]
+plugin -i slang.so
+read_slang --std 1800-2017 -Wno-implicit-port-type-mismatch -I../../../include --top cc_cdc_reset_ctrlr_composed_harness cc_pkg.sv cc_sync.sv cc_cdc_4phase.sv cc_cdc_reset_ctrlr.sv cc_cdc_reset_ctrlr_half_properties.sv cc_cdc_reset_ctrlr_properties.sv
+prep -top cc_cdc_reset_ctrlr_composed_harness
+async2sync
+dffunmap
+
+[files]
+../src/cc_pkg.sv
+../src/cc_sync.sv
+../src/cc_cdc_4phase.sv
+../src/cc_cdc_reset_ctrlr.sv
+cc_cdc_reset_ctrlr_half_properties.sv
+cc_cdc_reset_ctrlr_properties.sv
