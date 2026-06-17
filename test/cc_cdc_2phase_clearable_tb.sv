@@ -94,6 +94,8 @@ module cc_cdc_2phase_clearable_tb;
 
   dst_ready_mode_e dst_ready_mode = DstReadyLow;
 
+  // Instantiate either the plain DUT or the timed delay-injection harness used
+  // by sweeps to perturb every explicit asynchronous channel.
   if (INJECT_DELAYS) begin : gen_delayed_dut
     cc_cdc_2phase_clearable_tb_delay_injector #(
       .SYNC_STAGES          ( SYNC_STAGES          ),
@@ -157,6 +159,8 @@ module cc_cdc_2phase_clearable_tb;
     endcase
   end
 
+  // Scoreboard source and destination handshakes. During clear/reset windows,
+  // accepted source items are stale: they may later complete or be dropped.
   always @(posedge src_clk_i) begin
     if (!src_rst_ni) begin
       // Reset is handled by the DUT. The scoreboard is controlled by the test
@@ -205,6 +209,8 @@ module cc_cdc_2phase_clearable_tb;
     end
   end
 
+  // Small shared helpers for reporting, cycle waits, and the stale-item window
+  // used whenever a clear/reset may intentionally discard in-flight traffic.
   task automatic report_error(input string msg);
     num_errors++;
     $error("%s", msg);
@@ -281,6 +287,8 @@ module cc_cdc_2phase_clearable_tb;
     drop_window = 1'b0;
   endtask
 
+  // Clear/reset completion helpers. They check that both domains see the
+  // pending sequence and then wait for the CDC to settle before fresh traffic.
   task automatic wait_pending_seen(input bit expect_src, input bit expect_dst, input string test_name);
     bit seen_src;
     bit seen_dst;
@@ -341,6 +349,8 @@ module cc_cdc_2phase_clearable_tb;
     src_valid_i = 1'b0;
   endtask
 
+  // Transfer helpers for normal traffic: send ordered words, wait for the
+  // scoreboard to drain, and verify the source has returned to ready.
   task automatic wait_scoreboard_empty(input string test_name);
     for (int unsigned i = 0; i < TIMEOUT_CYCLES; i++) begin
       if (expected_q.size() == 0) begin
@@ -539,6 +549,8 @@ module cc_cdc_2phase_clearable_tb;
                        DstReadyHigh);
   endtask
 
+  // Active-traffic stress keeps a source driver running while randomized
+  // clear/reset events interrupt the CDC from either side.
   task automatic pause_active_source(input string test_name);
     active_src_pause = 1'b1;
     wait_src_cycles(2);
@@ -675,6 +687,7 @@ module cc_cdc_2phase_clearable_tb;
 
     reset_both_domains();
 
+    // Baseline ordered transfer with the destination always ready.
     run_transfer_check("basic fixed-ready transfer", 32, 32'h1000_0000, DstReadyHigh);
 
     // Idle synchronous clears from source, destination, and both domains,
@@ -688,6 +701,8 @@ module cc_cdc_2phase_clearable_tb;
     run_control_event(EventBothClear, "simultaneous synchronous idle clear");
     run_transfer_check("post-simultaneous-clear transfer", 16, 32'h4000_0000, DstReadyHigh);
 
+    // One-sided asynchronous resets are only a cross-domain clear source when
+    // the feature is enabled.
     if (CLEAR_ON_ASYNC_RESET) begin
       run_control_event(EventSrcReset, "source asynchronous idle reset");
       run_transfer_check("post-source-async-reset transfer", 16, 32'h5000_0000, DstReadyHigh);
@@ -714,8 +729,12 @@ module cc_cdc_2phase_clearable_tb;
       run_backpressured_control_check(EventDstReset, 32'hc1ea_8001, 32'hc1ea_9000);
     end
 
+    // Long mixed stress run with random traffic, destination backpressure, and
+    // interleaved source/destination clear or reset events.
     run_active_traffic_stress();
 
+    // Final randomized-ready transfer checks ordinary payload ordering after
+    // all disruptive control-event categories have completed.
     run_transfer_check("randomized ready transfer", NUM_RANDOM_TRANSFERS, 32'h7000_0000,
                        DstReadyRandom);
 
@@ -731,6 +750,8 @@ module cc_cdc_2phase_clearable_tb;
     $finish;
   end
 
+  // Bind a simulation-only monitor into each reset-controller half. It mirrors
+  // the formal invariants to catch invalid internal clear FSM behavior in Questa.
   bind cc_cdc_reset_ctrlr_half cc_cdc_reset_ctrlr_half_monitor i_monitor (
     .clk_i,
     .rst_ni,
@@ -758,6 +779,8 @@ module cc_cdc_2phase_clearable_tb;
 endmodule
 
 
+// Per-bit inertial delay model used to sweep relative async channel timing in
+// simulation without changing the production DUT hierarchy.
 module cc_cdc_2phase_clearable_tb_bit_delay #(
   parameter int unsigned MAX_DELAY_PS = 0
 )(
@@ -781,6 +804,8 @@ module cc_cdc_2phase_clearable_tb_bit_delay #(
 endmodule
 
 
+// Bus delay wrapper that applies independent random per-bit delay. This stresses
+// bundled payload and phase buses under the same async timing assumptions.
 module cc_cdc_2phase_clearable_tb_bus_delay #(
   parameter int unsigned Width = 1,
   parameter int unsigned MAX_DELAY_PS = 0
@@ -804,6 +829,8 @@ module cc_cdc_2phase_clearable_tb_bus_delay #(
 endmodule
 
 
+// Timed test harness equivalent to the clearable DUT, but with explicit delay
+// elements inserted on all payload and reset-controller async wires.
 module cc_cdc_2phase_clearable_tb_delay_injector
   import cc_pkg::*;
 #(
@@ -833,210 +860,155 @@ module cc_cdc_2phase_clearable_tb_delay_injector
 
   localparam int unsigned ClearPhaseWidth = $bits(cdc_clear_seq_phase_e);
 
-  logic        payload_req_from_src;
-  logic        payload_req_to_dst;
-  logic        payload_ack_from_dst;
-  logic        payload_ack_to_src;
-  logic [31:0] payload_data_from_src;
-  logic [31:0] payload_data_to_dst;
+  logic        async_payload_req_from_src;
+  logic        async_payload_req_to_dst;
+  logic        async_payload_ack_from_dst;
+  logic        async_payload_ack_to_src;
+  logic [31:0] async_payload_data_from_src;
+  logic [31:0] async_payload_data_to_dst;
 
-  logic s_src_clear_req;
-  logic s_src_clear_ack_q;
-  logic s_src_ready;
-  logic s_src_isolate_req;
-  logic s_src_isolate_ack_q;
-  logic s_dst_clear_req;
-  logic s_dst_clear_ack_q;
-  logic s_dst_valid;
-  logic s_dst_isolate_req;
-  logic s_dst_isolate_ack_q;
+  cdc_clear_seq_phase_e async_reset_src2dst_next_phase_from_src;
+  cdc_clear_seq_phase_e async_reset_src2dst_next_phase_to_dst;
+  cdc_clear_seq_phase_e async_reset_dst2src_next_phase_from_dst;
+  cdc_clear_seq_phase_e async_reset_dst2src_next_phase_to_src;
+  logic [ClearPhaseWidth-1:0] async_reset_src2dst_next_phase_from_src_bits;
+  logic [ClearPhaseWidth-1:0] async_reset_src2dst_next_phase_to_dst_bits;
+  logic [ClearPhaseWidth-1:0] async_reset_dst2src_next_phase_from_dst_bits;
+  logic [ClearPhaseWidth-1:0] async_reset_dst2src_next_phase_to_src_bits;
+  logic async_reset_src2dst_req_from_src;
+  logic async_reset_src2dst_req_to_dst;
+  logic async_reset_dst2src_ack_from_dst;
+  logic async_reset_dst2src_ack_to_src;
+  logic async_reset_dst2src_req_from_dst;
+  logic async_reset_dst2src_req_to_src;
+  logic async_reset_src2dst_ack_from_src;
+  logic async_reset_src2dst_ack_to_dst;
 
-  cdc_clear_seq_phase_e src2dst_phase_from_src;
-  cdc_clear_seq_phase_e src2dst_phase_to_dst;
-  cdc_clear_seq_phase_e dst2src_phase_from_dst;
-  cdc_clear_seq_phase_e dst2src_phase_to_src;
-  logic [ClearPhaseWidth-1:0] src2dst_phase_from_src_bits;
-  logic [ClearPhaseWidth-1:0] src2dst_phase_to_dst_bits;
-  logic [ClearPhaseWidth-1:0] dst2src_phase_from_dst_bits;
-  logic [ClearPhaseWidth-1:0] dst2src_phase_to_src_bits;
-  logic src2dst_req_from_src;
-  logic src2dst_req_to_dst;
-  logic src2dst_ack_from_dst;
-  logic src2dst_ack_to_src;
-  logic dst2src_req_from_dst;
-  logic dst2src_req_to_src;
-  logic dst2src_ack_from_src;
-  logic dst2src_ack_to_dst;
-
-  assign src2dst_phase_from_src_bits = src2dst_phase_from_src;
-  assign src2dst_phase_to_dst = cdc_clear_seq_phase_e'(src2dst_phase_to_dst_bits);
-  assign dst2src_phase_from_dst_bits = dst2src_phase_from_dst;
-  assign dst2src_phase_to_src = cdc_clear_seq_phase_e'(dst2src_phase_to_src_bits);
+  assign async_reset_src2dst_next_phase_from_src_bits = async_reset_src2dst_next_phase_from_src;
+  assign async_reset_src2dst_next_phase_to_dst =
+      cdc_clear_seq_phase_e'(async_reset_src2dst_next_phase_to_dst_bits);
+  assign async_reset_dst2src_next_phase_from_dst_bits = async_reset_dst2src_next_phase_from_dst;
+  assign async_reset_dst2src_next_phase_to_src =
+      cdc_clear_seq_phase_e'(async_reset_dst2src_next_phase_to_src_bits);
 
   cc_cdc_2phase_clearable_tb_bit_delay #(
     .MAX_DELAY_PS ( MAX_DELAY_PS )
-  ) i_payload_req_delay (
-    .in_i  ( payload_req_from_src ),
-    .out_o ( payload_req_to_dst   )
+  ) i_async_payload_req_delay (
+    .in_i  ( async_payload_req_from_src ),
+    .out_o ( async_payload_req_to_dst   )
   );
 
   cc_cdc_2phase_clearable_tb_bit_delay #(
     .MAX_DELAY_PS ( MAX_DELAY_PS )
-  ) i_payload_ack_delay (
-    .in_i  ( payload_ack_from_dst ),
-    .out_o ( payload_ack_to_src   )
+  ) i_async_payload_ack_delay (
+    .in_i  ( async_payload_ack_from_dst ),
+    .out_o ( async_payload_ack_to_src   )
   );
 
   cc_cdc_2phase_clearable_tb_bus_delay #(
     .Width        ( 32           ),
     .MAX_DELAY_PS ( MAX_DELAY_PS )
-  ) i_payload_data_delay (
-    .in_i  ( payload_data_from_src ),
-    .out_o ( payload_data_to_dst   )
+  ) i_async_payload_data_delay (
+    .in_i  ( async_payload_data_from_src ),
+    .out_o ( async_payload_data_to_dst   )
   );
 
   cc_cdc_2phase_clearable_tb_bus_delay #(
     .Width        ( ClearPhaseWidth ),
     .MAX_DELAY_PS ( MAX_DELAY_PS    )
-  ) i_src2dst_phase_delay (
-    .in_i  ( src2dst_phase_from_src_bits ),
-    .out_o ( src2dst_phase_to_dst_bits   )
+  ) i_async_reset_src2dst_next_phase_delay (
+    .in_i  ( async_reset_src2dst_next_phase_from_src_bits ),
+    .out_o ( async_reset_src2dst_next_phase_to_dst_bits   )
   );
 
   cc_cdc_2phase_clearable_tb_bit_delay #(
     .MAX_DELAY_PS ( MAX_DELAY_PS )
-  ) i_src2dst_req_delay (
-    .in_i  ( src2dst_req_from_src ),
-    .out_o ( src2dst_req_to_dst   )
+  ) i_async_reset_src2dst_req_delay (
+    .in_i  ( async_reset_src2dst_req_from_src ),
+    .out_o ( async_reset_src2dst_req_to_dst   )
   );
 
   cc_cdc_2phase_clearable_tb_bit_delay #(
     .MAX_DELAY_PS ( MAX_DELAY_PS )
-  ) i_src2dst_ack_delay (
-    .in_i  ( src2dst_ack_from_dst ),
-    .out_o ( src2dst_ack_to_src   )
+  ) i_async_reset_dst2src_ack_delay (
+    .in_i  ( async_reset_dst2src_ack_from_dst ),
+    .out_o ( async_reset_dst2src_ack_to_src   )
   );
 
   cc_cdc_2phase_clearable_tb_bus_delay #(
     .Width        ( ClearPhaseWidth ),
     .MAX_DELAY_PS ( MAX_DELAY_PS    )
-  ) i_dst2src_phase_delay (
-    .in_i  ( dst2src_phase_from_dst_bits ),
-    .out_o ( dst2src_phase_to_src_bits   )
+  ) i_async_reset_dst2src_next_phase_delay (
+    .in_i  ( async_reset_dst2src_next_phase_from_dst_bits ),
+    .out_o ( async_reset_dst2src_next_phase_to_src_bits   )
   );
 
   cc_cdc_2phase_clearable_tb_bit_delay #(
     .MAX_DELAY_PS ( MAX_DELAY_PS )
-  ) i_dst2src_req_delay (
-    .in_i  ( dst2src_req_from_dst ),
-    .out_o ( dst2src_req_to_src   )
+  ) i_async_reset_dst2src_req_delay (
+    .in_i  ( async_reset_dst2src_req_from_dst ),
+    .out_o ( async_reset_dst2src_req_to_src   )
   );
 
   cc_cdc_2phase_clearable_tb_bit_delay #(
     .MAX_DELAY_PS ( MAX_DELAY_PS )
-  ) i_dst2src_ack_delay (
-    .in_i  ( dst2src_ack_from_src ),
-    .out_o ( dst2src_ack_to_dst   )
+  ) i_async_reset_src2dst_ack_delay (
+    .in_i  ( async_reset_src2dst_ack_from_src ),
+    .out_o ( async_reset_src2dst_ack_to_dst   )
   );
 
-  cc_cdc_2phase_src_clearable #(
-    .data_t     ( logic [31:0] ),
-    .SyncStages ( SYNC_STAGES  )
-  ) i_src (
-    .rst_ni       ( src_rst_ni                     ),
-    .clk_i        ( src_clk_i                      ),
-    .clear_i      ( s_src_clear_req                ),
-    .data_i       ( src_data_i                     ),
-    .valid_i      ( src_valid_i & !s_src_isolate_req ),
-    .ready_o      ( s_src_ready                    ),
-    .async_req_o  ( payload_req_from_src           ),
-    .async_ack_i  ( payload_ack_to_src             ),
-    .async_data_o ( payload_data_from_src          )
-  );
-
-  assign src_ready_o = s_src_ready & !s_src_isolate_req;
-
-  cc_cdc_2phase_dst_clearable #(
-    .data_t     ( logic [31:0] ),
-    .SyncStages ( SYNC_STAGES  )
-  ) i_dst (
-    .rst_ni       ( dst_rst_ni                     ),
-    .clk_i        ( dst_clk_i                      ),
-    .clear_i      ( s_dst_clear_req                ),
-    .data_o       ( dst_data_o                     ),
-    .valid_o      ( s_dst_valid                    ),
-    .ready_i      ( dst_ready_i & !s_dst_isolate_req ),
-    .async_req_i  ( payload_req_to_dst             ),
-    .async_ack_o  ( payload_ack_from_dst           ),
-    .async_data_i ( payload_data_to_dst            )
-  );
-
-  assign dst_valid_o = s_dst_valid & !s_dst_isolate_req;
-
-  cc_cdc_reset_ctrlr_half #(
-    .SyncStages        ( SYNC_STAGES - 1 ),
+  // Reuse the production source and destination domain wrappers. The harness
+  // only inserts timing delays on the explicit async wires between them.
+  cc_cdc_2phase_src_domain_clearable #(
+    .data_t            ( logic [31:0]        ),
+    .SyncStages        ( SYNC_STAGES         ),
     .ClearOnAsyncReset ( CLEAR_ON_ASYNC_RESET )
-  ) i_cdc_reset_ctrlr_half_src (
-    .clk_i              ( src_clk_i                ),
-    .rst_ni             ( src_rst_ni               ),
-    .clear_i            ( src_clear_i              ),
-    .clear_o            ( s_src_clear_req          ),
-    .clear_ack_i        ( s_src_clear_ack_q        ),
-    .isolate_o          ( s_src_isolate_req        ),
-    .isolate_ack_i      ( s_src_isolate_ack_q      ),
-    .async_next_phase_o ( src2dst_phase_from_src   ),
-    .async_req_o        ( src2dst_req_from_src     ),
-    .async_ack_i        ( src2dst_ack_to_src       ),
-    .async_next_phase_i ( dst2src_phase_to_src     ),
-    .async_req_i        ( dst2src_req_to_src       ),
-    .async_ack_o        ( dst2src_ack_from_src     )
+  ) i_src_domain (
+    .src_rst_ni,
+    .src_clk_i,
+    .src_clear_i,
+    .src_clear_pending_o,
+    .src_data_i,
+    .src_valid_i,
+    .src_ready_o,
+    .async_payload_req_o       ( async_payload_req_from_src              ),
+    .async_payload_ack_i       ( async_payload_ack_to_src                ),
+    .async_payload_data_o      ( async_payload_data_from_src             ),
+    .async_reset_next_phase_o  ( async_reset_src2dst_next_phase_from_src ),
+    .async_reset_req_o         ( async_reset_src2dst_req_from_src        ),
+    .async_reset_ack_i         ( async_reset_dst2src_ack_to_src          ),
+    .async_reset_next_phase_i  ( async_reset_dst2src_next_phase_to_src   ),
+    .async_reset_req_i         ( async_reset_dst2src_req_to_src          ),
+    .async_reset_ack_o         ( async_reset_src2dst_ack_from_src        )
   );
 
-  cc_cdc_reset_ctrlr_half #(
-    .SyncStages        ( SYNC_STAGES - 1 ),
+  cc_cdc_2phase_dst_domain_clearable #(
+    .data_t            ( logic [31:0]        ),
+    .SyncStages        ( SYNC_STAGES         ),
     .ClearOnAsyncReset ( CLEAR_ON_ASYNC_RESET )
-  ) i_cdc_reset_ctrlr_half_dst (
-    .clk_i              ( dst_clk_i                ),
-    .rst_ni             ( dst_rst_ni               ),
-    .clear_i            ( dst_clear_i              ),
-    .clear_o            ( s_dst_clear_req          ),
-    .clear_ack_i        ( s_dst_clear_ack_q        ),
-    .isolate_o          ( s_dst_isolate_req        ),
-    .isolate_ack_i      ( s_dst_isolate_ack_q      ),
-    .async_next_phase_o ( dst2src_phase_from_dst   ),
-    .async_req_o        ( dst2src_req_from_dst     ),
-    .async_ack_i        ( dst2src_ack_to_dst       ),
-    .async_next_phase_i ( src2dst_phase_to_dst     ),
-    .async_req_i        ( src2dst_req_to_dst       ),
-    .async_ack_o        ( src2dst_ack_from_dst     )
+  ) i_dst_domain (
+    .dst_rst_ni,
+    .dst_clk_i,
+    .dst_clear_i,
+    .dst_clear_pending_o,
+    .dst_data_o,
+    .dst_valid_o,
+    .dst_ready_i,
+    .async_payload_req_i       ( async_payload_req_to_dst                ),
+    .async_payload_ack_o       ( async_payload_ack_from_dst              ),
+    .async_payload_data_i      ( async_payload_data_to_dst               ),
+    .async_reset_next_phase_o  ( async_reset_dst2src_next_phase_from_dst ),
+    .async_reset_req_o         ( async_reset_dst2src_req_from_dst        ),
+    .async_reset_ack_i         ( async_reset_src2dst_ack_to_dst          ),
+    .async_reset_next_phase_i  ( async_reset_src2dst_next_phase_to_dst   ),
+    .async_reset_req_i         ( async_reset_src2dst_req_to_dst          ),
+    .async_reset_ack_o         ( async_reset_dst2src_ack_from_dst        )
   );
-
-  always_ff @(posedge src_clk_i, negedge src_rst_ni) begin
-    if (!src_rst_ni) begin
-      s_src_isolate_ack_q <= 1'b0;
-      s_src_clear_ack_q   <= 1'b0;
-    end else begin
-      s_src_isolate_ack_q <= s_src_isolate_req;
-      s_src_clear_ack_q   <= s_src_clear_req;
-    end
-  end
-
-  always_ff @(posedge dst_clk_i, negedge dst_rst_ni) begin
-    if (!dst_rst_ni) begin
-      s_dst_isolate_ack_q <= 1'b0;
-      s_dst_clear_ack_q   <= 1'b0;
-    end else begin
-      s_dst_isolate_ack_q <= s_dst_isolate_req;
-      s_dst_clear_ack_q   <= s_dst_clear_req;
-    end
-  end
-
-  assign src_clear_pending_o = s_src_isolate_req;
-  assign dst_clear_pending_o = s_dst_isolate_req;
-
 endmodule
 
 
+// Lightweight checker for reset-controller half internals. This is deliberately
+// local-clock only and checks invariants that should hold after every edge.
 module cc_cdc_reset_ctrlr_half_monitor
   import cc_pkg::*;
 (

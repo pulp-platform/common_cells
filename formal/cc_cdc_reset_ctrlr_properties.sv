@@ -69,6 +69,8 @@ module cc_cdc_reset_ctrlr_composed_harness (
     .b_isolate_ack_i ( b_isolate_ack_q )
   );
 
+  // Each clock domain is independently initialized in reset, then held out of
+  // reset so the proof focuses on the synchronous clear sequence.
   always_ff @(posedge a_clk_i) begin
     a_init_q <= 1'b1;
     if (!a_init_q) begin
@@ -97,6 +99,8 @@ module cc_cdc_reset_ctrlr_composed_harness (
     end
   end
 
+  // Local acknowledgement for side A: the connected CDC side reports
+  // isolate and clear completion one A-clock cycle after the request.
   always_ff @(posedge a_clk_i, negedge a_rst_ni) begin
     if (!a_rst_ni) begin
       a_isolate_ack_q <= 1'b0;
@@ -107,6 +111,8 @@ module cc_cdc_reset_ctrlr_composed_harness (
     end
   end
 
+  // Local acknowledgement for side B mirrors side A, but is sampled on the
+  // independent B clock to preserve the two-domain composition.
   always_ff @(posedge b_clk_i, negedge b_rst_ni) begin
     if (!b_rst_ni) begin
       b_isolate_ack_q <= 1'b0;
@@ -117,6 +123,8 @@ module cc_cdc_reset_ctrlr_composed_harness (
     end
   end
 
+  // Cross-domain contract: clear implies isolate locally, and any active
+  // clear on either side requires both sides to be isolated.
   always_comb begin
     if (a_rst_ni) begin
       assert (!a_clear_o || a_isolate_o);
