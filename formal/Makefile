@@ -19,10 +19,15 @@
 
 YOSYS	?= yosys
 SBY	?= sby
-RM	?= rm
+RM	?= rm -rf
+
+FORMAL_BUILDDIR ?= build
 
 all: fifo.check counter.check fall_through_register.check cdc_reset_ctrlr_half.check \
 	cdc_reset_ctrlr_composed.check
+
+$(FORMAL_BUILDDIR):
+	mkdir -p $@
 
 fifo.check: fifo.sby ../src/cc_fifo.sv cc_fifo_properties.sv
 	$(SBY) -f $<
@@ -41,24 +46,30 @@ fall_through_register.check: fall_through_register.sby ../src/cc_fall_through_re
 	$(SBY) -f $<
 	touch $@
 
-cdc_reset_ctrlr_half.check: cdc_reset_ctrlr_half.sby cc_cdc_reset_ctrlr_half_properties.sv \
+cdc_reset_ctrlr_half.check: $(FORMAL_BUILDDIR)/cdc_reset_ctrlr_half.check
+
+$(FORMAL_BUILDDIR)/cdc_reset_ctrlr_half.check: cdc_reset_ctrlr_half.sby cc_cdc_reset_ctrlr_half_properties.sv \
 				../src/cc_cdc_reset_ctrlr.sv ../src/cc_cdc_4phase.sv \
-				../src/cc_sync.sv ../src/cc_pkg.sv
-	./run_cdc_reset_ctrlr_half.sh
+				../src/cc_sync.sv ../src/cc_pkg.sv | $(FORMAL_BUILDDIR)
+	$(SBY) -f -d $(FORMAL_BUILDDIR)/cdc_reset_ctrlr_half $<
 	touch $@
 
-cdc_reset_ctrlr_composed.check: cdc_reset_ctrlr_composed.sby cc_cdc_reset_ctrlr_properties.sv \
+cdc_reset_ctrlr_composed.check: $(FORMAL_BUILDDIR)/cdc_reset_ctrlr_composed.check
+
+$(FORMAL_BUILDDIR)/cdc_reset_ctrlr_composed.check: cdc_reset_ctrlr_composed.sby cc_cdc_reset_ctrlr_properties.sv \
 				cc_cdc_reset_ctrlr_half_properties.sv \
 				../src/cc_cdc_reset_ctrlr.sv ../src/cc_cdc_4phase.sv \
-				../src/cc_sync.sv ../src/cc_pkg.sv
-	./run_cdc_reset_ctrlr_composed.sh
+				../src/cc_sync.sv ../src/cc_pkg.sv | $(FORMAL_BUILDDIR)
+	$(SBY) -f -d $(FORMAL_BUILDDIR)/cdc_reset_ctrlr_composed $<
 	touch $@
 
-.PHONY: clean
+.PHONY: all clean fifo.check counter.check fall_through_register.check cdc_reset_ctrlr_half.check \
+	cdc_reset_ctrlr_composed.check
 clean:
-	$(RM) -r fifo.check fifo/
+	$(RM) $(FORMAL_BUILDDIR)
+	$(RM) fifo.check fifo/
 #	$(RM) -r delta_counter.check delta_counter/
-	$(RM) -r counter.check counter/
-	$(RM) -r fall_through_register.check fall_through_register/
-	$(RM) -r cdc_reset_ctrlr_half.check cdc_reset_ctrlr_half/
-	$(RM) -r cdc_reset_ctrlr_composed.check cdc_reset_ctrlr_composed/
+	$(RM) counter.check counter/
+	$(RM) fall_through_register.check fall_through_register/
+	$(RM) cdc_reset_ctrlr_half.check cdc_reset_ctrlr_half/
+	$(RM) cdc_reset_ctrlr_composed.check cdc_reset_ctrlr_composed/

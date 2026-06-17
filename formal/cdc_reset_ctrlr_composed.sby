@@ -24,7 +24,7 @@ abc pdr
 
 [script]
 plugin -i slang.so
-read_slang --std 1800-2017 -Wno-implicit-port-type-mismatch -I../../../include --top cc_cdc_reset_ctrlr_composed_harness cc_pkg.sv cc_sync.sv cc_cdc_4phase.sv cc_cdc_reset_ctrlr.sv cc_cdc_reset_ctrlr_half_properties.sv cc_cdc_reset_ctrlr_properties.sv
+read_slang --std 1800-2017 -Wno-implicit-port-type-mismatch -I../../../../include --top cc_cdc_reset_ctrlr_composed_harness cc_pkg.sv cc_sync.sv cc_cdc_4phase.sv cc_cdc_reset_ctrlr.sv cc_cdc_reset_ctrlr_half_properties.sv cc_cdc_reset_ctrlr_properties.sv
 prep -top cc_cdc_reset_ctrlr_composed_harness
 async2sync
 dffunmap
