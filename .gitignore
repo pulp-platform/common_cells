@@ -9,8 +9,6 @@ build
 formal/fifo
 formal/counter
 formal/fall_through_register
-formal/cdc_reset_ctrlr_half
-formal/cdc_reset_ctrlr_composed
 *.check
 *.vcd
 obj_dir/

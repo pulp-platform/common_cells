@@ -22,6 +22,9 @@ set -euo pipefail
 : "${BENDER:=bender}"
 : "${VSIM:=vsim}"
 
+read -r -a bender_cmd <<< "${BENDER}"
+read -r -a vsim_cmd <<< "${VSIM}"
+
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(cd "${script_dir}/.." && pwd)"
 build_dir="${CDC_CLEARABLE_BUILDDIR:-${repo_root}/build/vsim/cdc_clearable}"
@@ -30,10 +33,11 @@ compile_tcl="${build_dir}/compile.tcl"
 mkdir -p "${build_dir}"
 
 cd "${repo_root}"
-"${BENDER}" script vsim -t test > "${compile_tcl}"
+"${bender_cmd[@]}" checkout
+"${bender_cmd[@]}" script vsim -t test > "${compile_tcl}"
 
 cd "${build_dir}"
-"${VSIM}" -c -quiet -do "source ${compile_tcl}; quit"
+"${vsim_cmd[@]}" -c -quiet -do "source ${compile_tcl}; quit"
 
 call_vsim() {
   local name="$1"
@@ -43,7 +47,7 @@ call_vsim() {
   # Questa 10.7 reports the enum-typed RESET_MSG parameter default in
   # cc_cdc_4phase_src as a suppressible elaboration error, even though the
   # reset controller overrides it with an enum value.
-  "${VSIM}" -c -quiet cc_cdc_2phase_clearable_tb -suppress 8386 "$@" -do 'run -all; quit -f' |
+  "${vsim_cmd[@]}" -c -quiet cc_cdc_2phase_clearable_tb -suppress 8386 "$@" -do 'run -all; quit -f' |
     tee "${log_file}"
   grep "Errors: 0," "${log_file}"
 }

@@ -44,11 +44,16 @@ sg-lint:
     PARAM2: ""
   timeout: 10min
   script:
-    - bender checkout
-    - bender script vsim -t test > compile.tcl
-    - $VSIM -c -quiet -do 'source compile.tcl; quit'
-    - $VSIM -c $TOPLEVEL -voptargs="-timescale 1ns/100ps" -do "run -all" $PARAM1 $PARAM2
-    - (! grep -n "Error:" transcript)
+    - |
+      if [ "$TOPLEVEL" = "cc_cdc_2phase_clearable_tb" ]; then
+        ./test/simulate_cdc_clearable.sh
+      else
+        bender checkout
+        bender script vsim -t test > compile.tcl
+        $VSIM -c -quiet -do 'source compile.tcl; quit'
+        $VSIM -c $TOPLEVEL -voptargs="-timescale 1ns/100ps" -do "run -all" $PARAM1 $PARAM2
+        (! grep -n "Error:" transcript)
+      fi
 
 tests:
   extends: .test-tpl
@@ -57,6 +62,7 @@ tests:
       - TOPLEVEL:
           - cc_addr_decode_tb
           - cc_cb_filter_tb
+          - cc_cdc_2phase_clearable_tb
           # - cc_cdc_fifo_clearable_tb
           - cc_clk_int_div_tb
           - cc_clk_int_div_static_tb
@@ -82,3 +88,7 @@ tests:
       #   PARAM1: [-GDEPTH=1, -GDEPTH=2, -GDEPTH=3, -GDEPTH=4, -GDEPTH=5]
       #   PARAM2: [-GGRAY=0, -GGRAY=1]
 
+formal:
+  timeout: 30min
+  script:
+    - make -B -C formal cdc_reset_ctrlr_half.check cdc_reset_ctrlr_composed.check

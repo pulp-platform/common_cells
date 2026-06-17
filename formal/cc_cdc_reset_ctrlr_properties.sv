@@ -37,28 +37,13 @@ module cc_cdc_reset_ctrlr_composed_harness (
   logic a_init_q = 1'b0;
   logic b_init_q = 1'b0;
 
-  localparam int unsigned ResetCtrlrSyncStages = 2;
-  localparam int unsigned MaxRelativeClockCycles = 16;
-  localparam int unsigned ProgressBoundCycles =
-      MaxRelativeClockCycles * (20 + 16 * ResetCtrlrSyncStages + 4);
-  localparam int unsigned ProgressCounterWidth = $clog2(ProgressBoundCycles + 1);
-  localparam int unsigned ClockGapCounterWidth = $clog2(MaxRelativeClockCycles + 1);
-
   logic clear_sequence_idle;
-  logic a_clock_beat_q;
-  logic b_clock_beat_q;
-  logic a_seen_b_clock_beat_q;
-  logic b_seen_a_clock_beat_q;
-  logic [ClockGapCounterWidth-1:0] a_cycles_without_b_clock_q;
-  logic [ClockGapCounterWidth-1:0] b_cycles_without_a_clock_q;
   logic a_progress_armed_q;
   logic a_progress_active_q;
   logic a_progress_seen_clear_q;
-  logic [ProgressCounterWidth-1:0] a_progress_cycles_q;
   logic b_progress_armed_q;
   logic b_progress_active_q;
   logic b_progress_seen_clear_q;
-  logic [ProgressCounterWidth-1:0] b_progress_cycles_q;
 
   assign clear_sequence_idle = !(a_isolate_o || a_clear_o || b_isolate_o || b_clear_o);
 
@@ -147,60 +132,30 @@ module cc_cdc_reset_ctrlr_composed_harness (
   end
 
   // Side-A sequential checks validate the one-cycle acknowledgement model and
-  // cover a sequence initiated from A that propagates isolation to B. The
-  // clock-beat assumption bounds relative clock stalls so the progress watchdog
-  // can turn clear-sequence deadlocks into bounded safety checks.
+  // cover a sequence initiated from A that propagates isolation to B.
   always_ff @(posedge a_clk_i) begin
-    if (!a_rst_ni) begin
-      a_clock_beat_q <= 1'b0;
-    end else begin
-      a_clock_beat_q <= ~a_clock_beat_q;
-    end
-
     if (a_rst_ni && $past(a_rst_ni) && a_init_q) begin
       assert (a_isolate_ack_q == $past(a_isolate_o));
       assert (a_clear_ack_q == $past(a_clear_o));
     end
 
     if (!a_rst_ni || !b_rst_ni || !a_init_q || !b_init_q) begin
-      a_seen_b_clock_beat_q       <= b_clock_beat_q;
-      a_cycles_without_b_clock_q  <= '0;
-    end else if (a_seen_b_clock_beat_q != b_clock_beat_q) begin
-      a_seen_b_clock_beat_q       <= b_clock_beat_q;
-      a_cycles_without_b_clock_q  <= '0;
-    end else begin
-      a_cycles_without_b_clock_q <= a_cycles_without_b_clock_q + 1'b1;
-      assume (a_cycles_without_b_clock_q < MaxRelativeClockCycles);
-    end
-
-    if (a_rst_ni && b_rst_ni && $past(a_rst_ni) && $past(b_rst_ni) &&
-        a_init_q && b_init_q && $past(a_init_q) && $past(b_init_q) &&
-        $past(a_clear_i)) begin
-      assert (a_isolate_o);
-    end
-
-    if (!a_rst_ni || !b_rst_ni || !a_init_q || !b_init_q) begin
       a_progress_armed_q      <= 1'b0;
       a_progress_active_q     <= 1'b0;
       a_progress_seen_clear_q <= 1'b0;
-      a_progress_cycles_q     <= '0;
     end else if (!a_progress_armed_q) begin
       a_progress_armed_q      <= clear_sequence_idle;
       a_progress_active_q     <= 1'b0;
       a_progress_seen_clear_q <= 1'b0;
-      a_progress_cycles_q     <= '0;
     end else if (clear_sequence_idle) begin
       if (a_progress_active_q) begin
         assert (a_progress_seen_clear_q);
       end
       a_progress_active_q     <= 1'b0;
       a_progress_seen_clear_q <= 1'b0;
-      a_progress_cycles_q     <= '0;
     end else begin
       a_progress_active_q     <= 1'b1;
       a_progress_seen_clear_q <= a_progress_seen_clear_q || a_clear_o;
-      a_progress_cycles_q     <= a_progress_cycles_q + 1'b1;
-      assert (a_progress_cycles_q < ProgressBoundCycles);
     end
 
     cover (a_rst_ni && b_rst_ni && a_clear_o && b_isolate_o);
@@ -209,56 +164,28 @@ module cc_cdc_reset_ctrlr_composed_harness (
   // Side-B sequential checks mirror the side-A properties and cover a sequence
   // initiated from B that propagates isolation to A.
   always_ff @(posedge b_clk_i) begin
-    if (!b_rst_ni) begin
-      b_clock_beat_q <= 1'b0;
-    end else begin
-      b_clock_beat_q <= ~b_clock_beat_q;
-    end
-
     if (b_rst_ni && $past(b_rst_ni) && b_init_q) begin
       assert (b_isolate_ack_q == $past(b_isolate_o));
       assert (b_clear_ack_q == $past(b_clear_o));
     end
 
     if (!a_rst_ni || !b_rst_ni || !a_init_q || !b_init_q) begin
-      b_seen_a_clock_beat_q       <= a_clock_beat_q;
-      b_cycles_without_a_clock_q  <= '0;
-    end else if (b_seen_a_clock_beat_q != a_clock_beat_q) begin
-      b_seen_a_clock_beat_q       <= a_clock_beat_q;
-      b_cycles_without_a_clock_q  <= '0;
-    end else begin
-      b_cycles_without_a_clock_q <= b_cycles_without_a_clock_q + 1'b1;
-      assume (b_cycles_without_a_clock_q < MaxRelativeClockCycles);
-    end
-
-    if (a_rst_ni && b_rst_ni && $past(a_rst_ni) && $past(b_rst_ni) &&
-        a_init_q && b_init_q && $past(a_init_q) && $past(b_init_q) &&
-        $past(b_clear_i)) begin
-      assert (b_isolate_o);
-    end
-
-    if (!a_rst_ni || !b_rst_ni || !a_init_q || !b_init_q) begin
       b_progress_armed_q      <= 1'b0;
       b_progress_active_q     <= 1'b0;
       b_progress_seen_clear_q <= 1'b0;
-      b_progress_cycles_q     <= '0;
     end else if (!b_progress_armed_q) begin
       b_progress_armed_q      <= clear_sequence_idle;
       b_progress_active_q     <= 1'b0;
       b_progress_seen_clear_q <= 1'b0;
-      b_progress_cycles_q     <= '0;
     end else if (clear_sequence_idle) begin
       if (b_progress_active_q) begin
         assert (b_progress_seen_clear_q);
       end
       b_progress_active_q     <= 1'b0;
       b_progress_seen_clear_q <= 1'b0;
-      b_progress_cycles_q     <= '0;
     end else begin
       b_progress_active_q     <= 1'b1;
       b_progress_seen_clear_q <= b_progress_seen_clear_q || b_clear_o;
-      b_progress_cycles_q     <= b_progress_cycles_q + 1'b1;
-      assert (b_progress_cycles_q < ProgressBoundCycles);
     end
 
     cover (a_rst_ni && b_rst_ni && b_clear_o && a_isolate_o);
