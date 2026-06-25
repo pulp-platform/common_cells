@@ -26,7 +26,7 @@ module cc_fifo #(
     // status flags
     output logic  full_o,           // queue is full
     output logic  empty_o,          // queue is empty
-    output logic  [AddrDepth-1:0] usage_o,  // fill pointer
+    output logic  [AddrDepth:0] usage_o,  // fill pointer
     // as long as the queue is not full we can push new data
     input  data_t data_i,           // data to push into the queue
     input  logic  push_i,           // data is valid and can be pushed to the queue
@@ -47,7 +47,7 @@ module cc_fifo #(
     // actual memory
     data_t [FifoDepth - 1:0] mem_n, mem_q;
 
-    assign usage_o = status_cnt_q[AddrDepth-1:0];
+    assign usage_o = status_cnt_q;
 
     if (Depth == 0) begin : gen_pass_through
         assign empty_o     = ~push_i;
