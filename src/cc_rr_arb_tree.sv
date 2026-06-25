@@ -114,7 +114,7 @@ module cc_rr_arb_tree #(
   // just pass through in this corner case
   if (NumIn == unsigned'(1)) begin : gen_pass_through
     assign req_o    = req_i[0];
-    assign gnt_o[0] = gnt_i;
+    assign gnt_o[0] = gnt_i & (AxiVldRdy | req_i[0]);
     assign data_o   = data_i[0];
     assign idx_o    = '0;
   // non-degenerate cases
