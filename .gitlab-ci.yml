@@ -7,6 +7,7 @@
 default:
   before_script:
     - source iis-env.sh
+    - export BENDER_NO_PROGRESS=true
 
 variables:
   VSIM: questa-2022.3 vsim -64
