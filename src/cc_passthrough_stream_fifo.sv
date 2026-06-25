@@ -77,7 +77,7 @@ module cc_passthrough_stream_fifo #(
             // Read
             valid_o = read_ptr_q[PointerWidth-1] == write_ptr_q[PointerWidth-1]
                 ? read_ptr_q[PointerWidth-2:0] != write_ptr_q[PointerWidth-2:0] : 1'b1;
-            if (ready_i) begin
+            if (ready_i && valid_o) begin
                 if (read_ptr_q[PointerWidth-2:0] == (Depth-1)) begin
                     // On overflow reset pointer to zero and flip imaginary bit
                     read_ptr_d[PointerWidth-2:0] = '0;
@@ -93,7 +93,7 @@ module cc_passthrough_stream_fifo #(
                 ? 1'b1 : write_ptr_q[PointerWidth-2:0] != read_ptr_q[PointerWidth-2:0])
                 || (SameCycleRW && ready_i && valid_o);
 
-            if (valid_i) begin
+            if (valid_i && ready_o) begin
                 load_data = 1'b1;
                 data_d[write_ptr_q[PointerWidth-2:0]] = data_i;
 
@@ -114,12 +114,5 @@ module cc_passthrough_stream_fifo #(
     `FFARNC(write_ptr_q, write_ptr_d, clr_i, '0, clk_i, rst_ni)
 
     `FFLARNC(data_q, data_d, load_data, clr_i, '0, clk_i, rst_ni)
-
-    `ifndef COMMON_CELLS_ASSERTS_OFF
-    // no full push
-    `ASSERT_NEVER(CheckFullPush, (!ready_o & valid_i), clk_i, !rst_ni)
-    // empty pop
-    `ASSERT_NEVER(CheckEmptyPop, (!valid_o & ready_i), clk_i, !rst_ni)
-    `endif
 
 endmodule
