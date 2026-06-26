@@ -155,3 +155,94 @@ sources:
       - test/cc_ecc_synth.sv
       # Level 1
       - test/cc_synth_bench.sv
+
+  # Deprecated wrappers: legacy module names that wrap the new cc_* modules.
+  # Included by default for backward compatibility. Set the target 'cc_no_deprecated'
+  # to exclude them and enforce use of the new cc_* names.
+  - target: not(cc_no_deprecated)
+    files:
+      - src/deprecated/stream_intf.sv
+      - src/deprecated/binary_to_gray.sv
+      - src/deprecated/boxcar.sv
+      - src/deprecated/cb_filter.sv
+      - src/deprecated/cdc_2phase.sv
+      - src/deprecated/cdc_4phase.sv
+      - src/deprecated/cdc_fifo_2phase.sv
+      - src/deprecated/cdc_fifo_gray.sv
+      - src/deprecated/clk_int_div.sv
+      - src/deprecated/clk_int_div_static.sv
+      - src/deprecated/clk_mux_glitch_free.sv
+      - src/deprecated/counter.sv
+      - src/deprecated/credit_counter.sv
+      - src/deprecated/delta_counter.sv
+      - src/deprecated/ecc_decode.sv
+      - src/deprecated/ecc_encode.sv
+      - src/deprecated/edge_detect.sv
+      - src/deprecated/edge_propagator_tx.sv
+      - src/deprecated/edge_propagator_rx.sv
+      - src/deprecated/edge_propagator_ack.sv
+      - src/deprecated/edge_propagator.sv
+      - src/deprecated/exp_backoff.sv
+      - src/deprecated/fifo_v3.sv
+      - src/deprecated/gray_to_binary.sv
+      - src/deprecated/heaviside.sv
+      - src/deprecated/isochronous_4phase_handshake.sv
+      - src/deprecated/isochronous_spill_register.sv
+      - src/deprecated/lfsr.sv
+      - src/deprecated/lfsr_16bit.sv
+      - src/deprecated/lfsr_8bit.sv
+      - src/deprecated/lossy_valid_to_stream.sv
+      - src/deprecated/lzc.sv
+      - src/deprecated/onehot_to_bin.sv
+      - src/deprecated/passthrough_stream_fifo.sv
+      - src/deprecated/plru_tree.sv
+      - src/deprecated/popcount.sv
+      - src/deprecated/read.sv
+      - src/deprecated/ring_buffer.sv
+      - src/deprecated/rr_arb_tree.sv
+      - src/deprecated/rstgen_bypass.sv
+      - src/deprecated/rstgen.sv
+      - src/deprecated/serial_deglitch.sv
+      - src/deprecated/shift_reg.sv
+      - src/deprecated/shift_reg_gated.sv
+      - src/deprecated/spill_register.sv
+      - src/deprecated/spill_register_flushable.sv
+      - src/deprecated/sub_per_hash.sv
+      - src/deprecated/sync.sv
+      - src/deprecated/sync_wedge.sv
+      - src/deprecated/unread.sv
+      - src/deprecated/fall_through_register.sv
+      - src/deprecated/max_counter.sv
+      - src/deprecated/mv_filter.sv
+      - src/deprecated/trip_counter.sv
+      # Level 1
+      - src/deprecated/addr_decode.sv
+      - src/deprecated/addr_decode_dync.sv
+      - src/deprecated/addr_decode_napot.sv
+      - src/deprecated/multiaddr_decode.sv
+      - src/deprecated/cdc_reset_ctrlr.sv
+      - src/deprecated/stream_demux.sv
+      - src/deprecated/stream_mux.sv
+      - src/deprecated/stream_throttle.sv
+      # Level 2
+      - src/deprecated/cdc_2phase_clearable.sv
+      - src/deprecated/cdc_fifo_gray_clearable.sv
+      - src/deprecated/id_queue.sv
+      - src/deprecated/stream_arbiter_flushable.sv
+      - src/deprecated/stream_delay.sv
+      - src/deprecated/stream_fifo.sv
+      - src/deprecated/stream_fifo_optimal_wrap.sv
+      - src/deprecated/stream_filter.sv
+      - src/deprecated/stream_fork.sv
+      - src/deprecated/stream_fork_dynamic.sv
+      - src/deprecated/stream_join.sv
+      - src/deprecated/stream_join_dynamic.sv
+      - src/deprecated/stream_register.sv
+      - src/deprecated/stream_to_mem.sv
+      - src/deprecated/stream_xbar.sv
+      # Level 3
+      - src/deprecated/mem_to_banks_detailed.sv
+      - src/deprecated/stream_arbiter.sv
+      - src/deprecated/stream_omega_net.sv
+      # Level 4
+      - src/deprecated/mem_to_banks.sv
