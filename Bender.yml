@@ -161,6 +161,10 @@ sources:
   # to exclude them and enforce use of the new cc_* names.
   - target: not(cc_no_deprecated)
     files:
+      # Deprecated packages forwarding to cc_pkg (keep old `cf_math_pkg`/`cb_filter_pkg`/`ecc_pkg` names working)
+      - src/deprecated/cf_math_pkg.sv
+      - src/deprecated/cb_filter_pkg.sv
+      - src/deprecated/ecc_pkg.sv
       - src/deprecated/stream_intf.sv
       - src/deprecated/binary_to_gray.sv
       - src/deprecated/boxcar.sv
