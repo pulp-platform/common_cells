@@ -238,4 +238,8 @@
     end                                                \
   end
 
+// Deprecated register macro aliases (`FFARN, `FFLARN, ...) kept for backward
+// compatibility are defined in a separate include in the deprecated folder.
+`include "common_cells/deprecated/registers.svh"
+
 `endif
