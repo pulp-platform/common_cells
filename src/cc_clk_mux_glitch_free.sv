@@ -177,7 +177,7 @@ module cc_clk_mux_glitch_free #(
                                        s_gate_enable_unfiltered_async[i];
 
     // Synchronize to current clock
-    cc_sync #(.Stages(NumSyncStages)) i_sync_en(
+    tc_sync #(.Stages(NumSyncStages)) i_sync_en(
       .clk_i    ( clks_i[i]                       ),
       .rst_ni   ( s_reset_synced[i]               ),
       .serial_i ( s_glitch_filter_output_async[i] ),

@@ -298,7 +298,7 @@ module cc_cdc_fifo_gray_src_clearable #(
 
   // Read pointer.
   for (genvar i = 0; i < PtrWidth; i++) begin : gen_sync
-    cc_sync #(.Stages(SyncStages)) i_sync (
+    tc_sync #(.Stages(SyncStages)) i_sync (
       .clk_i    ( src_clk_i       ),
       .rst_ni   ( src_rst_ni      ),
       .serial_i ( async_rptr_i[i] ),
@@ -360,7 +360,7 @@ module cc_cdc_fifo_gray_dst_clearable #(
 
   // Write pointer.
   for (genvar i = 0; i < PtrWidth; i++) begin : gen_sync
-    cc_sync #(.Stages(SyncStages)) i_sync (
+    tc_sync #(.Stages(SyncStages)) i_sync (
       .clk_i    ( dst_clk_i       ),
       .rst_ni   ( dst_rst_ni      ),
       .serial_i ( async_wptr_i[i] ),

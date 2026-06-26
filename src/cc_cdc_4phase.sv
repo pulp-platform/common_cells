@@ -117,7 +117,7 @@ module cc_cdc_4phase_src #(
   state_e state_d, state_q;
 
   // Synchronize the async ACK
-  cc_sync #(
+  tc_sync #(
     .Stages(SyncStages)
   ) i_sync(
     .clk_i,
@@ -231,7 +231,7 @@ module cc_cdc_4phase_dst #(
   state_e state_d, state_q;
 
   //Synchronize the request
-  cc_sync #(
+  tc_sync #(
     .Stages(SyncStages)
   ) i_sync(
     .clk_i,

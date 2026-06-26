@@ -392,7 +392,7 @@ module cc_cdc_2phase_src_clearable #(
   data_t data_src_d, data_src_q;
 
   // Synchronize the async ACK
-  cc_sync #(
+  tc_sync #(
     .Stages(SyncStages)
   ) i_sync(
     .clk_i,
@@ -464,7 +464,7 @@ module cc_cdc_2phase_dst_clearable #(
 
 
   //Synchronize the request
-  cc_sync #(
+  tc_sync #(
     .Stages(SyncStages)
   ) i_sync(
     .clk_i,

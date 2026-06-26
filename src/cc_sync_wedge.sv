@@ -28,7 +28,7 @@ module cc_sync_wedge #(
     assign f_edge_o = (~serial) & serial_q;
     assign r_edge_o =  serial & (~serial_q);
 
-    cc_sync #(
+    tc_sync #(
         .Stages (Stages)
     ) i_sync (
         .clk_i,
