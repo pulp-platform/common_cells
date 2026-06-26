@@ -12,7 +12,7 @@ package:
 
 dependencies:
   common_verification: { git: "https://github.com/pulp-platform/common_verification.git", version: 0.2.0 }
-  tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", rev: "tc_sync" }
+  tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.2.14 }
 
 export_include_dirs:
   - include
@@ -71,6 +71,7 @@ sources:
       - src/cc_cdc_2phase.sv
       - src/cc_cdc_4phase.sv
       - src/cc_clk_int_div_static.sv
+      - src/cc_edge_detect.sv
       - src/cc_edge_propagator_ack.sv
       - src/cc_edge_propagator_rx.sv
       - src/cc_trip_counter.sv
@@ -87,7 +88,6 @@ sources:
       - src/cc_counter.sv
       - src/cc_ecc_decode.sv
       - src/cc_ecc_encode.sv
-      - src/cc_edge_detect.sv
       - src/cc_lzc.sv
       - src/cc_majority_vote_filter.sv
       - src/cc_max_counter.sv
