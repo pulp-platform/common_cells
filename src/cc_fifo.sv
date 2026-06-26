@@ -18,7 +18,7 @@ module cc_fifo #(
     parameter int unsigned Depth       = 8,    // depth can be arbitrary from 0 to 2**32
     parameter type         data_t      = logic [DataWidth-1:0],
     // DO NOT OVERWRITE THIS PARAMETER
-    localparam int unsigned AddrDepth = (Depth > 1) ? $clog2(Depth) : 1
+    localparam int unsigned UsageWidth = cc_pkg::cnt_width(Depth)
 )(
     input  logic  clk_i,            // Clock
     input  logic  rst_ni,           // Asynchronous reset active low
@@ -26,7 +26,7 @@ module cc_fifo #(
     // status flags
     output logic  full_o,           // queue is full
     output logic  empty_o,          // queue is empty
-    output logic  [AddrDepth:0] usage_o,  // fill pointer
+    output logic  [UsageWidth-1:0] usage_o,  // fill pointer
     // as long as the queue is not full we can push new data
     input  data_t data_i,           // data to push into the queue
     input  logic  push_i,           // data is valid and can be pushed to the queue
@@ -37,13 +37,14 @@ module cc_fifo #(
     // local parameter
     // FIFO depth - handle the case of pass-through, synthesizer will do constant propagation
     localparam int unsigned FifoDepth = (Depth > 0) ? Depth : 1;
+    localparam int unsigned PtrWidth = cc_pkg::idx_width(Depth);
     // clock gating control
     logic gate_clock;
     // pointer to the read and write section of the queue
-    logic [AddrDepth - 1:0] read_pointer_n, read_pointer_q, write_pointer_n, write_pointer_q;
+    logic [PtrWidth-1:0] read_pointer_n, read_pointer_q, write_pointer_n, write_pointer_q;
     // keep a counter to keep track of the current queue status
     // this integer will be truncated by the synthesis tool
-    logic [AddrDepth:0] status_cnt_n, status_cnt_q;
+    logic [UsageWidth-1:0] status_cnt_n, status_cnt_q;
     // actual memory
     data_t [FifoDepth - 1:0] mem_n, mem_q;
 
@@ -53,7 +54,7 @@ module cc_fifo #(
         assign empty_o     = ~push_i;
         assign full_o      = ~pop_i;
     end else begin : gen_fifo
-        assign full_o       = (status_cnt_q == FifoDepth[AddrDepth:0]);
+        assign full_o       = (status_cnt_q == FifoDepth[UsageWidth-1:0]);
         assign empty_o      = (status_cnt_q == 0) & ~(FallThrough & push_i);
     end
     // status flags
@@ -76,7 +77,7 @@ module cc_fifo #(
             gate_clock = 1'b0;
             // increment the write counter
             // this is dead code when Depth is a power of two
-            if (write_pointer_q == FifoDepth[AddrDepth-1:0] - 1)
+            if (write_pointer_q == FifoDepth[PtrWidth-1:0] - 1)
                 write_pointer_n = '0;
             else
                 write_pointer_n = write_pointer_q + 1;
@@ -88,7 +89,7 @@ module cc_fifo #(
             // read from the queue is a default assignment
             // but increment the read pointer...
             // this is dead code when Depth is a power of two
-            if (read_pointer_n == FifoDepth[AddrDepth-1:0] - 1)
+            if (read_pointer_n == FifoDepth[PtrWidth-1:0] - 1)
                 read_pointer_n = '0;
             else
                 read_pointer_n = read_pointer_q + 1;

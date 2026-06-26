@@ -48,6 +48,11 @@ package cc_pkg;
     end
   endfunction
 
+  /// Count width required to represent all count values from `0` to `max_cnt`, inclusive.
+  function automatic int unsigned cnt_width (input int unsigned max_cnt);
+    return idx_width(max_cnt + 1);
+  endfunction
+
   /// Checks if a value is a power of 2 (and is not 0)
   /// Returns 1 if the input value is a power of 2, else 0
   function automatic bit is_power_of_2 (input int unsigned value);

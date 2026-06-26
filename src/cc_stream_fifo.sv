@@ -19,20 +19,20 @@ module cc_stream_fifo #(
     parameter int unsigned Depth       = 8,
     parameter type         data_t      = logic [DataWidth-1:0],
     // DO NOT OVERWRITE THIS PARAMETER
-    localparam int unsigned AddrDepth  = (Depth > 1) ? $clog2(Depth) : 1
+    localparam int unsigned UsageWidth = cc_pkg::cnt_width(Depth)
 ) (
-    input  logic                 clk_i,      // Clock
-    input  logic                 rst_ni,     // Asynchronous reset active low
-    input  logic                 flush_i,    // flush the fifo
-    output logic [AddrDepth:0] usage_o,    // fill pointer
+    input  logic                  clk_i,    // Clock
+    input  logic                  rst_ni,   // Asynchronous reset active low
+    input  logic                  flush_i,  // flush the fifo
+    output logic [UsageWidth-1:0] usage_o,  // fill pointer
     // input interface
-    input  data_t                data_i,     // data to push into the fifo
-    input  logic                 valid_i,    // input data valid
-    output logic                 ready_o,    // fifo is not full
+    input  data_t                 data_i,   // data to push into the fifo
+    input  logic                  valid_i,  // input data valid
+    output logic                  ready_o,  // fifo is not full
     // output interface
-    output data_t                data_o,     // output data
-    output logic                 valid_o,    // fifo is not empty
-    input  logic                 ready_i     // pop head from fifo
+    output data_t                 data_o,   // output data
+    output logic                  valid_o,  // fifo is not empty
+    input  logic                  ready_i   // pop head from fifo
 );
 
     logic push, pop;
