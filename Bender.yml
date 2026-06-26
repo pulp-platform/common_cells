@@ -12,7 +12,7 @@ package:
 
 dependencies:
   common_verification: { git: "https://github.com/pulp-platform/common_verification.git", version: 0.2.0 }
-  tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.2.11 }
+  tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", rev: "tc_sync" }
 
 export_include_dirs:
   - include
@@ -62,7 +62,6 @@ sources:
       - src/cc_stream_mux.sv
       - src/cc_stream_throttle.sv
       - src/cc_sub_per_hash.sv
-      - src/cc_sync.sv
       - src/cc_sync_wedge.sv
       - src/cc_unread.sv
       - src/cc_read.sv
