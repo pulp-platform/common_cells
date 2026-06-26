@@ -116,6 +116,11 @@ sources:
       # Level 4
       - src/cc_mem_to_banks.sv
 
+  - target: formal
+    files:
+      - formal/cc_cdc_reset_ctrlr_half_properties.sv
+      - formal/cc_cdc_reset_ctrlr_properties.sv
+
   - target: test
     files:
       # Level 0
