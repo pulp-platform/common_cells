@@ -19,15 +19,22 @@
 
 YOSYS	?= yosys
 SBY	?= sby
+BENDER	?= bender
 RM	?= rm -rf
 
 FORMAL_BUILDDIR ?= build
+FORMAL_FLIST := $(FORMAL_BUILDDIR)/cdc_reset_ctrlr.flist
 
 all: fifo.check counter.check fall_through_register.check cdc_reset_ctrlr_half.check \
 	cdc_reset_ctrlr_composed.check
 
 $(FORMAL_BUILDDIR):
 	mkdir -p $@
+
+$(FORMAL_FLIST): ../Bender.yml ../Bender.lock cc_cdc_reset_ctrlr_half_properties.sv \
+		cc_cdc_reset_ctrlr_properties.sv | $(FORMAL_BUILDDIR)
+	cd .. && $(BENDER) checkout
+	cd .. && $(BENDER) script flist-plus -t formal > formal/$@
 
 fifo.check: fifo.sby ../src/cc_fifo.sv cc_fifo_properties.sv
 	$(SBY) -f $<
@@ -48,18 +55,15 @@ fall_through_register.check: fall_through_register.sby ../src/cc_fall_through_re
 
 cdc_reset_ctrlr_half.check: $(FORMAL_BUILDDIR)/cdc_reset_ctrlr_half.check
 
-$(FORMAL_BUILDDIR)/cdc_reset_ctrlr_half.check: cdc_reset_ctrlr_half.sby cc_cdc_reset_ctrlr_half_properties.sv \
-				../src/cc_cdc_reset_ctrlr.sv ../src/cc_cdc_4phase.sv \
-				../src/cc_sync.sv ../src/cc_pkg.sv | $(FORMAL_BUILDDIR)
+$(FORMAL_BUILDDIR)/cdc_reset_ctrlr_half.check: cdc_reset_ctrlr_half.sby $(FORMAL_FLIST) | \
+				$(FORMAL_BUILDDIR)
 	$(SBY) -f -d $(FORMAL_BUILDDIR)/cdc_reset_ctrlr_half $<
 	touch $@
 
 cdc_reset_ctrlr_composed.check: $(FORMAL_BUILDDIR)/cdc_reset_ctrlr_composed.check
 
-$(FORMAL_BUILDDIR)/cdc_reset_ctrlr_composed.check: cdc_reset_ctrlr_composed.sby cc_cdc_reset_ctrlr_properties.sv \
-				cc_cdc_reset_ctrlr_half_properties.sv \
-				../src/cc_cdc_reset_ctrlr.sv ../src/cc_cdc_4phase.sv \
-				../src/cc_sync.sv ../src/cc_pkg.sv | $(FORMAL_BUILDDIR)
+$(FORMAL_BUILDDIR)/cdc_reset_ctrlr_composed.check: cdc_reset_ctrlr_composed.sby $(FORMAL_FLIST) | \
+				$(FORMAL_BUILDDIR)
 	$(SBY) -f -d $(FORMAL_BUILDDIR)/cdc_reset_ctrlr_composed $<
 	touch $@
 
