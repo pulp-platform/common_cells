@@ -103,7 +103,7 @@ sources:
       - src/cc_fall_through_register.sv
       - src/cc_id_queue.sv
       - src/cc_stream_to_mem.sv
-      - src/cc_stream_arbiter_flushable.sv
+      - src/cc_stream_arbiter.sv
       - src/cc_stream_fifo_optimal_wrap.sv
       - src/cc_stream_register.sv
       - src/cc_stream_xbar.sv
@@ -111,7 +111,6 @@ sources:
       - src/cc_cdc_fifo_gray_clearable.sv
       - src/cc_cdc_2phase_clearable.sv
       - src/cc_mem_to_banks_detailed.sv
-      - src/cc_stream_arbiter.sv
       - src/cc_stream_omega_net.sv
       # Level 4
       - src/cc_mem_to_banks.sv

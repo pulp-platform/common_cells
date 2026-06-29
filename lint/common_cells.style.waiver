@@ -2,7 +2,5 @@
 waive --rule=typedef-structs-unions --line=36 --location="src/cc_ecc_decode.sv"
 waive --rule=typedef-structs-unions --line=29 --location="src/cc_ecc_encode.sv"
 # That is a known issue with string parameter in Synopsys DC
-waive --rule=explicit-parameter-storage-type --line=19 --location="src/cc_stream_arbiter.sv"
-waive --rule=explicit-parameter-storage-type --line=19 --location="src/cc_stream_arbiter_flushable.sv"
 # Allow strings to continue across lines
 waive --rule=forbid-line-continuations

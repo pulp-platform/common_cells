@@ -67,11 +67,11 @@ module cc_stream_omega_net #(
   input  logic                  rst_ni,
   /// Synchronous clear, active high.
   input  logic                  clr_i,
-  /// Flush the state of the internal `cc_rr_arb_tree` modules.
+  /// Clear the state of the internal `cc_rr_arb_tree` modules.
   /// If not used set to `0`.
-  /// Flush should only be used if there are no active `valid_i`, otherwise it will
+  /// `clr_arb_i` should only be used if there are no active `valid_i`, otherwise it will
   /// not adhere to the AXI handshaking.
-  input  logic                  flush_i,
+  input  logic                  clr_arb_i,
   /// Provide an external state for the `cc_rr_arb_tree` models.
   /// Will only do something if ExtPrio is `1` otherwise tie to `0`.
   input  idx_inp_t [NumOut-1:0] rr_i,
@@ -109,7 +109,7 @@ module cc_stream_omega_net #(
       .clk_i,
       .rst_ni,
       .clr_i,
-      .flush_i,
+      .clr_arb_i,
       .rr_i    ( rr_i    ),
       .data_i  ( data_i  ),
       .sel_i   ( sel_i   ),
@@ -233,7 +233,7 @@ module cc_stream_omega_net #(
           .clk_i,
           .rst_ni,
           .clr_i,
-          .flush_i,
+          .clr_arb_i,
           .rr_i    ( '0                     ),
           .data_i  ( inp_router_data[i][j]  ),
           .sel_i   ( sel_router             ),

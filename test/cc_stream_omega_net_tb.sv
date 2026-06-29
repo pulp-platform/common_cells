@@ -36,10 +36,10 @@ module cc_stream_omega_net_tb #(
 
   logic              clk;
   logic              rst_n;
-  logic              flush;
+  logic              clr_arb;
   logic [DutNumInp-1:0] sim_done;
 
-  assign flush = 1'b0;
+  assign clr_arb = 1'b0;
 
   // clock generator
   clk_rst_gen #(
@@ -155,18 +155,18 @@ module cc_stream_omega_net_tb #(
     .AxiVldRdy    ( 1'b1        ),
     .LockIn       ( 1'b1        )
   ) i_stream_omega_net_dut (
-    .clk_i   ( clk       ),
-    .rst_ni  ( rst_n     ),
-    .clr_i   ( 1'b0      ),
-    .flush_i ( flush     ),
-    .rr_i    ( '0        ),
-    .data_i  ( inp_data  ),
-    .sel_i   ( out_sel   ),
-    .valid_i ( inp_valid ),
-    .ready_o ( inp_ready ),
-    .data_o  ( out_data  ),
-    .idx_o   ( out_idx   ),
-    .valid_o ( out_valid ),
-    .ready_i ( out_ready )
+    .clk_i     ( clk       ),
+    .rst_ni    ( rst_n     ),
+    .clr_i     ( 1'b0      ),
+    .clr_arb_i ( clr_arb   ),
+    .rr_i      ( '0        ),
+    .data_i    ( inp_data  ),
+    .sel_i     ( out_sel   ),
+    .valid_i   ( inp_valid ),
+    .ready_o   ( inp_ready ),
+    .data_o    ( out_data  ),
+    .idx_o     ( out_idx   ),
+    .valid_o   ( out_valid ),
+    .ready_i   ( out_ready )
   );
 endmodule

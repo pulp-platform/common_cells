@@ -31,21 +31,52 @@ module cc_stream_arbiter #(
     input  logic               oup_ready_i
 );
 
-  cc_stream_arbiter_flushable #(
-    .data_t (data_t),
-    .NumInp (NumInp),
-    .ArbMode(ArbMode)
-  ) i_arb (
-    .clk_i      (clk_i),
-    .rst_ni     (rst_ni),
-    .clr_i      (clr_i),
-    .flush_i    (1'b0),
-    .inp_data_i (inp_data_i),
-    .inp_valid_i(inp_valid_i),
-    .inp_ready_o(inp_ready_o),
-    .oup_data_o (oup_data_o),
-    .oup_valid_o(oup_valid_o),
-    .oup_ready_i(oup_ready_i)
-  );
+  if (ArbMode == cc_pkg::ARB_RR) begin : gen_rr_arb
+    cc_rr_arb_tree #(
+      .NumIn    (NumInp),
+      .data_t   (data_t),
+      .ExtPrio  (1'b0),
+      .AxiVldRdy(1'b1),
+      .LockIn   (1'b1)
+    ) i_arbiter (
+      .clk_i,
+      .rst_ni,
+      .clr_i,
+      .rr_i   ('0),
+      .req_i  (inp_valid_i),
+      .gnt_o  (inp_ready_o),
+      .data_i (inp_data_i),
+      .gnt_i  (oup_ready_i),
+      .req_o  (oup_valid_o),
+      .data_o (oup_data_o),
+      .idx_o  ()
+    );
+
+  end else if (ArbMode == cc_pkg::ARB_PRIO) begin : gen_prio_arb
+    cc_rr_arb_tree #(
+      .NumIn    (NumInp),
+      .data_t   (data_t),
+      .ExtPrio  (1'b1),
+      .AxiVldRdy(1'b1),
+      .LockIn   (1'b0)
+    ) i_arbiter (
+      .clk_i,
+      .rst_ni,
+      .clr_i,
+      .rr_i   ('0),
+      .req_i  (inp_valid_i),
+      .gnt_o  (inp_ready_o),
+      .data_i (inp_data_i),
+      .gnt_i  (oup_ready_i),
+      .req_o  (oup_valid_o),
+      .data_o (oup_data_o),
+      .idx_o  ()
+    );
+
+  end else begin : gen_arb_error
+    `ifndef SYNTHESIS
+    $fatal(1, "Invalid value for parameter 'ArbMode'!");
+    `endif
+  end
 
 endmodule

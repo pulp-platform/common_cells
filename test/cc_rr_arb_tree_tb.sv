@@ -40,7 +40,7 @@ module cc_rr_arb_tree_tb #(
   // clock signal
   logic               clk;
   logic               rst_n;
-  logic               flush;
+  logic               clr;
   idx_t               rr,       idx;
   logic  [NumInp-1:0] req_inp,  gnt_inp, end_of_sim;
   data_t [NumInp-1:0] data_inp;
@@ -150,17 +150,17 @@ module cc_rr_arb_tree_tb #(
     end
   end
 
-  // flush sometimes
-  initial begin : proc_flush
+  // clear sometimes
+  initial begin : proc_clr
     automatic int unsigned rand_wait;
-    flush = 1'b0;
+    clr = 1'b0;
     @(posedge rst_n);
     forever begin
       rand_wait = $urandom_range(2000, 20000);
       repeat (rand_wait) @(posedge clk);
-      flush <= #ApplTime 1'b1;
+      clr <= #ApplTime 1'b1;
       @(posedge clk);
-      flush <= #ApplTime 1'b0;
+      clr <= #ApplTime 1'b0;
     end
   end
 
@@ -252,8 +252,7 @@ module cc_rr_arb_tree_tb #(
   ) i_rr_arb_tree_dut (
     .clk_i  ( clk      ),
     .rst_ni ( rst_n    ),
-    .clr_i  ( 1'b0     ),
-    .flush_i( flush    ),
+    .clr_i  ( clr     ),
     .rr_i   ( '0       ),
     .req_i  ( req_inp  ),
     .gnt_o  ( gnt_inp  ),

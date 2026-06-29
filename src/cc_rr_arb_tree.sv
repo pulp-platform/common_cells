@@ -92,8 +92,6 @@ module cc_rr_arb_tree #(
   input  logic                rst_ni,
   /// Synchronous clear
   input  logic                clr_i,
-  /// Clears the arbiter state. Only used if `ExtPrio` is `1'b0` or `LockIn` is `1'b1`.
-  input  logic                flush_i,
   /// External round-robin priority. Only used if `ExtPrio` is `1'b1.`
   input  idx_t                rr_i,
   /// Input requests arbitration.
@@ -154,20 +152,20 @@ module cc_rr_arb_tree #(
         assign lock_d     = req_o & ~gnt_i;
         assign req_d      = (lock_q) ? req_q : req_i;
 
-        `FFARNC(lock_q, lock_d, clr_i || flush_i, '0, clk_i, rst_ni)
+        `FFARNC(lock_q, lock_d, clr_i, '0, clk_i, rst_ni)
 
         `ifndef COMMON_CELLS_ASSERTS_OFF
-          `ASSERT(lock, req_o && (!gnt_i && !flush_i) |=> idx_o == $past(idx_o),
-                  clk_i, !rst_ni || flush_i,
+          `ASSERT(lock, req_o && !gnt_i |=> idx_o == $past(idx_o),
+                  clk_i, !rst_ni || clr_i,
                   "Lock implies same arbiter decision in next cycle if output is not ready.")
 
           logic [NumIn-1:0] req_tmp;
           assign req_tmp = req_q & req_i;
-          `ASSUME(lock_req, lock_d |=> req_tmp == req_q, clk_i, !rst_ni || flush_i,
+          `ASSUME(lock_req, lock_d |=> req_tmp == req_q, clk_i, !rst_ni || clr_i,
                   "It is disallowed to deassert unserved request signals when LockIn is enabled.")
         `endif
 
-        `FFARNC(req_q, req_d, clr_i || flush_i, '0, clk_i, rst_ni)
+        `FFARNC(req_q, req_d, clr_i, '0, clk_i, rst_ni)
       end else begin : gen_no_lock
         assign req_d = req_i;
       end
@@ -208,7 +206,7 @@ module cc_rr_arb_tree #(
       end
 
       // this holds the highest priority
-      `FFARNC(rr_q, rr_d, clr_i || flush_i, '0, clk_i, rst_ni)
+      `FFARNC(rr_q, rr_d, clr_i, '0, clk_i, rst_ni)
     end
 
     assign gnt_nodes[0] = gnt_i;
@@ -274,20 +272,20 @@ module cc_rr_arb_tree #(
     `ASSERT_INIT(lockin_and_extprio, !(LockIn && ExtPrio),
                  "Cannot use LockIn feature together with external ExtPrio.")
 
-    `ASSERT(hot_one, $onehot0(gnt_o), clk_i, !rst_ni || flush_i,
+    `ASSERT(hot_one, $onehot0(gnt_o), clk_i, !rst_ni || clr_i,
             "Grant signal must be hot1 or zero.")
 
-    `ASSERT(gnt0, |gnt_o |-> gnt_i, clk_i, !rst_ni || flush_i, "Grant out implies grant in.")
+    `ASSERT(gnt0, |gnt_o |-> gnt_i, clk_i, !rst_ni || clr_i, "Grant out implies grant in.")
 
-    `ASSERT(gnt1, req_o |-> gnt_i |-> |gnt_o, clk_i, !rst_ni || flush_i,
+    `ASSERT(gnt1, req_o |-> gnt_i |-> |gnt_o, clk_i, !rst_ni || clr_i,
             "Req out and grant in implies grant out.")
 
-    `ASSERT(gnt_idx, req_o |->  gnt_i |-> gnt_o[idx_o], clk_i, !rst_ni || flush_i,
+    `ASSERT(gnt_idx, req_o |->  gnt_i |-> gnt_o[idx_o], clk_i, !rst_ni || clr_i,
             "Idx_o / gnt_o do not match.")
 
-    `ASSERT(req0, |req_i |-> req_o, clk_i, !rst_ni || flush_i, "Req in implies req out.")
+    `ASSERT(req0, |req_i |-> req_o, clk_i, !rst_ni || clr_i, "Req in implies req out.")
 
-    `ASSERT(req1, req_o |-> |req_i, clk_i, !rst_ni || flush_i, "Req out implies req in.")
+    `ASSERT(req1, req_o |-> |req_i, clk_i, !rst_ni || clr_i, "Req out implies req in.")
     `endif
   end
 
