@@ -307,6 +307,7 @@ module cc_cdc_4phase_dst #(
     ) i_spill_register (
       .clk_i,
       .rst_ni,
+      .clr_i('0),
       .valid_i(data_valid),
       .ready_o(output_ready),
       .data_i(async_data_i),

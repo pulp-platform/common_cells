@@ -252,6 +252,7 @@ module cc_rr_arb_tree_tb #(
   ) i_rr_arb_tree_dut (
     .clk_i  ( clk      ),
     .rst_ni ( rst_n    ),
+    .clr_i  ( 1'b0     ),
     .flush_i( flush    ),
     .rr_i   ( '0       ),
     .req_i  ( req_inp  ),

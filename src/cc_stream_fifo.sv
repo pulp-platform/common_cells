@@ -23,6 +23,7 @@ module cc_stream_fifo #(
 ) (
     input  logic                  clk_i,    // Clock
     input  logic                  rst_ni,   // Asynchronous reset active low
+    input  logic                  clr_i,    // Synchronous clear
     input  logic                  flush_i,  // flush the fifo
     output logic [UsageWidth-1:0] usage_o,  // fill pointer
     // input interface
@@ -51,6 +52,7 @@ module cc_stream_fifo #(
     ) fifo_i (
         .clk_i,
         .rst_ni,
+        .clr_i,
         .flush_i,
         .full_o (full),
         .empty_o(empty),

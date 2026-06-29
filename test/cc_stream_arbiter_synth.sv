@@ -27,6 +27,7 @@ module cc_stream_arbiter_synth (
         ) i_rr_arb (
             .clk_i,
             .rst_ni,
+            .clr_i      (1'b0),
             .inp_data_i (inp),
             .inp_valid_i(inp_valid),
             .inp_ready_o(inp_rr_ready),
@@ -42,6 +43,7 @@ module cc_stream_arbiter_synth (
         ) i_prio_arb (
             .clk_i,
             .rst_ni,
+            .clr_i      (1'b0),
             .inp_data_i (inp),
             .inp_valid_i(inp_valid),
             .inp_ready_o(inp_prio_ready),

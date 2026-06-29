@@ -16,7 +16,7 @@
 // The output q_o is high if at least Threshold of
 // the last WindowLen samples are '1', otherwise low.
 // New data is shifted in when enabled (en_i).
-// clear_i synchronously resets the history and output to '0.
+// clr_i synchronously resets the history and output to '0.
 
 `include "common_cells/registers.svh"
 `include "common_cells/assertions.svh"
@@ -27,7 +27,7 @@ module cc_majority_vote_filter #(
 )(
     input  logic clk_i,
     input  logic rst_ni,
-    input  logic clear_i,
+    input  logic clr_i,
     input  logic en_i,
     input  logic d_i,
     output logic q_o
@@ -38,7 +38,7 @@ module cc_majority_vote_filter #(
     logic [WindowLen-1:0] history_d, history_q;
 
     assign history_d = {history_q[WindowLen-2:0], d_i};
-    `FFLARNC(history_q, history_d, en_i, clear_i, '0, clk_i, rst_ni)
+    `FFLARNC(history_q, history_d, en_i, clr_i, '0, clk_i, rst_ni)
 
     cc_popcount #(
         .InputWidth(WindowLen)

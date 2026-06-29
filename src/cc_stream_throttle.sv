@@ -22,6 +22,8 @@ module cc_stream_throttle #(
     input  logic clk_i,
     /// Asynchronous reset, active low
     input  logic rst_ni,
+    /// Synchronous clear, active high
+    input  logic clr_i,
 
     /// Request valid in
     input  logic    req_valid_i,
@@ -77,6 +79,6 @@ module cc_stream_throttle #(
     assign req_ready_o = req_ready_i & credit_available;
 
     // state
-    `FF(credit_q, credit_d, '0, clk_i, rst_ni)
+    `FFARNC(credit_q, credit_d, clr_i, '0, clk_i, rst_ni)
 
 endmodule : cc_stream_throttle

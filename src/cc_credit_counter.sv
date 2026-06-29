@@ -18,12 +18,12 @@ module cc_credit_counter #(
 ) (
   input  logic clk_i,
   input  logic rst_ni,
+  input  logic clr_i,  // Synchronous clear; reinitializes credit, takes priority
 
   output credit_cnt_t credit_o,
 
   input  logic credit_give_i,
   input  logic credit_take_i,
-  input  logic credit_init_i,  // Reinitialize (soft-reset) credit; takes priority
 
   output logic credit_left_o,
   output logic credit_crit_o,  // Giving one more credit will fill the credits
@@ -42,7 +42,7 @@ module cc_credit_counter #(
     else if (increment) credit_d = credit_q + 1;
   end
 
-  `FFARNC(credit_q, credit_d, credit_init_i, InitNumCredits, clk_i, rst_ni)
+  `FFARNC(credit_q, credit_d, clr_i, InitNumCredits, clk_i, rst_ni)
 
   assign credit_o       = credit_q;
   assign credit_left_o  = (credit_q != '0);

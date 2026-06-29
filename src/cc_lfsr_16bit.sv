@@ -13,6 +13,7 @@
 // Description: 16-bit LFSR
 
 `include "common_cells/assertions.svh"
+`include "common_cells/registers.svh"
 
 // --------------
 // 16-bit LFSR
@@ -26,6 +27,7 @@ module cc_lfsr_16bit #(
 )(
     input  logic                      clk_i,
     input  logic                      rst_ni,
+    input  logic                      clr_i,  // Synchronous clear
     input  logic                      en_i,
     output logic [Width-1:0]          refill_way_oh_o,
     output logic [$clog2(Width)-1:0]  refill_way_bin_o
@@ -52,13 +54,7 @@ module cc_lfsr_16bit #(
         refill_way_bin_o = shift_q;
     end
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin : proc_
-        if(~rst_ni) begin
-            shift_q <= Seed;
-        end else begin
-            shift_q <= shift_d;
-        end
-    end
+    `FFARNC(shift_q, shift_d, clr_i, Seed, clk_i, rst_ni)
 
   `ifndef COMMON_CELLS_ASSERTS_OFF
     `ASSERT_INIT(width_gt_16, Width <= 16,

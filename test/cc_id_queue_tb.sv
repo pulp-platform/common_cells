@@ -72,6 +72,7 @@ module cc_id_queue_tb #(
     ) dut (
         .clk_i              (clk),
         .rst_ni             (rst_n),
+        .clr_i              (1'b0),
 
         .inp_id_i           (inp_id),
         .inp_data_i         (inp_data),

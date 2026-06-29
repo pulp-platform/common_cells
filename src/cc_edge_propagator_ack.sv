@@ -43,6 +43,7 @@ module cc_edge_propagator_ack (
   cc_sync_wedge u_sync_clkb (
     .clk_i    ( clk_rx_i    ),
     .rst_ni   ( rst_rx_ni   ),
+    .clr_i    ( '0          ),
     .en_i     ( 1'b1        ),
     .serial_i ( r_input_reg ),
     .r_edge_o ( edge_o      ),

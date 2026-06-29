@@ -51,6 +51,7 @@ module cc_fifo_inst_tb #(
     ) dut (
         .clk_i,
         .rst_ni,
+        .clr_i          ( 1'b0          ),
         .flush_i        ( flush         ),
         .full_o         ( full          ),
         .empty_o        ( empty         ),

@@ -17,6 +17,7 @@
 // d_i has remained stable at that level for at least
 // Threshold consecutive enabled (en_i) clock cycles.
 // clear_i synchronously resets the history and immediately sets q_o to current d_i.
+// clr_i synchronously resets all state (history and output) to their reset values.
 
 `include "common_cells/registers.svh"
 `include "common_cells/assertions.svh"
@@ -26,6 +27,7 @@ module cc_serial_deglitch #(
 )(
     input  logic clk_i,
     input  logic rst_ni,
+    input  logic clr_i,  // Synchronous clear (resets all state)
     input  logic clear_i,
     input  logic en_i,
     input  logic d_i,
@@ -49,8 +51,8 @@ module cc_serial_deglitch #(
 
     assign q_d = (clear_i || stable_edge) ? d_i : q_o;
 
-    `FFLARNC(count_q, count_d, count_load, count_clear, '0,  clk_i, rst_ni)
-    `FF(q_o, q_d, 1'b0, clk_i, rst_ni)
+    `FFLARNC(count_q, count_d, count_load, clr_i || count_clear, '0,  clk_i, rst_ni)
+    `FFARNC(q_o, q_d, clr_i, 1'b0, clk_i, rst_ni)
 
 `ifndef COMMON_CELLS_ASSERTS_OFF
     `ASSERT_INIT(ThresholdGtZero, Threshold >= 1, "cc_serial_deglitch: Threshold must be >= 1")

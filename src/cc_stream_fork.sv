@@ -17,12 +17,14 @@
 // input stream can just be applied at all output streams.
 
 `include "common_cells/assertions.svh"
+`include "common_cells/registers.svh"
 
 module cc_stream_fork #(
     parameter int unsigned NumOup = 1    // Synopsys DC requires a default value for parameters.
 ) (
     input  logic              clk_i,
     input  logic              rst_ni,
+    input  logic              clr_i,
     input  logic              valid_i,
     output logic              ready_o,
     output logic [NumOup-1:0] valid_o,
@@ -70,13 +72,7 @@ module cc_stream_fork #(
         endcase
     end
 
-    always_ff @(posedge clk_i, negedge rst_ni) begin
-        if (!rst_ni) begin
-            inp_state_q <= READY;
-        end else begin
-            inp_state_q <= inp_state_d;
-        end
-    end
+    `FFARNC(inp_state_q, inp_state_d, clr_i, READY, clk_i, rst_ni)
 
     // Output control FSM
     for (genvar i = 0; i < NumOup; i++) begin: gen_oup_state
@@ -111,13 +107,7 @@ module cc_stream_fork #(
             endcase
         end
 
-        always_ff @(posedge clk_i, negedge rst_ni) begin
-            if (!rst_ni) begin
-                oup_state_q <= READY;
-            end else begin
-                oup_state_q <= oup_state_d;
-            end
-        end
+        `FFARNC(oup_state_q, oup_state_d, clr_i, READY, clk_i, rst_ni)
     end
 
     assign all_ones = '1;   // Synthesis fix for Vivado, which does not correctly compute the width

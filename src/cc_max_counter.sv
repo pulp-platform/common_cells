@@ -10,13 +10,16 @@
 
 // Up/down counter that tracks its maximum value
 
+`include "common_cells/registers.svh"
+
 module cc_max_counter #(
     parameter int unsigned Width = 4
 ) (
     input  logic             clk_i,
     input  logic             rst_ni,
-    input  logic             clear_i,       // synchronous clear for counter
-    input  logic             clear_max_i,   // synchronous clear for maximum value
+    input  logic             clr_i,         // synchronous clear, clears all state
+    input  logic             clr_cnt_i,     // synchronous clear for counter
+    input  logic             clr_max_i,     // synchronous clear for maximum value
     input  logic             en_i,          // enable the counter
     input  logic             load_i,        // load a new value
     input  logic             down_i,        // downcount, default is up
@@ -36,7 +39,7 @@ module cc_max_counter #(
     ) i_counter (
         .clk_i,
         .rst_ni,
-        .clear_i,
+        .clr_i(clr_i | clr_cnt_i),
         .en_i,
         .load_i,
         .down_i,
@@ -50,7 +53,7 @@ module cc_max_counter #(
         max_d = max_q;
         max_o = max_q;
         overflow_max_d = overflow_max_q;
-        if (clear_max_i) begin
+        if (clr_max_i) begin
             max_d = '0;
             overflow_max_d = 1'b0;
         end else if (q_o > max_q) begin
@@ -64,14 +67,7 @@ module cc_max_counter #(
 
     assign overflow_max_o = overflow_max_q;
 
-    always_ff @(posedge clk_i, negedge rst_ni) begin
-        if (!rst_ni) begin
-           max_q <= '0;
-           overflow_max_q <= 1'b0;
-        end else begin
-           max_q <= max_d;
-           overflow_max_q <= overflow_max_d;
-        end
-    end
+    `FFARNC(max_q, max_d, clr_i, '0, clk_i, rst_ni)
+    `FFARNC(overflow_max_q, overflow_max_d, clr_i, 1'b0, clk_i, rst_ni)
 
 endmodule

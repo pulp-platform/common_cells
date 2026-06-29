@@ -65,6 +65,8 @@ module cc_stream_omega_net #(
   input  logic                  clk_i,
   /// Asynchronous reset, active low.
   input  logic                  rst_ni,
+  /// Synchronous clear, active high.
+  input  logic                  clr_i,
   /// Flush the state of the internal `cc_rr_arb_tree` modules.
   /// If not used set to `0`.
   /// Flush should only be used if there are no active `valid_i`, otherwise it will
@@ -106,6 +108,7 @@ module cc_stream_omega_net #(
     ) i_stream_xbar (
       .clk_i,
       .rst_ni,
+      .clr_i,
       .flush_i,
       .rr_i    ( rr_i    ),
       .data_i  ( data_i  ),
@@ -229,6 +232,7 @@ module cc_stream_omega_net #(
         ) i_stream_xbar (
           .clk_i,
           .rst_ni,
+          .clr_i,
           .flush_i,
           .rr_i    ( '0                     ),
           .data_i  ( inp_router_data[i][j]  ),

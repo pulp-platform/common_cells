@@ -283,6 +283,7 @@ module cc_cdc_fifo_gray_dst #(
   ) i_spill_register (
     .clk_i   ( dst_clk_i   ),
     .rst_ni  ( dst_rst_ni  ),
+    .clr_i   ( '0          ),
     .valid_i ( dst_valid   ),
     .ready_o ( dst_ready   ),
     .data_i  ( dst_data    ),

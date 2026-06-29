@@ -46,6 +46,8 @@
 // SPDX-License-Identifier: SHL-0.51
 // -----------------------------------------------------------------------------
 
+`include "common_cells/registers.svh"
+
 module cc_lossy_valid_to_stream #(
     /// Default data width if the fifo is of type logic
     parameter int unsigned DataWidth = 32,
@@ -53,6 +55,7 @@ module cc_lossy_valid_to_stream #(
 ) (
     input  logic  clk_i,
     input  logic  rst_ni,
+    input  logic  clr_i,
     // Input Interface (the input is always ready so there is no ready_o signal)
     input  logic  valid_i,
     input  data_t data_i,
@@ -120,19 +123,10 @@ module cc_lossy_valid_to_stream #(
   end
 
   // Registers
-  always_ff @(posedge clk_i, negedge rst_ni) begin
-    if (!rst_ni) begin
-      read_ptr_q           <= '0;
-      write_ptr_q          <= '0;
-      pending_tx_counter_q <= '0;
-      mem_q                <= {2{data_t'('0)}};
-    end else begin
-      read_ptr_q           <= read_ptr_d;
-      write_ptr_q          <= write_ptr_d;
-      pending_tx_counter_q <= pending_tx_counter_d;
-      mem_q                <= mem_d;
-    end
-  end
+  `FFARNC(read_ptr_q, read_ptr_d, clr_i, '0, clk_i, rst_ni)
+  `FFARNC(write_ptr_q, write_ptr_d, clr_i, '0, clk_i, rst_ni)
+  `FFARNC(pending_tx_counter_q, pending_tx_counter_d, clr_i, '0, clk_i, rst_ni)
+  `FFARNC(mem_q, mem_d, clr_i, {2{data_t'('0)}}, clk_i, rst_ni)
 
   assign busy_o = pending_tx_counter_q != 0;
 
