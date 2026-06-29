@@ -20,11 +20,11 @@
 module cc_plru_tree #(
   parameter int unsigned Entries = 16
 ) (
-  input  logic               clk_i,
-  input  logic               rst_ni,
-  input  logic               clr_i,  // Synchronous clear
-  input  logic [Entries-1:0] used_i, // element i was used (one hot)
-  output logic [Entries-1:0] plru_o  // element i is the least recently used (one hot)
+  input  logic               clk_i,  // Clock
+  input  logic               rst_ni, // Asynchronous reset active low
+  input  logic               clr_i,  // Synchronous clear active high
+  input  logic [Entries-1:0] used_i, // Element i was used (one hot)
+  output logic [Entries-1:0] plru_o  // Element i is the least recently used (one hot)
 );
 
     localparam int unsigned LogEntries = $clog2(Entries);

@@ -20,11 +20,11 @@
 `include "common_cells/registers.svh"
 
 module cc_stream_fork #(
-    parameter int unsigned NumOup = 1    // Synopsys DC requires a default value for parameters.
+    parameter int unsigned NumOup = 1  // Synopsys DC requires a default value for parameters.
 ) (
-    input  logic              clk_i,
-    input  logic              rst_ni,
-    input  logic              clr_i,
+    input  logic              clk_i,   // Clock
+    input  logic              rst_ni,  // Asynchronous reset active low
+    input  logic              clr_i,   // Synchronous clear active high
     input  logic              valid_i,
     output logic              ready_o,
     output logic [NumOup-1:0] valid_o,

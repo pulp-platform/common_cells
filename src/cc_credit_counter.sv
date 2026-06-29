@@ -16,9 +16,9 @@ module cc_credit_counter #(
   localparam int unsigned InitNumCredits  = InitCreditEmpty ? '0 : NumCredits,
   localparam type         credit_cnt_t    = logic [$clog2(NumCredits):0]
 ) (
-  input  logic clk_i,
-  input  logic rst_ni,
-  input  logic clr_i,  // Synchronous clear; reinitializes credit, takes priority
+  input  logic clk_i,  // Clock
+  input  logic rst_ni, // Asynchronous reset active low
+  input  logic clr_i,  // Synchronous clear active high; reinitializes credit, takes priority
 
   output credit_cnt_t credit_o,
 

@@ -88,9 +88,9 @@ module cc_rr_arb_tree #(
 ) (
   /// Clock, positive edge triggered.
   input  logic                clk_i,
-  /// Asynchronous reset, active low.
+  /// Asynchronous reset active low.
   input  logic                rst_ni,
-  /// Synchronous clear
+  /// Synchronous clear active high.
   input  logic                clr_i,
   /// External round-robin priority. Only used if `ExtPrio` is `1'b1.`
   input  idx_t                rr_i,

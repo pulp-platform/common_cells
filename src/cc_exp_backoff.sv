@@ -29,8 +29,11 @@ module cc_exp_backoff #(
   /// 2**MaxExp-1 determines the maximum range from which random wait counts are drawn
   parameter int unsigned MaxExp = 16
 ) (
+  /// Clock
   input  logic clk_i,
+  /// Asynchronous reset active low
   input  logic rst_ni,
+  /// Synchronous clear active high
   input  logic clr_i,
   /// Sets the backoff counter (pulse) -> use when trial did not succeed
   input  logic set_cnt_i,

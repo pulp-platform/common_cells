@@ -25,9 +25,9 @@
 module cc_serial_deglitch #(
     parameter int unsigned Threshold = 4
 )(
-    input  logic clk_i,
-    input  logic rst_ni,
-    input  logic clr_i,
+    input  logic clk_i,     // Clock
+    input  logic rst_ni,    // Asynchronous reset active low
+    input  logic clr_i,     // Synchronous clear active high
     input  logic restart_i,
     input  logic en_i,
     input  logic d_i,

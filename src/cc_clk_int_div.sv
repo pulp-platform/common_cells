@@ -75,7 +75,9 @@ module cc_clk_int_div #(
   /// If 1'b1, the output clock is enabled during async reset assertion
   parameter bit          EnableClockInReset = 1'b0
 ) (
+  /// Clock.
   input logic                        clk_i,
+  /// Asynchronous reset active low.
   input logic                        rst_ni,
   /// Active-high output clock enable. Controls a glitch-free clock gate so the
   /// enable signal may be driven by combinational logic without introducing

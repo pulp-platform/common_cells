@@ -17,9 +17,9 @@ module cc_shift_register #(
     parameter type         data_t = logic,
     parameter int unsigned Depth  = 1
 )(
-    input  logic  clk_i,    // Clock
-    input  logic  rst_ni,   // Asynchronous reset active low
-    input  logic  clr_i,    // Synchronous clear active high
+    input  logic  clk_i,  // Clock
+    input  logic  rst_ni, // Asynchronous reset active low
+    input  logic  clr_i,  // Synchronous clear active high
     input  data_t d_i,
     output data_t d_o
 );

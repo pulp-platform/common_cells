@@ -58,9 +58,9 @@ module cc_id_queue #(
     // Dependent parameters, DO NOT OVERRIDE!
     localparam type        id_t            = logic[IdWidth-1:0]
 ) (
-    input  logic    clk_i,
-    input  logic    rst_ni,
-    input  logic    clr_i,
+    input  logic    clk_i,  // Clock
+    input  logic    rst_ni, // Asynchronous reset active low
+    input  logic    clr_i,  // Synchronous clear active high
 
     input  id_t     inp_id_i,
     input  data_t   inp_data_i,

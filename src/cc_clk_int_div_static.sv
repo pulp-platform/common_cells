@@ -61,8 +61,8 @@ module cc_clk_int_div_static #(
   parameter int unsigned DivValue = 1,
   parameter bit EnableClockInReset = 1'b1
 ) (
-  input logic  clk_i,
-  input logic  rst_ni,
+  input logic  clk_i,          // Clock
+  input logic  rst_ni,         // Asynchronous reset active low
   input logic  en_i,
   input logic  test_mode_en_i,
   output logic clk_o

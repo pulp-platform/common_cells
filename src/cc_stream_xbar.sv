@@ -58,9 +58,9 @@ module cc_stream_xbar #(
 ) (
   /// Clock, positive edge triggered.
   input  logic                  clk_i,
-  /// Asynchronous reset, active low.
+  /// Asynchronous reset active low.
   input  logic                  rst_ni,
-  /// Synchronous clear, active high.
+  /// Synchronous clear active high.
   input  logic                  clr_i,
   /// Clear the state of the internal `cc_rr_arb_tree` modules.
   /// If not used set to `0`.

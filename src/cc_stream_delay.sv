@@ -19,9 +19,9 @@ module cc_stream_delay #(
     parameter type         payload_t   = logic,
     parameter logic [15:0] Seed        = '0
 )(
-    input  logic     clk_i,
-    input  logic     rst_ni,
-    input  logic     clr_i,
+    input  logic     clk_i,  // Clock
+    input  logic     rst_ni, // Asynchronous reset active low
+    input  logic     clr_i,  // Synchronous clear active high
 
     input  payload_t payload_i,
     output logic     ready_o,

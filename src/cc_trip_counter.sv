@@ -18,9 +18,9 @@
 module cc_trip_counter #(
     parameter int unsigned Width = 4
 )(
-    input  logic             clk_i,
-    input  logic             rst_ni,
-    input  logic             clr_i,
+    input  logic             clk_i,   // Clock
+    input  logic             rst_ni,  // Asynchronous reset active low
+    input  logic             clr_i,   // Synchronous clear active high
     input  logic             en_i,
     input  logic [Width-1:0] delta_i,
     input  logic [Width-1:0] bound_i,

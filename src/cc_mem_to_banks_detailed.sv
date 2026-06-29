@@ -50,9 +50,9 @@ module cc_mem_to_banks_detailed #(
 ) (
   /// Clock input.
   input  logic                       clk_i,
-  /// Asynchronous reset, active low.
+  /// Asynchronous reset active low.
   input  logic                       rst_ni,
-  /// Synchronous clear
+  /// Synchronous clear active high.
   input  logic                       clr_i,
   /// Memory request to split, request is valid.
   input  logic                       req_i,

@@ -15,15 +15,15 @@
 module cc_max_counter #(
     parameter int unsigned Width = 4
 ) (
-    input  logic             clk_i,
-    input  logic             rst_ni,
-    input  logic             clr_i,         // synchronous clear, clears all state
-    input  logic             clr_cnt_i,     // synchronous clear for counter
-    input  logic             clr_max_i,     // synchronous clear for maximum value
-    input  logic             en_i,          // enable the counter
-    input  logic             load_i,        // load a new value
-    input  logic             down_i,        // downcount, default is up
-    input  logic [Width-1:0] delta_i,       // counter delta
+    input  logic             clk_i,     // Clock
+    input  logic             rst_ni,    // Asynchronous reset active low
+    input  logic             clr_i,     // Synchronous clear active high
+    input  logic             clr_cnt_i, // Synchronous clear for counter only
+    input  logic             clr_max_i, // Synchronous clear for maximum value only
+    input  logic             en_i,      // Enable the counter
+    input  logic             load_i,    // Load a new value
+    input  logic             down_i,    // Downcount, default is up
+    input  logic [Width-1:0] delta_i,   // Counter delta
     input  logic [Width-1:0] d_i,
     output logic [Width-1:0] q_o,
     output logic [Width-1:0] max_o,

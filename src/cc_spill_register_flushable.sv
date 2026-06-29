@@ -20,11 +20,13 @@ module cc_spill_register_flushable #(
   parameter type data_t = logic,
   parameter bit  Bypass = 1'b0   // make this spill register transparent
 ) (
-  input  logic  clk_i   ,
-  input  logic  rst_ni  ,
-  input  logic  clr_i   ,
+  input  logic  clk_i   , // Clock
+  input  logic  rst_ni  , // Asynchronous reset active low
+  input  logic  clr_i   , // Synchronous clear active high. Clears sequential logic without
+                          // respecting handshakes.
   input  logic  valid_i ,
-  input  logic  flush_i ,
+  input  logic  flush_i , // Flush the register by draining its contents. Mutually exclusive with
+                          // valid_i.
   output logic  ready_o ,
   input  data_t data_i  ,
   output logic  valid_o ,

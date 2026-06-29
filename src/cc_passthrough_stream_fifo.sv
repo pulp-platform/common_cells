@@ -26,9 +26,10 @@ module cc_passthrough_stream_fifo #(
     input  logic                 clk_i,
     /// Asynchronous reset active low
     input  logic                 rst_ni,
-    /// Synchronous clear
+    /// Synchronous clear active high; clears all sequential logic
     input  logic                 clr_i,
-    /// Fifo flush
+    /// Fifo flush. Compared to clr_i, this only clears internal pointers.
+    /// Sufficient for most functional purposes.
     input  logic                 flush_i,
     /// data to push into the FIFO
     input  data_t                data_i,

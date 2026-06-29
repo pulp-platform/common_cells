@@ -52,8 +52,8 @@ module cc_cb_filter #(
   parameter cc_pkg::cb_seed_t [KHashes-1:0] Seeds = cc_pkg::CbEgSeeds
 ) (
   input  logic                 clk_i,   // Clock
-  input  logic                 rst_ni,  // Active low reset
-  input  logic                 clr_i,   // Synchronous clear
+  input  logic                 rst_ni,  // Asynchronous reset active low
+  input  logic                 clr_i,   // Synchronous clear active high
   // data lookup
   input  logic [InpWidth-1:0]  look_data_i,
   output logic                 look_valid_o,

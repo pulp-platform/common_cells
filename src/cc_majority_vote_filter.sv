@@ -25,9 +25,9 @@ module cc_majority_vote_filter #(
     parameter int unsigned WindowLen = 4,
     parameter int unsigned Threshold  = (WindowLen / 2) + 1
 )(
-    input  logic clk_i,
-    input  logic rst_ni,
-    input  logic clr_i,
+    input  logic clk_i,  // Clock
+    input  logic rst_ni, // Asynchronous reset active low
+    input  logic clr_i,  // Synchronous clear active high
     input  logic en_i,
     input  logic d_i,
     output logic q_o
