@@ -26,7 +26,7 @@ module cc_stream_xbar #(
   parameter type         payload_t   = logic [DataWidth-1:0],
   /// Adds a spill register stage at each output.
   parameter bit          OutSpillReg = 1'b0,
-  /// Use external priority for the individual `rr_arb_trees`.
+  /// Use external priority for the individual `cc_rr_arb_trees`.
   parameter bit          ExtPrio     = 1'b0,
   /// Use strict AXI valid ready handshaking.
   /// To be protocol conform also the parameter `LockIn` has to be set.
@@ -62,11 +62,11 @@ module cc_stream_xbar #(
   input  logic                  rst_ni,
   /// Synchronous clear, active high.
   input  logic                  clr_i,
-  /// Flush the state of the internal `cc_rr_arb_tree` modules.
+  /// Clear the state of the internal `cc_rr_arb_tree` modules.
   /// If not used set to `0`.
-  /// Flush should only be used if there are no active `valid_i`, otherwise it will
+  /// `clr_arb_i` should only be used if there are no active `valid_i`, otherwise it will
   /// not adhere to the AXI handshaking.
-  input  logic                  flush_i,
+  input  logic                  clr_arb_i,
   /// Provide an external state for the `cc_rr_arb_tree` models.
   /// Will only do something if ExtPrio is `1` otherwise tie to `0`.
   input  idx_inp_t [NumOut-1:0] rr_i,
@@ -137,16 +137,15 @@ module cc_stream_xbar #(
     ) i_rr_arb_tree (
       .clk_i,
       .rst_ni,
-      .clr_i,
-      .flush_i,
-      .rr_i    ( rr_i[j]      ),
-      .req_i   ( out_valid[j] ),
-      .gnt_o   ( out_ready[j] ),
-      .data_i  ( out_data[j]  ),
-      .req_o   ( arb_valid    ),
-      .gnt_i   ( arb_ready    ),
-      .data_o  ( arb.data     ),
-      .idx_o   ( arb.idx      )
+      .clr_i   ( clr_arb_i || clr_i ),
+      .rr_i    ( rr_i[j]            ),
+      .req_i   ( out_valid[j]       ),
+      .gnt_o   ( out_ready[j]       ),
+      .data_i  ( out_data[j]        ),
+      .req_o   ( arb_valid          ),
+      .gnt_i   ( arb_ready          ),
+      .data_o  ( arb.data           ),
+      .idx_o   ( arb.idx            )
     );
 
     spill_data_t spill;
