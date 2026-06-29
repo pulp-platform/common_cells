@@ -31,9 +31,9 @@ module cc_lfsr #(
   parameter int unsigned          CipherLayers  = 0,
   parameter bit                   CipherReg     = 1'b1  // additional output reg after cipher
 ) (
-  input  logic                 clk_i,
-  input  logic                 rst_ni,
-  input  logic                 clr_i,  // Synchronous clear
+  input  logic                 clk_i,  // Clock
+  input  logic                 rst_ni, // Asynchronous reset active low
+  input  logic                 clr_i,  // Synchronous clear active high
   input  logic                 en_i,
   output logic [OutWidth-1:0]  out_o
 );

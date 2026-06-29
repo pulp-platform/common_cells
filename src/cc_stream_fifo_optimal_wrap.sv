@@ -17,19 +17,21 @@ module cc_stream_fifo_optimal_wrap #(
     // DO NOT OVERWRITE THIS PARAMETER
     localparam int unsigned UsageWidth = cc_pkg::cnt_width(Depth)
 ) (
-    input  logic                  clk_i,    // Clock
-    input  logic                  rst_ni,   // Asynchronous reset active low
-    input  logic                  clr_i,    // Synchronous clear
-    input  logic                  flush_i,  // flush the fifo
-    output logic [UsageWidth-1:0] usage_o,  // fill pointer
-    // input interface
-    input  data_t                 data_i,   // data to push into the fifo
-    input  logic                  valid_i,  // input data valid
-    output logic                  ready_o,  // fifo is not full
-    // output interface
-    output data_t                 data_o,   // output data
-    output logic                  valid_o,  // fifo is not empty
-    input  logic                  ready_i   // pop head from fifo
+    input  logic                  clk_i,   // Clock
+    input  logic                  rst_ni,  // Asynchronous reset active low
+    input  logic                  clr_i,   // Synchronous clear active high; clears all sequential
+                                           // state.
+    input  logic                  flush_i, // Flush the fifo by draining its contents and clearing
+                                           // its pointers. Sufficient for most functional purposes.
+    output logic [UsageWidth-1:0] usage_o, // Fill pointer
+    // Input interface
+    input  data_t                 data_i,  // Data to push into the fifo
+    input  logic                  valid_i, // Input data valid
+    output logic                  ready_o, // Fifo is not full
+    // Output interface
+    output data_t                 data_o,  // Output data
+    output logic                  valid_o, // Fifo is not empty
+    input  logic                  ready_i  // Pop head from fifo
 );
 
     //--------------------------------------

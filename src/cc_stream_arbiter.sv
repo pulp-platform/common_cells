@@ -18,9 +18,9 @@ module cc_stream_arbiter #(
     parameter int unsigned       NumInp  = 1,     // Synopsys DC requires a default value.
     parameter cc_pkg::arb_mode_e ArbMode = cc_pkg::ARB_RR
 ) (
-    input  logic               clk_i,
-    input  logic               rst_ni,
-    input  logic               clr_i,
+    input  logic               clk_i,  // Clock
+    input  logic               rst_ni, // Asynchronous reset active low
+    input  logic               clr_i,  // Synchronous clear active high
 
     input  data_t [NumInp-1:0] inp_data_i,
     input  logic  [NumInp-1:0] inp_valid_i,

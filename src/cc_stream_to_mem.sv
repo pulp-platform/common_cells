@@ -30,9 +30,9 @@ module cc_stream_to_mem #(
 ) (
   /// Clock
   input  logic      clk_i,
-  /// Asynchronous reset, active low
+  /// Asynchronous reset active low
   input  logic      rst_ni,
-  /// Synchronous clear, active high
+  /// Synchronous clear active high
   input  logic      clr_i,
   /// Request stream interface, payload
   input  mem_req_t  req_i,

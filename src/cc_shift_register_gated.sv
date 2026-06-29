@@ -16,9 +16,9 @@ module cc_shift_register_gated #(
   parameter int unsigned Depth = 32'd8,
   parameter type         data_t = logic
 ) (
-  input  logic  clk_i,    // Clock
-  input  logic  rst_ni,   // Asynchronous reset active low
-  input  logic  clr_i,    // Synchronous clear active high
+  input  logic  clk_i,  // Clock
+  input  logic  rst_ni, // Asynchronous reset active low
+  input  logic  clr_i,  // Synchronous clear active high
 
   input  logic  valid_i,
   input  data_t data_i,

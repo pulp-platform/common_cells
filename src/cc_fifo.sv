@@ -21,20 +21,22 @@ module cc_fifo #(
     // DO NOT OVERWRITE THIS PARAMETER
     localparam int unsigned UsageWidth = cc_pkg::cnt_width(Depth)
 )(
-    input  logic  clk_i,            // Clock
-    input  logic  rst_ni,           // Asynchronous reset active low
-    input  logic  clr_i,            // synchronous clear
-    input  logic  flush_i,          // flush the queue
-    // status flags
-    output logic  full_o,           // queue is full
-    output logic  empty_o,          // queue is empty
-    output logic  [UsageWidth-1:0] usage_o,  // fill pointer
-    // as long as the queue is not full we can push new data
-    input  data_t data_i,           // data to push into the queue
-    input  logic  push_i,           // data is valid and can be pushed to the queue
-    // as long as the queue is not empty we can pop new elements
-    output data_t data_o,           // output data
-    input  logic  pop_i             // pop head from queue
+    input  logic  clk_i,   // Clock
+    input  logic  rst_ni,  // Asynchronous reset active low
+    input  logic  clr_i,   // Synchronous clear active high; clears internal pointers *and*
+                           // memories.
+    input  logic  flush_i, // Flush the queue; compared to clr_i this only clears internal pointers.
+                           // Sufficient for most functional purposes.
+    // Status flags
+    output logic  full_o,  // Queue is full
+    output logic  empty_o, // Queue is empty
+    output logic  [UsageWidth-1:0] usage_o,  // Fill pointer
+    // As long as the queue is not full we can push new data
+    input  data_t data_i,  // Data to push into the queue
+    input  logic  push_i,  // Data is valid and can be pushed to the queue
+    // As long as the queue is not empty we can pop new elements
+    output data_t data_o,  // Output data
+    input  logic  pop_i    // Pop head from queue
 );
     // local parameter
     // FIFO depth - handle the case of pass-through, synthesizer will do constant propagation

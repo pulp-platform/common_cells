@@ -16,12 +16,12 @@ module cc_delta_counter #(
     parameter int unsigned Width = 4,
     parameter bit StickyOverflow = 1'b0
 )(
-    input  logic             clk_i,
-    input  logic             rst_ni,
-    input  logic             clr_i,   // synchronous clear
-    input  logic             en_i,    // enable the counter
-    input  logic             load_i,  // load a new value
-    input  logic             down_i,  // downcount, default is up
+    input  logic             clk_i,   // Clock
+    input  logic             rst_ni,  // Asynchronous reset active low
+    input  logic             clr_i,   // Synchronous clear active high
+    input  logic             en_i,    // Enable the counter
+    input  logic             load_i,  // Load a new value
+    input  logic             down_i,  // Downcount, default is up
     input  logic [Width-1:0] delta_i,
     input  logic [Width-1:0] d_i,
     output logic [Width-1:0] q_o,

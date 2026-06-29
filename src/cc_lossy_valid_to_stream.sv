@@ -53,9 +53,9 @@ module cc_lossy_valid_to_stream #(
     parameter int unsigned DataWidth = 32,
     parameter type data_t = logic [DataWidth-1:0]
 ) (
-    input  logic  clk_i,
-    input  logic  rst_ni,
-    input  logic  clr_i,
+    input  logic  clk_i,  // Clock
+    input  logic  rst_ni, // Asynchronous reset active low
+    input  logic  clr_i,  // Synchronous clear active high
     // Input Interface (the input is always ready so there is no ready_o signal)
     input  logic  valid_i,
     input  data_t data_i,

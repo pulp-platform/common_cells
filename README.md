@@ -80,7 +80,6 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | [`spill_register_flushable`](src/spill_register_flushable.sv)  | Register with ready/valid interface to cut all combinational interface paths and additional flush signal. | active       |                                     |
 | [`spill_register`](src/spill_register.sv)                      | Register with ready/valid interface to cut all combinational interface paths                              | active       |                                     |
 | [`stream_arbiter`](src/stream_arbiter.sv)                      | Round-robin arbiter for ready/valid stream interface                                                      | active       |                                     |
-| [`stream_arbiter_flushable`](src/stream_arbiter_flushable.sv)  | Round-robin arbiter for ready/valid stream interface and flush functionality                              | active       |                                     |
 | [`stream_demux`](src/stream_demux.sv)                          | Ready/valid interface demultiplexer                                                                       | active       |                                     |
 | [`lossy_valid_to_stream`](src/lossy_valid_to_stream.sv)        | Convert Valid-only to ready/valid by updating in-flight transaction                                       | active       |                                     |
 | [`stream_join`](src/stream_join.sv)                            | Ready/valid handshake join multiple to one common                                                         | active       |                                     |
@@ -115,6 +114,22 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | [`plru_tree`](src/plru_tree.sv)                                  | Pseudo least recently used tree                                             | active       |                                                                                                 |
 | [`unread`](src/unread.sv)                                        | Empty module to sink unconnected outputs into                               | active       |                                                                                                 |
 | [`read`](src/read.sv)                                            | Dummy module that prevents a signal from being removed during synthesis     | active       |                                                                                                 |
+
+### Ports
+
+Generally, modules with sequential logic receive at least the following inputs.
+Intentional exceptions are clock, reset, cdc cells, and any cells that receive multiple clock inputs.
+
+| Name     | Description                                                                                                                                                   |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `clk_i`  | Clock driving sequential logic.                                                                                                                               |
+| `rst_ni` | Asynchronous reset, active-low. Brings the module to its reset state.                                                                                         |
+| `clr_i`  | Synchronous clear, active-high. Brings the module to its reset state in the next clock cycle. Can be driven by synchronous logic or tied to `1'b0` if unused. |
+
+### Use of Macros
+
+Internally, the cells use macros to implement sequential logic (flip-flops) and assertions.
+These macros are defined in this repo; see [RTL Register Macros](#RTL Register Macros) and [SVA Macros](#SystemVerilog Assertion Macros) below for more details.
 
 ## Header Contents
 

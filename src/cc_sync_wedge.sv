@@ -15,9 +15,9 @@
 module cc_sync_wedge #(
     parameter int unsigned Stages = 2
 ) (
-    input  logic clk_i,
-    input  logic rst_ni,
-    input  logic clr_i,  // Synchronous clear
+    input  logic clk_i,    // Clock
+    input  logic rst_ni,   // Asynchronous reset active low
+    input  logic clr_i,    // Synchronous clear active high
     input  logic en_i,
     input  logic serial_i,
     output logic r_edge_o,

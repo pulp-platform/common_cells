@@ -18,9 +18,9 @@ module cc_spill_register #(
   parameter type data_t = logic,
   parameter bit  Bypass = 1'b0     // make this spill register transparent
 ) (
-  input  logic  clk_i   ,
-  input  logic  rst_ni  ,
-  input  logic  clr_i   ,
+  input  logic  clk_i   , // Clock
+  input  logic  rst_ni  , // Asynchronous reset active low
+  input  logic  clr_i   , // Synchronous clear active high
   input  logic  valid_i ,
   output logic  ready_o ,
   input  data_t data_i  ,

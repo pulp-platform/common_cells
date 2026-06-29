@@ -21,9 +21,9 @@ module cc_lfsr_8bit #(
   parameter logic        [7:0] Seed  = 8'b0,
   parameter int unsigned       Width = 8
 ) (
-  input  logic                     clk_i,
-  input  logic                     rst_ni,
-  input  logic                     clr_i,  // Synchronous clear
+  input  logic                     clk_i,  // Clock
+  input  logic                     rst_ni, // Asynchronous reset active low
+  input  logic                     clr_i,  // Synchronous clear active high
   input  logic                     en_i,
   output logic [        Width-1:0] refill_way_oh_o,
   output logic [$clog2(Width)-1:0] refill_way_bin_o

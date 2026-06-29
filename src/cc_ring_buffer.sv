@@ -28,9 +28,9 @@ module cc_ring_buffer #(
     localparam type addr_t = logic [AddrWidth-1:0],
     localparam type step_t = logic [StepWidth-1:0]
 ) (
-    input logic clk_i,
-    input logic rst_ni,
-    input logic clr_i,
+    input logic clk_i,  // Clock
+    input logic rst_ni, // Asynchronous reset active low
+    input logic clr_i,  // Synchronous clear active high
 
     // Write interface
     input logic wvalid_i,

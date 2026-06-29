@@ -27,9 +27,9 @@ module cc_stream_fork_dynamic #(
 ) (
   /// Clock
   input  logic              clk_i,
-  /// Asynchronous reset, active low
+  /// Asynchronous reset active low
   input  logic              rst_ni,
-  /// Synchronous clear, active high
+  /// Synchronous clear active high
   input  logic              clr_i,
   /// Input stream valid handshake,
   input  logic              valid_i,
