@@ -16,7 +16,7 @@
 // The output q_o changes to the current level of d_i only after
 // d_i has remained stable at that level for at least
 // Threshold consecutive enabled (en_i) clock cycles.
-// clear_i synchronously resets the history and immediately sets q_o to current d_i.
+// restart_i synchronously resets the history and immediately sets q_o to current d_i.
 // clr_i synchronously resets all state (history and output) to their reset values.
 
 `include "common_cells/registers.svh"
@@ -27,8 +27,8 @@ module cc_serial_deglitch #(
 )(
     input  logic clk_i,
     input  logic rst_ni,
-    input  logic clr_i,  // Synchronous clear (resets all state)
-    input  logic clear_i,
+    input  logic clr_i,
+    input  logic restart_i,
     input  logic en_i,
     input  logic d_i,
     output logic q_o
@@ -46,12 +46,12 @@ module cc_serial_deglitch #(
     // Update when the mismatch counter reaches Threshold.
     assign stable_edge = en_i && mismatch && (count_d == CntWidth'(Threshold));
     // Clear if signal is not different/stable or when updating the output.
-    assign count_clear = clear_i || (en_i && !mismatch) || stable_edge;
+    assign count_clear = clr_i || restart_i || (en_i && !mismatch) || stable_edge;
     assign count_load  = en_i && mismatch && !stable_edge;
 
-    assign q_d = (clear_i || stable_edge) ? d_i : q_o;
+    assign q_d = (restart_i || stable_edge) ? d_i : q_o;
 
-    `FFLARNC(count_q, count_d, count_load, clr_i || count_clear, '0,  clk_i, rst_ni)
+    `FFLARNC(count_q, count_d, count_load, count_clear, '0,  clk_i, rst_ni)
     `FFARNC(q_o, q_d, clr_i, 1'b0, clk_i, rst_ni)
 
 `ifndef COMMON_CELLS_ASSERTS_OFF
