@@ -52,6 +52,8 @@ module cc_mem_to_banks_detailed #(
   input  logic                       clk_i,
   /// Asynchronous reset, active low.
   input  logic                       rst_ni,
+  /// Synchronous clear
+  input  logic                       clr_i,
   /// Memory request to split, request is valid.
   input  logic                       req_i,
   /// Memory request to split, request can be granted.
@@ -139,6 +141,7 @@ module cc_mem_to_banks_detailed #(
     ) i_ft_reg (
       .clk_i,
       .rst_ni,
+      .clr_i,
       .flush_i    ( 1'b0          ),
       .usage_o    (),
       .data_i     ( bank_req[i]   ),
@@ -178,6 +181,7 @@ module cc_mem_to_banks_detailed #(
     ) i_dead_write_fifo (
       .clk_i,
       .rst_ni,
+      .clr_i,
       .flush_i    ( 1'b0                           ),
       .full_o     ( dead_write_fifo_full           ),
       .empty_o    ( dead_write_fifo_empty          ),
@@ -204,6 +208,7 @@ module cc_mem_to_banks_detailed #(
     ) i_ft_reg (
       .clk_i,
       .rst_ni,
+      .clr_i,
       .flush_i    ( 1'b0                                              ),
       .usage_o    (),
       .data_i     ( {bank_rdata_i[i], bank_ruser_i[i]}                ),

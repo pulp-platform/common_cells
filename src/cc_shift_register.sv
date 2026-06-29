@@ -19,6 +19,7 @@ module cc_shift_register #(
 )(
     input  logic  clk_i,    // Clock
     input  logic  rst_ni,   // Asynchronous reset active low
+    input  logic  clr_i,    // Synchronous clear active high
     input  data_t d_i,
     output data_t d_o
 );
@@ -29,6 +30,7 @@ module cc_shift_register #(
     ) i_shift_register_gated (
         .clk_i  (clk_i),
         .rst_ni (rst_ni),
+        .clr_i  (clr_i),
         .valid_i(1'b1),
         .data_i (d_i),
         .valid_o(),

@@ -46,6 +46,7 @@
 // - Andreas Kurth <akurth@iis.ee.ethz.ch>
 
 `include "common_cells/assertions.svh"
+`include "common_cells/registers.svh"
 
 module cc_id_queue #(
     parameter int unsigned IdWidth         = 1,
@@ -59,6 +60,7 @@ module cc_id_queue #(
 ) (
     input  logic    clk_i,
     input  logic    rst_ni,
+    input  logic    clr_i,
 
     input  id_t     inp_id_i,
     input  data_t   inp_data_i,
@@ -389,23 +391,20 @@ module cc_id_queue #(
 
     // Registers
     for (genvar i = 0; i < HtCapacity; i++) begin: gen_ht_ffs
-        always_ff @(posedge clk_i, negedge rst_ni) begin
-            if (!rst_ni) begin
-                head_tail_q[i] <= '{free: 1'b1, default: '0};
-            end else begin
-                head_tail_q[i] <= head_tail_d[i];
-            end
-        end
+        `FFARNC(head_tail_q[i],
+                head_tail_d[i],
+                clr_i,
+                head_tail_t'{free: 1'b1, default: '0},
+                clk_i,
+                rst_ni)
     end
     for (genvar i = 0; i < Capacity; i++) begin: gen_data_ffs
-        always_ff @(posedge clk_i, negedge rst_ni) begin
-            if (!rst_ni) begin
-                // Set free bit of linked data entries, all other bits are don't care.
-                linked_data_q[i] <= '{free: 1'b1, default: '0};
-            end else begin
-                linked_data_q[i] <= linked_data_d[i];
-            end
-        end
+        `FFARNC(linked_data_q[i],
+                linked_data_d[i],
+                clr_i,
+                linked_data_t'{free: 1'b1, default: '0},
+                clk_i,
+                rst_ni)
     end
 
     // Status interface

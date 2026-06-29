@@ -39,7 +39,8 @@ module cc_fall_through_register #(
     ) i_fifo (
         .clk_i  (clk_i),
         .rst_ni (rst_ni),
-        .flush_i(clr_i),
+        .clr_i  (clr_i),
+        .flush_i(1'b0),
         .full_o (fifo_full),
         .empty_o(fifo_empty),
         .usage_o(),

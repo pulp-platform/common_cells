@@ -33,7 +33,7 @@
 //   - Description: Remove data from the counting bloom filter. Only remove data that was
 //                  previously put in, otherwise will go in a wrong state.
 // - Status:
-//   - `filter_clear_i`:  Clears the filter and sets all counters to 0.
+//   - `clr_i`:           Clears the filter and sets all counters to 0.
 //   - `filter_ussage_o`: How many data items are currently in the filter.
 //   - `filter_full_o`:   Filter is full, can no longer hold more items.
 //   - `filter_empty_o`:  Filter is empty.
@@ -53,6 +53,7 @@ module cc_cb_filter #(
 ) (
   input  logic                 clk_i,   // Clock
   input  logic                 rst_ni,  // Active low reset
+  input  logic                 clr_i,   // Synchronous clear
   // data lookup
   input  logic [InpWidth-1:0]  look_data_i,
   output logic                 look_valid_o,
@@ -63,7 +64,6 @@ module cc_cb_filter #(
   input  logic [InpWidth-1:0]  decr_data_i,
   input  logic                 decr_valid_i,
   // status signals
-  input  logic                 filter_clear_i,
   output logic [HashWidth-1:0] filter_usage_o,
   output logic                 filter_full_o,
   output logic                 filter_empty_o,
@@ -159,7 +159,7 @@ module cc_cb_filter #(
     ) i_bucket (
       .clk_i      ( clk_i             ),
       .rst_ni     ( rst_ni            ),
-      .clear_i    ( filter_clear_i    ),
+      .clr_i      ( clr_i             ),
       .en_i       ( bucket_en[i]      ),
       .load_i     ( '0                ),
       .down_i     ( bucket_down[i]    ),
@@ -182,7 +182,7 @@ module cc_cb_filter #(
   ) i_tot_count (
     .clk_i     ( clk_i          ),
     .rst_ni    ( rst_ni         ),
-    .clear_i   ( filter_clear_i ),
+    .clr_i     ( clr_i          ),
     .en_i      ( cnt_en         ),
     .load_i    ( '0             ),
     .down_i    ( cnt_down       ),

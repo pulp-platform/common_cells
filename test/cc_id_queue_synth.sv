@@ -37,6 +37,7 @@ module cc_id_queue_synth (
                 ) i_id_queue (
                     .clk_i           (clk_i),
                     .rst_ni          (rst_ni),
+                    .clr_i           (1'b0),
                     .inp_id_i        (inp_id),
                     .inp_data_i      (inp_data),
                     .inp_req_i       (inp_req),

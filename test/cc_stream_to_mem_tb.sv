@@ -137,6 +137,7 @@ module cc_stream_to_mem_tb #(
   ) i_stream_to_mem_dut (
     .clk_i            ( clk            ),
     .rst_ni           ( rst_n          ),
+    .clr_i            ( 1'b0           ),
     .req_i            ( req            ),
     .req_valid_i      ( req_valid      ),
     .req_ready_o      ( req_ready      ),

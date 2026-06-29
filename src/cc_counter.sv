@@ -17,7 +17,7 @@ module cc_counter #(
 )(
     input  logic             clk_i,
     input  logic             rst_ni,
-    input  logic             clear_i, // synchronous clear
+    input  logic             clr_i,   // synchronous clear
     input  logic             en_i,    // enable the counter
     input  logic             load_i,  // load a new value
     input  logic             down_i,  // downcount, default is up
@@ -31,7 +31,7 @@ module cc_counter #(
     ) i_counter (
         .clk_i,
         .rst_ni,
-        .clear_i,
+        .clr_i,
         .en_i,
         .load_i,
         .down_i,

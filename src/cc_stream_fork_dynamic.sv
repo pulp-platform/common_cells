@@ -29,6 +29,8 @@ module cc_stream_fork_dynamic #(
   input  logic              clk_i,
   /// Asynchronous reset, active low
   input  logic              rst_ni,
+  /// Synchronous clear, active high
+  input  logic              clr_i,
   /// Input stream valid handshake,
   input  logic              valid_i,
   /// Input stream ready handshake
@@ -81,6 +83,7 @@ module cc_stream_fork_dynamic #(
   ) i_fork (
     .clk_i,
     .rst_ni,
+    .clr_i,
     .valid_i ( int_inp_valid ),
     .ready_o ( int_inp_ready ),
     .valid_o ( int_oup_valid ),

@@ -154,6 +154,7 @@ module cc_stream_xbar_tb #(
   ) i_stream_xbar_dut (
     .clk_i   ( clk       ),
     .rst_ni  ( rst_n     ),
+    .clr_i   ( 1'b0      ),
     .flush_i ( flush     ),
     .rr_i    ( '0        ),
     .data_i  ( inp_data  ),

@@ -298,7 +298,7 @@ module cc_cb_filter_tb;
     .decr_data_i    ( decr_data    ),
     .decr_valid_i   ( decr_valid   ),
     // status signals
-    .filter_clear_i ( filter_clear ),
+    .clr_i          ( filter_clear ),
     .filter_usage_o ( filter_usage ),
     .filter_full_o  ( filter_full  ),
     .filter_empty_o ( filter_empty ),

@@ -21,6 +21,7 @@ module cc_edge_propagator_rx (
     cc_sync_wedge i_sync_clkb (
         .clk_i    ( clk_i   ),
         .rst_ni   ( rst_ni  ),
+        .clr_i    ( '0      ),
         .en_i     ( 1'b1    ),
         .serial_i ( valid_i ),
         .r_edge_o ( valid_o ),

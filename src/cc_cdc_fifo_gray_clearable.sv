@@ -381,6 +381,7 @@ module cc_cdc_fifo_gray_dst_clearable #(
   ) i_spill_register (
     .clk_i   ( dst_clk_i                ),
     .rst_ni  ( dst_rst_ni               ),
+    .clr_i   ( '0                       ),
     .flush_i ( dst_clear_i              ),
     .valid_i ( dst_valid & !dst_clear_i ),
     .ready_o ( dst_ready                ),

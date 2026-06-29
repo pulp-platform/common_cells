@@ -63,6 +63,7 @@ module cc_lossy_valid_to_stream_tb #(
   ) i_lossy_valid_to_stream (
       .clk_i  (clk),
       .rst_ni (rst_n),
+      .clr_i  (1'b0),
       .valid_i(dut_in.valid),
       .data_i (dut_in.data),
       .data_o (dut_out.data),

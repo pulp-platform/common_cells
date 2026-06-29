@@ -10,13 +10,15 @@
 
 // Up/down counter with variable delta
 
+`include "common_cells/registers.svh"
+
 module cc_delta_counter #(
     parameter int unsigned Width = 4,
     parameter bit StickyOverflow = 1'b0
 )(
     input  logic             clk_i,
     input  logic             rst_ni,
-    input  logic             clear_i, // synchronous clear
+    input  logic             clr_i,   // synchronous clear
     input  logic             en_i,    // enable the counter
     input  logic             load_i,  // load a new value
     input  logic             down_i,  // downcount, default is up
@@ -29,20 +31,11 @@ module cc_delta_counter #(
     if (StickyOverflow) begin : gen_sticky_overflow
         logic overflow_d, overflow_q;
 
-        always_ff @(posedge clk_i or negedge rst_ni)
-        begin
-            if(!rst_ni) begin
-                overflow_q <= 1'b0;
-            end else begin
-                overflow_q <= overflow_d;
-            end
-        end
+        `FFARNC(overflow_q, overflow_d, clr_i || load_i, 1'b0, clk_i, rst_ni)
 
         always_comb begin
             overflow_d = overflow_q;
-            if (clear_i || load_i) begin
-                overflow_d = 1'b0;
-            end else if (!overflow_q && en_i) begin
+            if (!overflow_q && en_i) begin
                 if (down_i) begin
                     overflow_d = delta_i > counter_q[Width-1:0];
                 end else begin
@@ -60,9 +53,7 @@ module cc_delta_counter #(
     always_comb begin
         counter_d = counter_q;
 
-        if (clear_i) begin
-            counter_d = '0;
-        end else if (load_i) begin
+        if (load_i) begin
             counter_d = {1'b0, d_i};
         end else if (en_i) begin
             if (down_i) begin
@@ -73,11 +64,5 @@ module cc_delta_counter #(
         end
     end
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (!rst_ni) begin
-           counter_q <= '0;
-        end else begin
-           counter_q <= counter_d;
-        end
-    end
+    `FFARNC(counter_q, counter_d, clr_i, '0, clk_i, rst_ni)
 endmodule
