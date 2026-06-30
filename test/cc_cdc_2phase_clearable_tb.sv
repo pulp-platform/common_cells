@@ -17,6 +17,10 @@
 // Exercise payload ordering, clear/isolate sequencing, async-reset behavior,
 // and timed async-channel delay sweeps for cc_cdc_2phase_clearable.
 
+// ----------------------------------------------------------------------------
+// Monitor Error Package
+// ----------------------------------------------------------------------------
+
 package cc_cdc_2phase_clearable_tb_monitor_pkg;
   int unsigned monitor_errors = 0;
 
@@ -31,6 +35,9 @@ module cc_cdc_2phase_clearable_tb;
   timeunit 1ns;
   timeprecision 1ps;
 
+  // --------------------------------------------------------------------------
+  // Configuration
+  // --------------------------------------------------------------------------
   parameter int unsigned NUM_RANDOM_TRANSFERS = 200;
   parameter int unsigned NUM_ACTIVE_STRESS_TRANSFERS = 160;
   parameter int unsigned NUM_ACTIVE_STRESS_EVENTS = 8;
@@ -94,6 +101,9 @@ module cc_cdc_2phase_clearable_tb;
 
   dst_ready_mode_e dst_ready_mode = DstReadyLow;
 
+  // --------------------------------------------------------------------------
+  // DUT Selection
+  // --------------------------------------------------------------------------
   // Instantiate either the plain DUT or the timed delay-injection harness used
   // by sweeps to perturb every explicit asynchronous channel.
   if (INJECT_DELAYS) begin : gen_delayed_dut
@@ -140,6 +150,9 @@ module cc_cdc_2phase_clearable_tb;
     );
   end
 
+  // --------------------------------------------------------------------------
+  // Clock And Ready Generation
+  // --------------------------------------------------------------------------
   initial begin : gen_src_clk
     #(SRC_START_DELAY_PS * 1ps);
     forever #(tck_src / 2) src_clk_i = ~src_clk_i;
@@ -159,6 +172,9 @@ module cc_cdc_2phase_clearable_tb;
     endcase
   end
 
+  // --------------------------------------------------------------------------
+  // Scoreboard And Protocol Checks
+  // --------------------------------------------------------------------------
   // Scoreboard source and destination handshakes. During clear/reset windows,
   // accepted source items are stale: they may later complete or be dropped.
   always @(posedge src_clk_i) begin
@@ -209,6 +225,9 @@ module cc_cdc_2phase_clearable_tb;
     end
   end
 
+  // --------------------------------------------------------------------------
+  // Test Helpers
+  // --------------------------------------------------------------------------
   // Small shared helpers for reporting, cycle waits, and the stale-item window
   // used whenever a clear/reset may intentionally discard in-flight traffic.
   task automatic report_error(input string msg);
@@ -287,6 +306,9 @@ module cc_cdc_2phase_clearable_tb;
     drop_window = 1'b0;
   endtask
 
+  // --------------------------------------------------------------------------
+  // Clear And Reset Helpers
+  // --------------------------------------------------------------------------
   // Clear/reset completion helpers. They check that both domains see the
   // pending sequence and then wait for the CDC to settle before fresh traffic.
   task automatic wait_pending_seen(input bit expect_src, input bit expect_dst, input string test_name);
@@ -330,6 +352,9 @@ module cc_cdc_2phase_clearable_tb;
     report_error($sformatf("timeout waiting for clear completion in %s", test_name));
   endtask
 
+  // --------------------------------------------------------------------------
+  // Traffic Helpers
+  // --------------------------------------------------------------------------
   task automatic send_word(input logic [31:0] data);
     src_data_i = data;
     src_valid_i = 1'b1;
@@ -394,6 +419,9 @@ module cc_cdc_2phase_clearable_tb;
     end
   endtask
 
+  // --------------------------------------------------------------------------
+  // Control Event Helpers
+  // --------------------------------------------------------------------------
   function automatic string control_event_name(input control_event_e ctrl_event);
     unique case (ctrl_event)
       EventSrcClear: control_event_name = "source synchronous clear";
@@ -513,6 +541,9 @@ module cc_cdc_2phase_clearable_tb;
     end
   endtask
 
+  // --------------------------------------------------------------------------
+  // Transfer And Backpressure Scenarios
+  // --------------------------------------------------------------------------
   task automatic run_transfer_check(input string test_name, input int unsigned num_words,
                                     input logic [31:0] base,
                                     input dst_ready_mode_e ready_mode);
@@ -549,6 +580,9 @@ module cc_cdc_2phase_clearable_tb;
                        DstReadyHigh);
   endtask
 
+  // --------------------------------------------------------------------------
+  // Active Stress Scenario
+  // --------------------------------------------------------------------------
   // Active-traffic stress keeps a source driver running while randomized
   // clear/reset events interrupt the CDC from either side.
   task automatic pause_active_source(input string test_name);
@@ -678,6 +712,9 @@ module cc_cdc_2phase_clearable_tb;
     wait_dst_cycles(2);
   endtask
 
+  // --------------------------------------------------------------------------
+  // Test Sequence
+  // --------------------------------------------------------------------------
   initial begin : run_tests
     int unsigned seed;
 
@@ -750,6 +787,9 @@ module cc_cdc_2phase_clearable_tb;
     $finish;
   end
 
+  // --------------------------------------------------------------------------
+  // Monitor Bindings
+  // --------------------------------------------------------------------------
   // Bind a simulation-only monitor into each reset-controller half. It mirrors
   // the formal invariants to catch invalid internal clear FSM behavior in Questa.
   bind cc_cdc_reset_ctrlr_half cc_cdc_reset_ctrlr_half_monitor i_monitor (
@@ -780,6 +820,10 @@ module cc_cdc_2phase_clearable_tb;
 
 endmodule
 
+
+// ----------------------------------------------------------------------------
+// Delay Model Helpers
+// ----------------------------------------------------------------------------
 
 // Per-bit inertial delay model used to sweep relative async channel timing in
 // simulation without changing the production DUT hierarchy.
@@ -830,6 +874,10 @@ module cc_cdc_2phase_clearable_tb_bus_delay #(
 
 endmodule
 
+
+// ----------------------------------------------------------------------------
+// Timed Delay-Injection Harness
+// ----------------------------------------------------------------------------
 
 // Timed test harness equivalent to the clearable DUT, but with explicit delay
 // elements inserted on all payload and reset-controller async wires.
@@ -893,6 +941,7 @@ module cc_cdc_2phase_clearable_tb_delay_injector
   assign async_reset_dst2src_next_phase_to_src =
       cdc_clear_seq_phase_e'(async_reset_dst2src_next_phase_to_src_bits);
 
+  // Payload channel delays.
   cc_cdc_2phase_clearable_tb_bit_delay #(
     .MAX_DELAY_PS ( MAX_DELAY_PS )
   ) i_async_payload_req_delay (
@@ -915,6 +964,7 @@ module cc_cdc_2phase_clearable_tb_delay_injector
     .out_o ( async_payload_data_to_dst   )
   );
 
+  // Reset-controller phase, request, and acknowledge delays.
   cc_cdc_2phase_clearable_tb_bus_delay #(
     .Width        ( ClearPhaseWidth ),
     .MAX_DELAY_PS ( MAX_DELAY_PS    )
@@ -959,8 +1009,7 @@ module cc_cdc_2phase_clearable_tb_delay_injector
     .out_o ( async_reset_src2dst_ack_to_dst   )
   );
 
-  // Reuse the production source and destination domain wrappers. The harness
-  // only inserts timing delays on the explicit async wires between them.
+  // Production domain wrappers connected through the delayed async wires.
   cc_cdc_2phase_src_domain_clearable #(
     .data_t            ( logic [31:0]        ),
     .SyncStages        ( SYNC_STAGES         ),
@@ -1009,6 +1058,10 @@ module cc_cdc_2phase_clearable_tb_delay_injector
 endmodule
 
 
+// ----------------------------------------------------------------------------
+// Reset-Controller Monitor
+// ----------------------------------------------------------------------------
+
 // Lightweight checker for reset-controller half internals. This is deliberately
 // local-clock only and checks invariants that should hold after every edge.
 module cc_cdc_reset_ctrlr_half_monitor
@@ -1054,6 +1107,9 @@ module cc_cdc_reset_ctrlr_half_monitor
   localparam logic [3:0] InitPostClear           = 4'd7;
   localparam logic [3:0] InitFinished            = 4'd8;
 
+  // --------------------------------------------------------------------------
+  // Monitor Helpers
+  // --------------------------------------------------------------------------
   function automatic bit valid_phase(input cdc_clear_seq_phase_e phase);
     return phase inside {
       CDC_CLEAR_PHASE_IDLE,
@@ -1165,6 +1221,9 @@ module cc_cdc_reset_ctrlr_half_monitor
     end
   endtask
 
+  // --------------------------------------------------------------------------
+  // Edge Checks
+  // --------------------------------------------------------------------------
   always @(posedge clk_i) begin
     if (rst_ni) begin
       #1ps;
