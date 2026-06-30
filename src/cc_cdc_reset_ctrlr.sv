@@ -105,6 +105,8 @@
 // side is isolated (depending on protocol this might take several cycles),
 // assert the a/b_isolate_ack_i signal.
 //
+`include "common_cells/registers.svh"
+
 module cc_cdc_reset_ctrlr
   import cc_pkg::*;
  #(
@@ -252,6 +254,7 @@ module cc_cdc_reset_ctrlr_half
      FINISHED
   } initiator_state_e;
   initiator_state_e initiator_state_d, initiator_state_q;
+  localparam initiator_state_e InitiatorStateResetValue = ClearOnAsyncReset ? ISOLATE : IDLE;
 
   // The current phase of the clear sequence, sent to the other side using a
   // 4-phase CDC
@@ -371,18 +374,8 @@ module cc_cdc_reset_ctrlr_half
     endcase
   end
 
-  always_ff @(posedge clk_i, negedge rst_ni) begin
-    if (!rst_ni) begin
-      if (ClearOnAsyncReset) begin
-        initiator_state_q <= ISOLATE; // Start in the ISOLATE state which is
-                                        // the first state of a clear sequence.
-      end else begin
-        initiator_state_q <= IDLE;
-      end
-    end else begin
-      initiator_state_q <= initiator_state_d;
-    end
-  end
+  // Start in the ISOLATE state if asynchronous reset should launch a clear sequence.
+  `FF(initiator_state_q, initiator_state_d, InitiatorStateResetValue, clk_i, rst_ni)
 
   // Initiator CDC SRC
   // We use 4 phase handshaking. That way it doesn't matter if one side is
@@ -417,6 +410,7 @@ module cc_cdc_reset_ctrlr_half
   cdc_clear_seq_phase_e receiver_phase_q;
   cdc_clear_seq_phase_e receiver_next_phase;
   logic receiver_phase_req, receiver_phase_ack;
+  logic receiver_phase_accept;
 
   logic receiver_isolate_out;
   logic receiver_clear_out;
@@ -438,13 +432,10 @@ module cc_cdc_reset_ctrlr_half
     .async_data_i(async_next_phase_i)
   );
 
-  always_ff @(posedge clk_i, negedge rst_ni) begin
-    if (!rst_ni) begin
-      receiver_phase_q <= CDC_CLEAR_PHASE_IDLE;
-    end else if (receiver_phase_req && receiver_phase_ack) begin
-      receiver_phase_q <= receiver_next_phase;
-    end
-  end
+  assign receiver_phase_accept = receiver_phase_req && receiver_phase_ack;
+
+  `FFL(receiver_phase_q, receiver_next_phase, receiver_phase_accept, CDC_CLEAR_PHASE_IDLE,
+       clk_i, rst_ni)
 
   always_comb begin
     receiver_isolate_out = 1'b0;

@@ -228,25 +228,11 @@ module cc_cdc_fifo_gray_clearable #(
 
   // Just delay the isolate request by one cycle. We can ensure isolation within
   // one cycle by just deasserting valid and ready signals on both sides of the CDC.
-  always_ff @(posedge src_clk_i, negedge src_rst_ni) begin
-    if (!src_rst_ni) begin
-      s_src_isolate_ack_q <= 1'b0;
-      s_src_clear_ack_q   <= 1'b0;
-    end else begin
-      s_src_isolate_ack_q <= s_src_isolate_req;
-      s_src_clear_ack_q   <= s_src_clear_req;
-    end
-  end
+  `FF(s_src_isolate_ack_q, s_src_isolate_req, 1'b0, src_clk_i, src_rst_ni)
+  `FF(s_src_clear_ack_q,   s_src_clear_req,   1'b0, src_clk_i, src_rst_ni)
 
-  always_ff @(posedge dst_clk_i, negedge dst_rst_ni) begin
-    if (!dst_rst_ni) begin
-      s_dst_isolate_ack_q <= 1'b0;
-      s_dst_clear_ack_q   <= 1'b0;
-    end else begin
-      s_dst_isolate_ack_q <= s_dst_isolate_req;
-      s_dst_clear_ack_q   <= s_dst_clear_req;
-    end
-  end
+  `FF(s_dst_isolate_ack_q, s_dst_isolate_req, 1'b0, dst_clk_i, dst_rst_ni)
+  `FF(s_dst_clear_ack_q,   s_dst_clear_req,   1'b0, dst_clk_i, dst_rst_ni)
 
 
   assign src_clear_pending_o = s_src_isolate_req; // The isolate signal stays

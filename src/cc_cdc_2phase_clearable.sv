@@ -257,15 +257,8 @@ module cc_cdc_2phase_dst_domain_clearable #(
   assign dst_valid_o = dst_valid & !dst_isolate_req;
 
   // Isolation and clear are acknowledged one cycle after the local request.
-  always_ff @(posedge dst_clk_i, negedge dst_rst_ni) begin
-    if (!dst_rst_ni) begin
-      dst_isolate_ack_q <= 1'b0;
-      dst_clear_ack_q   <= 1'b0;
-    end else begin
-      dst_isolate_ack_q <= dst_isolate_req;
-      dst_clear_ack_q   <= dst_clear_req;
-    end
-  end
+  `FF(dst_isolate_ack_q, dst_isolate_req, 1'b0, dst_clk_i, dst_rst_ni)
+  `FF(dst_clear_ack_q,   dst_clear_req,   1'b0, dst_clk_i, dst_rst_ni)
 
   assign dst_clear_pending_o = dst_isolate_req;
 
@@ -353,15 +346,8 @@ module cc_cdc_2phase_src_domain_clearable #(
   assign src_ready_o = src_ready & !src_isolate_req;
 
   // Isolation and clear are acknowledged one cycle after the local request.
-  always_ff @(posedge src_clk_i, negedge src_rst_ni) begin
-    if (!src_rst_ni) begin
-      src_isolate_ack_q <= 1'b0;
-      src_clear_ack_q   <= 1'b0;
-    end else begin
-      src_isolate_ack_q <= src_isolate_req;
-      src_clear_ack_q   <= src_clear_req;
-    end
-  end
+  `FF(src_isolate_ack_q, src_isolate_req, 1'b0, src_clk_i, src_rst_ni)
+  `FF(src_clear_ack_q,   src_clear_req,   1'b0, src_clk_i, src_rst_ni)
 
   assign src_clear_pending_o = src_isolate_req; // The isolate signal stays
                                                 // asserted during the whole
@@ -417,13 +403,7 @@ module cc_cdc_2phase_src_clearable #(
 
   `FFNR(data_src_q, data_src_d, clk_i)
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      req_src_q  <= 0;
-    end else begin
-      req_src_q  <= req_src_d;
-    end
-  end
+  `FF(req_src_q, req_src_d, 1'b0, clk_i, rst_ni)
 
   // Output assignments.
   assign ready_o = (req_src_q == ack_synced);
@@ -494,17 +474,10 @@ module cc_cdc_2phase_dst_clearable #(
 
   `FFNR(data_dst_q, data_dst_d, clk_i)
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      ack_dst_q     <= 0;
-      req_synced_q1 <= 1'b0;
-    end else begin
-      ack_dst_q     <= ack_dst_d;
-      // The req_synced_q1 is the delayed version of the synchronized req_synced
-      // used to detect transitions in the request.
-      req_synced_q1 <= req_synced;
-    end
-  end
+  `FF(ack_dst_q, ack_dst_d, 1'b0, clk_i, rst_ni)
+  // The req_synced_q1 is the delayed version of the synchronized req_synced
+  // used to detect transitions in the request.
+  `FF(req_synced_q1, req_synced, 1'b0, clk_i, rst_ni)
 
   // Output assignments.
   assign valid_o = (ack_dst_q != req_synced_q1);

@@ -40,6 +40,8 @@
 /// CONSTRAINT: Requires max_delay of min_period(src_clk_i, dst_clk_i) through
 /// the paths async_req, async_ack, async_data.
 /* verilator lint_off DECLFILENAME */
+`include "common_cells/registers.svh"
+
 module cc_cdc_2phase #(
   parameter type data_t = logic
 )(
@@ -106,28 +108,17 @@ module cc_cdc_2phase_src #(
   logic req_src_q, ack_src_q, ack_q;
   (* dont_touch = "true" *)
   data_t data_src_q;
+  logic src_accept;
+
+  assign src_accept = valid_i && ready_o;
 
   // The req_src and data_src registers change when a new data item is accepted.
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      req_src_q  <= 0;
-      data_src_q <= data_t'('0);
-    end else if (valid_i && ready_o) begin
-      req_src_q  <= ~req_src_q;
-      data_src_q <= data_i;
-    end
-  end
+  `FFL(req_src_q,  ~req_src_q, src_accept, 1'b0,       clk_i, rst_ni)
+  `FFL(data_src_q, data_i,     src_accept, data_t'('0), clk_i, rst_ni)
 
   // The ack_src and ack registers act as synchronization stages.
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      ack_src_q <= 0;
-      ack_q     <= 0;
-    end else begin
-      ack_src_q <= async_ack_i;
-      ack_q     <= ack_src_q;
-    end
-  end
+  `FF(ack_src_q, async_ack_i, 1'b0, clk_i, rst_ni)
+  `FF(ack_q,     ack_src_q,   1'b0, clk_i, rst_ni)
 
   // Output assignments.
   assign ready_o = (req_src_q == ack_q);
@@ -157,38 +148,22 @@ module cc_cdc_2phase_dst #(
   logic req_dst_q, req_q0, req_q1, ack_dst_q;
   (* dont_touch = "true" *)
   data_t data_dst_q;
+  logic dst_accept, dst_data_load;
+
+  assign dst_accept   = valid_o && ready_i;
+  assign dst_data_load = req_q0 != req_q1 && !valid_o;
 
   // The ack_dst register changes when a new data item is accepted.
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      ack_dst_q  <= 0;
-    end else if (valid_o && ready_i) begin
-      ack_dst_q  <= ~ack_dst_q;
-    end
-  end
+  `FFL(ack_dst_q, ~ack_dst_q, dst_accept, 1'b0, clk_i, rst_ni)
 
   // The data_dst register changes when a new data item is presented. This is
   // indicated by the async_req line changing levels.
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      data_dst_q <= data_t'('0);
-    end else if (req_q0 != req_q1 && !valid_o) begin
-      data_dst_q <= async_data_i;
-    end
-  end
+  `FFL(data_dst_q, async_data_i, dst_data_load, data_t'('0), clk_i, rst_ni)
 
   // The req_dst and req registers act as synchronization stages.
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      req_dst_q <= 0;
-      req_q0    <= 0;
-      req_q1    <= 0;
-    end else begin
-      req_dst_q <= async_req_i;
-      req_q0    <= req_dst_q;
-      req_q1    <= req_q0;
-    end
-  end
+  `FF(req_dst_q, async_req_i, 1'b0, clk_i, rst_ni)
+  `FF(req_q0,    req_dst_q,   1'b0, clk_i, rst_ni)
+  `FF(req_q1,    req_q0,      1'b0, clk_i, rst_ni)
 
   // Output assignments.
   assign valid_o = (ack_dst_q != req_q1);

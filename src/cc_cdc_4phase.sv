@@ -33,6 +33,8 @@
 /// CONSTRAINT: Requires max_delay of min_period(src_clk_i, dst_clk_i) through
 /// the paths async_req, async_ack, async_data.
 /* verilator lint_off DECLFILENAME */
+`include "common_cells/registers.svh"
+
 module cc_cdc_4phase #(
   parameter type data_t = logic,
   parameter bit Decoupled = 1'b1,
@@ -115,6 +117,8 @@ module cc_cdc_4phase_src #(
 
   typedef enum logic[1:0] {IDLE, WAIT_ACK_ASSERT, WAIT_ACK_DEASSERT} state_e;
   state_e state_d, state_q;
+  localparam logic ReqSrcResetValue = SendResetMsg ? 1'b1 : 1'b0;
+  localparam data_t DataSrcResetValue = SendResetMsg ? ResetMsg : data_t'('0);
 
   // Synchronize the async ACK
   tc_sync #(
@@ -169,29 +173,11 @@ module cc_cdc_4phase_src #(
     endcase
   end
 
-  always_ff @(posedge clk_i, negedge rst_ni) begin
-    if (!rst_ni) begin
-      state_q <= IDLE;
-    end else begin
-      state_q <= state_d;
-    end
-  end
+  `FF(state_q, state_d, IDLE, clk_i, rst_ni)
 
   // Sample the data and the request signal to filter combinational glitches
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      if (SendResetMsg) begin
-        req_src_q  <= 1'b1;
-        data_src_q <= ResetMsg;
-      end else begin
-        req_src_q  <= 1'b0;
-        data_src_q <= data_t'('0);
-      end
-    end else begin
-      req_src_q  <= req_src_d;
-      data_src_q <= data_src_d;
-    end
-  end
+  `FF(req_src_q,  req_src_d,  ReqSrcResetValue,  clk_i, rst_ni)
+  `FF(data_src_q, data_src_d, DataSrcResetValue, clk_i, rst_ni)
 
   // Async output assignments.
   assign async_req_o = req_src_q;
@@ -281,22 +267,10 @@ module cc_cdc_4phase_dst #(
     endcase
   end
 
-  always_ff @(posedge clk_i, negedge rst_ni) begin
-    if (!rst_ni) begin
-      state_q <= IDLE;
-    end else begin
-      state_q <= state_d;
-    end
-  end
+  `FF(state_q, state_d, IDLE, clk_i, rst_ni)
 
   // Filter glitches on ack signal before sending it through the asynchronous channel
-  always_ff @(posedge clk_i, negedge rst_ni) begin
-    if (!rst_ni) begin
-      ack_dst_q <= 1'b0;
-    end else begin
-      ack_dst_q <= ack_dst_d;
-    end
-  end
+  `FF(ack_dst_q, ack_dst_d, 1'b0, clk_i, rst_ni)
 
   if (Decoupled) begin : gen_decoupled
     // Decouple the output from the asynchronous data bus without introducing
