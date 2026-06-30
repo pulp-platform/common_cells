@@ -141,21 +141,24 @@ The header file [`registers.svh`](include/common_cells/registers.svh) contains m
 To avoid misuse of `always_ff` blocks, only the following macros shall be used to describe sequential behavior.
 The use of linter rules that flag explicit uses of `always_ff` in source code is encouraged.
 
-|    Macro     |                             Arguments                             |                                Description                                |
-| ------------ | ----------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| <code>`FF</code>     | `q_sig`, `d_sig`, `rst_val`, (`clk_sig`, `arstn_sig`)             | Flip-flop with asynchronous active-low reset                              |
-| <code>`FFAR</code>   | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `arst_sig`                | Flip-flop with asynchronous active-high reset                             |
-| <code>`FFSR</code>   | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `rst_sig`                 | Flip-flop with synchronous active-high reset                              |
-| <code>`FFSRN</code>  | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `rstn_sig`                | Flip-flop with synchronous active-low reset                               |
-| <code>`FFNR</code>   | `q_sig`, `d_sig`, `clk_sig`                                       | Flip-flop without reset                                                   |
-|              |                                                                   |                                                                           |
-| <code>`FFL</code>    | `q_sig`, `d_sig`, `load_ena`, `rst_val`, (`clk_sig`, `arstn_sig`) | Flip-flop with load-enable and asynchronous active-low reset              |
-| <code>`FFLAR</code>  | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `arst_sig`    | Flip-flop with load-enable and asynchronous active-high reset             |
-| <code>`FFLSR</code>  | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `rst_sig`     | Flip-flop with load-enable and synchronous active-high reset              |
-| <code>`FFLSRN</code> | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `rstn_sig`    | Flip-flop with load-enable and synchronous active-low reset               |
-| <code>`FFLNR</code>  | `q_sig`, `d_sig`, `load_ena`, `clk_sig`                           | Flip-flop with load-enable without reset                                  |
-- *The name of the clock and reset signals for implicit variants is `clk_i` and `rst_ni`, respectively.*
-- *Argument suffix `_sig` indicates signal names for present and next state as well as clocks and resets.*
+|    Macro              |                             Arguments                                        |                                Description                                                   |
+| --------------------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| <code>`FF</code>      | `q_sig`, `d_sig`, `rst_val`, (`clk_sig`, `arstn_sig`)                        | Flip-flop with asynchronous active-low reset                                                 |
+| <code>`FFAR</code>    | `q_sig`, `d_sig`, `rst_val`, (`clk_sig`, `arst_sig`)                         | Flip-flop with asynchronous active-high reset                                                |
+| <code>`FFARNC</code>  | `q_sig`, `d_sig`, `clr_sig`, `rst_val`, (`clk_sig`, `arstn_sig`)             | Flip-flop with asynchronous active-low reset and synchronous active-high clear               |
+| <code>`FFSR</code>    | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `rst_sig`                            | Flip-flop with synchronous active-high reset                                                 |
+| <code>`FFSRN</code>   | `q_sig`, `d_sig`, `rst_val`, `clk_sig`, `rstn_sig`                           | Flip-flop with synchronous active-low reset                                                  |
+| <code>`FFNR</code>    | `q_sig`, `d_sig`, (`clk_sig`)                                                | Flip-flop without reset                                                                      |
+|                       |                                                                              |                                                                                              |
+| <code>`FFL</code>     | `q_sig`, `d_sig`, `load_ena`, `rst_val`, (`clk_sig`, `arstn_sig`)            | Flip-flop with load-enable and asynchronous active-low reset                                 |
+| <code>`FFLAR</code>   | `q_sig`, `d_sig`, `load_ena`, `rst_val`, (`clk_sig`, `arst_sig`)             | Flip-flop with load-enable and asynchronous active-high reset                                |
+| <code>`FFLARNC</code> | `q_sig`, `d_sig`, `load_ena`, `clr_sig`, `rst_val`, (`clk_sig`, `arstn_sig`) | Flip-flop with load-enable, asynchronous active-high reset and synchronous active-high clear |
+| <code>`FFLSR</code>   | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `rst_sig`                | Flip-flop with load-enable and synchronous active-high reset                                 |
+| <code>`FFLSRN</code>  | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `rstn_sig`               | Flip-flop with load-enable and synchronous active-low reset                                  |
+| <code>`FFLNR</code>   | `q_sig`, `d_sig`, `load_ena`, (`clk_sig`)                                    | Flip-flop with load-enable without reset                                                     |
+- *The name of the clock signal for implicit variants is `clk_i`.*
+- *The name of the reset signal for implicit variants is `rst_i` or `rst_ni`, respectively for active-high and active-low variants.*
+- *Argument suffix `_sig` indicates signal names for present and next state as well as clocks, resets and synchronous clear signals.*
 - *Argument `rst_val` specifies the value literal to be assigned upon reset.*
 - *Argument `load_ena` specifies the boolean expression that forms the load enable of the register.*
 
