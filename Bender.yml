@@ -161,10 +161,11 @@ sources:
   # to exclude them and enforce use of the new cc_* names.
   - target: not(cc_no_deprecated)
     files:
-      # Deprecated packages forwarding to cc_pkg (keep old `cf_math_pkg`/`cb_filter_pkg`/`ecc_pkg` names working)
+      # Deprecated packages forwarding to cc_pkg (keep old package names working)
       - src/deprecated/cf_math_pkg.sv
       - src/deprecated/cb_filter_pkg.sv
       - src/deprecated/ecc_pkg.sv
+      - src/deprecated/cdc_reset_ctrlr_pkg.sv
       - src/deprecated/stream_intf.sv
       - src/deprecated/binary_to_gray.sv
       - src/deprecated/boxcar.sv
@@ -250,3 +251,8 @@ sources:
       - src/deprecated/stream_omega_net.sv
       # Level 4
       - src/deprecated/mem_to_banks.sv
+
+  # Deprecated stream_test package: uses STREAM_DV interface name; only in test mode.
+  - target: all(not(cc_no_deprecated), test)
+    files:
+      - src/deprecated/stream_test.sv
