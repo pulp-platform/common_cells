@@ -67,6 +67,8 @@
 // SPDX-License-Identifier: SHL-0.51
 // -----------------------------------------------------------------------------
 
+`include "common_cells/registers.svh"
+
 module cc_clk_int_div #(
   /// The with
   parameter int unsigned DivValueWidth = 4,
@@ -227,21 +229,11 @@ module cc_clk_int_div #(
   localparam logic UseOddDivisionResetValue = DefaultDivValue[0];
   localparam logic ClkDivBypassEnResetValue = (DefaultDivValue < 2)? 1'b1: 1'b0;
 
-  always_ff @(posedge clk_i, negedge rst_ni) begin
-    if (!rst_ni) begin
-      use_odd_division_q  <= UseOddDivisionResetValue;
-      clk_div_bypass_en_q <= ClkDivBypassEnResetValue;
-      div_q               <= DivResetValue;
-      clk_gate_state_q    <= IDLE;
-      gate_en_q           <= EnableClockInReset;
-    end else begin
-      use_odd_division_q  <= use_odd_division_d;
-      clk_div_bypass_en_q <= clk_div_bypass_en_d;
-      div_q               <= div_d;
-      clk_gate_state_q    <= clk_gate_state_d;
-      gate_en_q           <= gate_en_d;
-    end
-  end
+  `FF(use_odd_division_q,  use_odd_division_d,  UseOddDivisionResetValue,  clk_i, rst_ni)
+  `FF(clk_div_bypass_en_q, clk_div_bypass_en_d, ClkDivBypassEnResetValue, clk_i, rst_ni)
+  `FF(div_q,               div_d,               DivResetValue,            clk_i, rst_ni)
+  `FF(clk_gate_state_q,    clk_gate_state_d,    IDLE,                     clk_i, rst_ni)
+  `FF(gate_en_q,           gate_en_d,           EnableClockInReset,        clk_i, rst_ni)
 
   //---------------------- Cycle Counter ----------------------
 
@@ -265,13 +257,7 @@ module cc_clk_int_div #(
     end
   end
 
-  always_ff @(posedge clk_i, negedge rst_ni) begin
-    if (!rst_ni) begin
-      cycle_cntr_q <= '0;
-    end else begin
-      cycle_cntr_q <= cycle_cntr_d;
-    end
-  end
+  `FF(cycle_cntr_q, cycle_cntr_d, '0, clk_i, rst_ni)
 
   assign cycl_count_o = cycle_cntr_q;
 

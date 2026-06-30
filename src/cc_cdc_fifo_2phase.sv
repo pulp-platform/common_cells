@@ -11,6 +11,7 @@
 //
 // Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
 
+`include "common_cells/registers.svh"
 `include "common_cells/assertions.svh"
 
 /// A clock domain crossing FIFO, using 2-phase hand shakes.
@@ -81,7 +82,7 @@ module cc_cdc_fifo_2phase #(
   // - write: fifo_widx, fifo_wdata, fifo_write, src_clk_i
   // - read: fifo_ridx, fifo_rdata
   index_t fifo_widx, fifo_ridx;
-  logic fifo_write;
+  logic fifo_write, fifo_read;
   data_t fifo_wdata, fifo_rdata;
   data_t fifo_data_q [2**LogDepth];
 
@@ -99,19 +100,8 @@ module cc_cdc_fifo_2phase #(
   // Allocate the read and write pointers in the source and destination domain.
   pointer_t src_wptr_q, dst_wptr, src_rptr, dst_rptr_q;
 
-  always_ff @(posedge src_clk_i, negedge src_rst_ni) begin
-    if (!src_rst_ni)
-      src_wptr_q <= 0;
-    else if (src_valid_i && src_ready_o)
-      src_wptr_q <= src_wptr_q + 1;
-  end
-
-  always_ff @(posedge dst_clk_i, negedge dst_rst_ni) begin
-    if (!dst_rst_ni)
-      dst_rptr_q <= 0;
-    else if (dst_valid_o && dst_ready_i)
-      dst_rptr_q <= dst_rptr_q + 1;
-  end
+  `FFL(src_wptr_q, src_wptr_q + 1, fifo_write, '0, src_clk_i, src_rst_ni)
+  `FFL(dst_rptr_q, dst_rptr_q + 1, fifo_read,  '0, dst_clk_i, dst_rst_ni)
 
   // The pointers into the FIFO are one bit wider than the actual address into
   // the FIFO. This makes detecting critical states very simple: if all but the
@@ -151,6 +141,7 @@ module cc_cdc_fifo_2phase #(
   assign fifo_widx  = src_wptr_q;
   assign fifo_wdata = src_data_i;
   assign fifo_write = src_valid_i && src_ready_o;
+  assign fifo_read  = dst_valid_o && dst_ready_i;
   assign fifo_ridx  = dst_rptr_q;
   assign dst_data_o = fifo_rdata;
 
