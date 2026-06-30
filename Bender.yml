@@ -128,6 +128,7 @@ sources:
       - test/cc_cb_filter_tb.sv
       - test/cc_cdc_2phase_tb.sv
       - test/cc_cdc_2phase_clearable_tb.sv
+      - test/cc_cdc_4phase_tb.sv
       - test/cc_cdc_fifo_gray_tb.sv
       - test/cc_cdc_fifo_tb.sv
       - test/cc_cdc_fifo_clearable_tb.sv
