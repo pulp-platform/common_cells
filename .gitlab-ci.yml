@@ -52,6 +52,8 @@ sg-lint:
         ./test/simulate_cdc_2phase.sh
       elif [ "$TOPLEVEL" = "cc_cdc_4phase_tb" ]; then
         ./test/simulate_cdc_4phase.sh
+      elif [ "$TOPLEVEL" = "cc_cdc_fifo_2phase_tb" ]; then
+        ./test/simulate_cdc_fifo_2phase.sh
       elif [ "$TOPLEVEL" = "cc_cdc_fifo_gray_tb" ]; then
         ./test/simulate_cdc_fifo_gray.sh
       else
@@ -72,6 +74,7 @@ tests:
           - cc_cdc_2phase_clearable_tb
           - cc_cdc_2phase_tb
           - cc_cdc_4phase_tb
+          - cc_cdc_fifo_2phase_tb
           - cc_cdc_fifo_gray_tb
           # - cc_cdc_fifo_clearable_tb
           - cc_clk_int_div_tb
