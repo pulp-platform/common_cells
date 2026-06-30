@@ -46,12 +46,14 @@ sg-lint:
   timeout: 10min
   script:
     - |
-      if [ "$TOPLEVEL" = "cc_cdc_fifo_gray_tb" ]; then
-        ./test/simulate_cdc_fifo_gray.sh
+      if [ "$TOPLEVEL" = "cc_cdc_2phase_clearable_tb" ]; then
+        ./test/simulate_cdc_clearable.sh
+      elif [ "$TOPLEVEL" = "cc_cdc_2phase_tb" ]; then
+        ./test/simulate_cdc_2phase.sh
       elif [ "$TOPLEVEL" = "cc_cdc_4phase_tb" ]; then
         ./test/simulate_cdc_4phase.sh
-      elif [ "$TOPLEVEL" = "cc_cdc_2phase_clearable_tb" ]; then
-        ./test/simulate_cdc_clearable.sh
+      elif [ "$TOPLEVEL" = "cc_cdc_fifo_gray_tb" ]; then
+        ./test/simulate_cdc_fifo_gray.sh
       else
         bender checkout
         bender script vsim -t test > compile.tcl
@@ -68,6 +70,7 @@ tests:
           - cc_addr_decode_tb
           - cc_cb_filter_tb
           - cc_cdc_2phase_clearable_tb
+          - cc_cdc_2phase_tb
           - cc_cdc_4phase_tb
           - cc_cdc_fifo_gray_tb
           # - cc_cdc_fifo_clearable_tb
