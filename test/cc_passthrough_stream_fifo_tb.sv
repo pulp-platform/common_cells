@@ -51,12 +51,12 @@ module cc_passthrough_stream_fifo_tb #(
         .flush_i    ( 1'b0 ),
 
         .data_i  ( (in_valid && in_ready) ? in_data : 'x ),
-        .valid_i ( in_valid && in_ready                  ),
+        .valid_i ( in_valid                              ),
         .ready_o ( in_ready                              ),
 
         .data_o  ( out_data               ),
         .valid_o ( out_valid              ),
-        .ready_i ( out_ready && out_valid )
+        .ready_i ( out_ready              )
     );
 
     // Application
@@ -121,7 +121,7 @@ module cc_passthrough_stream_fifo_tb #(
             acq_data = acq_queue.pop_front();
             app_data = app_queue.pop_front();
 
-            if (app_data != acq_data) begin
+            if (app_data !== acq_data) begin
                 $display("Missmatch! Applied: %d Acquired: %d", app_data, acq_data);
                 num_errors++;
             end else begin
