@@ -19,6 +19,7 @@
 // Abridged Summary of available FF macros:
 // `FF:      asynchronous active-low reset
 // `FFAR:    asynchronous active-high reset
+// `FFARNC:  asynchronous active-low reset and synchronous active-high clear
 // `FFSR:    synchronous active-high reset
 // `FFSRN:   synchronous active-low reset
 // `FFNR:    without reset
