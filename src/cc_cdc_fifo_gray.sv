@@ -11,6 +11,7 @@
 //
 // Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
 // Florian Zaruba <zarubaf@iis.ee.ethz.ch>
+// Philippe Sauter <phsauter@iis.ee.ethz.ch> (source/destination split)
 
 /// A clock domain crossing FIFO, using gray counters.
 ///
@@ -186,48 +187,35 @@ module cc_cdc_fifo_gray_src #(
   input  logic  [LogDepth:0]      async_rptr_i
 );
 
-  localparam int unsigned PtrWidth = LogDepth+1;
-  localparam logic [PtrWidth-1:0] PtrFull = (1 << LogDepth);
+  logic [LogDepth-1:0] src_widx;
+  logic src_write;
 
-  data_t [2**LogDepth-1:0] data_q, data_d;
-  logic [PtrWidth-1:0] wptr_q, wptr_d, wptr_bin, wptr_next, rptr, rptr_bin;
+  assign src_write = src_valid_i & src_ready_o;
 
-  if (SyncStages < 2) begin : gen_sync_stage_assertion
-    $error("A minimum of 2 synchronizer stages is required for proper functionality.");
-  end
+  cc_cdc_fifo_gray_src_data #(
+    .data_t   ( data_t   ),
+    .LogDepth ( LogDepth )
+  ) i_src_data (
+    .src_rst_ni,
+    .src_clk_i,
+    .src_data_i,
+    .src_widx_i  ( src_widx     ),
+    .src_write_i ( src_write    ),
+    .async_data_o
+  );
 
-  // Data FIFO.
-  assign async_data_o = data_q;
-
-  always_comb begin
-    data_d                          = data_q;
-    data_d[wptr_bin[LogDepth-1:0]] = src_data_i;
-  end
-  `FFL(data_q, data_d, src_valid_i & src_ready_o, '0, src_clk_i, src_rst_ni)
-
-  // Read pointer.
-  for (genvar i = 0; i < PtrWidth; i++) begin : gen_sync
-    tc_sync #(.Stages(SyncStages)) i_sync (
-      .clk_i    ( src_clk_i       ),
-      .rst_ni   ( src_rst_ni      ),
-      .serial_i ( async_rptr_i[i] ),
-      .serial_o ( rptr[i]         )
-    );
-  end
-  cc_gray_to_binary #(PtrWidth) i_rptr_g2b (.a_i(rptr), .z_o(rptr_bin));
-
-  // Write pointer.
-  assign wptr_next = wptr_bin+1;
-  cc_gray_to_binary #(PtrWidth) i_wptr_g2b (.a_i(wptr_q), .z_o(wptr_bin));
-  cc_binary_to_gray #(PtrWidth) i_wptr_b2g (.a_i(wptr_next), .z_o(wptr_d));
-  `FFL(wptr_q, wptr_d, src_valid_i & src_ready_o, '0, src_clk_i, src_rst_ni)
-  assign async_wptr_o = wptr_q;
-
-  // The pointers into the FIFO are one bit wider than the actual address into
-  // the FIFO. This makes detecting critical states very simple: if all but the
-  // topmost bit of rptr and wptr agree, the FIFO is in a critical state. If the
-  // topmost bit is equal, the FIFO is empty, otherwise it is full.
-  assign src_ready_o = ((wptr_bin ^ rptr_bin) != PtrFull);
+  cc_cdc_fifo_gray_src_ptr #(
+    .LogDepth   ( LogDepth   ),
+    .SyncStages ( SyncStages )
+  ) i_src_ptr (
+    .src_rst_ni,
+    .src_clk_i,
+    .src_valid_i,
+    .src_ready_o,
+    .src_widx_o  ( src_widx     ),
+    .async_wptr_o,
+    .async_rptr_i
+  );
 
 endmodule
 
@@ -250,28 +238,157 @@ module cc_cdc_fifo_gray_dst #(
   output logic  [LogDepth:0]      async_rptr_o
 );
 
-  localparam int unsigned PtrWidth = LogDepth+1;
-  localparam logic [PtrWidth-1:0] PtrEmpty = '0;
-
-  data_t dst_data;
-  logic [PtrWidth-1:0] rptr_q, rptr_d, rptr_bin, rptr_bin_d, rptr_next, wptr, wptr_bin;
   logic dst_valid, dst_ready;
+  logic [LogDepth-1:0] dst_ridx;
+
+  cc_cdc_fifo_gray_dst_ptr #(
+    .LogDepth   ( LogDepth   ),
+    .SyncStages ( SyncStages )
+  ) i_dst_ptr (
+    .dst_rst_ni,
+    .dst_clk_i,
+    .dst_ready_i ( dst_ready    ),
+    .dst_valid_o ( dst_valid    ),
+    .dst_ridx_o  ( dst_ridx     ),
+    .async_wptr_i,
+    .async_rptr_o
+  );
+
+  cc_cdc_fifo_gray_dst_data #(
+    .data_t   ( data_t   ),
+    .LogDepth ( LogDepth )
+  ) i_dst_data (
+    .dst_rst_ni,
+    .dst_clk_i,
+    .dst_data_o,
+    .dst_valid_o,
+    .dst_ready_i,
+    .dst_valid_i ( dst_valid    ),
+    .dst_ready_o ( dst_ready    ),
+    .dst_ridx_i  ( dst_ridx     ),
+    .async_data_i
+  );
+
+endmodule
+
+
+(* no_ungroup *)
+(* no_boundary_optimization *)
+module cc_cdc_fifo_gray_src_data #(
+  parameter type data_t = logic,
+  parameter int unsigned LogDepth = 3
+)(
+  input  logic  src_rst_ni,
+  input  logic  src_clk_i,
+  input  data_t src_data_i,
+  input  logic [LogDepth-1:0] src_widx_i,
+  input  logic  src_write_i,
+  output data_t [2**LogDepth-1:0] async_data_o
+);
+
+  data_t [2**LogDepth-1:0] data_d, data_q;
+
+  always_comb begin
+    data_d = data_q;
+    data_d[src_widx_i] = src_data_i;
+  end
+
+  `FFL(data_q, data_d, src_write_i, '0, src_clk_i, src_rst_ni)
+
+  assign async_data_o = data_q;
+
+endmodule
+
+
+(* no_ungroup *)
+(* no_boundary_optimization *)
+module cc_cdc_fifo_gray_src_ptr #(
+  parameter int unsigned LogDepth = 3,
+  parameter int unsigned SyncStages = 2
+)(
+  input  logic src_rst_ni,
+  input  logic src_clk_i,
+  input  logic src_valid_i,
+  output logic src_ready_o,
+  output logic [LogDepth-1:0] src_widx_o,
+  output logic [LogDepth:0]   async_wptr_o,
+  input  logic [LogDepth:0]   async_rptr_i
+);
+
+  localparam int unsigned PtrWidth = LogDepth+1;
+  localparam logic [PtrWidth-1:0] PtrFull = (1 << LogDepth);
+
+  logic [PtrWidth-1:0] wptr_q, wptr_d, wptr_bin, wptr_next, rptr, rptr_bin;
 
   if (SyncStages < 2) begin : gen_sync_stage_assertion
     $error("A minimum of 2 synchronizer stages is required for proper functionality.");
   end
 
-  // Data selector and register.
-  assign dst_data = async_data_i[rptr_bin[LogDepth-1:0]];
+  // Read pointer from the destination domain, synchronized into the source
+  // domain for the full check.
+  for (genvar i = 0; i < PtrWidth; i++) begin : gen_sync
+    tc_sync #(.Stages(SyncStages)) i_sync (
+      .clk_i    ( src_clk_i       ),
+      .rst_ni   ( src_rst_ni      ),
+      .serial_i ( async_rptr_i[i] ),
+      .serial_o ( rptr[i]         )
+    );
+  end
+  cc_gray_to_binary #(PtrWidth) i_rptr_g2b (.a_i(rptr), .z_o(rptr_bin));
 
-  // Read pointer.
+  // Local write pointer.
+  assign wptr_next = wptr_bin+1;
+  cc_gray_to_binary #(PtrWidth) i_wptr_g2b (.a_i(wptr_q), .z_o(wptr_bin));
+  cc_binary_to_gray #(PtrWidth) i_wptr_b2g (.a_i(wptr_next), .z_o(wptr_d));
+  `FFL(wptr_q, wptr_d, src_valid_i & src_ready_o, '0, src_clk_i, src_rst_ni)
+
+  assign src_widx_o   = wptr_bin[LogDepth-1:0];
+  assign async_wptr_o = wptr_q;
+
+  // The pointers into the FIFO are one bit wider than the actual address into
+  // the FIFO. This makes detecting critical states very simple: if all but the
+  // topmost bit of rptr and wptr agree, the FIFO is in a critical state. If the
+  // topmost bit is equal, the FIFO is empty, otherwise it is full.
+  assign src_ready_o = ((wptr_bin ^ rptr_bin) != PtrFull);
+
+endmodule
+
+
+(* no_ungroup *)
+(* no_boundary_optimization *)
+module cc_cdc_fifo_gray_dst_ptr #(
+  parameter int unsigned LogDepth = 3,
+  parameter int unsigned SyncStages = 2
+)(
+  input  logic dst_rst_ni,
+  input  logic dst_clk_i,
+  input  logic dst_ready_i,
+  output logic dst_valid_o,
+  output logic [LogDepth-1:0] dst_ridx_o,
+  input  logic [LogDepth:0]   async_wptr_i,
+  output logic [LogDepth:0]   async_rptr_o
+);
+
+  localparam int unsigned PtrWidth = LogDepth+1;
+  localparam logic [PtrWidth-1:0] PtrEmpty = '0;
+
+  logic [PtrWidth-1:0] rptr_q, rptr_d, rptr_bin, rptr_next, wptr, wptr_bin;
+
+  if (SyncStages < 2) begin : gen_sync_stage_assertion
+    $error("A minimum of 2 synchronizer stages is required for proper functionality.");
+  end
+
+  // Local read pointer.
   assign rptr_next = rptr_bin+1;
   cc_gray_to_binary #(PtrWidth) i_rptr_g2b (.a_i(rptr_q), .z_o(rptr_bin));
   cc_binary_to_gray #(PtrWidth) i_rptr_b2g (.a_i(rptr_next), .z_o(rptr_d));
-  `FFL(rptr_q, rptr_d, dst_valid & dst_ready, '0, dst_clk_i, dst_rst_ni)
+  `FFL(rptr_q, rptr_d, dst_valid_o & dst_ready_i, '0, dst_clk_i, dst_rst_ni)
+
+  assign dst_ridx_o   = rptr_bin[LogDepth-1:0];
   assign async_rptr_o = rptr_q;
 
-  // Write pointer.
+  // Write pointer from the source domain, synchronized into the destination
+  // domain for the empty check.
   for (genvar i = 0; i < PtrWidth; i++) begin : gen_sync
     tc_sync #(.Stages(SyncStages)) i_sync (
       .clk_i    ( dst_clk_i       ),
@@ -286,7 +403,31 @@ module cc_cdc_fifo_gray_dst #(
   // the FIFO. This makes detecting critical states very simple: if all but the
   // topmost bit of rptr and wptr agree, the FIFO is in a critical state. If the
   // topmost bit is equal, the FIFO is empty, otherwise it is full.
-  assign dst_valid = ((wptr_bin ^ rptr_bin) != PtrEmpty);
+  assign dst_valid_o = ((wptr_bin ^ rptr_bin) != PtrEmpty);
+
+endmodule
+
+
+(* no_ungroup *)
+(* no_boundary_optimization *)
+module cc_cdc_fifo_gray_dst_data #(
+  parameter type data_t = logic,
+  parameter int unsigned LogDepth = 3
+)(
+  input  logic  dst_rst_ni,
+  input  logic  dst_clk_i,
+  output data_t dst_data_o,
+  output logic  dst_valid_o,
+  input  logic  dst_ready_i,
+  input  logic  dst_valid_i,
+  output logic  dst_ready_o,
+  input  logic [LogDepth-1:0] dst_ridx_i,
+  input  data_t [2**LogDepth-1:0] async_data_i
+);
+
+  data_t dst_data;
+
+  assign dst_data = async_data_i[dst_ridx_i];
 
   // Cut the combinatorial path with a spill register.
   cc_spill_register #(
@@ -295,8 +436,8 @@ module cc_cdc_fifo_gray_dst #(
     .clk_i   ( dst_clk_i   ),
     .rst_ni  ( dst_rst_ni  ),
     .clr_i   ( '0          ),
-    .valid_i ( dst_valid   ),
-    .ready_o ( dst_ready   ),
+    .valid_i ( dst_valid_i ),
+    .ready_o ( dst_ready_o ),
     .data_i  ( dst_data    ),
     .valid_o ( dst_valid_o ),
     .ready_i ( dst_ready_i ),
