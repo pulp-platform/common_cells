@@ -23,6 +23,7 @@ sources:
   # etc. Files within a level are ordered alphabetically.
 
   # Level 0
+  - src/assert_rpt_pkg.sv
   - src/cc_binary_to_gray.sv
 
   - target: not(all(xilinx,vivado_ipx))
