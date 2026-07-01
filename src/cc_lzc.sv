@@ -85,7 +85,7 @@ module cc_lzc import cc_pkg::*; #(
           // if index is out of range
           if (unsigned'(k) * 2 > Width - 1) begin : g_out_of_range
             assign sel_nodes[2 ** level - 1 + k] = 1'b0;
-            assign index_nodes[2 ** level - 1 + k] = '0;
+            assign index_nodes[2 ** level - 1 + k] = (NumLevels)'(Width - 1);
           end
         end
       end else begin : g_not_last_level
