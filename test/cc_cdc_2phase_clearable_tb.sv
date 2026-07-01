@@ -769,9 +769,11 @@ module cc_cdc_2phase_clearable_tb;
     .initiator_isolate_out,
     .initiator_clear_out,
     .receiver_phase_q,
+    .receiver_effective_phase,
     .receiver_next_phase,
     .receiver_phase_req,
     .receiver_phase_ack,
+    .receiver_phase_pending_q,
     .receiver_isolate_out,
     .receiver_clear_out
   );
@@ -1028,9 +1030,11 @@ module cc_cdc_reset_ctrlr_half_monitor
   input logic                 initiator_isolate_out,
   input logic                 initiator_clear_out,
   input cdc_clear_seq_phase_e receiver_phase_q,
+  input cdc_clear_seq_phase_e receiver_effective_phase,
   input cdc_clear_seq_phase_e receiver_next_phase,
   input logic                 receiver_phase_req,
   input logic                 receiver_phase_ack,
+  input logic                 receiver_phase_pending_q,
   input logic                 receiver_isolate_out,
   input logic                 receiver_clear_out
 );
@@ -1103,38 +1107,61 @@ module cc_cdc_reset_ctrlr_half_monitor
       report_monitor_error($sformatf("%m: initiator requested an illegal clear phase"));
     end
 
+    if (!valid_phase(receiver_effective_phase)) begin
+      report_monitor_error($sformatf("%m: illegal effective receiver phase 0x%0h",
+                                     receiver_effective_phase));
+    end
+
     if (receiver_phase_req) begin
-      unique case (receiver_next_phase)
-        CDC_CLEAR_PHASE_IDLE: begin
-          if (receiver_clear_out || receiver_isolate_out || !receiver_phase_ack) begin
-            report_monitor_error($sformatf("%m: receiver IDLE phase outputs are inconsistent"));
-          end
+      if (!valid_phase(receiver_next_phase)) begin
+        report_monitor_error($sformatf("%m: incoming receiver phase is illegal"));
+      end
+    end
+
+    unique case (receiver_effective_phase)
+      CDC_CLEAR_PHASE_IDLE: begin
+        if (receiver_clear_out) begin
+          report_monitor_error($sformatf("%m: receiver IDLE phase outputs are inconsistent"));
         end
-        CDC_CLEAR_PHASE_ISOLATE: begin
-          if (receiver_clear_out || !receiver_isolate_out ||
-              (receiver_phase_ack !== isolate_ack_i)) begin
-            report_monitor_error($sformatf("%m: receiver ISOLATE phase outputs are inconsistent"));
-          end
+      end
+      CDC_CLEAR_PHASE_ISOLATE: begin
+        if (receiver_clear_out || !receiver_isolate_out) begin
+          report_monitor_error($sformatf("%m: receiver ISOLATE phase outputs are inconsistent"));
         end
-        CDC_CLEAR_PHASE_CLEAR: begin
-          if (!receiver_clear_out || !receiver_isolate_out ||
-              (receiver_phase_ack !== clear_ack_i)) begin
-            report_monitor_error($sformatf("%m: receiver CLEAR phase outputs are inconsistent"));
-          end
+      end
+      CDC_CLEAR_PHASE_CLEAR: begin
+        if (!receiver_clear_out || !receiver_isolate_out) begin
+          report_monitor_error($sformatf("%m: receiver CLEAR phase outputs are inconsistent"));
         end
-        CDC_CLEAR_PHASE_POST_CLEAR: begin
-          if (receiver_clear_out || !receiver_isolate_out || !receiver_phase_ack) begin
-            report_monitor_error(
-                $sformatf("%m: receiver POST_CLEAR phase outputs are inconsistent"));
-          end
+      end
+      CDC_CLEAR_PHASE_POST_CLEAR: begin
+        if (receiver_clear_out || !receiver_isolate_out) begin
+          report_monitor_error(
+              $sformatf("%m: receiver POST_CLEAR phase outputs are inconsistent"));
         end
-        default: begin
-          if (receiver_clear_out || receiver_isolate_out || receiver_phase_ack) begin
-            report_monitor_error(
-                $sformatf("%m: receiver illegal phase was acknowledged or exposed"));
-          end
+      end
+      default: begin
+        if (receiver_clear_out || receiver_phase_ack) begin
+          report_monitor_error(
+              $sformatf("%m: receiver illegal phase was acknowledged or exposed"));
         end
-      endcase
+      end
+    endcase
+
+    if (receiver_phase_ack && !receiver_phase_pending_q) begin
+      report_monitor_error($sformatf("%m: receiver phase acknowledged before capture"));
+    end
+
+    if (receiver_phase_ack &&
+        receiver_effective_phase == CDC_CLEAR_PHASE_CLEAR &&
+        !clear_ack_i) begin
+      report_monitor_error($sformatf("%m: receiver clear phase acknowledged before local ack"));
+    end
+
+    if (receiver_phase_ack &&
+        receiver_effective_phase == CDC_CLEAR_PHASE_ISOLATE &&
+        !isolate_ack_i) begin
+      report_monitor_error($sformatf("%m: receiver isolate phase acknowledged before local ack"));
     end
   endtask
 

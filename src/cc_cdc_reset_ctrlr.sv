@@ -407,10 +407,16 @@ module cc_cdc_reset_ctrlr_half
   // This part of the circuit receives clear sequence state transitions from the
   // other side.
 
-  cdc_clear_seq_phase_e receiver_phase_q;
+  cdc_clear_seq_phase_e receiver_phase_d, receiver_phase_q;
+  cdc_clear_seq_phase_e receiver_effective_phase;
   cdc_clear_seq_phase_e receiver_next_phase;
-  logic receiver_phase_req, receiver_phase_ack;
-  logic receiver_phase_accept;
+
+  logic receiver_phase_req;
+  logic receiver_phase_ack;
+  logic receiver_phase_pending_d, receiver_phase_pending_q;
+  logic receiver_phase_done_d, receiver_phase_done_q;
+
+  logic receiver_capture_phase;
 
   logic receiver_isolate_out;
   logic receiver_clear_out;
@@ -432,82 +438,75 @@ module cc_cdc_reset_ctrlr_half
     .async_data_i(async_next_phase_i)
   );
 
-  assign receiver_phase_accept = receiver_phase_req && receiver_phase_ack;
+  // Capture async phase payload after synchronized request
+  // Do not decode receiver_next_phase into clear/isolate
+  assign receiver_capture_phase =
+      receiver_phase_req
+   && !receiver_phase_pending_q
+   && !receiver_phase_done_q;
 
-  `FFL(receiver_phase_q, receiver_next_phase, receiver_phase_accept, CDC_CLEAR_PHASE_IDLE,
-       clk_i, rst_ni)
+  always_comb begin
+    receiver_phase_d         = receiver_phase_q;
+    receiver_phase_pending_d = receiver_phase_pending_q;
+    receiver_phase_done_d    = receiver_phase_done_q;
+
+    if (!receiver_phase_req) begin
+      receiver_phase_done_d = 1'b0;
+    end
+
+    if (receiver_capture_phase) begin
+      receiver_phase_d         = receiver_next_phase;
+      receiver_phase_pending_d = 1'b1;
+    end
+
+    if (receiver_phase_ack) begin
+      receiver_phase_pending_d = 1'b0;
+      receiver_phase_done_d    = 1'b1;
+    end
+  end
+
+  `FF(receiver_phase_q,         receiver_phase_d,         CDC_CLEAR_PHASE_IDLE, clk_i, rst_ni)
+  `FF(receiver_phase_pending_q, receiver_phase_pending_d, 1'b0,                 clk_i, rst_ni)
+  `FF(receiver_phase_done_q,    receiver_phase_done_d,    1'b0,                 clk_i, rst_ni)
+
+  assign receiver_effective_phase = receiver_phase_q;
 
   always_comb begin
     receiver_isolate_out = 1'b0;
     receiver_clear_out   = 1'b0;
     receiver_phase_ack   = 1'b0;
 
-    // If there is a new phase requestd, checkout which one it is and act accordingly
-    if (receiver_phase_req) begin
-      case (receiver_next_phase)
-        CDC_CLEAR_PHASE_IDLE: begin
-          receiver_clear_out   = 1'b0;
-          receiver_isolate_out = 1'b0;
-          receiver_phase_ack   = 1'b1;
-        end
+    unique case (receiver_effective_phase)
+      CDC_CLEAR_PHASE_IDLE: begin
+        receiver_clear_out   = 1'b0;
+        receiver_isolate_out = 1'b0;
+        receiver_phase_ack   = receiver_phase_req && receiver_phase_pending_q;
+      end
+      CDC_CLEAR_PHASE_ISOLATE: begin
+        receiver_clear_out   = 1'b0;
+        receiver_isolate_out = 1'b1;
+        receiver_phase_ack   = receiver_phase_req && receiver_phase_pending_q && isolate_ack_i;
+      end
+      CDC_CLEAR_PHASE_CLEAR: begin
+        receiver_clear_out   = 1'b1;
+        receiver_isolate_out = 1'b1;
+        receiver_phase_ack   = receiver_phase_req && receiver_phase_pending_q && clear_ack_i;
+      end
+      CDC_CLEAR_PHASE_POST_CLEAR: begin
+        receiver_clear_out   = 1'b0;
+        receiver_isolate_out = 1'b1;
+        receiver_phase_ack   = receiver_phase_req && receiver_phase_pending_q;
+      end
+      default: begin
+        receiver_clear_out   = 1'b0;
+        receiver_isolate_out = 1'b0;
+        receiver_phase_ack   = 1'b0;
+      end
+    endcase
 
-        CDC_CLEAR_PHASE_ISOLATE: begin
-          receiver_clear_out   = 1'b0;
-          receiver_isolate_out = 1'b1;
-          // Wait for the isolate to be acknowledged before ack'ing the phase
-          receiver_phase_ack = isolate_ack_i;
-        end
-
-        CDC_CLEAR_PHASE_CLEAR: begin
-          receiver_clear_out   = 1'b1;
-          receiver_isolate_out = 1'b1;
-          // Wait for the clear to be acknowledged before ack'ing the phase
-          receiver_phase_ack   = clear_ack_i;
-        end
-
-        CDC_CLEAR_PHASE_POST_CLEAR: begin
-          receiver_clear_out   = 1'b0;
-          receiver_isolate_out = 1'b1;
-          receiver_phase_ack   = 1'b1;
-        end
-
-        default: begin
-          receiver_clear_out   = 1'b0;
-          receiver_isolate_out = 1'b0;
-          receiver_phase_ack   = 1'b0;
-        end
-      endcase
-
-    end else begin
-      // No phase change is requested for the moment. Act according to the
-      // current phase signal
-      case (receiver_phase_q)
-        CDC_CLEAR_PHASE_IDLE: begin
-          receiver_clear_out   = 1'b0;
-          receiver_isolate_out = 1'b0;
-        end
-
-        CDC_CLEAR_PHASE_ISOLATE: begin
-          receiver_clear_out   = 1'b0;
-          receiver_isolate_out = 1'b1;
-        end
-
-        CDC_CLEAR_PHASE_CLEAR: begin
-          receiver_clear_out   = 1'b1;
-          receiver_isolate_out = 1'b1;
-        end
-
-        CDC_CLEAR_PHASE_POST_CLEAR: begin
-          receiver_clear_out   = 1'b0;
-          receiver_isolate_out = 1'b1;
-        end
-
-        default: begin
-          receiver_clear_out   = 1'b0;
-          receiver_isolate_out = 1'b0;
-          receiver_phase_ack   = 1'b0;
-        end
-      endcase
+    // Preserve async-reset ordering margin without async_next_phase_i decode
+    if (receiver_capture_phase) begin
+      receiver_isolate_out = 1'b1;
     end
   end
 
