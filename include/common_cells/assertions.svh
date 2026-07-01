@@ -9,17 +9,6 @@
 `ifndef COMMON_CELLS_ASSERTIONS_SVH
 `define COMMON_CELLS_ASSERTIONS_SVH
 
-`ifdef UVM
-  // report assertion error with UVM if compiled
-  package assert_rpt_pkg;
-    import uvm_pkg::*;
-    `include "uvm_macros.svh"
-    function void assert_rpt(string msg);
-      `uvm_error("ASSERT FAILED", msg)
-    endfunction
-  endpackage
-`endif
-
 ///////////////////
 // Helper macros //
 ///////////////////
