@@ -43,9 +43,11 @@ module cc_cdc_reset_ctrlr_half_properties #(
   input wire       initiator_isolate_out,
   input wire       initiator_clear_out,
   input wire [1:0] receiver_phase_q,
+  input wire [1:0] receiver_effective_phase,
   input wire [1:0] receiver_next_phase,
   input wire       receiver_phase_req,
   input wire       receiver_phase_ack,
+  input wire       receiver_phase_pending_q,
   input wire       receiver_isolate_out,
   input wire       receiver_clear_out
 );
@@ -108,6 +110,7 @@ module cc_cdc_reset_ctrlr_half_properties #(
         assert (initiator_state_q == InitIdle);
       end
       assert (receiver_phase_q == PhaseIdle);
+      assert (receiver_effective_phase == PhaseIdle);
     end
 
     if (rst_ni) begin
@@ -119,6 +122,7 @@ module cc_cdc_reset_ctrlr_half_properties #(
 
       assert (valid_initiator_state(initiator_state_q));
       assert (valid_phase(receiver_phase_q));
+      assert (valid_phase(receiver_effective_phase));
 
       if (async_req_o) begin
         assert (valid_phase(async_next_phase_o));
@@ -134,52 +138,42 @@ module cc_cdc_reset_ctrlr_half_properties #(
         end else begin
           assert (valid_phase(receiver_next_phase));
         end
+      end
 
-        case (receiver_next_phase)
-          PhaseIdle: begin
-            assert (!receiver_clear_out);
-            assert (!receiver_isolate_out);
-            assert (receiver_phase_ack);
-          end
-          PhaseIsolate: begin
-            assert (!receiver_clear_out);
-            assert (receiver_isolate_out);
-            assert (receiver_phase_ack == isolate_ack_i);
-          end
-          PhaseClear: begin
-            assert (receiver_clear_out);
-            assert (receiver_isolate_out);
-            assert (receiver_phase_ack == clear_ack_i);
-          end
-          PhasePostClear: begin
-            assert (!receiver_clear_out);
-            assert (receiver_isolate_out);
-            assert (receiver_phase_ack);
-          end
-          default: begin
-          end
-        endcase
-      end else begin
-        case (receiver_phase_q)
-          PhaseIdle: begin
-            assert (!receiver_clear_out);
-            assert (!receiver_isolate_out);
-          end
-          PhaseIsolate: begin
-            assert (!receiver_clear_out);
-            assert (receiver_isolate_out);
-          end
-          PhaseClear: begin
-            assert (receiver_clear_out);
-            assert (receiver_isolate_out);
-          end
-          PhasePostClear: begin
-            assert (!receiver_clear_out);
-            assert (receiver_isolate_out);
-          end
-          default: begin
-          end
-        endcase
+      case (receiver_effective_phase)
+        PhaseIdle: begin
+          assert (!receiver_clear_out);
+        end
+        PhaseIsolate: begin
+          assert (!receiver_clear_out);
+          assert (receiver_isolate_out);
+        end
+        PhaseClear: begin
+          assert (receiver_clear_out);
+          assert (receiver_isolate_out);
+        end
+        PhasePostClear: begin
+          assert (!receiver_clear_out);
+          assert (receiver_isolate_out);
+        end
+        default: begin
+        end
+      endcase
+
+      if (receiver_phase_ack) begin
+        assert (receiver_phase_pending_q);
+      end
+
+      if (receiver_clear_out) begin
+        assert (receiver_effective_phase == PhaseClear);
+      end
+
+      if (receiver_phase_ack && receiver_effective_phase == PhaseClear) begin
+        assert (clear_ack_i);
+      end
+
+      if (receiver_phase_ack && receiver_effective_phase == PhaseIsolate) begin
+        assert (isolate_ack_i);
       end
     end
   end
@@ -340,9 +334,11 @@ bind cc_cdc_reset_ctrlr_half cc_cdc_reset_ctrlr_half_properties #(
   .initiator_isolate_out,
   .initiator_clear_out,
   .receiver_phase_q,
+  .receiver_effective_phase,
   .receiver_next_phase,
   .receiver_phase_req,
   .receiver_phase_ack,
+  .receiver_phase_pending_q,
   .receiver_isolate_out,
   .receiver_clear_out
 );
