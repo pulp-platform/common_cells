@@ -31,7 +31,6 @@ $(VLT_ELAB_TARGETS): vlt-elab-%: .bender/.checkout
 	$(VERILATOR) --cc \
 		$(shell $(BENDER) script verilator) \
 		--top-module $* \
-		-Wno-UNSIGNED \
 		-Wno-WIDTHEXPAND \
 		-Wno-WIDTHTRUNC \
 		-j $(shell nproc)

@@ -172,8 +172,13 @@ module cc_rr_arb_tree #(
         logic             upper_empty, lower_empty;
 
         for (genvar i = 0; i < NumIn; i++) begin : gen_mask
-          assign upper_mask[i] = (i >  rr_q) ? req_d[i] : 1'b0;
-          assign lower_mask[i] = (i <= rr_q) ? req_d[i] : 1'b0;
+          if (i == 0) begin : gen_first_mask
+            assign upper_mask[i] = 1'b0;
+            assign lower_mask[i] = req_d[i];
+          end else begin : gen_other_mask
+            assign upper_mask[i] = (idx_t'(i) >  rr_q) ? req_d[i] : 1'b0;
+            assign lower_mask[i] = (idx_t'(i) <= rr_q) ? req_d[i] : 1'b0;
+          end
         end
 
         cc_lzc #(
