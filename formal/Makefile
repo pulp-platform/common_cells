@@ -25,8 +25,8 @@ RM	?= rm -rf
 FORMAL_BUILDDIR ?= build
 FORMAL_FLIST := $(FORMAL_BUILDDIR)/cdc_reset_ctrlr.flist
 
-all: fifo.check counter.check fall_through_register.check cdc_reset_ctrlr_half.check \
-	cdc_reset_ctrlr_composed.check
+all: fifo.check counter.check fall_through_register.check lzc.check \
+	cdc_reset_ctrlr_half.check cdc_reset_ctrlr_composed.check
 
 $(FORMAL_BUILDDIR):
 	mkdir -p $@
@@ -53,6 +53,13 @@ fall_through_register.check: fall_through_register.sby ../src/cc_fall_through_re
 	$(SBY) -f $<
 	touch $@
 
+lzc.check: $(FORMAL_BUILDDIR)/lzc.check
+
+$(FORMAL_BUILDDIR)/lzc.check: lzc.sby ../src/cc_pkg.sv ../src/cc_lzc.sv \
+				cc_lzc_properties.sv cc_lzc_formal.sv | $(FORMAL_BUILDDIR)
+	$(SBY) -f -d $(FORMAL_BUILDDIR)/lzc $<
+	touch $@
+
 cdc_reset_ctrlr_half.check: $(FORMAL_BUILDDIR)/cdc_reset_ctrlr_half.check
 
 $(FORMAL_BUILDDIR)/cdc_reset_ctrlr_half.check: cdc_reset_ctrlr_half.sby $(FORMAL_FLIST) | \
@@ -67,7 +74,7 @@ $(FORMAL_BUILDDIR)/cdc_reset_ctrlr_composed.check: cdc_reset_ctrlr_composed.sby 
 	$(SBY) -f -d $(FORMAL_BUILDDIR)/cdc_reset_ctrlr_composed $<
 	touch $@
 
-.PHONY: all clean fifo.check counter.check fall_through_register.check cdc_reset_ctrlr_half.check \
+.PHONY: all clean fifo.check counter.check fall_through_register.check lzc.check cdc_reset_ctrlr_half.check \
 	cdc_reset_ctrlr_composed.check
 clean:
 	$(RM) $(FORMAL_BUILDDIR)
