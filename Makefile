@@ -31,7 +31,8 @@ $(VLT_ELAB_TARGETS): vlt-elab-%: .bender/.checkout
 	$(VERILATOR) --cc \
 		$(shell $(BENDER) script verilator) \
 		--top-module $* \
-		-Wno-fatal \
+		-Wno-WIDTHEXPAND \
+		-Wno-WIDTHTRUNC \
 		-j $(shell nproc)
 
 $(VSIM_BUILDDIR) $(VCS_BUILDDIR) $(SG_BUILDDIR):

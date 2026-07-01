@@ -69,6 +69,7 @@
 // specific language governing permissions and limitations under the License.
 //-----------------------------------------------------------------------------
 
+`include "common_cells/registers.svh"
 
 module cc_clk_mux_glitch_free #(
   parameter int unsigned NumInputs = 2,
@@ -120,12 +121,12 @@ module cc_clk_mux_glitch_free #(
   logic [NumInputs-1:0]        s_sel_onehot;
   (*dont_touch*)
   (*async_reg*)
-  logic [NumInputs-1:0][1:0]   glitch_filter_d, glitch_filter_q;
+  logic [NumInputs-1:0][1:0]   glitch_filter_arr_d, glitch_filter_arr_q;
   logic [NumInputs-1:0]        s_gate_enable_unfiltered_async;
   logic [NumInputs-1:0]        s_glitch_filter_output_async;
   logic [NumInputs-1:0]        s_gate_enable_sync;
   logic [NumInputs-1:0]        s_gate_enable;
-  logic [NumInputs-1:0]        clock_has_been_disabled_q;
+  logic [NumInputs-1:0]        clock_has_been_disabled_arr_q;
   logic [NumInputs-1:0]        s_gated_clock;
   logic                         s_output_clock;
 
@@ -141,6 +142,17 @@ module cc_clk_mux_glitch_free #(
 
   // Input stages
   for (genvar i = 0; i < NumInputs; i++) begin : gen_input_stages
+
+    // Slice the glitch_filter and clock_has_been_disabled arrays
+    // to avoid Verilator MULTIDRIVEN warnings.
+    (*dont_touch*)
+    (*async_reg*)
+    logic [1:0] glitch_filter_d, glitch_filter_q;
+    logic       clock_has_been_disabled_q;
+    assign glitch_filter_arr_d[i]           = glitch_filter_d;
+    assign glitch_filter_arr_q[i]           = glitch_filter_q;
+    assign clock_has_been_disabled_arr_q[i] = clock_has_been_disabled_q;
+
     // Synchronize the reset into each clock domain
     cc_rstgen i_rstgen(
       .clk_i       ( clks_i[i]         ),
@@ -157,23 +169,17 @@ module cc_clk_mux_glitch_free #(
         if (i==j) begin
           s_gate_enable_unfiltered_async[i] &= s_sel_onehot[j];
         end else begin
-          s_gate_enable_unfiltered_async[i] &= clock_has_been_disabled_q[j];
+          s_gate_enable_unfiltered_async[i] &= clock_has_been_disabled_arr_q[j];
         end
       end
     end
-    assign glitch_filter_d[i][0] = s_gate_enable_unfiltered_async[i];
-    assign glitch_filter_d[i][1] = glitch_filter_q[i][0];
+    assign glitch_filter_d[0] = s_gate_enable_unfiltered_async[i];
+    assign glitch_filter_d[1] = glitch_filter_q[0];
 
     // Filter HIGH-pulse glitches
-    always_ff @(posedge clks_i[i], negedge s_reset_synced[i]) begin
-      if (!s_reset_synced[i]) begin
-        glitch_filter_q[i] <= '0;
-      end else begin
-        glitch_filter_q[i] <= glitch_filter_d[i];
-      end
-    end
-    assign s_glitch_filter_output_async[i] = glitch_filter_q[i][1] &
-                                       glitch_filter_q[i][0] &
+    `FF(glitch_filter_q, glitch_filter_d, '0, clks_i[i], s_reset_synced[i])
+    assign s_glitch_filter_output_async[i] = glitch_filter_q[1] &
+                                       glitch_filter_q[0] &
                                        s_gate_enable_unfiltered_async[i];
 
     // Synchronize to current clock
@@ -223,14 +229,7 @@ module cc_clk_mux_glitch_free #(
     // enable signal one more cycle, we ensure that the clock stays low for at
     // least one clock period of the original clock input before any other clock
     // even has the chance to become active.
-
-    always_ff @(posedge clks_i[i], negedge s_reset_synced[i]) begin
-      if (!s_reset_synced[i]) begin
-        clock_has_been_disabled_q[i] <= 1'b1;
-      end else begin
-        clock_has_been_disabled_q[i] <= ~s_gate_enable[i];
-      end
-    end
+    `FF(clock_has_been_disabled_q, ~s_gate_enable[i], 1'b1, clks_i[i], s_reset_synced[i])
   end
 
   // Output OR-gate. At this stage, we should be already sure that the clocks

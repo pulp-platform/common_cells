@@ -116,7 +116,8 @@ module cc_id_queue #(
 
     linked_data_t [Capacity-1:0]    linked_data_d,  linked_data_q;
 
-    logic                           full,
+    logic                           empty,
+                                    full,
                                     match_in_id_valid,
                                     match_out_id_valid,
                                     no_in_id_match,

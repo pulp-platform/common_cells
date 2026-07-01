@@ -96,10 +96,8 @@ module cc_rr_arb_tree #(
   input  idx_t                rr_i,
   /// Input requests arbitration.
   input  logic    [NumIn-1:0] req_i,
-  /* verilator lint_off UNOPTFLAT */
   /// Input request is granted.
   output logic    [NumIn-1:0] gnt_o,
-  /* verilator lint_on UNOPTFLAT */
   /// Input data for arbitration.
   input  data_t   [NumIn-1:0] data_i,
   /// Output request is valid.
@@ -122,12 +120,10 @@ module cc_rr_arb_tree #(
   end else begin : gen_arbiter
     localparam int unsigned NumLevels = unsigned'($clog2(NumIn));
 
-    /* verilator lint_off SPLITVAR */  // disable warning that is issued if bitwidth is 1
     idx_t    [2**NumLevels-2:0] index_nodes /* verilator split_var */; // propagates indices
     data_t   [2**NumLevels-2:0] data_nodes  /* verilator split_var */; // propagates data
     logic    [2**NumLevels-2:0] gnt_nodes   /* verilator split_var */; // propagates gnt to masters
     logic    [2**NumLevels-2:0] req_nodes   /* verilator split_var */; // propagates reqs to slave
-    /* verilator lint_on SPLITVAR */
 
     /* lint_off */
     idx_t                       rr_q;
@@ -176,8 +172,13 @@ module cc_rr_arb_tree #(
         logic             upper_empty, lower_empty;
 
         for (genvar i = 0; i < NumIn; i++) begin : gen_mask
-          assign upper_mask[i] = (i >  rr_q) ? req_d[i] : 1'b0;
-          assign lower_mask[i] = (i <= rr_q) ? req_d[i] : 1'b0;
+          if (i == 0) begin : gen_first_mask
+            assign upper_mask[i] = 1'b0;
+            assign lower_mask[i] = req_d[i];
+          end else begin : gen_other_mask
+            assign upper_mask[i] = (idx_t'(i) >  rr_q) ? req_d[i] : 1'b0;
+            assign lower_mask[i] = (idx_t'(i) <= rr_q) ? req_d[i] : 1'b0;
+          end
         end
 
         cc_lzc #(
