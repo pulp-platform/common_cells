@@ -12,7 +12,6 @@
 // Date: 29.10.2018
 // Description: Dummy circuit to mitigate Open Pin warnings
 
-/* verilator lint_off UNUSED */
 module cc_unread (
     input logic d_i
 );
@@ -22,4 +21,3 @@ module cc_unread (
     assign d_i = x;
 `endif
 endmodule
-/* verilator lint_on UNUSED */

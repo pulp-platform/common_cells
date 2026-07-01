@@ -57,8 +57,6 @@
 ///    why).
 ///
 ///
-/* verilator lint_off DECLFILENAME */
-
 `include "common_cells/registers.svh"
 `include "common_cells/assertions.svh"
 
@@ -485,4 +483,3 @@ module cc_cdc_2phase_dst_clearable #(
   assign async_ack_o = ack_dst_q;
 
 endmodule
-/* verilator lint_on DECLFILENAME */

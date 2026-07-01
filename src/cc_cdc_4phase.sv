@@ -32,7 +32,6 @@
 ///
 /// CONSTRAINT: Requires max_delay of min_period(src_clk_i, dst_clk_i) through
 /// the paths async_req, async_ack, async_data.
-/* verilator lint_off DECLFILENAME */
 `include "common_cells/registers.svh"
 
 module cc_cdc_4phase #(
@@ -317,4 +316,3 @@ module cc_cdc_4phase_dst #(
   assign async_ack_o = ack_dst_q;
 
 endmodule
-/* verilator lint_on DECLFILENAME */
