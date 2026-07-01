@@ -16,7 +16,7 @@ module read #(
   // synthesis translate_on
   cc_read #(
     .Width ( Width ),
-    .T     ( T     )
+    .data_t ( T     )
   ) i_cc_read (
     .d_i ( d_i ),
     .d_o ( d_o )

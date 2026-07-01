@@ -23,9 +23,9 @@ module clk_int_div #(
   initial $warning("Module '%m' is deprecated. Use 'cc_clk_int_div' instead.");
   // synthesis translate_on
   cc_clk_int_div #(
-    .DIV_VALUE_WIDTH       ( DIV_VALUE_WIDTH       ),
-    .DEFAULT_DIV_VALUE     ( DEFAULT_DIV_VALUE     ),
-    .ENABLE_CLOCK_IN_RESET ( ENABLE_CLOCK_IN_RESET )
+    .DivValueWidth ( DIV_VALUE_WIDTH       ),
+    .DefaultDivValue ( DEFAULT_DIV_VALUE     ),
+    .EnableClockInReset ( ENABLE_CLOCK_IN_RESET )
   ) i_cc_clk_int_div (
     .clk_i         ( clk_i         ),
     .rst_ni        ( rst_ni        ),

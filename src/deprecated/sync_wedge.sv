@@ -19,10 +19,11 @@ module sync_wedge #(
   initial $warning("Module '%m' is deprecated. Use 'cc_sync_wedge' instead.");
   // synthesis translate_on
   cc_sync_wedge #(
-    .STAGES ( STAGES )
+    .Stages ( STAGES )
   ) i_cc_sync_wedge (
     .clk_i    ( clk_i    ),
     .rst_ni   ( rst_ni   ),
+    .clr_i   ( 1'b0   ),
     .en_i     ( en_i     ),
     .serial_i ( serial_i ),
     .r_edge_o ( r_edge_o ),

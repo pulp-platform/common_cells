@@ -27,13 +27,14 @@ module fifo_v3 #(
   initial $warning("Module '%m' is deprecated. Use 'cc_fifo' instead.");
   // synthesis translate_on
   cc_fifo #(
-    .FALL_THROUGH ( FALL_THROUGH ),
-    .DATA_WIDTH   ( DATA_WIDTH   ),
-    .DEPTH        ( DEPTH        ),
-    .dtype        ( dtype        )
+    .FallThrough ( FALL_THROUGH ),
+    .DataWidth ( DATA_WIDTH   ),
+    .Depth ( DEPTH        ),
+    .data_t ( dtype        )
   ) i_cc_fifo (
     .clk_i   ( clk_i   ),
     .rst_ni  ( rst_ni  ),
+    .clr_i   ( 1'b0   ),
     .flush_i ( flush_i ),
     .full_o  ( full_o  ),
     .empty_o ( empty_o ),

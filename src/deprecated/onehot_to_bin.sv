@@ -17,9 +17,9 @@ module onehot_to_bin #(
   // synthesis translate_on
   // Note: BIN_WIDTH is a localparam in cc_onehot_to_bin, not passed.
   cc_onehot_to_bin #(
-    .ONEHOT_WIDTH ( ONEHOT_WIDTH )
+    .OnehotWidth ( ONEHOT_WIDTH )
   ) i_cc_onehot_to_bin (
-    .onehot ( onehot ),
-    .bin    ( bin    )
+    .onehot_i ( onehot ),
+    .bin_o    ( bin    )
   );
 endmodule

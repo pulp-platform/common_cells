@@ -20,12 +20,12 @@ module mv_filter #(
   initial $warning("Module '%m' is deprecated. Use 'cc_majority_vote_filter' instead.");
   // synthesis translate_on
   cc_majority_vote_filter #(
-    .WINDOW_LEN ( WIDTH     ),
-    .THRESHOLD  ( THRESHOLD )
+    .WindowLen ( WIDTH     ),
+    .Threshold ( THRESHOLD )
   ) i_cc_majority_vote_filter (
     .clk_i   ( clk_i    ),
     .rst_ni  ( rst_ni   ),
-    .clear_i ( clear_i  ),
+    .clr_i   ( clear_i  ),
     .en_i    ( sample_i ),
     .d_i     ( d_i      ),
     .q_o     ( q_o      )

@@ -34,7 +34,7 @@ module credit_counter #(
     .credit_o      ( credit_o      ),
     .credit_give_i ( credit_give_i ),
     .credit_take_i ( credit_take_i ),
-    .credit_init_i ( credit_init_i ),
+    .clr_i         ( credit_init_i ),
     .credit_left_o ( credit_left_o ),
     .credit_crit_o ( credit_crit_o ),
     .credit_full_o ( credit_full_o )

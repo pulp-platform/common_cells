@@ -33,6 +33,7 @@ module ring_buffer #(
   ) i_cc_ring_buffer (
     .clk_i    ( clk_i    ),
     .rst_ni   ( rst_ni   ),
+    .clr_i    ( 1'b0    ),
     .wvalid_i ( wvalid_i ),
     .wready_o ( wready_o ),
     .wdata_i  ( wdata_i  ),

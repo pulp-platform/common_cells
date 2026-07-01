@@ -21,10 +21,11 @@ module stream_fork_dynamic #(
   initial $warning("Module '%m' is deprecated. Use 'cc_stream_fork_dynamic' instead.");
   // synthesis translate_on
   cc_stream_fork_dynamic #(
-    .N_OUP ( N_OUP )
+    .NumOup ( N_OUP )
   ) i_cc_stream_fork_dynamic (
     .clk_i      ( clk_i      ),
     .rst_ni     ( rst_ni     ),
+    .clr_i      ( 1'b0       ),
     .valid_i    ( valid_i    ),
     .ready_o    ( ready_o    ),
     .sel_i      ( sel_i      ),

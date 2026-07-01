@@ -21,13 +21,16 @@ module stream_arbiter #(
   // synthesis translate_off
   initial $warning("Module '%m' is deprecated. Use 'cc_stream_arbiter' instead.");
   // synthesis translate_on
+  localparam cc_pkg::arb_mode_e CC_ARB_MODE =
+    (ARBITER == "prio") ? cc_pkg::ARB_PRIO : cc_pkg::ARB_RR;
   cc_stream_arbiter #(
-    .DATA_T  ( DATA_T  ),
-    .N_INP   ( N_INP   ),
-    .ARBITER ( ARBITER )
+    .data_t  ( DATA_T      ),
+    .NumInp  ( N_INP       ),
+    .ArbMode ( CC_ARB_MODE )
   ) i_cc_stream_arbiter (
     .clk_i       ( clk_i       ),
     .rst_ni      ( rst_ni      ),
+    .clr_i       ( 1'b0        ),
     .inp_data_i  ( inp_data_i  ),
     .inp_valid_i ( inp_valid_i ),
     .inp_ready_o ( inp_ready_o ),

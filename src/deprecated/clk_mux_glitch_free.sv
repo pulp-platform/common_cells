@@ -20,9 +20,9 @@ module clk_mux_glitch_free #(
   initial $warning("Module '%m' is deprecated. Use 'cc_clk_mux_glitch_free' instead.");
   // synthesis translate_on
   cc_clk_mux_glitch_free #(
-    .NUM_INPUTS         ( NUM_INPUTS         ),
-    .NUM_SYNC_STAGES    ( NUM_SYNC_STAGES    ),
-    .CLOCK_DURING_RESET ( CLOCK_DURING_RESET )
+    .NumInputs ( NUM_INPUTS         ),
+    .NumSyncStages ( NUM_SYNC_STAGES    ),
+    .ClockDuringReset ( CLOCK_DURING_RESET )
   ) i_cc_clk_mux_glitch_free (
     .clks_i      ( clks_i      ),
     .test_clk_i  ( test_clk_i  ),
@@ -44,7 +44,7 @@ module clk_or_tree #(
   initial $warning("Module '%m' is deprecated. Use 'cc_clk_or_tree' instead.");
   // synthesis translate_on
   cc_clk_or_tree #(
-    .NUM_INPUTS ( NUM_INPUTS )
+    .NumInputs ( NUM_INPUTS )
   ) i_cc_clk_or_tree (
     .clks_i ( clks_i ),
     .clk_o  ( clk_o  )

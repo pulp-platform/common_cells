@@ -20,8 +20,8 @@ module lzc #(
   // synthesis translate_on
   localparam cc_pkg::lzc_mode_e CC_MODE = MODE ? cc_pkg::LZC_LEADING_ZERO_CNT : cc_pkg::LZC_TRAILING_ZERO_CNT;
   cc_lzc #(
-    .WIDTH ( WIDTH   ),
-    .MODE  ( CC_MODE )
+    .Width ( WIDTH   ),
+    .Mode ( CC_MODE )
   ) i_cc_lzc (
     .in_i    ( in_i    ),
     .cnt_o   ( cnt_o   ),

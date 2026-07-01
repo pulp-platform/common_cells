@@ -18,10 +18,11 @@ module stream_fork #(
   initial $warning("Module '%m' is deprecated. Use 'cc_stream_fork' instead.");
   // synthesis translate_on
   cc_stream_fork #(
-    .N_OUP ( N_OUP )
+    .NumOup ( N_OUP )
   ) i_cc_stream_fork (
     .clk_i   ( clk_i   ),
     .rst_ni  ( rst_ni  ),
+    .clr_i   ( 1'b0   ),
     .valid_i ( valid_i ),
     .ready_o ( ready_o ),
     .valid_o ( valid_o ),

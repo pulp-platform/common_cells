@@ -26,11 +26,12 @@ module stream_fifo_optimal_wrap #(
   // synthesis translate_on
   cc_stream_fifo_optimal_wrap #(
     .Depth     ( Depth     ),
-    .type_t    ( type_t    ),
+    .data_t ( type_t    ),
     .PrintInfo ( PrintInfo )
   ) i_cc_stream_fifo_optimal_wrap (
     .clk_i   ( clk_i   ),
     .rst_ni  ( rst_ni  ),
+    .clr_i   ( 1'b0   ),
     .flush_i ( flush_i ),
     .usage_o ( usage_o ),
     .data_i  ( data_i  ),

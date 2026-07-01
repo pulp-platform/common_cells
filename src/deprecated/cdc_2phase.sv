@@ -21,7 +21,7 @@ module cdc_2phase #(
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_2phase' instead.");
   // synthesis translate_on
   cc_cdc_2phase #(
-    .T ( T )
+    .data_t ( T )
   ) i_cc_cdc_2phase (
     .src_rst_ni  ( src_rst_ni  ),
     .src_clk_i   ( src_clk_i   ),
@@ -53,7 +53,7 @@ module cdc_2phase_src #(
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_2phase_src' instead.");
   // synthesis translate_on
   cc_cdc_2phase_src #(
-    .T ( T )
+    .data_t ( T )
   ) i_cc_cdc_2phase_src (
     .rst_ni       ( rst_ni       ),
     .clk_i        ( clk_i        ),
@@ -83,7 +83,7 @@ module cdc_2phase_dst #(
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_2phase_dst' instead.");
   // synthesis translate_on
   cc_cdc_2phase_dst #(
-    .T ( T )
+    .data_t ( T )
   ) i_cc_cdc_2phase_dst (
     .rst_ni       ( rst_ni       ),
     .clk_i        ( clk_i        ),

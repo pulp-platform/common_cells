@@ -18,8 +18,8 @@ module clk_int_div_static #(
   initial $warning("Module '%m' is deprecated. Use 'cc_clk_int_div_static' instead.");
   // synthesis translate_on
   cc_clk_int_div_static #(
-    .DIV_VALUE             ( DIV_VALUE             ),
-    .ENABLE_CLOCK_IN_RESET ( ENABLE_CLOCK_IN_RESET )
+    .DivValue ( DIV_VALUE             ),
+    .EnableClockInReset ( ENABLE_CLOCK_IN_RESET )
   ) i_cc_clk_int_div_static (
     .clk_i          ( clk_i          ),
     .rst_ni         ( rst_ni         ),

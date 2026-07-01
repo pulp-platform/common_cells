@@ -16,10 +16,11 @@ module plru_tree #(
   initial $warning("Module '%m' is deprecated. Use 'cc_plru_tree' instead.");
   // synthesis translate_on
   cc_plru_tree #(
-    .ENTRIES ( ENTRIES )
+    .Entries ( ENTRIES )
   ) i_cc_plru_tree (
     .clk_i  ( clk_i  ),
     .rst_ni ( rst_ni ),
+    .clr_i  ( 1'b0  ),
     .used_i ( used_i ),
     .plru_o ( plru_o )
   );

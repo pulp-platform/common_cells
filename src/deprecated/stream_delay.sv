@@ -30,6 +30,7 @@ module stream_delay #(
   ) i_cc_stream_delay (
     .clk_i     ( clk_i     ),
     .rst_ni    ( rst_ni    ),
+    .clr_i     ( 1'b0      ),
     .payload_i ( payload_i ),
     .ready_o   ( ready_o   ),
     .valid_i   ( valid_i   ),

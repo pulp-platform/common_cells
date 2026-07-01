@@ -27,9 +27,9 @@ module cdc_2phase_clearable #(
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_2phase_clearable' instead.");
   // synthesis translate_on
   cc_cdc_2phase_clearable #(
-    .T                   ( T                   ),
-    .SYNC_STAGES         ( SYNC_STAGES         ),
-    .CLEAR_ON_ASYNC_RESET( CLEAR_ON_ASYNC_RESET)
+    .data_t ( T                   ),
+    .SyncStages ( SYNC_STAGES         ),
+    .ClearOnAsyncReset ( CLEAR_ON_ASYNC_RESET)
   ) i_cc_cdc_2phase_clearable (
     .src_rst_ni          ( src_rst_ni          ),
     .src_clk_i           ( src_clk_i           ),
@@ -67,8 +67,8 @@ module cdc_2phase_src_clearable #(
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_2phase_src_clearable' instead.");
   // synthesis translate_on
   cc_cdc_2phase_src_clearable #(
-    .T           ( T           ),
-    .SYNC_STAGES ( SYNC_STAGES )
+    .data_t ( T           ),
+    .SyncStages ( SYNC_STAGES )
   ) i_cc_cdc_2phase_src_clearable (
     .rst_ni       ( rst_ni       ),
     .clk_i        ( clk_i        ),
@@ -101,8 +101,8 @@ module cdc_2phase_dst_clearable #(
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_2phase_dst_clearable' instead.");
   // synthesis translate_on
   cc_cdc_2phase_dst_clearable #(
-    .T           ( T           ),
-    .SYNC_STAGES ( SYNC_STAGES )
+    .data_t ( T           ),
+    .SyncStages ( SYNC_STAGES )
   ) i_cc_cdc_2phase_dst_clearable (
     .rst_ni       ( rst_ni       ),
     .clk_i        ( clk_i        ),

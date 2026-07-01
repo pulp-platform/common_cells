@@ -26,8 +26,8 @@ module cdc_reset_ctrlr #(
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_reset_ctrlr' instead.");
   // synthesis translate_on
   cc_cdc_reset_ctrlr #(
-    .SYNC_STAGES         ( SYNC_STAGES         ),
-    .CLEAR_ON_ASYNC_RESET( CLEAR_ON_ASYNC_RESET)
+    .SyncStages ( SYNC_STAGES         ),
+    .ClearOnAsyncReset ( CLEAR_ON_ASYNC_RESET)
   ) i_cc_cdc_reset_ctrlr (
     .a_clk_i          ( a_clk_i          ),
     .a_rst_ni         ( a_rst_ni         ),
@@ -71,8 +71,8 @@ module cdc_reset_ctrlr_half #(
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_reset_ctrlr_half' instead.");
   // synthesis translate_on
   cc_cdc_reset_ctrlr_half #(
-    .SYNC_STAGES         ( SYNC_STAGES         ),
-    .CLEAR_ON_ASYNC_RESET( CLEAR_ON_ASYNC_RESET)
+    .SyncStages ( SYNC_STAGES         ),
+    .ClearOnAsyncReset ( CLEAR_ON_ASYNC_RESET)
   ) i_cc_cdc_reset_ctrlr_half (
     .clk_i              ( clk_i              ),
     .rst_ni             ( rst_ni             ),

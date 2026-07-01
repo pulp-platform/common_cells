@@ -35,7 +35,7 @@ module rr_arb_tree #(
   cc_rr_arb_tree #(
     .NumIn     ( NumIn     ),
     .DataWidth ( DataWidth ),
-    .DataType  ( DataType  ),
+    .data_t    ( DataType  ),
     .ExtPrio   ( ExtPrio   ),
     .AxiVldRdy ( AxiVldRdy ),
     .LockIn    ( LockIn    ),
@@ -43,7 +43,7 @@ module rr_arb_tree #(
   ) i_cc_rr_arb_tree (
     .clk_i   ( clk_i   ),
     .rst_ni  ( rst_ni  ),
-    .flush_i ( flush_i ),
+    .clr_i   ( flush_i ),
     .rr_i    ( rr_i    ),
     .req_i   ( req_i   ),
     .gnt_o   ( gnt_o   ),

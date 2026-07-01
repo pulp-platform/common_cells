@@ -22,7 +22,7 @@ module fall_through_register #(
   initial $warning("Module '%m' is deprecated. Use 'cc_fall_through_register' instead.");
   // synthesis translate_on
   cc_fall_through_register #(
-    .T ( T )
+    .data_t ( T )
   ) i_cc_fall_through_register (
     .clk_i   ( clk_i   ),
     .rst_ni  ( rst_ni  ),

@@ -37,15 +37,16 @@ module id_queue #(
   initial $warning("Module '%m' is deprecated. Use 'cc_id_queue' instead.");
   // synthesis translate_on
   cc_id_queue #(
-    .ID_WIDTH            ( ID_WIDTH            ),
-    .CAPACITY            ( CAPACITY            ),
-    .FULL_BW             ( FULL_BW             ),
-    .CUT_OUP_POP_INP_GNT ( CUT_OUP_POP_INP_GNT ),
-    .NUM_CMP_PORTS       ( NUM_CMP_PORTS       ),
-    .data_t              ( data_t              )
+    .IdWidth         ( ID_WIDTH            ),
+    .Capacity        ( CAPACITY            ),
+    .FullBw          ( FULL_BW             ),
+    .CutOupPopInpGnt ( CUT_OUP_POP_INP_GNT ),
+    .NumCmpPorts     ( NUM_CMP_PORTS       ),
+    .data_t          ( data_t              )
   ) i_cc_id_queue (
     .clk_i           ( clk_i           ),
     .rst_ni          ( rst_ni          ),
+    .clr_i           ( 1'b0            ),
     .inp_id_i        ( inp_id_i        ),
     .inp_data_i      ( inp_data_i      ),
     .inp_req_i       ( inp_req_i       ),

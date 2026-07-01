@@ -17,11 +17,12 @@ module serial_deglitch #(
   initial $warning("Module '%m' is deprecated. Use 'cc_serial_deglitch' instead.");
   // synthesis translate_on
   cc_serial_deglitch #(
-    .THRESHOLD ( SIZE )
+    .Threshold ( SIZE )
   ) i_cc_serial_deglitch (
     .clk_i   ( clk_i  ),
     .rst_ni  ( rst_ni ),
-    .clear_i ( 1'b0   ),
+    .clr_i   ( 1'b0   ),
+    .restart_i ( 1'b0   ),
     .en_i    ( en_i   ),
     .d_i     ( d_i    ),
     .q_o     ( q_o    )

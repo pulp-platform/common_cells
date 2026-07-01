@@ -23,8 +23,8 @@ module stream_mux #(
   // synthesis translate_on
   // Note: SEL_WIDTH is a localparam in cc_stream_mux, not passed.
   cc_stream_mux #(
-    .DATA_T ( DATA_T ),
-    .N_INP  ( N_INP  )
+    .data_t ( DATA_T ),
+    .NumInp ( N_INP  )
   ) i_cc_stream_mux (
     .inp_data_i  ( inp_data_i  ),
     .inp_valid_i ( inp_valid_i ),

@@ -55,6 +55,7 @@ module mem_to_banks #(
   ) i_cc_mem_to_banks (
     .clk_i        ( clk_i        ),
     .rst_ni       ( rst_ni       ),
+    .clr_i        ( 1'b0         ),
     .req_i        ( req_i        ),
     .gnt_o        ( gnt_o        ),
     .addr_i       ( addr_i       ),

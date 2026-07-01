@@ -27,13 +27,14 @@ module stream_fifo #(
   initial $warning("Module '%m' is deprecated. Use 'cc_stream_fifo' instead.");
   // synthesis translate_on
   cc_stream_fifo #(
-    .FALL_THROUGH ( FALL_THROUGH ),
-    .DATA_WIDTH   ( DATA_WIDTH   ),
-    .DEPTH        ( DEPTH        ),
-    .T            ( T            )
+    .FallThrough ( FALL_THROUGH ),
+    .DataWidth ( DATA_WIDTH   ),
+    .Depth ( DEPTH        ),
+    .data_t       ( T            )
   ) i_cc_stream_fifo (
     .clk_i   ( clk_i   ),
     .rst_ni  ( rst_ni  ),
+    .clr_i   ( 1'b0   ),
     .flush_i ( flush_i ),
     .usage_o ( usage_o ),
     .data_i  ( data_i  ),

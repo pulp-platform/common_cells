@@ -20,11 +20,11 @@ module trip_counter #(
   initial $warning("Module '%m' is deprecated. Use 'cc_trip_counter' instead.");
   // synthesis translate_on
   cc_trip_counter #(
-    .WIDTH ( WIDTH )
+    .Width ( WIDTH )
   ) i_cc_trip_counter (
     .clk_i   ( clk_i  ),
     .rst_ni  ( rst_ni ),
-    .clear_i ( 1'b0   ),
+    .clr_i  ( 1'b0  ),
     .en_i    ( en_i   ),
     .delta_i ( delta_i),
     .bound_i ( bound_i),

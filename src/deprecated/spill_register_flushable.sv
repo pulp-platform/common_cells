@@ -22,11 +22,12 @@ module spill_register_flushable #(
   initial $warning("Module '%m' is deprecated. Use 'cc_spill_register_flushable' instead.");
   // synthesis translate_on
   cc_spill_register_flushable #(
-    .T      ( T      ),
+    .data_t ( T      ),
     .Bypass ( Bypass )
   ) i_cc_spill_register_flushable (
     .clk_i   ( clk_i   ),
     .rst_ni  ( rst_ni  ),
+    .clr_i   ( 1'b0   ),
     .valid_i ( valid_i ),
     .flush_i ( flush_i ),
     .ready_o ( ready_o ),

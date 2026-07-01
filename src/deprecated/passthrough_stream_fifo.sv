@@ -28,10 +28,11 @@ module passthrough_stream_fifo #(
     .Depth       ( Depth       ),
     .PrintInfo   ( PrintInfo   ),
     .SameCycleRW ( SameCycleRW ),
-    .type_t      ( type_t      )
+    .data_t ( type_t      )
   ) i_cc_passthrough_stream_fifo (
     .clk_i   ( clk_i   ),
     .rst_ni  ( rst_ni  ),
+    .clr_i   ( 1'b0   ),
     .flush_i ( flush_i ),
     .data_i  ( data_i  ),
     .valid_i ( valid_i ),

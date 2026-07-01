@@ -21,11 +21,12 @@ module spill_register #(
   initial $warning("Module '%m' is deprecated. Use 'cc_spill_register' instead.");
   // synthesis translate_on
   cc_spill_register #(
-    .T      ( T      ),
+    .data_t ( T      ),
     .Bypass ( Bypass )
   ) i_cc_spill_register (
     .clk_i   ( clk_i   ),
     .rst_ni  ( rst_ni  ),
+    .clr_i   ( 1'b0   ),
     .valid_i ( valid_i ),
     .ready_o ( ready_o ),
     .data_i  ( data_i  ),

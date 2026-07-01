@@ -20,10 +20,11 @@ module shift_reg_gated #(
   // synthesis translate_on
   cc_shift_register_gated #(
     .Depth  ( Depth  ),
-    .dtype  ( dtype  )
+    .data_t ( dtype  )
   ) i_cc_shift_register_gated (
     .clk_i   ( clk_i   ),
     .rst_ni  ( rst_ni  ),
+    .clr_i  ( 1'b0  ),
     .valid_i ( valid_i ),
     .data_i  ( data_i  ),
     .valid_o ( valid_o ),

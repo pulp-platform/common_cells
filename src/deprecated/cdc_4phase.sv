@@ -24,10 +24,10 @@ module cdc_4phase #(
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_4phase' instead.");
   // synthesis translate_on
   cc_cdc_4phase #(
-    .T             ( T             ),
-    .DECOUPLED     ( DECOUPLED     ),
-    .SEND_RESET_MSG( SEND_RESET_MSG),
-    .RESET_MSG     ( RESET_MSG     )
+    .data_t ( T             ),
+    .Decoupled ( DECOUPLED     ),
+    .SendResetMsg ( SEND_RESET_MSG),
+    .ResetMsg ( RESET_MSG     )
   ) i_cc_cdc_4phase (
     .src_rst_ni  ( src_rst_ni  ),
     .src_clk_i   ( src_clk_i   ),
@@ -63,11 +63,11 @@ module cdc_4phase_src #(
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_4phase_src' instead.");
   // synthesis translate_on
   cc_cdc_4phase_src #(
-    .T             ( T             ),
+    .data_t ( T             ),
     .SYNC_STAGES   ( SYNC_STAGES   ),
-    .DECOUPLED     ( DECOUPLED     ),
-    .SEND_RESET_MSG( SEND_RESET_MSG),
-    .RESET_MSG     ( RESET_MSG     )
+    .Decoupled ( DECOUPLED     ),
+    .SendResetMsg ( SEND_RESET_MSG),
+    .ResetMsg ( RESET_MSG     )
   ) i_cc_cdc_4phase_src (
     .rst_ni       ( rst_ni       ),
     .clk_i        ( clk_i        ),
@@ -99,9 +99,9 @@ module cdc_4phase_dst #(
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_4phase_dst' instead.");
   // synthesis translate_on
   cc_cdc_4phase_dst #(
-    .T           ( T           ),
+    .data_t ( T           ),
     .SYNC_STAGES ( SYNC_STAGES ),
-    .DECOUPLED   ( DECOUPLED   )
+    .Decoupled ( DECOUPLED   )
   ) i_cc_cdc_4phase_dst (
     .rst_ni       ( rst_ni       ),
     .clk_i        ( clk_i        ),

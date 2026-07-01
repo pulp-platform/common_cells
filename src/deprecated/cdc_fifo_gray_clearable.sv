@@ -29,11 +29,11 @@ module cdc_fifo_gray_clearable #(
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_fifo_gray_clearable' instead.");
   // synthesis translate_on
   cc_cdc_fifo_gray_clearable #(
-    .WIDTH               ( WIDTH               ),
-    .T                   ( T                   ),
-    .LOG_DEPTH           ( LOG_DEPTH           ),
-    .SYNC_STAGES         ( SYNC_STAGES         ),
-    .CLEAR_ON_ASYNC_RESET( CLEAR_ON_ASYNC_RESET)
+    .Width ( WIDTH               ),
+    .data_t ( T                   ),
+    .LogDepth ( LOG_DEPTH           ),
+    .SyncStages ( SYNC_STAGES         ),
+    .ClearOnAsyncReset ( CLEAR_ON_ASYNC_RESET)
   ) i_cc_cdc_fifo_gray_clearable (
     .src_rst_ni          ( src_rst_ni          ),
     .src_clk_i           ( src_clk_i           ),
@@ -72,9 +72,9 @@ module cdc_fifo_gray_src_clearable #(
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_fifo_gray_src_clearable' instead.");
   // synthesis translate_on
   cc_cdc_fifo_gray_src_clearable #(
-    .T           ( T           ),
-    .LOG_DEPTH   ( LOG_DEPTH   ),
-    .SYNC_STAGES ( SYNC_STAGES )
+    .data_t ( T           ),
+    .LogDepth ( LOG_DEPTH   ),
+    .SyncStages ( SYNC_STAGES )
   ) i_cc_cdc_fifo_gray_src_clearable (
     .src_rst_ni   ( src_rst_ni   ),
     .src_clk_i    ( src_clk_i    ),
@@ -108,9 +108,9 @@ module cdc_fifo_gray_dst_clearable #(
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_fifo_gray_dst_clearable' instead.");
   // synthesis translate_on
   cc_cdc_fifo_gray_dst_clearable #(
-    .T           ( T           ),
-    .LOG_DEPTH   ( LOG_DEPTH   ),
-    .SYNC_STAGES ( SYNC_STAGES )
+    .data_t ( T           ),
+    .LogDepth ( LOG_DEPTH   ),
+    .SyncStages ( SYNC_STAGES )
   ) i_cc_cdc_fifo_gray_dst_clearable (
     .dst_rst_ni   ( dst_rst_ni   ),
     .dst_clk_i    ( dst_clk_i    ),

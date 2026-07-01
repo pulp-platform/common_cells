@@ -21,11 +21,12 @@ module lossy_valid_to_stream #(
   initial $warning("Module '%m' is deprecated. Use 'cc_lossy_valid_to_stream' instead.");
   // synthesis translate_on
   cc_lossy_valid_to_stream #(
-    .DATA_WIDTH ( DATA_WIDTH ),
-    .T          ( T          )
+    .DataWidth ( DATA_WIDTH ),
+    .data_t    ( T          )
   ) i_cc_lossy_valid_to_stream (
     .clk_i   ( clk_i   ),
     .rst_ni  ( rst_ni  ),
+    .clr_i   ( 1'b0   ),
     .valid_i ( valid_i ),
     .data_i  ( data_i  ),
     .valid_o ( valid_o ),

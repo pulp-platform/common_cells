@@ -17,11 +17,12 @@ module shift_reg #(
   initial $warning("Module '%m' is deprecated. Use 'cc_shift_register' instead.");
   // synthesis translate_on
   cc_shift_register #(
-    .dtype ( dtype ),
+    .data_t ( dtype ),
     .Depth ( Depth )
   ) i_cc_shift_register (
     .clk_i  ( clk_i  ),
     .rst_ni ( rst_ni ),
+    .clr_i  ( 1'b0  ),
     .d_i    ( d_i    ),
     .d_o    ( d_o    )
   );

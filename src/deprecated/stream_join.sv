@@ -16,7 +16,7 @@ module stream_join #(
   initial $warning("Module '%m' is deprecated. Use 'cc_stream_join' instead.");
   // synthesis translate_on
   cc_stream_join #(
-    .N_INP ( N_INP )
+    .NumInp ( N_INP )
   ) i_cc_stream_join (
     .inp_valid_i ( inp_valid_i ),
     .inp_ready_o ( inp_ready_o ),

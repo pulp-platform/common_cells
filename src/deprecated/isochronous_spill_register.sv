@@ -23,7 +23,7 @@ module isochronous_spill_register #(
   initial $warning("Module '%m' is deprecated. Use 'cc_isochronous_spill_register' instead.");
   // synthesis translate_on
   cc_isochronous_spill_register #(
-    .T      ( T      ),
+    .data_t ( T      ),
     .Bypass ( Bypass )
   ) i_cc_isochronous_spill_register (
     .src_clk_i   ( src_clk_i   ),

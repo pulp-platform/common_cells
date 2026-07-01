@@ -33,6 +33,7 @@ module stream_to_mem #(
   ) i_cc_stream_to_mem (
     .clk_i            ( clk_i            ),
     .rst_ni           ( rst_ni           ),
+    .clr_i            ( 1'b0             ),
     .req_i            ( req_i            ),
     .req_valid_i      ( req_valid_i      ),
     .req_ready_o      ( req_ready_o      ),

@@ -28,6 +28,7 @@ module lfsr #(
   ) i_cc_lfsr (
     .clk_i  ( clk_i  ),
     .rst_ni ( rst_ni ),
+    .clr_i  ( 1'b0  ),
     .en_i   ( en_i   ),
     .out_o  ( out_o  )
   );

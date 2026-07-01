@@ -23,8 +23,9 @@ module exp_backoff #(
   ) i_cc_exp_backoff (
     .clk_i     ( clk_i     ),
     .rst_ni    ( rst_ni    ),
-    .set_i     ( set_i     ),
-    .clr_i     ( clr_i     ),
+    .clr_i     ( 1'b0     ),
+    .set_cnt_i ( set_i     ),
+    .clr_cnt_i ( clr_i ),
     .is_zero_o ( is_zero_o )
   );
 endmodule

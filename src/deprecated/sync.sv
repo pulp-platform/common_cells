@@ -17,7 +17,7 @@ module sync #(
   initial $warning("Module '%m' is deprecated. Use 'cc_sync' instead.");
   // synthesis translate_on
   cc_sync #(
-    .STAGES     ( STAGES     ),
+    .Stages     ( STAGES     ),
     .ResetValue ( ResetValue )
   ) i_cc_sync (
     .clk_i    ( clk_i    ),

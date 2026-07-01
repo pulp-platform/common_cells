@@ -14,7 +14,7 @@ module popcount #(
   initial $warning("Module '%m' is deprecated. Use 'cc_popcount' instead.");
   // synthesis translate_on
   cc_popcount #(
-    .INPUT_WIDTH ( INPUT_WIDTH )
+    .InputWidth ( INPUT_WIDTH )
   ) i_cc_popcount (
     .data_i     ( data_i     ),
     .popcount_o ( popcount_o )

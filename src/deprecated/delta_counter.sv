@@ -23,12 +23,12 @@ module delta_counter #(
   initial $warning("Module '%m' is deprecated. Use 'cc_delta_counter' instead.");
   // synthesis translate_on
   cc_delta_counter #(
-    .WIDTH           ( WIDTH           ),
-    .STICKY_OVERFLOW ( STICKY_OVERFLOW )
+    .Width ( WIDTH           ),
+    .StickyOverflow ( STICKY_OVERFLOW )
   ) i_cc_delta_counter (
     .clk_i      ( clk_i      ),
     .rst_ni     ( rst_ni     ),
-    .clear_i    ( clear_i    ),
+    .clr_i      ( clear_i    ),
     .en_i       ( en_i       ),
     .load_i     ( load_i     ),
     .down_i     ( down_i     ),

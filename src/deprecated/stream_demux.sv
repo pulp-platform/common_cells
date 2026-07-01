@@ -20,7 +20,7 @@ module stream_demux #(
   // synthesis translate_on
   // Note: LOG_N_OUP is a localparam in cc_stream_demux, not passed.
   cc_stream_demux #(
-    .N_OUP ( N_OUP )
+    .NumOup ( N_OUP )
   ) i_cc_stream_demux (
     .inp_valid_i ( inp_valid_i ),
     .inp_ready_o ( inp_ready_o ),

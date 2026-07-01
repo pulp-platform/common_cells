@@ -14,9 +14,9 @@ module gray_to_binary #(
   initial $warning("Module '%m' is deprecated. Use 'cc_gray_to_binary' instead.");
   // synthesis translate_on
   cc_gray_to_binary #(
-    .N ( N )
+    .Width ( N )
   ) i_cc_gray_to_binary (
-    .A ( A ),
-    .Z ( Z )
+    .a_i ( A ),
+    .z_o ( Z )
   );
 endmodule

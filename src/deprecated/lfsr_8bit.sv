@@ -18,13 +18,14 @@ module lfsr_8bit #(
   initial $warning("Module '%m' is deprecated. Use 'cc_lfsr_8bit' instead.");
   // synthesis translate_on
   cc_lfsr_8bit #(
-    .SEED  ( SEED  ),
-    .WIDTH ( WIDTH )
+    .Seed ( SEED  ),
+    .Width ( WIDTH )
   ) i_cc_lfsr_8bit (
     .clk_i          ( clk_i          ),
     .rst_ni         ( rst_ni         ),
+    .clr_i  ( 1'b0  ),
     .en_i           ( en_i           ),
-    .refill_way_oh  ( refill_way_oh  ),
-    .refill_way_bin ( refill_way_bin )
+    .refill_way_oh_o ( refill_way_oh  ),
+    .refill_way_bin_o ( refill_way_bin )
   );
 endmodule
