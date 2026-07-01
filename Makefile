@@ -34,7 +34,6 @@ $(VLT_ELAB_TARGETS): vlt-elab-%: .bender/.checkout
 		-Wno-UNSIGNED \
 		-Wno-WIDTHEXPAND \
 		-Wno-WIDTHTRUNC \
-		-Wno-UNOPTFLAT \
 		-j $(shell nproc)
 
 $(VSIM_BUILDDIR) $(VCS_BUILDDIR) $(SG_BUILDDIR):

@@ -130,21 +130,29 @@ module cc_cdc_4phase_src #(
     .serial_o( ack_synced  )
   );
 
-  // FSM for the 4-phase handshake
+  // Output logic derived from registered local state only.
+  always_comb begin
+    ready_o = 1'b0;
+    case (state_q)
+      IDLE: begin
+        ready_o = Decoupled;
+      end
+      WAIT_ACK_DEASSERT: begin
+        ready_o = !Decoupled && (ack_synced == 1'b0);
+      end
+      default: begin
+        ready_o = 1'b0;
+      end
+    endcase
+  end
+
+  // FSM for the 4-phase handshake; calculates next state from inputs and local state.
   always_comb begin
     state_d    = state_q;
     req_src_d  = 1'b0;
     data_src_d = data_src_q;
-    ready_o    = 1'b0;
     case (state_q)
       IDLE: begin
-        // If decoupling is disabled, defer assertion of ready until the
-        // handshake with the dst is completed
-        if (Decoupled) begin
-          ready_o = 1'b1;
-        end else begin
-          ready_o = 1'b0;
-        end
         // Sample a new item when the valid signal is asserted.
         if (valid_i) begin
           data_src_d = data_i;
@@ -162,9 +170,6 @@ module cc_cdc_4phase_src #(
       WAIT_ACK_DEASSERT: begin
         if (ack_synced == 1'b0) begin
           state_d = IDLE;
-          if (!Decoupled) begin
-            ready_o = 1'b1;
-          end
         end
       end
       default: begin
@@ -226,17 +231,31 @@ module cc_cdc_4phase_dst #(
     .serial_o( req_synced  )
   );
 
-  // FSM for the 4-phase handshake
+  // Output logic derived from registered local state only.
+  always_comb begin
+    data_valid = 1'b0;
+    case (state_q)
+      IDLE: begin
+        data_valid = req_synced;
+      end
+      WAIT_DOWNSTREAM_ACK: begin
+        data_valid = 1'b1;
+      end
+      default: begin
+        data_valid = 1'b0;
+      end
+    endcase
+  end
+
+  // FSM for the 4-phase handshake; calculates next state from inputs and local state.
   always_comb begin
     state_d    = state_q;
-    data_valid = 1'b0;
     ack_dst_d  = 1'b0;
 
     case (state_q)
       IDLE: begin
         // Sample the data upon a new request and transition to the next state
         if (req_synced == 1'b1) begin
-          data_valid = 1'b1;
           if (output_ready == 1'b1) begin
             state_d = WAIT_REQ_DEASSERT;
           end else begin
@@ -246,7 +265,6 @@ module cc_cdc_4phase_dst #(
       end
 
       WAIT_DOWNSTREAM_ACK: begin
-        data_valid       = 1'b1;
         if (output_ready == 1'b1) begin
           state_d    = WAIT_REQ_DEASSERT;
           ack_dst_d  = 1'b1;
