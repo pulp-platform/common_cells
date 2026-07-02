@@ -30,6 +30,8 @@
 /// during an async reset even if there is no clock available. This mode is
 /// required for proper functionality of the cc_cdc_reset_ctrlr module.
 ///
+/// SyncStages - Number of synchronization stages for async_req and async_ack.
+///
 /// CONSTRAINT: Requires max_delay of min_period(src_clk_i, dst_clk_i) through
 /// the paths async_req, async_ack, async_data.
 `include "common_cells/registers.svh"
@@ -38,7 +40,8 @@ module cc_cdc_4phase #(
   parameter type data_t = logic,
   parameter bit Decoupled = 1'b1,
   parameter bit SendResetMsg = 1'b0,
-  parameter data_t ResetMsg = data_t'('0)
+  parameter data_t ResetMsg = data_t'('0),
+  parameter int unsigned SyncStages = 2
 )(
   input  logic  src_rst_ni,
   input  logic  src_clk_i,
@@ -58,9 +61,14 @@ module cc_cdc_4phase #(
   (* dont_touch = "true" *) logic  async_ack;
   (* dont_touch = "true" *) data_t async_data;
 
+  if (SyncStages < 2) begin : gen_sync_stage_assertion
+    $error("A minimum of 2 synchronizer stages is required for proper functionality.");
+  end
+
   // The sender in the source domain.
   cc_cdc_4phase_src #(
     .data_t(data_t),
+    .SyncStages(SyncStages),
     .Decoupled(Decoupled),
     .SendResetMsg(SendResetMsg),
     .ResetMsg(ResetMsg)
@@ -76,7 +84,11 @@ module cc_cdc_4phase #(
   );
 
   // The receiver in the destination domain.
-  cc_cdc_4phase_dst #(.data_t(data_t), .Decoupled(Decoupled)) i_dst (
+  cc_cdc_4phase_dst #(
+    .data_t(data_t),
+    .SyncStages(SyncStages),
+    .Decoupled(Decoupled)
+  ) i_dst (
     .rst_ni       ( dst_rst_ni  ),
     .clk_i        ( dst_clk_i   ),
     .data_o       ( dst_data_o  ),
@@ -118,6 +130,10 @@ module cc_cdc_4phase_src #(
   state_e state_d, state_q;
   localparam logic ReqSrcResetValue = SendResetMsg ? 1'b1 : 1'b0;
   localparam data_t DataSrcResetValue = SendResetMsg ? ResetMsg : data_t'('0);
+
+  if (SyncStages < 2) begin : gen_sync_stage_assertion
+    $error("A minimum of 2 synchronizer stages is required for proper functionality.");
+  end
 
   // Synchronize the async ACK
   tc_sync #(
@@ -195,7 +211,7 @@ endmodule
 module cc_cdc_4phase_dst #(
   parameter type data_t = logic,
   parameter int unsigned SyncStages = 2,
-  parameter bit Decoupled = 1
+  parameter bit Decoupled = 1'b1
 )(
   input  logic  rst_ni,
   input  logic  clk_i,
@@ -219,6 +235,10 @@ module cc_cdc_4phase_dst #(
 
   typedef enum logic[1:0] {IDLE, WAIT_DOWNSTREAM_ACK, WAIT_REQ_DEASSERT} state_e;
   state_e state_d, state_q;
+
+  if (SyncStages < 2) begin : gen_sync_stage_assertion
+    $error("A minimum of 2 synchronizer stages is required for proper functionality.");
+  end
 
   //Synchronize the request
   tc_sync #(
