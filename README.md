@@ -140,7 +140,7 @@ Intentional exceptions are clock, reset, cdc cells, and any cells that receive m
 ### Use of Macros
 
 Internally, the cells use macros to implement sequential logic (flip-flops) and assertions.
-These macros are defined in this repo; see [RTL Register Macros](#RTL Register Macros) and [SVA Macros](#SystemVerilog Assertion Macros) below for more details.
+These macros are defined in this repo; see [RTL Register Macros](#rtl-register-macros) and [SVA Macros](#systemverilog-assertion-macros) below for more details.
 
 ## Header Contents
 
@@ -163,7 +163,7 @@ The use of linter rules that flag explicit uses of `always_ff` in source code is
 |                       |                                                                              |                                                                                              |
 | <code>`FFL</code>     | `q_sig`, `d_sig`, `load_ena`, `rst_val`, (`clk_sig`, `arstn_sig`)            | Flip-flop with load-enable and asynchronous active-low reset                                 |
 | <code>`FFLAR</code>   | `q_sig`, `d_sig`, `load_ena`, `rst_val`, (`clk_sig`, `arst_sig`)             | Flip-flop with load-enable and asynchronous active-high reset                                |
-| <code>`FFLARNC</code> | `q_sig`, `d_sig`, `load_ena`, `clr_sig`, `rst_val`, (`clk_sig`, `arstn_sig`) | Flip-flop with load-enable, asynchronous active-high reset and synchronous active-high clear |
+| <code>`FFLARNC</code> | `q_sig`, `d_sig`, `load_ena`, `clr_sig`, `rst_val`, (`clk_sig`, `arstn_sig`) | Flip-flop with load-enable, asynchronous active-low reset and synchronous active-high clear |
 | <code>`FFLSR</code>   | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `rst_sig`                | Flip-flop with load-enable and synchronous active-high reset                                 |
 | <code>`FFLSRN</code>  | `q_sig`, `d_sig`, `load_ena`, `rst_val`, `clk_sig`, `rstn_sig`               | Flip-flop with load-enable and synchronous active-low reset                                  |
 | <code>`FFLNR</code>   | `q_sig`, `d_sig`, `load_ena`, (`clk_sig`)                                    | Flip-flop with load-enable without reset                                                     |
@@ -176,7 +176,7 @@ The use of linter rules that flag explicit uses of `always_ff` in source code is
 ### SystemVerilog Assertion Macros
 
 The header file [`assertions.svh`](include/common_cells/assertions.svh) contains macros that expand to assertion blocks.
-These macros should recduce the effort in writing many assertions and make it
+These macros should reduce the effort in writing many assertions and make it
 easier to use them. They are similar to but incompatible with the macros used by [lowrisc](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_assert.sv).
 
 #### Simple Assertion and Cover Macros
@@ -198,7 +198,7 @@ easier to use them. They are similar to but incompatible with the macros used by
 | <code>`ASSERT_PULSE</code>    | `__name`, `__sig`, (`__clk`, `__rst`, `__desc`)                                     | Assert that signal is an active-high pulse with pulse length of 1 clock cycle                              |
 | <code>`ASSERT_IF</code>       | `__name`, `__prop`, `__enable`, (`__clk`, `__rst`, `__desc`)                        | Assert that a property is true only when an enable signal is set                                           |
 | <code>`ASSERT_KNOWN_IF</code> | `__name`, `__sig`, `__enable`, (`__clk`, `__rst`, `__desc`)                         | Assert that signal has a known value (each bit is either '0' or '1') after reset if enable is set          |
-| <code>`ASSERT_STABLE</code>   | `__name`, `__valid`, `__ready`, `__data`, `__enable`, (`__clk`, `__rst`, `__desc`)  | Assert that the data on a ready-valid interface is kept stable after valid is asserted, until ready is too |
+| <code>`ASSERT_STABLE</code>   | `__name`, `__valid`, `__ready`, `__data`, (`__mask`, `__clk`, `__rst`, `__desc`)    | Assert that the unmasked data on a ready-valid interface is kept stable after valid is asserted, until ready is asserted |
 - *The name of the clock and reset signals for implicit variants is `clk_i` and `rst_ni`, respectively.*
 - *`__desc` is an optional string argument describing the failure causing the assertion to be violated that is embedded into the error report and defaults to `""`.*
 
@@ -216,7 +216,7 @@ easier to use them. They are similar to but incompatible with the macros used by
 | Macro              | Arguments                                        | Description                                                  |
 | ------------------ | ------------------------------------------------ | ------------------------------------------------------------ |
 | <code>`ASSUME_FPV</code>   | `__name`, `__prop`, (`__clk`, `__rst`, `__desc`) | Assume a concurrent property during formal verification only |
-| <code>`ASSUME_I_FPV</code> | `__name`, `__prop`, (`__desc`)                   | Assume a concurrent property during formal verification only |
+| <code>`ASSUME_I_FPV</code> | `__name`, `__prop`, (`__desc`)                   | Assume an immediate property during formal verification only |
 | <code>`COVER_FPV</code>    | `__name`, `__prop`, (`__clk`, `__rst`)           | Cover a concurrent property during formal verification       |
 - *The name of the clock and reset signals for implicit variants is `clk_i` and `rst_ni`, respectively.*
 - *`__desc` is an optional string argument describing the failure causing the assertion to be violated that is embedded into the error report and defaults to `""`.*
