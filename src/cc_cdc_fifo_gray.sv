@@ -128,8 +128,9 @@ module cc_cdc_fifo_gray #(
   logic [LogDepth:0]  async_rptr;
 
   cc_cdc_fifo_gray_src #(
-    .data_t   ( data_t   ),
-    .LogDepth ( LogDepth )
+    .data_t     ( data_t     ),
+    .LogDepth   ( LogDepth   ),
+    .SyncStages ( SyncStages )
   ) i_src (
     .src_rst_ni,
     .src_clk_i,
@@ -143,8 +144,9 @@ module cc_cdc_fifo_gray #(
   );
 
   cc_cdc_fifo_gray_dst #(
-    .data_t   ( data_t   ),
-    .LogDepth ( LogDepth )
+    .data_t     ( data_t     ),
+    .LogDepth   ( LogDepth   ),
+    .SyncStages ( SyncStages )
   ) i_dst (
     .dst_rst_ni,
     .dst_clk_i,
@@ -189,6 +191,10 @@ module cc_cdc_fifo_gray_src #(
 
   data_t [2**LogDepth-1:0] data_q, data_d;
   logic [PtrWidth-1:0] wptr_q, wptr_d, wptr_bin, wptr_next, rptr, rptr_bin;
+
+  if (SyncStages < 2) begin : gen_sync_stage_assertion
+    $error("A minimum of 2 synchronizer stages is required for proper functionality.");
+  end
 
   // Data FIFO.
   assign async_data_o = data_q;
@@ -250,6 +256,11 @@ module cc_cdc_fifo_gray_dst #(
   data_t dst_data;
   logic [PtrWidth-1:0] rptr_q, rptr_d, rptr_bin, rptr_bin_d, rptr_next, wptr, wptr_bin;
   logic dst_valid, dst_ready;
+
+  if (SyncStages < 2) begin : gen_sync_stage_assertion
+    $error("A minimum of 2 synchronizer stages is required for proper functionality.");
+  end
+
   // Data selector and register.
   assign dst_data = async_data_i[rptr_bin[LogDepth-1:0]];
 
