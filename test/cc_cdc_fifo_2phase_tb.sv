@@ -26,6 +26,7 @@ module cc_cdc_fifo_2phase_tb;
   // --------------------------------------------------------------------------
   parameter int unsigned NUM_RANDOM_TRANSFERS = 200;
   parameter int unsigned DEPTH = 3;
+  parameter int unsigned SYNC_STAGES = 2;
   parameter int unsigned TCK_SRC_PS = 10000;
   parameter int unsigned TCK_DST_PS = 17000;
   parameter int unsigned TIMEOUT_CYCLES = 40000;
@@ -71,6 +72,7 @@ module cc_cdc_fifo_2phase_tb;
   if (INJECT_DELAYS) begin : gen_delayed_dut
     cc_cdc_fifo_2phase_tb_delay_injector #(
       .LOG_DEPTH    ( DEPTH        ),
+      .SYNC_STAGES  ( SYNC_STAGES  ),
       .MAX_DELAY_PS ( MAX_DELAY_PS )
     ) i_dut (
       .src_rst_ni,
@@ -86,8 +88,9 @@ module cc_cdc_fifo_2phase_tb;
     );
   end else begin : gen_dut
     cc_cdc_fifo_2phase #(
-      .data_t   ( logic [31:0] ),
-      .LogDepth ( DEPTH        )
+      .data_t     ( logic [31:0] ),
+      .LogDepth   ( DEPTH        ),
+      .SyncStages ( SYNC_STAGES  )
     ) i_dut (
       .src_rst_ni,
       .src_clk_i,
@@ -403,89 +406,12 @@ endmodule
 
 
 // ----------------------------------------------------------------------------
-// Timed Pointer CDC Helper
-// ----------------------------------------------------------------------------
-
-module cc_cdc_fifo_2phase_tb_pointer_cdc #(
-  parameter int unsigned Width = 1,
-  parameter int unsigned MAX_DELAY_PS = 0
-)(
-  input  logic             src_rst_ni,
-  input  logic             src_clk_i,
-  input  logic [Width-1:0] src_data_i,
-
-  input  logic             dst_rst_ni,
-  input  logic             dst_clk_i,
-  output logic [Width-1:0] dst_data_o
-);
-
-  timeunit 1ns;
-  timeprecision 1ps;
-
-  logic             async_req_from_src;
-  logic             async_req_to_dst;
-  logic             async_ack_from_dst;
-  logic             async_ack_to_src;
-  logic [Width-1:0] async_data_from_src;
-  logic [Width-1:0] async_data_to_dst;
-
-  cc_cdc_fifo_2phase_tb_bit_delay #(
-    .MAX_DELAY_PS ( MAX_DELAY_PS )
-  ) i_async_req_delay (
-    .in_i  ( async_req_from_src ),
-    .out_o ( async_req_to_dst   )
-  );
-
-  cc_cdc_fifo_2phase_tb_bit_delay #(
-    .MAX_DELAY_PS ( MAX_DELAY_PS )
-  ) i_async_ack_delay (
-    .in_i  ( async_ack_from_dst ),
-    .out_o ( async_ack_to_src   )
-  );
-
-  cc_cdc_fifo_2phase_tb_bus_delay #(
-    .Width        ( Width        ),
-    .MAX_DELAY_PS ( MAX_DELAY_PS )
-  ) i_async_data_delay (
-    .in_i  ( async_data_from_src ),
-    .out_o ( async_data_to_dst   )
-  );
-
-  cc_cdc_2phase_src #(
-    .data_t ( logic [Width-1:0] )
-  ) i_src (
-    .rst_ni       ( src_rst_ni          ),
-    .clk_i        ( src_clk_i           ),
-    .data_i       ( src_data_i          ),
-    .valid_i      ( 1'b1                ),
-    .ready_o      (                     ),
-    .async_req_o  ( async_req_from_src  ),
-    .async_ack_i  ( async_ack_to_src    ),
-    .async_data_o ( async_data_from_src )
-  );
-
-  cc_cdc_2phase_dst #(
-    .data_t ( logic [Width-1:0] )
-  ) i_dst (
-    .rst_ni       ( dst_rst_ni        ),
-    .clk_i        ( dst_clk_i         ),
-    .data_o       ( dst_data_o        ),
-    .valid_o      (                   ),
-    .ready_i      ( 1'b1              ),
-    .async_req_i  ( async_req_to_dst  ),
-    .async_ack_o  ( async_ack_from_dst ),
-    .async_data_i ( async_data_to_dst )
-  );
-
-endmodule
-
-
-// ----------------------------------------------------------------------------
 // Timed Delay-Injection Harness
 // ----------------------------------------------------------------------------
 
 module cc_cdc_fifo_2phase_tb_delay_injector #(
   parameter int unsigned LOG_DEPTH = 3,
+  parameter int unsigned SYNC_STAGES = 2,
   parameter int unsigned MAX_DELAY_PS = 0
 )(
   input  logic        src_rst_ni,
@@ -506,91 +432,113 @@ module cc_cdc_fifo_2phase_tb_delay_injector #(
 
   localparam int unsigned PtrWidth = LOG_DEPTH + 1;
   typedef logic [PtrWidth-1:0] pointer_t;
-  typedef logic [LOG_DEPTH-1:0] index_t;
+  typedef logic [31:0] data_t;
 
-  localparam pointer_t PtrFull  = (1 << LOG_DEPTH);
-  localparam pointer_t PtrEmpty = '0;
+  data_t [2**LOG_DEPTH-1:0] async_data_from_src;
+  data_t [2**LOG_DEPTH-1:0] async_data_to_dst;
+  logic async_wptr_req_from_src;
+  logic async_wptr_req_to_dst;
+  logic async_wptr_ack_from_dst;
+  logic async_wptr_ack_to_src;
+  pointer_t async_wptr_data_from_src;
+  pointer_t async_wptr_data_to_dst;
+  logic async_rptr_req_from_dst;
+  logic async_rptr_req_to_src;
+  logic async_rptr_ack_from_src;
+  logic async_rptr_ack_to_dst;
+  pointer_t async_rptr_data_from_dst;
+  pointer_t async_rptr_data_to_src;
 
-  index_t fifo_widx;
-  index_t fifo_ridx;
-  logic fifo_write;
-  logic [31:0] fifo_wdata;
-  logic [31:0] fifo_rdata;
-  logic [31:0] fifo_data_q [2**LOG_DEPTH];
-  logic [31:0] fifo_data_delayed [2**LOG_DEPTH];
+  cc_cdc_fifo_2phase_src #(
+    .data_t     ( data_t      ),
+    .LogDepth   ( LOG_DEPTH   ),
+    .SyncStages ( SYNC_STAGES )
+  ) i_src (
+    .src_rst_ni,
+    .src_clk_i,
+    .src_data_i,
+    .src_valid_i,
+    .src_ready_o,
+    .async_data_o      ( async_data_from_src      ),
+    .async_wptr_req_o  ( async_wptr_req_from_src  ),
+    .async_wptr_ack_i  ( async_wptr_ack_to_src    ),
+    .async_wptr_data_o ( async_wptr_data_from_src ),
+    .async_rptr_req_i  ( async_rptr_req_to_src    ),
+    .async_rptr_ack_o  ( async_rptr_ack_from_src  ),
+    .async_rptr_data_i ( async_rptr_data_to_src   )
+  );
 
-  pointer_t src_wptr_q;
-  pointer_t dst_wptr;
-  pointer_t src_rptr;
-  pointer_t dst_rptr_q;
-
-  assign fifo_rdata = fifo_data_delayed[fifo_ridx];
-
-  for (genvar i = 0; i < 2**LOG_DEPTH; i++) begin : gen_word
+  for (genvar i = 0; i < 2**LOG_DEPTH; i++) begin : gen_data_delay
     cc_cdc_fifo_2phase_tb_bus_delay #(
       .Width        ( 32           ),
       .MAX_DELAY_PS ( MAX_DELAY_PS )
-    ) i_fifo_data_delay (
-      .in_i  ( fifo_data_q[i]       ),
-      .out_o ( fifo_data_delayed[i] )
+    ) i_data_delay (
+      .in_i  ( async_data_from_src[i] ),
+      .out_o ( async_data_to_dst[i]   )
     );
-
-    always_ff @(posedge src_clk_i, negedge src_rst_ni) begin
-      if (!src_rst_ni) begin
-        fifo_data_q[i] <= '0;
-      end else if (fifo_write && (fifo_widx == i)) begin
-        fifo_data_q[i] <= fifo_wdata;
-      end
-    end
   end
 
-  always_ff @(posedge src_clk_i, negedge src_rst_ni) begin
-    if (!src_rst_ni) begin
-      src_wptr_q <= '0;
-    end else if (src_valid_i && src_ready_o) begin
-      src_wptr_q <= src_wptr_q + 1;
-    end
-  end
+  cc_cdc_fifo_2phase_tb_bit_delay #(
+    .MAX_DELAY_PS ( MAX_DELAY_PS )
+  ) i_async_wptr_req_delay (
+    .in_i  ( async_wptr_req_from_src ),
+    .out_o ( async_wptr_req_to_dst   )
+  );
 
-  always_ff @(posedge dst_clk_i, negedge dst_rst_ni) begin
-    if (!dst_rst_ni) begin
-      dst_rptr_q <= '0;
-    end else if (dst_valid_o && dst_ready_i) begin
-      dst_rptr_q <= dst_rptr_q + 1;
-    end
-  end
+  cc_cdc_fifo_2phase_tb_bit_delay #(
+    .MAX_DELAY_PS ( MAX_DELAY_PS )
+  ) i_async_wptr_ack_delay (
+    .in_i  ( async_wptr_ack_from_dst ),
+    .out_o ( async_wptr_ack_to_src   )
+  );
 
-  assign src_ready_o = ((src_wptr_q ^ src_rptr) != PtrFull);
-  assign dst_valid_o = ((dst_rptr_q ^ dst_wptr) != PtrEmpty);
-
-  cc_cdc_fifo_2phase_tb_pointer_cdc #(
+  cc_cdc_fifo_2phase_tb_bus_delay #(
     .Width        ( PtrWidth     ),
     .MAX_DELAY_PS ( MAX_DELAY_PS )
-  ) i_cdc_wptr (
-    .src_rst_ni,
-    .src_clk_i,
-    .src_data_i ( src_wptr_q ),
+  ) i_async_wptr_data_delay (
+    .in_i  ( async_wptr_data_from_src ),
+    .out_o ( async_wptr_data_to_dst   )
+  );
+
+  cc_cdc_fifo_2phase_tb_bit_delay #(
+    .MAX_DELAY_PS ( MAX_DELAY_PS )
+  ) i_async_rptr_req_delay (
+    .in_i  ( async_rptr_req_from_dst ),
+    .out_o ( async_rptr_req_to_src   )
+  );
+
+  cc_cdc_fifo_2phase_tb_bit_delay #(
+    .MAX_DELAY_PS ( MAX_DELAY_PS )
+  ) i_async_rptr_ack_delay (
+    .in_i  ( async_rptr_ack_from_src ),
+    .out_o ( async_rptr_ack_to_dst   )
+  );
+
+  cc_cdc_fifo_2phase_tb_bus_delay #(
+    .Width        ( PtrWidth     ),
+    .MAX_DELAY_PS ( MAX_DELAY_PS )
+  ) i_async_rptr_data_delay (
+    .in_i  ( async_rptr_data_from_dst ),
+    .out_o ( async_rptr_data_to_src   )
+  );
+
+  cc_cdc_fifo_2phase_dst #(
+    .data_t     ( data_t      ),
+    .LogDepth   ( LOG_DEPTH   ),
+    .SyncStages ( SYNC_STAGES )
+  ) i_dst (
     .dst_rst_ni,
     .dst_clk_i,
-    .dst_data_o ( dst_wptr   )
+    .dst_data_o,
+    .dst_valid_o,
+    .dst_ready_i,
+    .async_data_i      ( async_data_to_dst        ),
+    .async_wptr_req_i  ( async_wptr_req_to_dst    ),
+    .async_wptr_ack_o  ( async_wptr_ack_from_dst  ),
+    .async_wptr_data_i ( async_wptr_data_to_dst   ),
+    .async_rptr_req_o  ( async_rptr_req_from_dst  ),
+    .async_rptr_ack_i  ( async_rptr_ack_to_dst    ),
+    .async_rptr_data_o ( async_rptr_data_from_dst )
   );
-
-  cc_cdc_fifo_2phase_tb_pointer_cdc #(
-    .Width        ( PtrWidth     ),
-    .MAX_DELAY_PS ( MAX_DELAY_PS )
-  ) i_cdc_rptr (
-    .src_rst_ni  ( dst_rst_ni ),
-    .src_clk_i   ( dst_clk_i  ),
-    .src_data_i  ( dst_rptr_q ),
-    .dst_rst_ni  ( src_rst_ni ),
-    .dst_clk_i   ( src_clk_i  ),
-    .dst_data_o  ( src_rptr   )
-  );
-
-  assign fifo_widx  = src_wptr_q;
-  assign fifo_wdata = src_data_i;
-  assign fifo_write = src_valid_i && src_ready_o;
-  assign fifo_ridx  = dst_rptr_q;
-  assign dst_data_o = fifo_rdata;
 
 endmodule
