@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 1.40.0 - 2026-07-02
+### Fixed
+- `stream_mux`: Fix select width for `N_INP == 1`
+- `clk_int_div`: Fix SpyGlass W415a lint issue
+- `cdc_*_tb`: Fix mailbox type mismatch
+- `common_cells.core`: Add missing source file
+- `Bender.yml`: Exclude deprecated `sram.sv` when targeting CVA6
+- `README`: Fix register macro formatting
+
 ## 1.39.0 - 2025-11-20
 ### Added
 - `boxcar`: Add boxcar function to compose bit masks
