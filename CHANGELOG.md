@@ -4,6 +4,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.0.0-beta - 2026-07-02
+### Added
+- Add deprecated v1 compatibility wrappers for renamed modules, packages, register macros and formal properties
+- Add `cc_no_deprecated` Bender target for strict v2-only builds
+- Add `cc_pkg` and merge `cf_math_pkg`, `ecc_pkg`, and CDC reset-control types into it
+- Add `cc_delta_counter`, `cc_majority_vote_filter`, `cc_serial_deglitch` and `cc_onehot`
+- Add formal checks for `cc_cdc_reset_ctrlr` and `cc_lzc`
+- Add timed CDC test coverage for 2-phase, 4-phase, FIFO, gray FIFO, and clearable CDC paths
+
+### Changed
+- Move the generic `sync` cell to `tech_cells_generic`
+- Prefix public RTL modules, interfaces, testbenches, and formal properties with `cc_`
+- Rename ports to `_i`/`_o`, parameters to `UpperCamelCase`, and type parameters to `*_t`
+- Replace string parameters with enums and integer-like parameters with typed `int unsigned` or `bit`
+- Convert dependent parameters to localparams where they are not part of the public API
+- Add synchronous `clr_i` support to sequential cells and update register macro defaults
+- Rename `fifo_v3` to `cc_fifo` and `shift_reg` to `cc_shift_register`
+- Remove `testmode_i` from `cc_fifo` and dependent modules
+- Fold `stream_arbiter_flushable` into `cc_stream_arbiter`
+- Rename the functional clear of `cc_serial_deglitch` to `restart_i`
+- Restructure CDC implementations with explicit source/destination sides and unify configurable synchronizer parameters
+- Extend CI with Bender-based formal runs, Slang, Verible, Verilator, Questa/VCS elaboration, and SpyGlass lint
+
+### Fixed
+- `cc_popcount`: Fix output width
+- `cc_lzc`: Fix non-power-of-two widths and add formal coverage
+- `cc_fifo`: Fix `usage_o` truncation for power-of-two depths
+- `cc_rr_arb_tree`: Fix inconsistent grant behavior for `NumIn == 1`
+- `cc_passthrough_stream_fifo`: Fix pointer updates under full handshakes
+- `cc_cdc_reset_ctrlr`: Keep async reset-control payloads contained inside the CDC
+- `cc_cdc_fifo_gray_clearable`: Preserve async reset-control timing across sync-stage configurations
+- Fix Verilator `IMPLICIT`, `UNOPTFLAT`, `MULTIDRIVEN`, and selected width warnings
+- Fix SpyGlass lint findings and improve elaboration/tool compatibility
+
+### Removed
+- Remove already-deprecated legacy modules that are not part of the v1 compatibility wrapper set
+- Remove Travis CI and replace the old lint workflow with the new CI setup
+
 ## 1.40.0 - 2026-07-02
 ### Fixed
 - `stream_mux`: Fix select width for `N_INP == 1`
