@@ -64,7 +64,7 @@ module cdc_4phase_src #(
   // synthesis translate_on
   cc_cdc_4phase_src #(
     .data_t ( T             ),
-    .SYNC_STAGES   ( SYNC_STAGES   ),
+    .SyncStages    ( SYNC_STAGES   ),
     .Decoupled ( DECOUPLED     ),
     .SendResetMsg ( SEND_RESET_MSG),
     .ResetMsg ( RESET_MSG     )
@@ -100,7 +100,7 @@ module cdc_4phase_dst #(
   // synthesis translate_on
   cc_cdc_4phase_dst #(
     .data_t ( T           ),
-    .SYNC_STAGES ( SYNC_STAGES ),
+    .SyncStages  ( SYNC_STAGES ),
     .Decoupled ( DECOUPLED   )
   ) i_cc_cdc_4phase_dst (
     .rst_ni       ( rst_ni       ),
