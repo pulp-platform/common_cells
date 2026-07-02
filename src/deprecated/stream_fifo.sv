@@ -26,6 +26,8 @@ module stream_fifo #(
   // synthesis translate_off
   initial $warning("Module '%m' is deprecated. Use 'cc_stream_fifo' instead.");
   // synthesis translate_on
+  logic [cc_pkg::cnt_width(DEPTH)-1:0] usage;
+  assign usage_o = usage[ADDR_DEPTH-1:0];
   cc_stream_fifo #(
     .FallThrough ( FALL_THROUGH ),
     .DataWidth ( DATA_WIDTH   ),
@@ -36,7 +38,7 @@ module stream_fifo #(
     .rst_ni  ( rst_ni  ),
     .clr_i   ( 1'b0   ),
     .flush_i ( flush_i ),
-    .usage_o ( usage_o ),
+    .usage_o ( usage   ),
     .data_i  ( data_i  ),
     .valid_i ( valid_i ),
     .ready_o ( ready_o ),

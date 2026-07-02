@@ -24,6 +24,8 @@ module stream_fifo_optimal_wrap #(
   // synthesis translate_off
   initial $warning("Module '%m' is deprecated. Use 'cc_stream_fifo_optimal_wrap' instead.");
   // synthesis translate_on
+  logic [cc_pkg::cnt_width(Depth)-1:0] usage;
+  assign usage_o = usage[AddrDepth-1:0];
   cc_stream_fifo_optimal_wrap #(
     .Depth     ( Depth     ),
     .data_t ( type_t    ),
@@ -33,7 +35,7 @@ module stream_fifo_optimal_wrap #(
     .rst_ni  ( rst_ni  ),
     .clr_i   ( 1'b0   ),
     .flush_i ( flush_i ),
-    .usage_o ( usage_o ),
+    .usage_o ( usage   ),
     .data_i  ( data_i  ),
     .valid_i ( valid_i ),
     .ready_o ( ready_o ),

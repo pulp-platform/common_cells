@@ -26,6 +26,8 @@ module fifo_v3 #(
   // synthesis translate_off
   initial $warning("Module '%m' is deprecated. Use 'cc_fifo' instead.");
   // synthesis translate_on
+  logic [cc_pkg::cnt_width(DEPTH)-1:0] usage;
+  assign usage_o = usage[ADDR_DEPTH-1:0];
   cc_fifo #(
     .FallThrough ( FALL_THROUGH ),
     .DataWidth ( DATA_WIDTH   ),
@@ -38,7 +40,7 @@ module fifo_v3 #(
     .flush_i ( flush_i ),
     .full_o  ( full_o  ),
     .empty_o ( empty_o ),
-    .usage_o ( usage_o ),
+    .usage_o ( usage   ),
     .data_i  ( data_i  ),
     .push_i  ( push_i  ),
     .data_o  ( data_o  ),
