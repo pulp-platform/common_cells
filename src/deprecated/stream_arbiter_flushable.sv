@@ -2,7 +2,7 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 
-// Deprecated: use cc_stream_arbiter_flushable instead.
+// Deprecated: use cc_stream_arbiter instead.
 
 module stream_arbiter_flushable #(
   parameter type    DATA_T  = logic,
@@ -20,7 +20,7 @@ module stream_arbiter_flushable #(
   input  logic                oup_ready_i
 );
   // synthesis translate_off
-  initial $warning("Module '%m' is deprecated. Use 'cc_stream_arbiter_flushable' instead.");
+  initial $warning("Module '%m' is deprecated. Use 'cc_stream_arbiter' instead.");
   // synthesis translate_on
   localparam cc_pkg::arb_mode_e ArbMode =
     (ARBITER == "prio") ? cc_pkg::ARB_PRIO : cc_pkg::ARB_RR;
