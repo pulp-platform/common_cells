@@ -14,15 +14,15 @@ module sync #(
   output logic serial_o
 );
   // synthesis translate_off
-  initial $warning("Module '%m' is deprecated. Use 'cc_sync' instead.");
+  initial $warning("Module '%m' is deprecated. Use 'tc_sync' from 'tech_cells_generic' instead.");
   // synthesis translate_on
-  cc_sync #(
-    .Stages     ( STAGES     ),
-    .ResetValue ( ResetValue )
-  ) i_cc_sync (
-    .clk_i    ( clk_i    ),
-    .rst_ni   ( rst_ni   ),
-    .serial_i ( serial_i ),
-    .serial_o ( serial_o )
-  );
+  logic [STAGES-1:0] serial_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      serial_q <= {STAGES{ResetValue}};
+    end else begin
+      serial_q <= {serial_q[STAGES-2:0], serial_i};
+    end
+  end
+  assign serial_o = serial_q[STAGES-1];
 endmodule

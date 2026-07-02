@@ -11,9 +11,9 @@ module ecc_decode #(
   parameter type parity_t              = logic [cc_pkg::ecc_get_parity_width(DataWidth)-1:0],
   parameter type code_word_t           = logic [cc_pkg::ecc_get_cw_width(DataWidth)-1:0],
   parameter type encoded_data_t        = struct packed {
-    logic [cc_pkg::ecc_get_parity_width(DataWidth)-1:0] parity;
-    logic [DataWidth-1:0]                                data;
-  }
+                                           logic       parity;
+                                           code_word_t code_word;
+                                         }
 )(
   input  encoded_data_t data_i,
   output data_t         data_o,

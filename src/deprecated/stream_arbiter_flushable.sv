@@ -7,7 +7,7 @@
 module stream_arbiter_flushable #(
   parameter type    DATA_T  = logic,
   parameter integer N_INP   = -1,
-  parameter         ARBITER = "rr"
+  parameter string  ARBITER = "rr"
 ) (
   input  logic               clk_i,
   input  logic               rst_ni,
@@ -22,16 +22,16 @@ module stream_arbiter_flushable #(
   // synthesis translate_off
   initial $warning("Module '%m' is deprecated. Use 'cc_stream_arbiter_flushable' instead.");
   // synthesis translate_on
-  localparam cc_pkg::arb_mode_e CC_ARB_MODE =
+  localparam cc_pkg::arb_mode_e ArbMode =
     (ARBITER == "prio") ? cc_pkg::ARB_PRIO : cc_pkg::ARB_RR;
-  cc_stream_arbiter_flushable #(
-    .data_t  ( DATA_T      ),
-    .NumInp  ( N_INP       ),
-    .ArbMode ( CC_ARB_MODE )
-  ) i_cc_stream_arbiter_flushable (
+  cc_stream_arbiter #(
+    .data_t  ( DATA_T  ),
+    .NumInp  ( N_INP   ),
+    .ArbMode ( ArbMode )
+  ) i_cc_stream_arbiter (
     .clk_i       ( clk_i       ),
     .rst_ni      ( rst_ni      ),
-    .flush_i     ( flush_i     ),
+    .clr_i       ( flush_i     ),
     .inp_data_i  ( inp_data_i  ),
     .inp_valid_i ( inp_valid_i ),
     .inp_ready_o ( inp_ready_o ),
