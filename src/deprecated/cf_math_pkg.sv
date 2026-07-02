@@ -11,7 +11,7 @@ package cf_math_pkg;
     // synopsys translate_off
     $warning("Package 'cf_math_pkg' is deprecated. Use 'cc_pkg' instead.");
     // synopsys translate_on
-    return cc_pkg::ceil_div(dividend, divisor);
+    return integer'(cc_pkg::ceil_div($unsigned(dividend), $unsigned(divisor)));
   endfunction
 
   function automatic integer unsigned idx_width (input integer unsigned num_idx);
