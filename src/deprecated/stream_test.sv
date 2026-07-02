@@ -2,7 +2,7 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 
-// Deprecated: use cc_stream_test instead.
+// Deprecated: use cc_test_pkg::cc_stream_driver instead.
 // Stream test package using the deprecated STREAM_DV interface name.
 package stream_test;
 
