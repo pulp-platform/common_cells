@@ -43,8 +43,11 @@
 /// reset-domain when you assert the reset (the deassertion synchronizer doen't
 /// help here).
 ///
-/// CONSTRAINT: See the constraints for `cc_cdc_2phase`. An additional maximum
-/// delay path needs to be specified from fifo_data_q to dst_data_o.
+/// CONSTRAINT: Requires max_delay of min_period(src_clk_i, dst_clk_i) through
+/// async_wptr_req, async_wptr_ack, async_wptr_data, async_rptr_req,
+/// async_rptr_ack, async_rptr_data, and async_data. The async_wptr_* and
+/// async_rptr_* signals are the actual pointer handshakes, while async_data is
+/// the FIFO storage exposed from the source domain to the destination domain.
 module cc_cdc_fifo_2phase #(
   /// The data type of the payload transported by the FIFO.
   parameter type data_t = logic,
@@ -66,92 +69,244 @@ module cc_cdc_fifo_2phase #(
   input  logic  dst_ready_i
 );
 
+  localparam int unsigned PtrWidth = LogDepth+1;
+  typedef logic [PtrWidth-1:0] pointer_t;
+
+  data_t [2**LogDepth-1:0] async_data;
+  logic async_wptr_req;
+  logic async_wptr_ack;
+  pointer_t async_wptr_data;
+  logic async_rptr_req;
+  logic async_rptr_ack;
+  pointer_t async_rptr_data;
+
+  cc_cdc_fifo_2phase_src #(
+    .data_t     ( data_t     ),
+    .LogDepth   ( LogDepth   ),
+    .SyncStages ( SyncStages )
+  ) i_src (
+    .src_rst_ni   ( src_rst_ni  ),
+    .src_clk_i    ( src_clk_i   ),
+    .src_data_i   ( src_data_i  ),
+    .src_valid_i  ( src_valid_i ),
+    .src_ready_o  ( src_ready_o ),
+
+    (* async *) .async_data_o      ( async_data       ),
+    (* async *) .async_wptr_req_o  ( async_wptr_req   ),
+    (* async *) .async_wptr_ack_i  ( async_wptr_ack   ),
+    (* async *) .async_wptr_data_o ( async_wptr_data  ),
+    (* async *) .async_rptr_req_i  ( async_rptr_req   ),
+    (* async *) .async_rptr_ack_o  ( async_rptr_ack   ),
+    (* async *) .async_rptr_data_i ( async_rptr_data  )
+  );
+
+  cc_cdc_fifo_2phase_dst #(
+    .data_t     ( data_t     ),
+    .LogDepth   ( LogDepth   ),
+    .SyncStages ( SyncStages )
+  ) i_dst (
+    .dst_rst_ni   ( dst_rst_ni  ),
+    .dst_clk_i    ( dst_clk_i   ),
+    .dst_data_o   ( dst_data_o  ),
+    .dst_valid_o  ( dst_valid_o ),
+    .dst_ready_i  ( dst_ready_i ),
+
+    (* async *) .async_data_i      ( async_data       ),
+    (* async *) .async_wptr_req_i  ( async_wptr_req   ),
+    (* async *) .async_wptr_ack_o  ( async_wptr_ack   ),
+    (* async *) .async_wptr_data_i ( async_wptr_data  ),
+    (* async *) .async_rptr_req_o  ( async_rptr_req   ),
+    (* async *) .async_rptr_ack_i  ( async_rptr_ack   ),
+    (* async *) .async_rptr_data_o ( async_rptr_data  )
+  );
+
   // Check the invariants.
   `ifndef COMMON_CELLS_ASSERTS_OFF
   `ASSERT_INIT(log_depth_0, LogDepth > 0)
   `ASSERT_INIT(sync_stages_gt_2, SyncStages >= 2)
   `endif
 
+endmodule
+
+
+/// Source side for the 2-phase CDC FIFO.
+module cc_cdc_fifo_2phase_src #(
+  parameter type data_t = logic,
+  parameter int unsigned LogDepth = 3,
+  parameter int unsigned SyncStages = 2
+)(
+  input  logic  src_rst_ni,
+  input  logic  src_clk_i,
+  input  data_t src_data_i,
+  input  logic  src_valid_i,
+  output logic  src_ready_o,
+
+  output data_t [2**LogDepth-1:0] async_data_o,
+  output logic                    async_wptr_req_o,
+  input  logic                    async_wptr_ack_i,
+  output logic [LogDepth:0]       async_wptr_data_o,
+  input  logic                    async_rptr_req_i,
+  output logic                    async_rptr_ack_o,
+  input  logic [LogDepth:0]       async_rptr_data_i
+);
+
   localparam int unsigned PtrWidth = LogDepth+1;
   typedef logic [PtrWidth-1:0] pointer_t;
   typedef logic [LogDepth-1:0] index_t;
 
-  localparam pointer_t PtrFull  = (1 << LogDepth);
-  localparam pointer_t PtrEmpty = '0;
+  localparam pointer_t PtrFull = (1 << LogDepth);
 
-  // Allocate the registers for the FIFO memory with its separate write and read
-  // ports. The FIFO has the following ports:
-  //
-  // - write: fifo_widx, fifo_wdata, fifo_write, src_clk_i
-  // - read: fifo_ridx, fifo_rdata
-  index_t fifo_widx, fifo_ridx;
-  logic fifo_write, fifo_read;
-  data_t fifo_wdata, fifo_rdata;
-  data_t fifo_data_q [2**LogDepth];
+  index_t fifo_widx;
+  logic fifo_write;
+  data_t [2**LogDepth-1:0] fifo_data_q;
 
-  assign fifo_rdata = fifo_data_q[fifo_ridx];
+  pointer_t src_wptr_q;
+  pointer_t src_rptr;
 
-  for (genvar i = 0; i < 2**LogDepth; i++) begin : g_word
+  if (SyncStages < 2) begin : gen_sync_stage_assertion
+    $error("A minimum of 2 synchronizer stages is required for proper functionality.");
+  end
+
+  assign fifo_widx = src_wptr_q[LogDepth-1:0];
+  assign fifo_write = src_valid_i && src_ready_o;
+  assign async_data_o = fifo_data_q;
+
+  for (genvar i = 0; i < 2**LogDepth; i++) begin : gen_word
     always_ff @(posedge src_clk_i, negedge src_rst_ni) begin
-      if (!src_rst_ni)
+      if (!src_rst_ni) begin
         fifo_data_q[i] <= data_t'('0);
-      else if (fifo_write && fifo_widx == i)
-        fifo_data_q[i] <= fifo_wdata;
+      end else if (fifo_write && (fifo_widx == i)) begin
+        fifo_data_q[i] <= src_data_i;
+      end
     end
   end
 
-  // Allocate the read and write pointers in the source and destination domain.
-  pointer_t src_wptr_q, dst_wptr, src_rptr, dst_rptr_q;
-
   `FFL(src_wptr_q, src_wptr_q + 1, fifo_write, '0, src_clk_i, src_rst_ni)
-  `FFL(dst_rptr_q, dst_rptr_q + 1, fifo_read,  '0, dst_clk_i, dst_rst_ni)
 
   // The pointers into the FIFO are one bit wider than the actual address into
   // the FIFO. This makes detecting critical states very simple: if all but the
   // topmost bit of rptr and wptr agree, the FIFO is in a critical state. If the
   // topmost bit is equal, the FIFO is empty, otherwise it is full.
   assign src_ready_o = ((src_wptr_q ^ src_rptr) != PtrFull);
+
+  cc_cdc_2phase_src #(
+    .data_t     ( pointer_t  ),
+    .SyncStages ( SyncStages )
+  ) i_cdc_wptr_src (
+    .rst_ni       ( src_rst_ni        ),
+    .clk_i        ( src_clk_i         ),
+    .data_i       ( src_wptr_q        ),
+    .valid_i      ( 1'b1              ),
+    .ready_o      (                   ),
+    .async_req_o  ( async_wptr_req_o  ),
+    .async_ack_i  ( async_wptr_ack_i  ),
+    .async_data_o ( async_wptr_data_o )
+  );
+
+  cc_cdc_2phase_dst #(
+    .data_t     ( pointer_t  ),
+    .SyncStages ( SyncStages )
+  ) i_cdc_rptr_dst (
+    .rst_ni       ( src_rst_ni        ),
+    .clk_i        ( src_clk_i         ),
+    .data_o       ( src_rptr          ),
+    .valid_o      (                   ),
+    .ready_i      ( 1'b1              ),
+    .async_req_i  ( async_rptr_req_i  ),
+    .async_ack_o  ( async_rptr_ack_o  ),
+    .async_data_i ( async_rptr_data_i )
+  );
+
+  // Check the invariants.
+  `ifndef COMMON_CELLS_ASSERTS_OFF
+  `ASSERT_INIT(log_depth_0, LogDepth > 0)
+  `ASSERT_INIT(sync_stages_gt_2, SyncStages >= 2)
+  `endif
+
+endmodule
+
+
+/// Destination side for the 2-phase CDC FIFO.
+module cc_cdc_fifo_2phase_dst #(
+  parameter type data_t = logic,
+  parameter int unsigned LogDepth = 3,
+  parameter int unsigned SyncStages = 2
+)(
+  input  logic  dst_rst_ni,
+  input  logic  dst_clk_i,
+  output data_t dst_data_o,
+  output logic  dst_valid_o,
+  input  logic  dst_ready_i,
+
+  input  data_t [2**LogDepth-1:0] async_data_i,
+  input  logic                    async_wptr_req_i,
+  output logic                    async_wptr_ack_o,
+  input  logic [LogDepth:0]       async_wptr_data_i,
+  output logic                    async_rptr_req_o,
+  input  logic                    async_rptr_ack_i,
+  output logic [LogDepth:0]       async_rptr_data_o
+);
+
+  localparam int unsigned PtrWidth = LogDepth+1;
+  typedef logic [PtrWidth-1:0] pointer_t;
+  typedef logic [LogDepth-1:0] index_t;
+
+  localparam pointer_t PtrEmpty = '0;
+
+  index_t fifo_ridx;
+  data_t fifo_rdata;
+
+  pointer_t dst_wptr;
+  pointer_t dst_rptr_q;
+
+  if (SyncStages < 2) begin : gen_sync_stage_assertion
+    $error("A minimum of 2 synchronizer stages is required for proper functionality.");
+  end
+
+  assign fifo_ridx = dst_rptr_q[LogDepth-1:0];
+  assign fifo_rdata = async_data_i[fifo_ridx];
+  assign dst_data_o = fifo_rdata;
+
+  `FFL(dst_rptr_q, dst_rptr_q + 1, dst_valid_o && dst_ready_i, '0, dst_clk_i, dst_rst_ni)
+
+  // The pointers into the FIFO are one bit wider than the actual address into
+  // the FIFO. This makes detecting critical states very simple: if all but the
+  // topmost bit of rptr and wptr agree, the FIFO is in a critical state. If the
+  // topmost bit is equal, the FIFO is empty, otherwise it is full.
   assign dst_valid_o = ((dst_rptr_q ^ dst_wptr) != PtrEmpty);
 
-  // Transport the read and write pointers across the clock domain boundary.
-  cc_cdc_2phase #(
+  cc_cdc_2phase_dst #(
     .data_t     ( pointer_t  ),
     .SyncStages ( SyncStages )
-  ) i_cdc_wptr (
-    .src_rst_ni  ( src_rst_ni ),
-    .src_clk_i   ( src_clk_i  ),
-    .src_data_i  ( src_wptr_q ),
-    .src_valid_i ( 1'b1       ),
-    .src_ready_o (            ),
-    .dst_rst_ni  ( dst_rst_ni ),
-    .dst_clk_i   ( dst_clk_i  ),
-    .dst_data_o  ( dst_wptr   ),
-    .dst_valid_o (            ),
-    .dst_ready_i ( 1'b1       )
+  ) i_cdc_wptr_dst (
+    .rst_ni       ( dst_rst_ni        ),
+    .clk_i        ( dst_clk_i         ),
+    .data_o       ( dst_wptr          ),
+    .valid_o      (                   ),
+    .ready_i      ( 1'b1              ),
+    .async_req_i  ( async_wptr_req_i  ),
+    .async_ack_o  ( async_wptr_ack_o  ),
+    .async_data_i ( async_wptr_data_i )
   );
 
-  cc_cdc_2phase #(
+  cc_cdc_2phase_src #(
     .data_t     ( pointer_t  ),
     .SyncStages ( SyncStages )
-  ) i_cdc_rptr (
-    .src_rst_ni  ( dst_rst_ni ),
-    .src_clk_i   ( dst_clk_i  ),
-    .src_data_i  ( dst_rptr_q ),
-    .src_valid_i ( 1'b1       ),
-    .src_ready_o (            ),
-    .dst_rst_ni  ( src_rst_ni ),
-    .dst_clk_i   ( src_clk_i  ),
-    .dst_data_o  ( src_rptr   ),
-    .dst_valid_o (            ),
-    .dst_ready_i ( 1'b1       )
+  ) i_cdc_rptr_src (
+    .rst_ni       ( dst_rst_ni        ),
+    .clk_i        ( dst_clk_i         ),
+    .data_i       ( dst_rptr_q        ),
+    .valid_i      ( 1'b1              ),
+    .ready_o      (                   ),
+    .async_req_o  ( async_rptr_req_o  ),
+    .async_ack_i  ( async_rptr_ack_i  ),
+    .async_data_o ( async_rptr_data_o )
   );
 
-  // Drive the FIFO write and read ports.
-  assign fifo_widx  = src_wptr_q;
-  assign fifo_wdata = src_data_i;
-  assign fifo_write = src_valid_i && src_ready_o;
-  assign fifo_read  = dst_valid_o && dst_ready_i;
-  assign fifo_ridx  = dst_rptr_q;
-  assign dst_data_o = fifo_rdata;
+  // Check the invariants.
+  `ifndef COMMON_CELLS_ASSERTS_OFF
+  `ASSERT_INIT(log_depth_0, LogDepth > 0)
+  `ASSERT_INIT(sync_stages_gt_2, SyncStages >= 2)
+  `endif
 
 endmodule
