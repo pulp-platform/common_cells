@@ -29,9 +29,9 @@ module max_counter #(
   ) i_cc_max_counter (
     .clk_i         ( clk_i         ),
     .rst_ni        ( rst_ni        ),
-    .clr_i      ( clear_i       ),
-    .clr_cnt_i  ( 1'b0          ),
-    .clr_max_i  ( clear_max_i   ),
+    .clr_i         ( 1'b0          ),
+    .clr_cnt_i     ( clear_i       ),
+    .clr_max_i     ( clear_max_i   ),
     .en_i          ( en_i          ),
     .load_i        ( load_i        ),
     .down_i        ( down_i        ),
