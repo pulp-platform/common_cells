@@ -1,0 +1,64 @@
+# Copyright 2025 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: ci
+
+on:
+  push:
+    branches:
+      - 'v*-dev'
+      - master
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  slang-elaboration:
+    name: Slang Elaboration
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Install Bender
+        uses: pulp-platform/pulp-actions/bender-install@v2.5.1
+      - name: Generate Slang file list
+        run: |
+          bender checkout
+          bender script flist-plus -t lint --relative-path > sources.flist
+      - name: Run Slang elaboration
+        uses: pulp-platform/pulp-actions/slang@v2.5.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          reviewdog-name: slang-elaboration
+          slang-flags: "-f sources.flist"
+
+  verible-lint:
+    name: Verible Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Install Verible
+        run: |
+          set -euo pipefail
+          verible_version="v0.0-4080-ga0a8d8eb"
+          install_dir="${RUNNER_TEMP}/verible"
+          mkdir -p "${install_dir}"
+          curl -fsSL \
+            "https://github.com/chipsalliance/verible/releases/download/${verible_version}/verible-${verible_version}-linux-static-x86_64.tar.gz" \
+            | tar -xz -C "${install_dir}" --strip-components=1
+          echo "${install_dir}/bin" >> "${GITHUB_PATH}"
+      - name: Add Verible problem matcher
+        run: echo "::add-matcher::.github/verible-lint-matcher.json"
+      - name: Run Verible lint
+        run: .github/scripts/run_verible_lint.sh
+      - name: Remove Verible problem matcher
+        if: always()
+        run: echo "::remove-matcher owner=verible-lint-matcher::"

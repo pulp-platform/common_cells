@@ -4,6 +4,11 @@
 
 # Author: Nils Wistoff <nwistoff@iis.ee.ethz.ch>
 
+default:
+  before_script:
+    - source iis-env.sh
+    - export BENDER_NO_PROGRESS=true
+
 variables:
   VSIM: questa-2022.3 vsim -64
   VLIB: questa-2022.3 vlib
@@ -12,11 +17,27 @@ variables:
   VLOG: questa-2022.3 vlog -64
   VOPT: questa-2022.3 vopt -64
 
-stages:
-  - test
+vlt-elab:
+  timeout: 10min
+  script:
+    - make vlt-elab
+
+vsim-elab:
+  timeout: 10min
+  script:
+    - make vsim-elab
+
+vcs-elab:
+  timeout: 10min
+  script:
+    - make vcs-elab
+
+sg-lint:
+  timeout: 30min
+  script:
+    - make sg-lint -j 4
 
 .test-tpl:
-  stage: test
   needs:
   variables:
     TOPLEVEL: ""
@@ -24,40 +45,65 @@ stages:
     PARAM2: ""
   timeout: 10min
   script:
-    - bender checkout
-    - bender script vsim -t test > compile.tcl
-    - $VSIM -c -quiet -do 'source compile.tcl; quit'
-    - $VSIM -c $TOPLEVEL -voptargs="-timescale 1ns/100ps" -do "run -all" $PARAM1 $PARAM2
-    - (! grep -n "Error:" transcript)
+    - |
+      if [ "$TOPLEVEL" = "cc_cdc_fifo_clearable_tb" ]; then
+        ./test/simulate_cdc_fifo_gray_clearable.sh
+      elif [ "$TOPLEVEL" = "cc_cdc_2phase_clearable_tb" ]; then
+        ./test/simulate_cdc_clearable.sh
+      elif [ "$TOPLEVEL" = "cc_cdc_2phase_tb" ]; then
+        ./test/simulate_cdc_2phase.sh
+      elif [ "$TOPLEVEL" = "cc_cdc_4phase_tb" ]; then
+        ./test/simulate_cdc_4phase.sh
+      elif [ "$TOPLEVEL" = "cc_cdc_fifo_2phase_tb" ]; then
+        ./test/simulate_cdc_fifo_2phase.sh
+      elif [ "$TOPLEVEL" = "cc_cdc_fifo_gray_tb" ]; then
+        ./test/simulate_cdc_fifo_gray.sh
+      else
+        bender checkout
+        bender script vsim -t test -t tb > compile.tcl
+        $VSIM -c -quiet -do 'source compile.tcl; quit'
+        $VSIM -c $TOPLEVEL -voptargs="-timescale 1ns/100ps" -do "run -all" $PARAM1 $PARAM2
+        (! grep -n "Error:" transcript)
+      fi
 
 tests:
   extends: .test-tpl
   parallel:
     matrix:
       - TOPLEVEL:
-          - addr_decode_tb
-          - cb_filter_tb
-          # - cdc_fifo_clearable_tb
-          - clk_int_div_tb
-          - clk_int_div_static_tb
-          - clk_mux_glitch_free_tb
-          - id_queue_tb
-          - isochronous_crossing_tb
-          - passthrough_stream_fifo_tb
-          - popcount_tb
-          - rr_arb_tree_tb
-          - stream_omega_net_tb
-          - stream_register_tb
-          - stream_to_mem_tb
-          - stream_xbar_tb
-          - sub_per_hash_tb
-          - lossy_valid_to_stream_tb
-      - TOPLEVEL: graycode_tb
+          - cc_addr_decode_tb
+          - cc_cb_filter_tb
+          - cc_cdc_2phase_clearable_tb
+          - cc_cdc_2phase_tb
+          - cc_cdc_4phase_tb
+          - cc_cdc_fifo_2phase_tb
+          - cc_cdc_fifo_clearable_tb
+          - cc_cdc_fifo_gray_tb
+          - cc_clk_int_div_tb
+          - cc_clk_int_div_static_tb
+          - cc_clk_mux_glitch_free_tb
+          - cc_id_queue_tb
+          - cc_isochronous_crossing_tb
+          - cc_passthrough_stream_fifo_tb
+          - cc_popcount_tb
+          - cc_rr_arb_tree_tb
+          - cc_stream_omega_net_tb
+          - cc_stream_register_tb
+          - cc_stream_to_mem_tb
+          - cc_stream_xbar_tb
+          - cc_sub_per_hash_tb
+          - cc_lossy_valid_to_stream_tb
+      - TOPLEVEL: cc_graycode_tb
         PARAM1: [-GN=1, -GN=2, -GN=3, -GN=4, -GN=8, -GN=16]
-      - TOPLEVEL: fifo_tb
+      - TOPLEVEL: cc_fifo_tb
         PARAM1: [-GDEPTH=1, -GDEPTH=13, -GDEPTH=32 -GFALL_THROUGH=1]
-      # - TOPLEVEL: [cdc_2phase_tb, cdc_2phase_clearable_tb]
+      # - TOPLEVEL: [cc_cdc_2phase_tb, cc_cdc_2phase_clearable_tb]
       #   PARAM1: -GUNTIL=1000000
-      # - TOPLEVEL: cdc_fifo_tb
+      # - TOPLEVEL: cc_cdc_fifo_tb
       #   PARAM1: [-GDEPTH=1, -GDEPTH=2, -GDEPTH=3, -GDEPTH=4, -GDEPTH=5]
       #   PARAM2: [-GGRAY=0, -GGRAY=1]
+
+formal:
+  timeout: 30min
+  script:
+    - make -B -C formal cdc_reset_ctrlr_half.check cdc_reset_ctrlr_composed.check

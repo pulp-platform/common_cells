@@ -1,0 +1,120 @@
+// Copyright 2022 ETH Zurich and University of Bologna.
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+//
+// Thomas Benz <tbenz@ethz.ch>
+
+/// Optimal implementation of a stream FIFO based on the common cells modules.
+/// Selects the smaller and faster spill register if the depth is 2 and the FIFO if
+/// the depth is >2. Throws an error for the meaningless configurations depth 0 and 1.
+module cc_stream_fifo_optimal_wrap #(
+    /// Depth can be arbitrary from 2 to 2**32
+    parameter int unsigned Depth = 32'd8,
+    /// Type of the FIFO
+    parameter type data_t = logic,
+    /// Print information when the simulation launches
+    parameter bit PrintInfo = 1'b0,
+    // DO NOT OVERWRITE THIS PARAMETER
+    localparam int unsigned UsageWidth = cc_pkg::cnt_width(Depth)
+) (
+    input  logic                  clk_i,   // Clock
+    input  logic                  rst_ni,  // Asynchronous reset active low
+    input  logic                  clr_i,   // Synchronous clear active high; clears all sequential
+                                           // state.
+    input  logic                  flush_i, // Flush the fifo by draining its contents and clearing
+                                           // its pointers. Sufficient for most functional purposes.
+    output logic [UsageWidth-1:0] usage_o, // Fill pointer
+    // Input interface
+    input  data_t                 data_i,  // Data to push into the fifo
+    input  logic                  valid_i, // Input data valid
+    output logic                  ready_o, // Fifo is not full
+    // Output interface
+    output data_t                 data_o,  // Output data
+    output logic                  valid_o, // Fifo is not empty
+    input  logic                  ready_i  // Pop head from fifo
+);
+
+    //--------------------------------------
+    // Prevent Depth 0 and 1
+    //--------------------------------------
+    // Throw an error if depth is 0 or 1
+    `ifndef SYNTHESIS
+    if (Depth < 32'd2) begin : gen_fatal
+        initial begin
+            $fatal(1, "FIFO of depth %d does not make any sense!", Depth);
+        end
+    end
+    `endif
+
+    //--------------------------------------
+    // Spill register (depth 2)
+    //--------------------------------------
+    // Instantiate a spill register for depth 2
+    if (Depth == 32'd2) begin : gen_spill
+
+        // print info
+        `ifndef SYNTHESIS
+        if (PrintInfo) begin : gen_info
+            initial begin
+                $display("[%m] Instantiate spill register (of depth %d)", Depth);
+            end
+        end
+        `endif
+
+        // spill register
+        cc_spill_register_flushable #(
+            .data_t ( data_t ),
+            .Bypass ( 1'b0   )
+        ) i_spill_register_flushable (
+            .clk_i,
+            .rst_ni,
+            .clr_i,
+            .flush_i,
+            .valid_i,
+            .ready_o,
+            .data_i,
+            .valid_o,
+            .ready_i,
+            .data_o
+        );
+
+        // usage is not supported
+        assign usage_o = 'x;
+    end
+
+
+    //--------------------------------------
+    // FIFO register (depth 3+)
+    //--------------------------------------
+    // default to stream fifo
+    if (Depth > 32'd2) begin : gen_fifo
+
+        // print info
+        `ifndef SYNTHESIS
+        if (PrintInfo) begin : gen_info
+            initial begin
+                $info("[%m] Instantiate stream FIFO of depth %d", Depth);
+            end
+        end
+        `endif
+
+        // stream fifo
+        cc_stream_fifo #(
+            .Depth  ( Depth  ),
+            .data_t ( data_t )
+        ) i_stream_fifo (
+            .clk_i,
+            .rst_ni,
+            .clr_i,
+            .flush_i,
+            .usage_o,
+            .data_i,
+            .valid_i,
+            .ready_o,
+            .data_o,
+            .valid_o,
+            .ready_i
+        );
+    end
+
+endmodule : cc_stream_fifo_optimal_wrap

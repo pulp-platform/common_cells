@@ -1,0 +1,15 @@
+[options]
+mode prove
+depth 100
+
+[engines]
+smtbmc
+
+[script]
+read -formal cc_fifo.sv
+read -formal cc_fifo_properties.sv
+prep -top cc_fifo
+
+[files]
+cc_fifo_properties.sv
+../src/cc_fifo.sv

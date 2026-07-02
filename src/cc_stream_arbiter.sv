@@ -1,0 +1,82 @@
+// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright and related rights are licensed under the Solderpad Hardware
+// License, Version 0.51 (the "License"); you may not use this file except in
+// compliance with the License. You may obtain a copy of the License at
+// http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
+// or agreed to in writing, software, hardware and materials distributed under
+// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, either express or implied. See the License for the
+// specific language governing permissions and limitations under the License.
+
+// Stream arbiter: Arbitrates a parametrizable number of input streams (i.e., valid-ready
+// handshaking with dependency rules as in AXI4) to a single output stream.  Once `oup_valid_o` is
+// asserted, `oup_data_o` remains invariant until the output handshake has occurred.  The
+// arbitration scheme is fair round-robin tree, see `cc_rr_arb_tree` for details.
+
+module cc_stream_arbiter #(
+    parameter type               data_t  = logic, // Vivado requires a default value.
+    parameter int unsigned       NumInp  = 1,     // Synopsys DC requires a default value.
+    parameter cc_pkg::arb_mode_e ArbMode = cc_pkg::ARB_RR
+) (
+    input  logic               clk_i,  // Clock
+    input  logic               rst_ni, // Asynchronous reset active low
+    input  logic               clr_i,  // Synchronous clear active high
+
+    input  data_t [NumInp-1:0] inp_data_i,
+    input  logic  [NumInp-1:0] inp_valid_i,
+    output logic  [NumInp-1:0] inp_ready_o,
+
+    output data_t              oup_data_o,
+    output logic               oup_valid_o,
+    input  logic               oup_ready_i
+);
+
+  if (ArbMode == cc_pkg::ARB_RR) begin : gen_rr_arb
+    cc_rr_arb_tree #(
+      .NumIn    (NumInp),
+      .data_t   (data_t),
+      .ExtPrio  (1'b0),
+      .AxiVldRdy(1'b1),
+      .LockIn   (1'b1)
+    ) i_arbiter (
+      .clk_i,
+      .rst_ni,
+      .clr_i,
+      .rr_i   ('0),
+      .req_i  (inp_valid_i),
+      .gnt_o  (inp_ready_o),
+      .data_i (inp_data_i),
+      .gnt_i  (oup_ready_i),
+      .req_o  (oup_valid_o),
+      .data_o (oup_data_o),
+      .idx_o  ()
+    );
+
+  end else if (ArbMode == cc_pkg::ARB_PRIO) begin : gen_prio_arb
+    cc_rr_arb_tree #(
+      .NumIn    (NumInp),
+      .data_t   (data_t),
+      .ExtPrio  (1'b1),
+      .AxiVldRdy(1'b1),
+      .LockIn   (1'b0)
+    ) i_arbiter (
+      .clk_i,
+      .rst_ni,
+      .clr_i,
+      .rr_i   ('0),
+      .req_i  (inp_valid_i),
+      .gnt_o  (inp_ready_o),
+      .data_i (inp_data_i),
+      .gnt_i  (oup_ready_i),
+      .req_o  (oup_valid_o),
+      .data_o (oup_data_o),
+      .idx_o  ()
+    );
+
+  end else begin : gen_arb_error
+    `ifndef SYNTHESIS
+    $fatal(1, "Invalid value for parameter 'ArbMode'!");
+    `endif
+  end
+
+endmodule
