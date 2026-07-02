@@ -2,7 +2,7 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 
-// Deprecated: use cc_sync instead.
+// Deprecated: use tc_sync from tech_cells_generic instead.
 
 module sync #(
   parameter int unsigned STAGES     = 2,
@@ -16,13 +16,13 @@ module sync #(
   // synthesis translate_off
   initial $warning("Module '%m' is deprecated. Use 'tc_sync' from 'tech_cells_generic' instead.");
   // synthesis translate_on
-  logic [STAGES-1:0] serial_q;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      serial_q <= {STAGES{ResetValue}};
-    end else begin
-      serial_q <= {serial_q[STAGES-2:0], serial_i};
-    end
-  end
-  assign serial_o = serial_q[STAGES-1];
+  tc_sync #(
+    .Stages     ( STAGES     ),
+    .ResetValue ( ResetValue )
+  ) i_tc_sync (
+    .clk_i,
+    .rst_ni,
+    .serial_i,
+    .serial_o
+  );
 endmodule
