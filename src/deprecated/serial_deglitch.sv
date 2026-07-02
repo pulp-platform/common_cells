@@ -2,7 +2,7 @@
 // Solderpad Hardware License, Version 0.51, see LICENSE for details.
 // SPDX-License-Identifier: SHL-0.51
 
-// Deprecated: use cc_serial_deglitch instead.
+// Deprecated
 
 module serial_deglitch #(
   parameter int unsigned SIZE = 4
@@ -14,17 +14,33 @@ module serial_deglitch #(
   output logic q_o
 );
   // synthesis translate_off
-  initial $warning("Module '%m' is deprecated. Use 'cc_serial_deglitch' instead.");
+  initial $warning("Module '%m' is deprecated.");
   // synthesis translate_on
-  cc_serial_deglitch #(
-    .Threshold ( SIZE )
-  ) i_cc_serial_deglitch (
-    .clk_i   ( clk_i  ),
-    .rst_ni  ( rst_ni ),
-    .clr_i   ( 1'b0   ),
-    .restart_i ( 1'b0   ),
-    .en_i    ( en_i   ),
-    .d_i     ( d_i    ),
-    .q_o     ( q_o    )
-  );
+
+  logic [SIZE-1:0] count_q;
+  logic q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (~rst_ni) begin
+      count_q <= '0;
+      q       <= 1'b0;
+    end else begin
+      if (en_i) begin
+        if (d_i == 1'b1 && count_q != SIZE[SIZE-1:0]) begin
+          count_q <= count_q + 1;
+        end else if (d_i == 1'b0 && count_q != SIZE[SIZE-1:0]) begin
+          count_q <= count_q - 1;
+        end
+      end
+    end
+  end
+
+  // output process
+  always_comb begin
+    if (count_q == SIZE[SIZE-1:0]) begin
+      q_o = 1'b1;
+    end else if (count_q == 0) begin
+      q_o = 1'b0;
+    end
+  end
 endmodule
