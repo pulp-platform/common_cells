@@ -108,9 +108,9 @@ module cc_cdc_fifo_gray_clearable #(
   /// The FIFO's depth given as 2**LogDepth.
   parameter int unsigned LogDepth = 3,
   /// The number of synchronization registers to insert on the async pointers
-  /// between the FIFOs. If ClearOnAsyncReset is enabled, we need at least 4
+  /// between the FIFOs. If ClearOnAsyncReset is enabled, we need at least 3
   /// synchronizer stages to provide the clear synchronizer lower latency than
-  /// the async reset. I.e. if ClearOnAsyncReset==1 -> SyncStages >= 4 else
+  /// the async reset. I.e. if ClearOnAsyncReset==1 -> SyncStages >= 3 else
   /// SyncStages >= 2.
   parameter int unsigned SyncStages = 3,
   parameter bit ClearOnAsyncReset = 1
@@ -208,7 +208,8 @@ module cc_cdc_fifo_gray_clearable #(
   // Synchronize the clear and reset signaling in both directions (see header of
   // the cc_cdc_reset_ctrlr module for more details.)
   cc_cdc_reset_ctrlr #(
-    .SyncStages(SyncStages-1)
+    .SyncStages        ( SyncStages-1      ),
+    .ClearOnAsyncReset ( ClearOnAsyncReset )
   ) i_cdc_reset_ctrlr (
     .a_clk_i         ( src_clk_i           ),
     .a_rst_ni        ( src_rst_ni          ),
