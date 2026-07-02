@@ -6,12 +6,17 @@
 
 module addr_decode #(
   parameter int unsigned NoIndices = 32'd0,
-  parameter int unsigned NoRules   = 32'd0,
+  parameter int unsigned NoRules   = 32'd1,
   parameter type         addr_t    = logic,
-  parameter type         rule_t    = logic,
   parameter bit          Napot     = 0,
   parameter int unsigned IdxWidth  = cc_pkg::idx_width(NoIndices),
-  parameter type         idx_t     = logic [IdxWidth-1:0]
+  parameter type         idx_t     = logic [IdxWidth-1:0],
+  // verilog_lint: waive typedef-structs-unions
+  parameter type         rule_t    = struct packed {
+    idx_t  idx;
+    addr_t start_addr;
+    addr_t end_addr;
+  }
 ) (
   input  addr_t               addr_i,
   input  rule_t [NoRules-1:0] addr_map_i,

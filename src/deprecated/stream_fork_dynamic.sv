@@ -5,7 +5,7 @@
 // Deprecated: use cc_stream_fork_dynamic instead.
 
 module stream_fork_dynamic #(
-  parameter int unsigned N_OUP = 32'd0
+  parameter int unsigned N_OUP = 32'd1
 ) (
   input  logic             clk_i,
   input  logic             rst_ni,

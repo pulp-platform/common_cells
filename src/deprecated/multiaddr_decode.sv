@@ -5,10 +5,17 @@
 // Deprecated: use cc_multiaddr_decode instead.
 
 module multiaddr_decode #(
-  parameter int unsigned NoIndices = 32'd0,
-  parameter int unsigned NoRules   = 32'd0,
+  parameter int unsigned NoIndices = 32'd1,
+  parameter int unsigned NoRules   = 32'd1,
   parameter type         addr_t    = logic,
-  parameter type         rule_t    = logic
+  parameter int unsigned IdxWidth  = cc_pkg::idx_width(NoIndices),
+  parameter type         idx_t     = logic [IdxWidth-1:0],
+  // verilog_lint: waive typedef-structs-unions
+  parameter type         rule_t    = struct packed {
+    idx_t  idx;
+    addr_t addr;
+    addr_t mask;
+  }
 ) (
   input  addr_t                 addr_i,
   input  addr_t                 mask_i,
@@ -26,6 +33,8 @@ module multiaddr_decode #(
     .NoIndices ( NoIndices ),
     .NoRules   ( NoRules   ),
     .addr_t    ( addr_t    ),
+    .IdxWidth  ( IdxWidth  ),
+    .idx_t     ( idx_t     ),
     .rule_t    ( rule_t    )
   ) i_cc_multiaddr_decode (
     .addr_i           ( addr_i      ),

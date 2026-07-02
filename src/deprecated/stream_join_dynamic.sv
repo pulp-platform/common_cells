@@ -5,7 +5,7 @@
 // Deprecated: use cc_stream_join_dynamic instead.
 
 module stream_join_dynamic #(
-  parameter int unsigned N_INP = 32'd0
+  parameter int unsigned N_INP = 32'd1
 ) (
   input  logic [N_INP-1:0] inp_valid_i,
   output logic [N_INP-1:0] inp_ready_o,

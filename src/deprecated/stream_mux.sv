@@ -6,7 +6,7 @@
 
 module stream_mux #(
   parameter type    DATA_T    = logic,
-  parameter integer N_INP     = 0,
+  parameter integer N_INP     = 1,
   // Derived parameter (kept for backward compatibility, do not override)
   parameter integer SEL_WIDTH = cc_pkg::idx_width(N_INP)
 ) (

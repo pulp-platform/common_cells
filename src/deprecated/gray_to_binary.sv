@@ -5,7 +5,7 @@
 // Deprecated: use cc_gray_to_binary instead.
 
 module gray_to_binary #(
-  parameter int N = -1
+  parameter int N = 1
 ) (
   input  logic [N-1:0] A,
   output logic [N-1:0] Z

@@ -5,10 +5,10 @@
 // Deprecated: use cc_mem_to_banks_detailed instead.
 
 module mem_to_banks_detailed #(
-  parameter int unsigned AddrWidth  = 32'd0,
-  parameter int unsigned DataWidth  = 32'd0,
-  parameter int unsigned WUserWidth = 32'd0,
-  parameter int unsigned RUserWidth = 32'd0,
+  parameter int unsigned AddrWidth  = 32'd1,
+  parameter int unsigned DataWidth  = 32'd8,
+  parameter int unsigned WUserWidth = 32'd1,
+  parameter int unsigned RUserWidth = 32'd1,
   parameter int unsigned NumBanks   = 32'd1,
   parameter bit          HideStrb   = 1'b0,
   parameter int unsigned MaxTrans   = 32'd1,

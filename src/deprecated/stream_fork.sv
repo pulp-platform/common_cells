@@ -5,7 +5,7 @@
 // Deprecated: use cc_stream_fork instead.
 
 module stream_fork #(
-  parameter int unsigned N_OUP = 0
+  parameter int unsigned N_OUP = 1
 ) (
   input  logic             clk_i,
   input  logic             rst_ni,
