@@ -42,7 +42,8 @@
 `include "common_cells/registers.svh"
 
 module cc_cdc_2phase #(
-  parameter type data_t = logic
+  parameter type data_t = logic,
+  parameter int unsigned SyncStages = 2
 )(
   input  logic  src_rst_ni,
   input  logic  src_clk_i,
@@ -62,8 +63,15 @@ module cc_cdc_2phase #(
   (* dont_touch = "true" *) logic  async_ack;
   (* dont_touch = "true" *) data_t async_data;
 
+  if (SyncStages < 2) begin : gen_sync_stage_assertion
+    $error("A minimum of 2 synchronizer stages is required for proper functionality.");
+  end
+
   // The sender in the source domain.
-  cc_cdc_2phase_src #(.data_t(data_t)) i_src (
+  cc_cdc_2phase_src #(
+    .data_t     ( data_t     ),
+    .SyncStages ( SyncStages )
+  ) i_src (
     .rst_ni       ( src_rst_ni  ),
     .clk_i        ( src_clk_i   ),
     .data_i       ( src_data_i  ),
@@ -75,7 +83,10 @@ module cc_cdc_2phase #(
   );
 
   // The receiver in the destination domain.
-  cc_cdc_2phase_dst #(.data_t(data_t)) i_dst (
+  cc_cdc_2phase_dst #(
+    .data_t     ( data_t     ),
+    .SyncStages ( SyncStages )
+  ) i_dst (
     .rst_ni       ( dst_rst_ni  ),
     .clk_i        ( dst_clk_i   ),
     .data_o       ( dst_data_o  ),
@@ -91,7 +102,8 @@ endmodule
 
 /// Half of the two-phase clock domain crossing located in the source domain.
 module cc_cdc_2phase_src #(
-  parameter type data_t = logic
+  parameter type data_t = logic,
+  parameter int unsigned SyncStages = 2
 )(
   input  logic  rst_ni,
   input  logic  clk_i,
@@ -104,23 +116,33 @@ module cc_cdc_2phase_src #(
 );
 
   (* dont_touch = "true" *)
-  logic req_src_q, ack_src_q, ack_q;
+  logic req_src_q, ack_synced;
   (* dont_touch = "true" *)
   data_t data_src_q;
   logic src_accept;
 
   assign src_accept = valid_i && ready_o;
 
+  if (SyncStages < 2) begin : gen_sync_stage_assertion
+    $error("A minimum of 2 synchronizer stages is required for proper functionality.");
+  end
+
+  // Synchronize the async ACK.
+  tc_sync #(
+    .Stages ( SyncStages )
+  ) i_sync (
+    .clk_i,
+    .rst_ni,
+    .serial_i ( async_ack_i ),
+    .serial_o ( ack_synced  )
+  );
+
   // The req_src and data_src registers change when a new data item is accepted.
   `FFL(req_src_q,  ~req_src_q, src_accept, 1'b0,       clk_i, rst_ni)
   `FFL(data_src_q, data_i,     src_accept, data_t'('0), clk_i, rst_ni)
 
-  // The ack_src and ack registers act as synchronization stages.
-  `FF(ack_src_q, async_ack_i, 1'b0, clk_i, rst_ni)
-  `FF(ack_q,     ack_src_q,   1'b0, clk_i, rst_ni)
-
   // Output assignments.
-  assign ready_o = (req_src_q == ack_q);
+  assign ready_o = (req_src_q == ack_synced);
   assign async_req_o = req_src_q;
   assign async_data_o = data_src_q;
 
@@ -130,7 +152,8 @@ endmodule
 /// Half of the two-phase clock domain crossing located in the destination
 /// domain.
 module cc_cdc_2phase_dst #(
-  parameter type data_t = logic
+  parameter type data_t = logic,
+  parameter int unsigned SyncStages = 2
 )(
   input  logic  rst_ni,
   input  logic  clk_i,
@@ -143,14 +166,27 @@ module cc_cdc_2phase_dst #(
 );
 
   (* dont_touch = "true" *)
-  (* async_reg = "true" *)
-  logic req_dst_q, req_q0, req_q1, ack_dst_q;
+  logic req_synced, req_synced_q1, ack_dst_q;
   (* dont_touch = "true" *)
   data_t data_dst_q;
   logic dst_accept, dst_data_load;
 
   assign dst_accept   = valid_o && ready_i;
-  assign dst_data_load = req_q0 != req_q1 && !valid_o;
+  assign dst_data_load = req_synced != req_synced_q1 && !valid_o;
+
+  if (SyncStages < 2) begin : gen_sync_stage_assertion
+    $error("A minimum of 2 synchronizer stages is required for proper functionality.");
+  end
+
+  // Synchronize the async request.
+  tc_sync #(
+    .Stages ( SyncStages )
+  ) i_sync (
+    .clk_i,
+    .rst_ni,
+    .serial_i ( async_req_i ),
+    .serial_o ( req_synced  )
+  );
 
   // The ack_dst register changes when a new data item is accepted.
   `FFL(ack_dst_q, ~ack_dst_q, dst_accept, 1'b0, clk_i, rst_ni)
@@ -159,13 +195,11 @@ module cc_cdc_2phase_dst #(
   // indicated by the async_req line changing levels.
   `FFL(data_dst_q, async_data_i, dst_data_load, data_t'('0), clk_i, rst_ni)
 
-  // The req_dst and req registers act as synchronization stages.
-  `FF(req_dst_q, async_req_i, 1'b0, clk_i, rst_ni)
-  `FF(req_q0,    req_dst_q,   1'b0, clk_i, rst_ni)
-  `FF(req_q1,    req_q0,      1'b0, clk_i, rst_ni)
+  // Delayed version of the synchronized request for transition detection.
+  `FF(req_synced_q1, req_synced, 1'b0, clk_i, rst_ni)
 
   // Output assignments.
-  assign valid_o = (ack_dst_q != req_q1);
+  assign valid_o = (ack_dst_q != req_synced_q1);
   assign data_o = data_dst_q;
   assign async_ack_o = ack_dst_q;
 
