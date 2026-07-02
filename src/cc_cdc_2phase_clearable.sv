@@ -114,13 +114,13 @@ module cc_cdc_2phase_clearable #(
   end
 
 
-  // The source-domain wrapper owns the payload CDC half, local clear/isolate
+  // The source side owns the payload CDC half, local clear/isolate
   // acknowledgements, and the local reset-controller half.
-  cc_cdc_2phase_src_domain_clearable #(
+  cc_cdc_2phase_clearable_src #(
     .data_t            ( data_t            ),
     .SyncStages        ( SyncStages        ),
     .ClearOnAsyncReset ( ClearOnAsyncReset )
-  ) i_src_domain (
+  ) i_src (
     .src_rst_ni                ( src_rst_ni                     ),
     .src_clk_i                 ( src_clk_i                      ),
     .src_clear_i               ( src_clear_i                    ),
@@ -140,13 +140,13 @@ module cc_cdc_2phase_clearable #(
   );
 
 
-  // The destination-domain wrapper owns the payload CDC half, local
+  // The destination side owns the payload CDC half, local
   // clear/isolate acknowledgements, and the local reset-controller half.
-  cc_cdc_2phase_dst_domain_clearable #(
+  cc_cdc_2phase_clearable_dst #(
     .data_t            ( data_t            ),
     .SyncStages        ( SyncStages        ),
     .ClearOnAsyncReset ( ClearOnAsyncReset )
-  ) i_dst_domain (
+  ) i_dst (
     .dst_rst_ni                ( dst_rst_ni                     ),
     .dst_clk_i                 ( dst_clk_i                      ),
     .dst_clear_i               ( dst_clear_i                    ),
@@ -174,8 +174,8 @@ module cc_cdc_2phase_clearable #(
 endmodule
 
 
-/// Destination-domain wrapper for the clearable two-phase CDC.
-module cc_cdc_2phase_dst_domain_clearable #(
+/// Destination side for the clearable two-phase CDC.
+module cc_cdc_2phase_clearable_dst #(
   parameter type data_t = logic,
   parameter int unsigned SyncStages = 2,
   parameter bit ClearOnAsyncReset = 1
@@ -263,8 +263,8 @@ module cc_cdc_2phase_dst_domain_clearable #(
 endmodule
 
 
-/// Source-domain wrapper for the clearable two-phase CDC.
-module cc_cdc_2phase_src_domain_clearable #(
+/// Source side for the clearable two-phase CDC.
+module cc_cdc_2phase_clearable_src #(
   parameter type data_t = logic,
   parameter int unsigned SyncStages = 2,
   parameter bit ClearOnAsyncReset = 1
