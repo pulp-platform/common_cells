@@ -50,7 +50,7 @@ sg-lint:
         ./test/simulate_cdc_clearable.sh
       else
         bender checkout
-        bender script vsim -t test > compile.tcl
+        bender script vsim -t test -t tb > compile.tcl
         $VSIM -c -quiet -do 'source compile.tcl; quit'
         $VSIM -c $TOPLEVEL -voptargs="-timescale 1ns/100ps" -do "run -all" $PARAM1 $PARAM2
         (! grep -n "Error:" transcript)
