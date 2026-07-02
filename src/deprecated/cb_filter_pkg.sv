@@ -9,6 +9,6 @@ package cb_filter_pkg;
 
   typedef cc_pkg::cb_seed_t cb_seed_t;
 
-  localparam cb_seed_t [2:0] EgSeeds = cc_pkg::cb_eg_seeds;
+  localparam cb_seed_t [2:0] EgSeeds = cc_pkg::CbEgSeeds;
 
 endpackage
