@@ -725,17 +725,6 @@ module cc_cdc_fifo_clearable_tb_delay_injector #(
   localparam int unsigned ClearPhaseWidth = $bits(cdc_clear_seq_phase_e);
   typedef logic [31:0] data_t;
 
-  logic        s_src_clear_req;
-  logic        s_src_clear_ack_q;
-  logic        s_src_ready;
-  logic        s_src_isolate_req;
-  logic        s_src_isolate_ack_q;
-  logic        s_dst_clear_req;
-  logic        s_dst_clear_ack_q;
-  logic        s_dst_valid;
-  logic        s_dst_isolate_req;
-  logic        s_dst_isolate_ack_q;
-
   data_t [2**LOG_DEPTH-1:0] async_data_from_src;
   data_t [2**LOG_DEPTH-1:0] async_data_to_dst;
   logic [PtrWidth-1:0] async_wptr_from_src;
@@ -772,25 +761,31 @@ module cc_cdc_fifo_clearable_tb_delay_injector #(
   assign async_reset_dst2src_next_phase_to_src =
       cdc_clear_seq_phase_e'(async_reset_dst2src_next_phase_to_src_bits);
 
-  // Source and destination FIFO halves are connected through delayed async data
-  // and gray pointer channels below.
-  cc_cdc_fifo_gray_src_clearable #(
-    .data_t     ( data_t      ),
-    .LogDepth   ( LOG_DEPTH   ),
-    .SyncStages ( SYNC_STAGES )
+  // Source and destination sides are connected through delayed async
+  // data, gray pointer, and clear-controller channels below.
+  cc_cdc_fifo_gray_clearable_src #(
+    .data_t            ( data_t               ),
+    .LogDepth          ( LOG_DEPTH            ),
+    .SyncStages        ( SYNC_STAGES          ),
+    .ClearOnAsyncReset ( CLEAR_ON_ASYNC_RESET )
   ) i_src (
     .src_rst_ni,
     .src_clk_i,
-    .src_clear_i ( s_src_clear_req                  ),
+    .src_clear_i,
+    .src_clear_pending_o,
     .src_data_i,
-    .src_valid_i ( src_valid_i & !s_src_isolate_req ),
-    .src_ready_o ( s_src_ready                      ),
-    .async_data_o ( async_data_from_src ),
-    .async_wptr_o ( async_wptr_from_src ),
-    .async_rptr_i ( async_rptr_to_src   )
+    .src_valid_i,
+    .src_ready_o,
+    .async_data_o              ( async_data_from_src                   ),
+    .async_wptr_o              ( async_wptr_from_src                   ),
+    .async_rptr_i              ( async_rptr_to_src                     ),
+    .async_reset_next_phase_o  ( async_reset_src2dst_next_phase_from_src ),
+    .async_reset_req_o         ( async_reset_src2dst_req_from_src        ),
+    .async_reset_ack_i         ( async_reset_src2dst_ack_to_src          ),
+    .async_reset_next_phase_i  ( async_reset_dst2src_next_phase_to_src   ),
+    .async_reset_req_i         ( async_reset_dst2src_req_to_src          ),
+    .async_reset_ack_o         ( async_reset_dst2src_ack_from_src        )
   );
-
-  assign src_ready_o = s_src_ready & !s_src_isolate_req;
 
   for (genvar i = 0; i < 2**LOG_DEPTH; i++) begin : gen_data_delay
     cc_cdc_fifo_clearable_tb_bus_delay #(
@@ -818,23 +813,29 @@ module cc_cdc_fifo_clearable_tb_delay_injector #(
     .out_o ( async_rptr_to_src   )
   );
 
-  cc_cdc_fifo_gray_dst_clearable #(
-    .data_t     ( data_t      ),
-    .LogDepth   ( LOG_DEPTH   ),
-    .SyncStages ( SYNC_STAGES )
+  cc_cdc_fifo_gray_clearable_dst #(
+    .data_t            ( data_t               ),
+    .LogDepth          ( LOG_DEPTH            ),
+    .SyncStages        ( SYNC_STAGES          ),
+    .ClearOnAsyncReset ( CLEAR_ON_ASYNC_RESET )
   ) i_dst (
     .dst_rst_ni,
     .dst_clk_i,
-    .dst_clear_i ( s_dst_clear_req                  ),
+    .dst_clear_i,
+    .dst_clear_pending_o,
     .dst_data_o,
-    .dst_valid_o ( s_dst_valid                      ),
-    .dst_ready_i ( dst_ready_i & !s_dst_isolate_req ),
-    .async_data_i ( async_data_to_dst   ),
-    .async_wptr_i ( async_wptr_to_dst   ),
-    .async_rptr_o ( async_rptr_from_dst )
+    .dst_valid_o,
+    .dst_ready_i,
+    .async_data_i              ( async_data_to_dst                    ),
+    .async_wptr_i              ( async_wptr_to_dst                    ),
+    .async_rptr_o              ( async_rptr_from_dst                  ),
+    .async_reset_next_phase_o  ( async_reset_dst2src_next_phase_from_dst ),
+    .async_reset_req_o         ( async_reset_dst2src_req_from_dst        ),
+    .async_reset_ack_i         ( async_reset_dst2src_ack_to_dst          ),
+    .async_reset_next_phase_i  ( async_reset_src2dst_next_phase_to_dst   ),
+    .async_reset_req_i         ( async_reset_src2dst_req_to_dst          ),
+    .async_reset_ack_o         ( async_reset_src2dst_ack_from_dst        )
   );
-
-  assign dst_valid_o = s_dst_valid & !s_dst_isolate_req;
 
   // Clear-controller async handshakes get the same delay model as the FIFO CDC
   // channels so clear sequencing is exercised under timing skew as well.
@@ -881,68 +882,5 @@ module cc_cdc_fifo_clearable_tb_delay_injector #(
     .in_i  ( async_reset_dst2src_next_phase_from_dst_bits ),
     .out_o ( async_reset_dst2src_next_phase_to_src_bits   )
   );
-
-  cc_cdc_reset_ctrlr_half #(
-    .SyncStages        ( SYNC_STAGES - 1      ),
-    .ClearOnAsyncReset ( CLEAR_ON_ASYNC_RESET )
-  ) i_cdc_reset_ctrlr_half_src (
-    .clk_i              ( src_clk_i                                  ),
-    .rst_ni             ( src_rst_ni                                 ),
-    .clear_i            ( src_clear_i                                ),
-    .clear_o            ( s_src_clear_req                            ),
-    .clear_ack_i        ( s_src_clear_ack_q                          ),
-    .isolate_o          ( s_src_isolate_req                          ),
-    .isolate_ack_i      ( s_src_isolate_ack_q                        ),
-    .async_next_phase_o ( async_reset_src2dst_next_phase_from_src    ),
-    .async_req_o        ( async_reset_src2dst_req_from_src           ),
-    .async_ack_i        ( async_reset_src2dst_ack_to_src             ),
-    .async_next_phase_i ( async_reset_dst2src_next_phase_to_src      ),
-    .async_req_i        ( async_reset_dst2src_req_to_src             ),
-    .async_ack_o        ( async_reset_dst2src_ack_from_src           )
-  );
-
-  cc_cdc_reset_ctrlr_half #(
-    .SyncStages        ( SYNC_STAGES - 1      ),
-    .ClearOnAsyncReset ( CLEAR_ON_ASYNC_RESET )
-  ) i_cdc_reset_ctrlr_half_dst (
-    .clk_i              ( dst_clk_i                                  ),
-    .rst_ni             ( dst_rst_ni                                 ),
-    .clear_i            ( dst_clear_i                                ),
-    .clear_o            ( s_dst_clear_req                            ),
-    .clear_ack_i        ( s_dst_clear_ack_q                          ),
-    .isolate_o          ( s_dst_isolate_req                          ),
-    .isolate_ack_i      ( s_dst_isolate_ack_q                        ),
-    .async_next_phase_o ( async_reset_dst2src_next_phase_from_dst    ),
-    .async_req_o        ( async_reset_dst2src_req_from_dst           ),
-    .async_ack_i        ( async_reset_dst2src_ack_to_dst             ),
-    .async_next_phase_i ( async_reset_src2dst_next_phase_to_dst      ),
-    .async_req_i        ( async_reset_src2dst_req_to_dst             ),
-    .async_ack_o        ( async_reset_src2dst_ack_from_dst           )
-  );
-
-  // The top-level clearable wrapper acknowledges isolation/clear one cycle
-  // after the reset controller requests it; mirror that behavior here.
-  always_ff @(posedge src_clk_i, negedge src_rst_ni) begin
-    if (!src_rst_ni) begin
-      s_src_isolate_ack_q <= 1'b0;
-      s_src_clear_ack_q   <= 1'b0;
-    end else begin
-      s_src_isolate_ack_q <= s_src_isolate_req;
-      s_src_clear_ack_q   <= s_src_clear_req;
-    end
-  end
-
-  always_ff @(posedge dst_clk_i, negedge dst_rst_ni) begin
-    if (!dst_rst_ni) begin
-      s_dst_isolate_ack_q <= 1'b0;
-      s_dst_clear_ack_q   <= 1'b0;
-    end else begin
-      s_dst_isolate_ack_q <= s_dst_isolate_req;
-      s_dst_clear_ack_q   <= s_dst_clear_req;
-    end
-  end
-
-  assign src_clear_pending_o = s_src_isolate_req;
-  assign dst_clear_pending_o = s_dst_isolate_req;
 
 endmodule
