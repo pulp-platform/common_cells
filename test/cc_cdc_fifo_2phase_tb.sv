@@ -1,4 +1,4 @@
-// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright 2026 ETH Zurich and University of Bologna.
 //
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
@@ -10,14 +10,13 @@
 // specific language governing permissions and limitations under the License.
 //
 // Authors:
-// - Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
 // - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 //
-// Description: Two-Phase CDC Testbench
-// Exercise payload ordering, destination backpressure, and timed async-channel
-// delay sweeps for cc_cdc_2phase.
+// Description: Two-Phase CDC FIFO Testbench
+// Exercise FIFO ordering, full/empty transitions, backpressure, and timed
+// pointer/data delay sweeps for cc_cdc_fifo_2phase.
 
-module cc_cdc_2phase_tb;
+module cc_cdc_fifo_2phase_tb;
 
   timeunit 1ns;
   timeprecision 1ps;
@@ -25,20 +24,19 @@ module cc_cdc_2phase_tb;
   // --------------------------------------------------------------------------
   // Configuration
   // --------------------------------------------------------------------------
-  parameter int unsigned UNTIL = 0;
   parameter int unsigned NUM_RANDOM_TRANSFERS = 200;
+  parameter int unsigned DEPTH = 3;
+  parameter int unsigned SYNC_STAGES = 2;
   parameter int unsigned TCK_SRC_PS = 10000;
   parameter int unsigned TCK_DST_PS = 17000;
-  parameter int unsigned TIMEOUT_CYCLES = 20000;
-  parameter int unsigned SEED = 32'hcdc2_0001;
+  parameter int unsigned TIMEOUT_CYCLES = 40000;
+  parameter int unsigned SEED = 32'hf102_0001;
   parameter bit          INJECT_DELAYS = 1'b0;
   parameter int unsigned MAX_DELAY_PS = 0;
   parameter int unsigned SRC_START_DELAY_PS = 0;
   parameter int unsigned DST_START_DELAY_PS = 0;
-  parameter bit          POST_SYNTHESIS = 1'b0;
 
-  localparam int unsigned EffectiveRandomTransfers =
-      (UNTIL == 0) ? NUM_RANDOM_TRANSFERS : UNTIL;
+  localparam int unsigned FifoDepth = 2**DEPTH;
 
   typedef enum logic [1:0] {
     DstReadyLow,
@@ -71,23 +69,10 @@ module cc_cdc_2phase_tb;
   // --------------------------------------------------------------------------
   // DUT Selection
   // --------------------------------------------------------------------------
-  // Instantiate either the plain DUT or the timed delay-injection harness used
-  // by sweeps to perturb every explicit asynchronous channel.
-  if (POST_SYNTHESIS) begin : gen_synth_dut
-    cc_cdc_2phase_synth i_dut (
-      .src_rst_ni,
-      .src_clk_i,
-      .src_data_i,
-      .src_valid_i,
-      .src_ready_o,
-      .dst_rst_ni,
-      .dst_clk_i,
-      .dst_data_o,
-      .dst_valid_o,
-      .dst_ready_i
-    );
-  end else if (INJECT_DELAYS) begin : gen_delayed_dut
-    cc_cdc_2phase_tb_delay_injector #(
+  if (INJECT_DELAYS) begin : gen_delayed_dut
+    cc_cdc_fifo_2phase_tb_delay_injector #(
+      .LOG_DEPTH    ( DEPTH        ),
+      .SYNC_STAGES  ( SYNC_STAGES  ),
       .MAX_DELAY_PS ( MAX_DELAY_PS )
     ) i_dut (
       .src_rst_ni,
@@ -102,8 +87,10 @@ module cc_cdc_2phase_tb;
       .dst_ready_i
     );
   end else begin : gen_dut
-    cc_cdc_2phase #(
-      .data_t ( logic [31:0] )
+    cc_cdc_fifo_2phase #(
+      .data_t     ( logic [31:0] ),
+      .LogDepth   ( DEPTH        ),
+      .SyncStages ( SYNC_STAGES  )
     ) i_dut (
       .src_rst_ni,
       .src_clk_i,
@@ -143,7 +130,6 @@ module cc_cdc_2phase_tb;
   // --------------------------------------------------------------------------
   // Scoreboard And Protocol Checks
   // --------------------------------------------------------------------------
-  // Scoreboard source and destination handshakes.
   always @(posedge src_clk_i) begin
     if (src_rst_ni) begin
       if ($isunknown(src_ready_o)) begin
@@ -230,8 +216,8 @@ module cc_cdc_2phase_tb;
     dst_rst_ni = 1'b1;
 
     fork
-      wait_src_cycles(6);
-      wait_dst_cycles(6);
+      wait_src_cycles(8);
+      wait_dst_cycles(8);
     join
   endtask
 
@@ -279,15 +265,26 @@ module cc_cdc_2phase_tb;
     report_error($sformatf("timeout waiting for source ready in %s", test_name));
   endtask
 
-  task automatic wait_dst_valid(input string test_name);
+  task automatic wait_src_not_ready(input string test_name);
     for (int unsigned i = 0; i < TIMEOUT_CYCLES; i++) begin
-      if (dst_valid_o) begin
+      if (!src_ready_o) begin
+        return;
+      end
+      @(posedge src_clk_i or posedge dst_clk_i);
+    end
+
+    report_error($sformatf("timeout waiting for source not-ready in %s", test_name));
+  endtask
+
+  task automatic wait_dst_not_valid(input string test_name);
+    for (int unsigned i = 0; i < TIMEOUT_CYCLES; i++) begin
+      if (!dst_valid_o) begin
         return;
       end
       @(posedge dst_clk_i or posedge src_clk_i);
     end
 
-    report_error($sformatf("timeout waiting for destination valid in %s", test_name));
+    report_error($sformatf("timeout waiting for destination not-valid in %s", test_name));
   endtask
 
   task automatic send_sequence(input int unsigned num_words, input logic [31:0] base);
@@ -311,18 +308,20 @@ module cc_cdc_2phase_tb;
     wait_dst_cycles(2);
   endtask
 
-  task automatic run_backpressure_check(input string test_name, input logic [31:0] data,
-                                        input logic [31:0] post_base);
+  task automatic run_fill_drain_check(input string test_name, input logic [31:0] base);
     $display("%m: %s", test_name);
     dst_ready_mode = DstReadyLow;
     wait_src_ready(test_name);
-    send_word(data);
-    wait_dst_valid(test_name);
-    wait_dst_cycles($urandom_range(4, 12));
+    for (int unsigned i = 0; i < FifoDepth; i++) begin
+      send_word(base + i);
+    end
+    wait_src_not_ready(test_name);
     dst_ready_mode = DstReadyHigh;
     wait_scoreboard_empty(test_name);
     wait_src_ready(test_name);
-    run_transfer_check({test_name, " recovery transfer"}, 8, post_base, DstReadyHigh);
+    wait_dst_not_valid(test_name);
+    dst_ready_mode = DstReadyLow;
+    wait_dst_cycles(2);
   endtask
 
   // --------------------------------------------------------------------------
@@ -333,13 +332,14 @@ module cc_cdc_2phase_tb;
 
     seed = SEED;
     seed = $urandom(seed);
-    $display("%m: SEED=0x%08h derived=0x%08h", SEED, seed);
+    $display("%m: SEED=0x%08h derived=0x%08h DEPTH=%0d", SEED, seed, DEPTH);
 
     reset_both_domains();
 
-    run_transfer_check("basic fixed-ready transfer", 32, 32'h1000_0000, DstReadyHigh);
-    run_backpressure_check("destination backpressure", 32'h2000_0001, 32'h2000_1000);
-    run_transfer_check("randomized ready transfer", EffectiveRandomTransfers, 32'h3000_0000,
+    run_transfer_check("basic fixed-ready transfer", FifoDepth + 8, 32'h1000_0000,
+                       DstReadyHigh);
+    run_fill_drain_check("fill and drain", 32'h2000_0000);
+    run_transfer_check("randomized ready transfer", NUM_RANDOM_TRANSFERS, 32'h3000_0000,
                        DstReadyRandom);
 
     if ((num_errors != 0) || (expected_q.size() != 0)) begin
@@ -359,9 +359,7 @@ endmodule
 // Delay Model Helpers
 // ----------------------------------------------------------------------------
 
-// Per-bit inertial delay model used to sweep relative async channel timing in
-// simulation without changing the production DUT hierarchy.
-module cc_cdc_2phase_tb_bit_delay #(
+module cc_cdc_fifo_2phase_tb_bit_delay #(
   parameter int unsigned MAX_DELAY_PS = 0
 )(
   input  logic in_i,
@@ -384,9 +382,7 @@ module cc_cdc_2phase_tb_bit_delay #(
 endmodule
 
 
-// Bus delay wrapper that applies independent random per-bit delay. This stresses
-// bundled payload under the same async timing assumptions as the control wires.
-module cc_cdc_2phase_tb_bus_delay #(
+module cc_cdc_fifo_2phase_tb_bus_delay #(
   parameter int unsigned Width = 1,
   parameter int unsigned MAX_DELAY_PS = 0
 )(
@@ -398,7 +394,7 @@ module cc_cdc_2phase_tb_bus_delay #(
   timeprecision 1ps;
 
   for (genvar i = 0; i < Width; i++) begin : gen_bit_delay
-    cc_cdc_2phase_tb_bit_delay #(
+    cc_cdc_fifo_2phase_tb_bit_delay #(
       .MAX_DELAY_PS ( MAX_DELAY_PS )
     ) i_delay (
       .in_i  ( in_i[i]  ),
@@ -413,9 +409,9 @@ endmodule
 // Timed Delay-Injection Harness
 // ----------------------------------------------------------------------------
 
-// Timed test harness equivalent to the DUT, but with explicit delay elements
-// inserted on all payload async wires.
-module cc_cdc_2phase_tb_delay_injector #(
+module cc_cdc_fifo_2phase_tb_delay_injector #(
+  parameter int unsigned LOG_DEPTH = 3,
+  parameter int unsigned SYNC_STAGES = 2,
   parameter int unsigned MAX_DELAY_PS = 0
 )(
   input  logic        src_rst_ni,
@@ -434,59 +430,115 @@ module cc_cdc_2phase_tb_delay_injector #(
   timeunit 1ns;
   timeprecision 1ps;
 
-  logic        async_req_from_src;
-  logic        async_req_to_dst;
-  logic        async_ack_from_dst;
-  logic        async_ack_to_src;
-  logic [31:0] async_data_from_src;
-  logic [31:0] async_data_to_dst;
+  localparam int unsigned PtrWidth = LOG_DEPTH + 1;
+  typedef logic [PtrWidth-1:0] pointer_t;
+  typedef logic [31:0] data_t;
 
-  cc_cdc_2phase_tb_bit_delay #(
-    .MAX_DELAY_PS ( MAX_DELAY_PS )
-  ) i_async_req_delay (
-    .in_i  ( async_req_from_src ),
-    .out_o ( async_req_to_dst   )
-  );
+  data_t [2**LOG_DEPTH-1:0] async_data_from_src;
+  data_t [2**LOG_DEPTH-1:0] async_data_to_dst;
+  logic async_wptr_req_from_src;
+  logic async_wptr_req_to_dst;
+  logic async_wptr_ack_from_dst;
+  logic async_wptr_ack_to_src;
+  pointer_t async_wptr_data_from_src;
+  pointer_t async_wptr_data_to_dst;
+  logic async_rptr_req_from_dst;
+  logic async_rptr_req_to_src;
+  logic async_rptr_ack_from_src;
+  logic async_rptr_ack_to_dst;
+  pointer_t async_rptr_data_from_dst;
+  pointer_t async_rptr_data_to_src;
 
-  cc_cdc_2phase_tb_bit_delay #(
-    .MAX_DELAY_PS ( MAX_DELAY_PS )
-  ) i_async_ack_delay (
-    .in_i  ( async_ack_from_dst ),
-    .out_o ( async_ack_to_src   )
-  );
-
-  cc_cdc_2phase_tb_bus_delay #(
-    .Width        ( 32           ),
-    .MAX_DELAY_PS ( MAX_DELAY_PS )
-  ) i_async_data_delay (
-    .in_i  ( async_data_from_src ),
-    .out_o ( async_data_to_dst   )
-  );
-
-  cc_cdc_2phase_src #(
-    .data_t ( logic [31:0] )
+  cc_cdc_fifo_2phase_src #(
+    .data_t     ( data_t      ),
+    .LogDepth   ( LOG_DEPTH   ),
+    .SyncStages ( SYNC_STAGES )
   ) i_src (
-    .rst_ni       ( src_rst_ni          ),
-    .clk_i        ( src_clk_i           ),
-    .data_i       ( src_data_i          ),
-    .valid_i      ( src_valid_i         ),
-    .ready_o      ( src_ready_o         ),
-    .async_req_o  ( async_req_from_src  ),
-    .async_ack_i  ( async_ack_to_src    ),
-    .async_data_o ( async_data_from_src )
+    .src_rst_ni,
+    .src_clk_i,
+    .src_data_i,
+    .src_valid_i,
+    .src_ready_o,
+    .async_data_o      ( async_data_from_src      ),
+    .async_wptr_req_o  ( async_wptr_req_from_src  ),
+    .async_wptr_ack_i  ( async_wptr_ack_to_src    ),
+    .async_wptr_data_o ( async_wptr_data_from_src ),
+    .async_rptr_req_i  ( async_rptr_req_to_src    ),
+    .async_rptr_ack_o  ( async_rptr_ack_from_src  ),
+    .async_rptr_data_i ( async_rptr_data_to_src   )
   );
 
-  cc_cdc_2phase_dst #(
-    .data_t ( logic [31:0] )
+  for (genvar i = 0; i < 2**LOG_DEPTH; i++) begin : gen_data_delay
+    cc_cdc_fifo_2phase_tb_bus_delay #(
+      .Width        ( 32           ),
+      .MAX_DELAY_PS ( MAX_DELAY_PS )
+    ) i_data_delay (
+      .in_i  ( async_data_from_src[i] ),
+      .out_o ( async_data_to_dst[i]   )
+    );
+  end
+
+  cc_cdc_fifo_2phase_tb_bit_delay #(
+    .MAX_DELAY_PS ( MAX_DELAY_PS )
+  ) i_async_wptr_req_delay (
+    .in_i  ( async_wptr_req_from_src ),
+    .out_o ( async_wptr_req_to_dst   )
+  );
+
+  cc_cdc_fifo_2phase_tb_bit_delay #(
+    .MAX_DELAY_PS ( MAX_DELAY_PS )
+  ) i_async_wptr_ack_delay (
+    .in_i  ( async_wptr_ack_from_dst ),
+    .out_o ( async_wptr_ack_to_src   )
+  );
+
+  cc_cdc_fifo_2phase_tb_bus_delay #(
+    .Width        ( PtrWidth     ),
+    .MAX_DELAY_PS ( MAX_DELAY_PS )
+  ) i_async_wptr_data_delay (
+    .in_i  ( async_wptr_data_from_src ),
+    .out_o ( async_wptr_data_to_dst   )
+  );
+
+  cc_cdc_fifo_2phase_tb_bit_delay #(
+    .MAX_DELAY_PS ( MAX_DELAY_PS )
+  ) i_async_rptr_req_delay (
+    .in_i  ( async_rptr_req_from_dst ),
+    .out_o ( async_rptr_req_to_src   )
+  );
+
+  cc_cdc_fifo_2phase_tb_bit_delay #(
+    .MAX_DELAY_PS ( MAX_DELAY_PS )
+  ) i_async_rptr_ack_delay (
+    .in_i  ( async_rptr_ack_from_src ),
+    .out_o ( async_rptr_ack_to_dst   )
+  );
+
+  cc_cdc_fifo_2phase_tb_bus_delay #(
+    .Width        ( PtrWidth     ),
+    .MAX_DELAY_PS ( MAX_DELAY_PS )
+  ) i_async_rptr_data_delay (
+    .in_i  ( async_rptr_data_from_dst ),
+    .out_o ( async_rptr_data_to_src   )
+  );
+
+  cc_cdc_fifo_2phase_dst #(
+    .data_t     ( data_t      ),
+    .LogDepth   ( LOG_DEPTH   ),
+    .SyncStages ( SYNC_STAGES )
   ) i_dst (
-    .rst_ni       ( dst_rst_ni        ),
-    .clk_i        ( dst_clk_i         ),
-    .data_o       ( dst_data_o        ),
-    .valid_o      ( dst_valid_o       ),
-    .ready_i      ( dst_ready_i       ),
-    .async_req_i  ( async_req_to_dst  ),
-    .async_ack_o  ( async_ack_from_dst ),
-    .async_data_i ( async_data_to_dst )
+    .dst_rst_ni,
+    .dst_clk_i,
+    .dst_data_o,
+    .dst_valid_o,
+    .dst_ready_i,
+    .async_data_i      ( async_data_to_dst        ),
+    .async_wptr_req_i  ( async_wptr_req_to_dst    ),
+    .async_wptr_ack_o  ( async_wptr_ack_from_dst  ),
+    .async_wptr_data_i ( async_wptr_data_to_dst   ),
+    .async_rptr_req_o  ( async_rptr_req_from_dst  ),
+    .async_rptr_ack_i  ( async_rptr_ack_to_dst    ),
+    .async_rptr_data_o ( async_rptr_data_from_dst )
   );
 
 endmodule

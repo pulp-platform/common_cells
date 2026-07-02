@@ -1,4 +1,4 @@
-// Copyright 2018 ETH Zurich and University of Bologna.
+// Copyright 2026 ETH Zurich and University of Bologna.
 //
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
@@ -10,14 +10,13 @@
 // specific language governing permissions and limitations under the License.
 //
 // Authors:
-// - Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
 // - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 //
-// Description: Two-Phase CDC Testbench
-// Exercise payload ordering, destination backpressure, and timed async-channel
-// delay sweeps for cc_cdc_2phase.
+// Description: Four-Phase CDC Testbench
+// Exercise payload ordering, coupled/decoupled source handshakes, reset-message
+// behavior, and timed async-channel delay sweeps for cc_cdc_4phase.
 
-module cc_cdc_2phase_tb;
+module cc_cdc_4phase_tb;
 
   timeunit 1ns;
   timeprecision 1ps;
@@ -25,20 +24,19 @@ module cc_cdc_2phase_tb;
   // --------------------------------------------------------------------------
   // Configuration
   // --------------------------------------------------------------------------
-  parameter int unsigned UNTIL = 0;
   parameter int unsigned NUM_RANDOM_TRANSFERS = 200;
+  parameter int unsigned SYNC_STAGES = 2;
   parameter int unsigned TCK_SRC_PS = 10000;
   parameter int unsigned TCK_DST_PS = 17000;
   parameter int unsigned TIMEOUT_CYCLES = 20000;
-  parameter int unsigned SEED = 32'hcdc2_0001;
+  parameter int unsigned SEED = 32'hcdc4_0001;
+  parameter bit          DECOUPLED = 1'b1;
+  parameter bit          SEND_RESET_MSG = 1'b0;
+  parameter logic [31:0] RESET_MSG = 32'hcdc4_4e57;
   parameter bit          INJECT_DELAYS = 1'b0;
   parameter int unsigned MAX_DELAY_PS = 0;
   parameter int unsigned SRC_START_DELAY_PS = 0;
   parameter int unsigned DST_START_DELAY_PS = 0;
-  parameter bit          POST_SYNTHESIS = 1'b0;
-
-  localparam int unsigned EffectiveRandomTransfers =
-      (UNTIL == 0) ? NUM_RANDOM_TRANSFERS : UNTIL;
 
   typedef enum logic [1:0] {
     DstReadyLow,
@@ -64,6 +62,9 @@ module cc_cdc_2phase_tb;
   logic [31:0] expected_q[$];
   int unsigned num_src_handshakes = 0;
   int unsigned num_dst_handshakes = 0;
+  int unsigned num_words_expected = 0;
+  int unsigned num_reset_messages = 0;
+  int unsigned optional_reset_messages = 0;
   int unsigned num_errors = 0;
 
   dst_ready_mode_e dst_ready_mode = DstReadyLow;
@@ -73,22 +74,13 @@ module cc_cdc_2phase_tb;
   // --------------------------------------------------------------------------
   // Instantiate either the plain DUT or the timed delay-injection harness used
   // by sweeps to perturb every explicit asynchronous channel.
-  if (POST_SYNTHESIS) begin : gen_synth_dut
-    cc_cdc_2phase_synth i_dut (
-      .src_rst_ni,
-      .src_clk_i,
-      .src_data_i,
-      .src_valid_i,
-      .src_ready_o,
-      .dst_rst_ni,
-      .dst_clk_i,
-      .dst_data_o,
-      .dst_valid_o,
-      .dst_ready_i
-    );
-  end else if (INJECT_DELAYS) begin : gen_delayed_dut
-    cc_cdc_2phase_tb_delay_injector #(
-      .MAX_DELAY_PS ( MAX_DELAY_PS )
+  if (INJECT_DELAYS) begin : gen_delayed_dut
+    cc_cdc_4phase_tb_delay_injector #(
+      .SYNC_STAGES    ( SYNC_STAGES    ),
+      .DECOUPLED      ( DECOUPLED      ),
+      .SEND_RESET_MSG ( SEND_RESET_MSG ),
+      .RESET_MSG      ( RESET_MSG      ),
+      .MAX_DELAY_PS   ( MAX_DELAY_PS   )
     ) i_dut (
       .src_rst_ni,
       .src_clk_i,
@@ -102,8 +94,12 @@ module cc_cdc_2phase_tb;
       .dst_ready_i
     );
   end else begin : gen_dut
-    cc_cdc_2phase #(
-      .data_t ( logic [31:0] )
+    cc_cdc_4phase #(
+      .data_t       ( logic [31:0]  ),
+      .Decoupled    ( DECOUPLED     ),
+      .SendResetMsg ( SEND_RESET_MSG ),
+      .ResetMsg     ( RESET_MSG     ),
+      .SyncStages   ( SYNC_STAGES   )
     ) i_dut (
       .src_rst_ni,
       .src_clk_i,
@@ -143,7 +139,6 @@ module cc_cdc_2phase_tb;
   // --------------------------------------------------------------------------
   // Scoreboard And Protocol Checks
   // --------------------------------------------------------------------------
-  // Scoreboard source and destination handshakes.
   always @(posedge src_clk_i) begin
     if (src_rst_ni) begin
       if ($isunknown(src_ready_o)) begin
@@ -157,7 +152,6 @@ module cc_cdc_2phase_tb;
       end
       if (src_valid_i && src_ready_o) begin
         num_src_handshakes++;
-        expected_q.push_back(src_data_i);
       end
     end
   end
@@ -178,8 +172,13 @@ module cc_cdc_2phase_tb;
       if (dst_valid_o && dst_ready_i) begin
         num_dst_handshakes++;
         if (expected_q.size() == 0) begin
-          report_error($sformatf("unexpected destination transaction: data=0x%08h",
-                                 dst_data_o));
+          if ((optional_reset_messages != 0) && SEND_RESET_MSG && (dst_data_o === RESET_MSG)) begin
+            optional_reset_messages--;
+            num_reset_messages++;
+          end else begin
+            report_error($sformatf("unexpected destination transaction: data=0x%08h",
+                                   dst_data_o));
+          end
         end else begin
           expected = expected_q.pop_front();
           if (dst_data_o !== expected) begin
@@ -213,11 +212,17 @@ module cc_cdc_2phase_tb;
     #1ps;
   endtask
 
+  task automatic expect_word(input logic [31:0] data);
+    expected_q.push_back(data);
+    num_words_expected++;
+  endtask
+
   task automatic reset_both_domains;
     expected_q.delete();
     src_data_i = '0;
     src_valid_i = 1'b0;
     dst_ready_mode = DstReadyLow;
+    optional_reset_messages = SEND_RESET_MSG ? 1 : 0;
     src_rst_ni = 1'b0;
     dst_rst_ni = 1'b0;
 
@@ -233,6 +238,17 @@ module cc_cdc_2phase_tb;
       wait_src_cycles(6);
       wait_dst_cycles(6);
     join
+
+    wait_source_available("power-on reset");
+    if (SEND_RESET_MSG) begin
+      dst_ready_mode = DstReadyHigh;
+      fork
+        wait_src_cycles(SYNC_STAGES + 4);
+        wait_dst_cycles(SYNC_STAGES + 4);
+      join
+      dst_ready_mode = DstReadyLow;
+      wait_dst_cycles(2);
+    end
   endtask
 
   task automatic send_word(input logic [31:0] data);
@@ -240,6 +256,7 @@ module cc_cdc_2phase_tb;
     #1ps;
     src_data_i = data;
     src_valid_i = 1'b1;
+    expect_word(data);
 
     for (int unsigned i = 0; i < TIMEOUT_CYCLES; i++) begin
       if (src_ready_o) begin
@@ -279,6 +296,14 @@ module cc_cdc_2phase_tb;
     report_error($sformatf("timeout waiting for source ready in %s", test_name));
   endtask
 
+  task automatic wait_source_available(input string test_name);
+    if (DECOUPLED) begin
+      wait_src_ready(test_name);
+    end else begin
+      wait_src_cycles(2);
+    end
+  endtask
+
   task automatic wait_dst_valid(input string test_name);
     for (int unsigned i = 0; i < TIMEOUT_CYCLES; i++) begin
       if (dst_valid_o) begin
@@ -306,7 +331,7 @@ module cc_cdc_2phase_tb;
     dst_ready_mode = ready_mode;
     send_sequence(num_words, base);
     wait_scoreboard_empty(test_name);
-    wait_src_ready(test_name);
+    wait_source_available(test_name);
     dst_ready_mode = DstReadyLow;
     wait_dst_cycles(2);
   endtask
@@ -315,14 +340,46 @@ module cc_cdc_2phase_tb;
                                         input logic [31:0] post_base);
     $display("%m: %s", test_name);
     dst_ready_mode = DstReadyLow;
-    wait_src_ready(test_name);
-    send_word(data);
-    wait_dst_valid(test_name);
-    wait_dst_cycles($urandom_range(4, 12));
-    dst_ready_mode = DstReadyHigh;
+    wait_source_available(test_name);
+    fork
+      send_word(data);
+      begin
+        wait_dst_valid(test_name);
+        wait_dst_cycles($urandom_range(4, 12));
+        dst_ready_mode = DstReadyHigh;
+        wait_scoreboard_empty(test_name);
+      end
+    join
     wait_scoreboard_empty(test_name);
-    wait_src_ready(test_name);
+    wait_source_available(test_name);
     run_transfer_check({test_name, " recovery transfer"}, 8, post_base, DstReadyHigh);
+  endtask
+
+  task automatic run_source_reset_message_check;
+    if (!SEND_RESET_MSG) begin
+      return;
+    end
+
+    $display("%m: source reset message");
+    dst_ready_mode = DstReadyHigh;
+    wait_scoreboard_empty("pre-source-reset-message");
+    wait_source_available("pre-source-reset-message");
+    optional_reset_messages = 0;
+    expect_word(RESET_MSG);
+    num_reset_messages++;
+
+    #(tck_src / 3);
+    src_rst_ni = 1'b0;
+    fork
+      wait_src_cycles(SYNC_STAGES + 6);
+      wait_dst_cycles(SYNC_STAGES + 6);
+    join
+    src_rst_ni = 1'b1;
+
+    wait_scoreboard_empty("source reset message");
+    wait_source_available("source reset message");
+    dst_ready_mode = DstReadyLow;
+    wait_dst_cycles(2);
   endtask
 
   // --------------------------------------------------------------------------
@@ -333,13 +390,15 @@ module cc_cdc_2phase_tb;
 
     seed = SEED;
     seed = $urandom(seed);
-    $display("%m: SEED=0x%08h derived=0x%08h", SEED, seed);
+    $display("%m: SEED=0x%08h derived=0x%08h DECOUPLED=%0d SEND_RESET_MSG=%0d",
+             SEED, seed, DECOUPLED, SEND_RESET_MSG);
 
     reset_both_domains();
 
+    run_source_reset_message_check();
     run_transfer_check("basic fixed-ready transfer", 32, 32'h1000_0000, DstReadyHigh);
     run_backpressure_check("destination backpressure", 32'h2000_0001, 32'h2000_1000);
-    run_transfer_check("randomized ready transfer", EffectiveRandomTransfers, 32'h3000_0000,
+    run_transfer_check("randomized ready transfer", NUM_RANDOM_TRANSFERS, 32'h3000_0000,
                        DstReadyRandom);
 
     if ((num_errors != 0) || (expected_q.size() != 0)) begin
@@ -347,8 +406,8 @@ module cc_cdc_2phase_tb;
              num_errors, expected_q.size());
     end
 
-    $display("%m: passed: src_handshakes=%0d dst_handshakes=%0d",
-             num_src_handshakes, num_dst_handshakes);
+    $display("%m: passed: expected=%0d dst_handshakes=%0d src_handshakes=%0d reset_msgs=%0d",
+             num_words_expected, num_dst_handshakes, num_src_handshakes, num_reset_messages);
     $finish;
   end
 
@@ -361,7 +420,7 @@ endmodule
 
 // Per-bit inertial delay model used to sweep relative async channel timing in
 // simulation without changing the production DUT hierarchy.
-module cc_cdc_2phase_tb_bit_delay #(
+module cc_cdc_4phase_tb_bit_delay #(
   parameter int unsigned MAX_DELAY_PS = 0
 )(
   input  logic in_i,
@@ -386,7 +445,7 @@ endmodule
 
 // Bus delay wrapper that applies independent random per-bit delay. This stresses
 // bundled payload under the same async timing assumptions as the control wires.
-module cc_cdc_2phase_tb_bus_delay #(
+module cc_cdc_4phase_tb_bus_delay #(
   parameter int unsigned Width = 1,
   parameter int unsigned MAX_DELAY_PS = 0
 )(
@@ -398,7 +457,7 @@ module cc_cdc_2phase_tb_bus_delay #(
   timeprecision 1ps;
 
   for (genvar i = 0; i < Width; i++) begin : gen_bit_delay
-    cc_cdc_2phase_tb_bit_delay #(
+    cc_cdc_4phase_tb_bit_delay #(
       .MAX_DELAY_PS ( MAX_DELAY_PS )
     ) i_delay (
       .in_i  ( in_i[i]  ),
@@ -415,7 +474,11 @@ endmodule
 
 // Timed test harness equivalent to the DUT, but with explicit delay elements
 // inserted on all payload async wires.
-module cc_cdc_2phase_tb_delay_injector #(
+module cc_cdc_4phase_tb_delay_injector #(
+  parameter int unsigned SYNC_STAGES = 2,
+  parameter bit          DECOUPLED = 1'b1,
+  parameter bit          SEND_RESET_MSG = 1'b0,
+  parameter logic [31:0] RESET_MSG = 32'hcdc4_4e57,
   parameter int unsigned MAX_DELAY_PS = 0
 )(
   input  logic        src_rst_ni,
@@ -441,21 +504,21 @@ module cc_cdc_2phase_tb_delay_injector #(
   logic [31:0] async_data_from_src;
   logic [31:0] async_data_to_dst;
 
-  cc_cdc_2phase_tb_bit_delay #(
+  cc_cdc_4phase_tb_bit_delay #(
     .MAX_DELAY_PS ( MAX_DELAY_PS )
   ) i_async_req_delay (
     .in_i  ( async_req_from_src ),
     .out_o ( async_req_to_dst   )
   );
 
-  cc_cdc_2phase_tb_bit_delay #(
+  cc_cdc_4phase_tb_bit_delay #(
     .MAX_DELAY_PS ( MAX_DELAY_PS )
   ) i_async_ack_delay (
     .in_i  ( async_ack_from_dst ),
     .out_o ( async_ack_to_src   )
   );
 
-  cc_cdc_2phase_tb_bus_delay #(
+  cc_cdc_4phase_tb_bus_delay #(
     .Width        ( 32           ),
     .MAX_DELAY_PS ( MAX_DELAY_PS )
   ) i_async_data_delay (
@@ -463,8 +526,12 @@ module cc_cdc_2phase_tb_delay_injector #(
     .out_o ( async_data_to_dst   )
   );
 
-  cc_cdc_2phase_src #(
-    .data_t ( logic [31:0] )
+  cc_cdc_4phase_src #(
+    .data_t       ( logic [31:0]  ),
+    .SyncStages   ( SYNC_STAGES   ),
+    .Decoupled    ( DECOUPLED     ),
+    .SendResetMsg ( SEND_RESET_MSG ),
+    .ResetMsg     ( RESET_MSG     )
   ) i_src (
     .rst_ni       ( src_rst_ni          ),
     .clk_i        ( src_clk_i           ),
@@ -476,8 +543,10 @@ module cc_cdc_2phase_tb_delay_injector #(
     .async_data_o ( async_data_from_src )
   );
 
-  cc_cdc_2phase_dst #(
-    .data_t ( logic [31:0] )
+  cc_cdc_4phase_dst #(
+    .data_t     ( logic [31:0] ),
+    .SyncStages ( SYNC_STAGES  ),
+    .Decoupled  ( DECOUPLED    )
   ) i_dst (
     .rst_ni       ( dst_rst_ni        ),
     .clk_i        ( dst_clk_i         ),
