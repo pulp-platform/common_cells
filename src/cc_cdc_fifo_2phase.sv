@@ -49,7 +49,9 @@ module cc_cdc_fifo_2phase #(
   /// The data type of the payload transported by the FIFO.
   parameter type data_t = logic,
   /// The FIFO's depth given as 2**LogDepth.
-  parameter int unsigned LogDepth = 3
+  parameter int unsigned LogDepth = 3,
+  /// The number of synchronization registers to insert on the async pointers.
+  parameter int unsigned SyncStages = 2
 )(
   input  logic  src_rst_ni,
   input  logic  src_clk_i,
@@ -67,6 +69,7 @@ module cc_cdc_fifo_2phase #(
   // Check the invariants.
   `ifndef COMMON_CELLS_ASSERTS_OFF
   `ASSERT_INIT(log_depth_0, LogDepth > 0)
+  `ASSERT_INIT(sync_stages_gt_2, SyncStages >= 2)
   `endif
 
   localparam int unsigned PtrWidth = LogDepth+1;
@@ -111,7 +114,10 @@ module cc_cdc_fifo_2phase #(
   assign dst_valid_o = ((dst_rptr_q ^ dst_wptr) != PtrEmpty);
 
   // Transport the read and write pointers across the clock domain boundary.
-  cc_cdc_2phase #( .data_t(pointer_t) ) i_cdc_wptr (
+  cc_cdc_2phase #(
+    .data_t     ( pointer_t  ),
+    .SyncStages ( SyncStages )
+  ) i_cdc_wptr (
     .src_rst_ni  ( src_rst_ni ),
     .src_clk_i   ( src_clk_i  ),
     .src_data_i  ( src_wptr_q ),
@@ -124,7 +130,10 @@ module cc_cdc_fifo_2phase #(
     .dst_ready_i ( 1'b1       )
   );
 
-  cc_cdc_2phase #( .data_t(pointer_t) ) i_cdc_rptr (
+  cc_cdc_2phase #(
+    .data_t     ( pointer_t  ),
+    .SyncStages ( SyncStages )
+  ) i_cdc_rptr (
     .src_rst_ni  ( dst_rst_ni ),
     .src_clk_i   ( dst_clk_i  ),
     .src_data_i  ( dst_rptr_q ),
