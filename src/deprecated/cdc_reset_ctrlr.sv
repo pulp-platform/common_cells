@@ -47,8 +47,6 @@ module cdc_reset_ctrlr #(
 endmodule
 
 // Deprecated: use cc_cdc_reset_ctrlr_half instead.
-// Note: async_next_phase ports use cc_pkg::cdc_clear_seq_phase_e (renamed from
-// cdc_reset_ctrlr_pkg::clear_seq_phase_e).
 module cdc_reset_ctrlr_half #(
   parameter int unsigned SYNC_STAGES        = 2,
   parameter logic        CLEAR_ON_ASYNC_RESET = 1'b1
@@ -60,16 +58,25 @@ module cdc_reset_ctrlr_half #(
   input  logic                          isolate_ack_i,
   output logic                          clear_o,
   input  logic                          clear_ack_i,
-  output cc_pkg::cdc_clear_seq_phase_e  async_next_phase_o,
+  output cdc_reset_ctrlr_pkg::clear_seq_phase_e async_next_phase_o,
   output logic                          async_req_o,
   input  logic                          async_ack_i,
-  input  cc_pkg::cdc_clear_seq_phase_e  async_next_phase_i,
+  input  cdc_reset_ctrlr_pkg::clear_seq_phase_e async_next_phase_i,
   input  logic                          async_req_i,
   output logic                          async_ack_o
 );
   // synthesis translate_off
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_reset_ctrlr_half' instead.");
   // synthesis translate_on
+
+  cc_pkg::cdc_clear_seq_phase_e async_next_phase_from_cc;
+  cc_pkg::cdc_clear_seq_phase_e async_next_phase_to_cc;
+
+  assign async_next_phase_o =
+      cdc_reset_ctrlr_pkg::clear_seq_phase_e'(async_next_phase_from_cc);
+  assign async_next_phase_to_cc =
+      cc_pkg::cdc_clear_seq_phase_e'(async_next_phase_i);
+
   cc_cdc_reset_ctrlr_half #(
     .SyncStages ( SYNC_STAGES         ),
     .ClearOnAsyncReset ( CLEAR_ON_ASYNC_RESET)
@@ -81,10 +88,10 @@ module cdc_reset_ctrlr_half #(
     .isolate_ack_i      ( isolate_ack_i      ),
     .clear_o            ( clear_o            ),
     .clear_ack_i        ( clear_ack_i        ),
-    .async_next_phase_o ( async_next_phase_o ),
+    .async_next_phase_o ( async_next_phase_from_cc ),
     .async_req_o        ( async_req_o        ),
     .async_ack_i        ( async_ack_i        ),
-    .async_next_phase_i ( async_next_phase_i ),
+    .async_next_phase_i ( async_next_phase_to_cc ),
     .async_req_i        ( async_req_i        ),
     .async_ack_o        ( async_ack_o        )
   );
