@@ -1,15 +1,37 @@
+###############
+# Executables #
+###############
+
 BENDER    ?= bender
 VERILATOR ?= verilator
 VSIM      ?= vsim
 VCS_SEPP  ?=
 SG_SHELL  ?= sg_shell
 
+#########
+# Flags #
+#########
+
+BENDER_TARGETS = -t test -t tb -t formal -t synth_test
+
 # Suppress vlog-2583: always_comb/always_latch conflict checks are deferred to vopt
 VLOG_FLAGS += -suppress 2583
+
+# If any module has a timescale directive, all modules must have a timescale directive,
+# so we add a default timescale to all modules
+VLOGAN_FLAGS += -timescale=1ns/1ps
+
+###############
+# Directories #
+###############
 
 VSIM_BUILDDIR = $(abspath build/vsim)
 VCS_BUILDDIR  = $(abspath build/vcs)
 SG_BUILDDIR   = $(abspath build/spyglass)
+
+###########
+# Targets #
+###########
 
 # All modules in src/ with a top-level module declaration, minus skipped ones
 SV_MODULES       = $(patsubst src/%.sv,%,$(shell grep -l "^module " src/*.sv))
@@ -39,13 +61,13 @@ $(VSIM_BUILDDIR) $(VCS_BUILDDIR) $(SG_BUILDDIR):
 	mkdir -p $@
 
 $(VSIM_BUILDDIR)/elaborate.tcl: Bender.yml | $(VSIM_BUILDDIR) .bender/.checkout
-	$(BENDER) script vsim --vlog-arg="$(VLOG_FLAGS) " > $@
+	$(BENDER) script vsim $(BENDER_TARGETS) --vlog-arg="$(VLOG_FLAGS) " > $@
 
 vsim-elab: $(VSIM_BUILDDIR)/elaborate.tcl
 	cd $(VSIM_BUILDDIR) && $(VSIM) -c -do "source $<; quit"
 
 $(VCS_BUILDDIR)/elaborate.sh: Bender.yml | $(VCS_BUILDDIR) .bender/.checkout
-	$(BENDER) script vcs > $@
+	$(BENDER) script vcs $(BENDER_TARGETS) --vlogan-args="$(VLOGAN_FLAGS)" > $@
 	chmod +x $@
 
 vcs-elab: $(VCS_BUILDDIR)/elaborate.sh

@@ -14,7 +14,7 @@ set -e
 
 [ ! -z "$VSIM" ] || VSIM=vsim
 
-bender script vsim -t test > compile.tcl
+bender script vsim -t test -t tb > compile.tcl
 
 "$VSIM" -c -quiet -do 'source compile.tcl; quit'
 

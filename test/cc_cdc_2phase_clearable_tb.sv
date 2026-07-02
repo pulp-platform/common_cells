@@ -1092,10 +1092,10 @@ module cc_cdc_reset_ctrlr_half_monitor
   input logic                 receiver_clear_out
 );
 
-  import cc_cdc_2phase_clearable_tb_monitor_pkg::report_monitor_error;
-
   timeunit 1ns;
   timeprecision 1ps;
+
+  import cc_cdc_2phase_clearable_tb_monitor_pkg::report_monitor_error;
 
   localparam logic [3:0] InitIdle                = 4'd0;
   localparam logic [3:0] InitIsolate             = 4'd1;

@@ -34,7 +34,7 @@ mkdir -p "${build_dir}"
 
 cd "${repo_root}"
 "${bender_cmd[@]}" checkout
-"${bender_cmd[@]}" script vsim -t test > "${compile_tcl}"
+"${bender_cmd[@]}" script vsim -t test -t tb > "${compile_tcl}"
 
 cd "${build_dir}"
 "${vsim_cmd[@]}" -c -quiet -do "source ${compile_tcl}; quit"

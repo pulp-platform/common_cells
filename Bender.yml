@@ -123,6 +123,10 @@ sources:
 
   - target: test
     files:
+      - test/cc_test_pkg.sv
+
+  - target: tb
+    files:
       # Level 0
       - test/cc_addr_decode_tb.sv
       - test/cc_cb_filter_tb.sv
@@ -142,7 +146,6 @@ sources:
       - test/cc_stream_register_tb.sv
       - test/cc_stream_to_mem_tb.sv
       - test/cc_sub_per_hash_tb.sv
-      - test/cc_test_pkg.sv
       # Level 1
       - test/cc_isochronous_crossing_tb.sv
       - test/cc_stream_omega_net_tb.sv
@@ -151,7 +154,6 @@ sources:
       - test/cc_clk_int_div_static_tb.sv
       - test/cc_clk_mux_glitch_free_tb.sv
       - test/cc_lossy_valid_to_stream_tb.sv
-
 
   - target: synth_test
     files:
