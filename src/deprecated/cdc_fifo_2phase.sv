@@ -4,8 +4,9 @@
 
 // Deprecated: use cc_cdc_fifo_2phase instead.
 module cdc_fifo_2phase #(
-  parameter type T         = logic,
-  parameter int  LOG_DEPTH = 3
+  parameter type         T           = logic,
+  parameter int          LOG_DEPTH   = 3,
+  parameter int unsigned SYNC_STAGES = 2
 )(
   input  logic src_rst_ni,
   input  logic src_clk_i,
@@ -22,8 +23,9 @@ module cdc_fifo_2phase #(
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_fifo_2phase' instead.");
   // synthesis translate_on
   cc_cdc_fifo_2phase #(
-    .data_t ( T         ),
-    .LogDepth ( LOG_DEPTH )
+    .data_t     ( T           ),
+    .LogDepth   ( LOG_DEPTH   ),
+    .SyncStages ( SYNC_STAGES )
   ) i_cc_cdc_fifo_2phase (
     .src_rst_ni  ( src_rst_ni  ),
     .src_clk_i   ( src_clk_i   ),

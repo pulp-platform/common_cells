@@ -4,7 +4,8 @@
 
 // Deprecated: use cc_cdc_2phase instead.
 module cdc_2phase #(
-  parameter type T = logic
+  parameter type         T           = logic,
+  parameter int unsigned SYNC_STAGES = 2
 )(
   input  logic src_rst_ni,
   input  logic src_clk_i,
@@ -21,7 +22,8 @@ module cdc_2phase #(
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_2phase' instead.");
   // synthesis translate_on
   cc_cdc_2phase #(
-    .data_t ( T )
+    .data_t     ( T           ),
+    .SyncStages ( SYNC_STAGES )
   ) i_cc_cdc_2phase (
     .src_rst_ni  ( src_rst_ni  ),
     .src_clk_i   ( src_clk_i   ),
@@ -38,7 +40,8 @@ endmodule
 
 // Deprecated: use cc_cdc_2phase_src instead.
 module cdc_2phase_src #(
-  parameter type T = logic
+  parameter type         T           = logic,
+  parameter int unsigned SYNC_STAGES = 2
 )(
   input  logic rst_ni,
   input  logic clk_i,
@@ -53,7 +56,8 @@ module cdc_2phase_src #(
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_2phase_src' instead.");
   // synthesis translate_on
   cc_cdc_2phase_src #(
-    .data_t ( T )
+    .data_t     ( T           ),
+    .SyncStages ( SYNC_STAGES )
   ) i_cc_cdc_2phase_src (
     .rst_ni       ( rst_ni       ),
     .clk_i        ( clk_i        ),
@@ -68,7 +72,8 @@ endmodule
 
 // Deprecated: use cc_cdc_2phase_dst instead.
 module cdc_2phase_dst #(
-  parameter type T = logic
+  parameter type         T           = logic,
+  parameter int unsigned SYNC_STAGES = 2
 )(
   input  logic rst_ni,
   input  logic clk_i,
@@ -83,7 +88,8 @@ module cdc_2phase_dst #(
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_2phase_dst' instead.");
   // synthesis translate_on
   cc_cdc_2phase_dst #(
-    .data_t ( T )
+    .data_t     ( T           ),
+    .SyncStages ( SYNC_STAGES )
   ) i_cc_cdc_2phase_dst (
     .rst_ni       ( rst_ni       ),
     .clk_i        ( clk_i        ),

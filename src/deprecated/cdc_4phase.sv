@@ -4,10 +4,11 @@
 
 // Deprecated: use cc_cdc_4phase instead.
 module cdc_4phase #(
-  parameter type T             = logic,
-  parameter bit  DECOUPLED     = 1'b1,
-  parameter bit  SEND_RESET_MSG = 1'b0,
-  parameter T    RESET_MSG     = T'('0)
+  parameter type         T              = logic,
+  parameter int unsigned SYNC_STAGES    = 2,
+  parameter bit          DECOUPLED      = 1'b1,
+  parameter bit          SEND_RESET_MSG = 1'b0,
+  parameter T            RESET_MSG      = T'('0)
 )(
   input  logic src_rst_ni,
   input  logic src_clk_i,
@@ -24,10 +25,11 @@ module cdc_4phase #(
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_4phase' instead.");
   // synthesis translate_on
   cc_cdc_4phase #(
-    .data_t ( T             ),
-    .Decoupled ( DECOUPLED     ),
-    .SendResetMsg ( SEND_RESET_MSG),
-    .ResetMsg ( RESET_MSG     )
+    .data_t       ( T              ),
+    .SyncStages   ( SYNC_STAGES    ),
+    .Decoupled    ( DECOUPLED      ),
+    .SendResetMsg ( SEND_RESET_MSG ),
+    .ResetMsg     ( RESET_MSG      )
   ) i_cc_cdc_4phase (
     .src_rst_ni  ( src_rst_ni  ),
     .src_clk_i   ( src_clk_i   ),
