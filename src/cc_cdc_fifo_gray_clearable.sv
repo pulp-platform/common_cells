@@ -12,6 +12,7 @@
 // Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
 // Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 // Manuel Eggimann <meggimann@iis.ee.ethz.ch> (clearability feature)
+// Philippe Sauter <phsauter@iis.ee.ethz.ch> (source/destination split)
 
 /// A clock domain crossing FIFO, using gray counters.
 ///
@@ -88,6 +89,12 @@
 /// one bit of the read/write pointer have an excessive delay). Furthermore, we
 /// should deactivate setup and hold checks on the asynchronous signals.
 ///
+/// async_data, async_wptr, and async_rptr are the FIFO storage and pointer CDCs
+/// for the actual data path. async_reset_src2dst_req,
+/// async_reset_dst2src_ack, async_reset_src2dst_next_phase,
+/// async_reset_dst2src_req, async_reset_src2dst_ack, and
+/// async_reset_dst2src_next_phase are the CDCs for the clearing state machines.
+///
 /// ``` set_ungroup [get_designs cc_cdc_fifo_gray*] false set_boundary_optimization
 /// [get_designs cc_cdc_fifo_gray*] false set_max_delay min(T_src, T_dst) \
 /// -through [get_pins -hierarchical -filter async] \ -through [get_pins
@@ -108,9 +115,9 @@ module cc_cdc_fifo_gray_clearable #(
   /// The FIFO's depth given as 2**LogDepth.
   parameter int unsigned LogDepth = 3,
   /// The number of synchronization registers to insert on the async pointers
-  /// between the FIFOs. If ClearOnAsyncReset is enabled, we need at least 4
+  /// between the FIFOs. If ClearOnAsyncReset is enabled, we need at least 3
   /// synchronizer stages to provide the clear synchronizer lower latency than
-  /// the async reset. I.e. if ClearOnAsyncReset==1 -> SyncStages >= 4 else
+  /// the async reset. I.e. if ClearOnAsyncReset==1 -> SyncStages >= 3 else
   /// SyncStages >= 2.
   parameter int unsigned SyncStages = 3,
   parameter bit ClearOnAsyncReset = 1
@@ -132,21 +139,15 @@ module cc_cdc_fifo_gray_clearable #(
   input  logic  dst_ready_i
 );
 
-  logic        s_src_clear_req;
-  logic        s_src_clear_ack_q;
-  logic        s_src_ready;
-  logic        s_src_isolate_req;
-  logic        s_src_isolate_ack_q;
-  logic        s_dst_clear_req;
-  logic        s_dst_clear_ack_q;
-  logic        s_dst_valid;
-  logic        s_dst_isolate_req;
-  logic        s_dst_isolate_ack_q;
-
-
   data_t [2**LogDepth-1:0] async_data;
   logic [LogDepth:0]  async_wptr;
   logic [LogDepth:0]  async_rptr;
+  cc_pkg::cdc_clear_seq_phase_e async_reset_src2dst_next_phase;
+  logic async_reset_src2dst_req;
+  logic async_reset_dst2src_ack;
+  cc_pkg::cdc_clear_seq_phase_e async_reset_dst2src_next_phase;
+  logic async_reset_dst2src_req;
+  logic async_reset_src2dst_ack;
 
   if (ClearOnAsyncReset) begin : gen_elaboration_assertion
     if (SyncStages < 3)
@@ -167,6 +168,129 @@ module cc_cdc_fifo_gray_clearable #(
 
 
 
+  cc_cdc_fifo_gray_clearable_src #(
+    .data_t            ( data_t            ),
+    .LogDepth          ( LogDepth          ),
+    .SyncStages        ( SyncStages        ),
+    .ClearOnAsyncReset ( ClearOnAsyncReset )
+  ) i_src (
+    .src_rst_ni,
+    .src_clk_i,
+    .src_clear_i,
+    .src_clear_pending_o,
+    .src_data_i,
+    .src_valid_i,
+    .src_ready_o,
+
+    (* async *) .async_data_o              ( async_data                   ),
+    (* async *) .async_wptr_o              ( async_wptr                   ),
+    (* async *) .async_rptr_i              ( async_rptr                   ),
+    (* async *) .async_reset_next_phase_o  ( async_reset_src2dst_next_phase ),
+    (* async *) .async_reset_req_o         ( async_reset_src2dst_req        ),
+    (* async *) .async_reset_ack_i         ( async_reset_dst2src_ack        ),
+    (* async *) .async_reset_next_phase_i  ( async_reset_dst2src_next_phase ),
+    (* async *) .async_reset_req_i         ( async_reset_dst2src_req        ),
+    (* async *) .async_reset_ack_o         ( async_reset_src2dst_ack        )
+  );
+
+  cc_cdc_fifo_gray_clearable_dst #(
+    .data_t            ( data_t            ),
+    .LogDepth          ( LogDepth          ),
+    .SyncStages        ( SyncStages        ),
+    .ClearOnAsyncReset ( ClearOnAsyncReset )
+  ) i_dst (
+    .dst_rst_ni,
+    .dst_clk_i,
+    .dst_clear_i,
+    .dst_clear_pending_o,
+    .dst_data_o,
+    .dst_valid_o,
+    .dst_ready_i,
+
+    (* async *) .async_data_i              ( async_data                   ),
+    (* async *) .async_wptr_i              ( async_wptr                   ),
+    (* async *) .async_rptr_o              ( async_rptr                   ),
+    (* async *) .async_reset_next_phase_o  ( async_reset_dst2src_next_phase ),
+    (* async *) .async_reset_req_o         ( async_reset_dst2src_req        ),
+    (* async *) .async_reset_ack_i         ( async_reset_src2dst_ack        ),
+    (* async *) .async_reset_next_phase_i  ( async_reset_src2dst_next_phase ),
+    (* async *) .async_reset_req_i         ( async_reset_src2dst_req        ),
+    (* async *) .async_reset_ack_o         ( async_reset_dst2src_ack        )
+  );
+
+  // Check the invariants.
+  `ifndef COMMON_CELLS_ASSERTS_OFF
+  `ASSERT_INIT(log_depth_0, LogDepth > 0)
+  `ASSERT_INIT(sync_stages_lt_2, SyncStages >= 2)
+  `endif
+
+endmodule
+
+
+(* no_ungroup *)
+(* no_boundary_optimization *)
+module cc_cdc_fifo_gray_clearable_src #(
+  parameter type data_t = logic,
+  parameter int unsigned LogDepth = 3,
+  parameter int unsigned SyncStages = 2,
+  parameter bit ClearOnAsyncReset = 1
+)(
+  input  logic  src_rst_ni,
+  input  logic  src_clk_i,
+  input  logic  src_clear_i,
+  output logic  src_clear_pending_o,
+  input  data_t src_data_i,
+  input  logic  src_valid_i,
+  output logic  src_ready_o,
+
+  output data_t [2**LogDepth-1:0] async_data_o,
+  output logic  [LogDepth:0]      async_wptr_o,
+  input  logic  [LogDepth:0]      async_rptr_i,
+  output cc_pkg::cdc_clear_seq_phase_e async_reset_next_phase_o,
+  output logic async_reset_req_o,
+  input  logic async_reset_ack_i,
+  input  cc_pkg::cdc_clear_seq_phase_e async_reset_next_phase_i,
+  input  logic async_reset_req_i,
+  output logic async_reset_ack_o
+);
+
+  logic src_clear_req;
+  logic src_clear_ack_q;
+  logic src_ready;
+  logic src_isolate_req;
+  logic src_isolate_ack_q;
+
+  if (ClearOnAsyncReset) begin : gen_elaboration_assertion
+    if (SyncStages < 3)
+      $error("The clearable CDC FIFO with async reset synchronization requires at least",
+             "3 synchronizer stages for the FIFO.");
+  end else begin : gen_elaboration_assertion
+    if (SyncStages < 2) begin : gen_sync_stage_assertion
+      $error("A minimum of 2 synchronizer stages is required for proper functionality.");
+    end
+  end
+
+  localparam int unsigned ResetSyncStages = (SyncStages > 2) ? SyncStages - 1 : 2;
+
+  cc_cdc_reset_ctrlr_half #(
+    .SyncStages        ( ResetSyncStages    ),
+    .ClearOnAsyncReset ( ClearOnAsyncReset )
+  ) i_cdc_reset_ctrlr_half (
+    .clk_i              ( src_clk_i                  ),
+    .rst_ni             ( src_rst_ni                 ),
+    .clear_i            ( src_clear_i                ),
+    .clear_o            ( src_clear_req              ),
+    .clear_ack_i        ( src_clear_ack_q            ),
+    .isolate_o          ( src_isolate_req            ),
+    .isolate_ack_i      ( src_isolate_ack_q          ),
+    (* async *) .async_next_phase_o ( async_reset_next_phase_o ),
+    (* async *) .async_req_o        ( async_reset_req_o        ),
+    (* async *) .async_ack_i        ( async_reset_ack_i        ),
+    (* async *) .async_next_phase_i ( async_reset_next_phase_i ),
+    (* async *) .async_req_i        ( async_reset_req_i        ),
+    (* async *) .async_ack_o        ( async_reset_ack_o        )
+  );
+
   cc_cdc_fifo_gray_src_clearable #(
     .data_t     ( data_t     ),
     .LogDepth   ( LogDepth   ),
@@ -174,17 +298,90 @@ module cc_cdc_fifo_gray_clearable #(
   ) i_src (
     .src_rst_ni,
     .src_clk_i,
-    .src_clear_i ( s_src_clear_req                  ),
+    .src_clear_i ( src_clear_req                  ),
     .src_data_i,
-    .src_valid_i ( src_valid_i & !s_src_isolate_req ),
-    .src_ready_o ( s_src_ready                      ),
+    .src_valid_i ( src_valid_i & !src_isolate_req ),
+    .src_ready_o ( src_ready                      ),
 
-    (* async *) .async_data_o ( async_data ),
-    (* async *) .async_wptr_o ( async_wptr ),
-    (* async *) .async_rptr_i ( async_rptr )
+    (* async *) .async_data_o ( async_data_o ),
+    (* async *) .async_wptr_o ( async_wptr_o ),
+    (* async *) .async_rptr_i ( async_rptr_i )
   );
 
-  assign src_ready_o = s_src_ready & !s_src_isolate_req;
+  assign src_ready_o = src_ready & !src_isolate_req;
+
+  // Isolation and clear are acknowledged one cycle after the local request.
+  `FF(src_isolate_ack_q, src_isolate_req, 1'b0, src_clk_i, src_rst_ni)
+  `FF(src_clear_ack_q,   src_clear_req,   1'b0, src_clk_i, src_rst_ni)
+
+  assign src_clear_pending_o = src_isolate_req;
+
+endmodule
+
+
+(* no_ungroup *)
+(* no_boundary_optimization *)
+module cc_cdc_fifo_gray_clearable_dst #(
+  parameter type data_t = logic,
+  parameter int unsigned LogDepth = 3,
+  parameter int unsigned SyncStages = 2,
+  parameter bit ClearOnAsyncReset = 1
+)(
+  input  logic  dst_rst_ni,
+  input  logic  dst_clk_i,
+  input  logic  dst_clear_i,
+  output logic  dst_clear_pending_o,
+  output data_t dst_data_o,
+  output logic  dst_valid_o,
+  input  logic  dst_ready_i,
+
+  input  data_t [2**LogDepth-1:0] async_data_i,
+  input  logic  [LogDepth:0]      async_wptr_i,
+  output logic  [LogDepth:0]      async_rptr_o,
+  output cc_pkg::cdc_clear_seq_phase_e async_reset_next_phase_o,
+  output logic async_reset_req_o,
+  input  logic async_reset_ack_i,
+  input  cc_pkg::cdc_clear_seq_phase_e async_reset_next_phase_i,
+  input  logic async_reset_req_i,
+  output logic async_reset_ack_o
+);
+
+  logic dst_clear_req;
+  logic dst_clear_ack_q;
+  logic dst_valid;
+  logic dst_isolate_req;
+  logic dst_isolate_ack_q;
+
+  if (ClearOnAsyncReset) begin : gen_elaboration_assertion
+    if (SyncStages < 3)
+      $error("The clearable CDC FIFO with async reset synchronization requires at least",
+             "3 synchronizer stages for the FIFO.");
+  end else begin : gen_elaboration_assertion
+    if (SyncStages < 2) begin : gen_sync_stage_assertion
+      $error("A minimum of 2 synchronizer stages is required for proper functionality.");
+    end
+  end
+
+  localparam int unsigned ResetSyncStages = (SyncStages > 2) ? SyncStages - 1 : 2;
+
+  cc_cdc_reset_ctrlr_half #(
+    .SyncStages        ( ResetSyncStages    ),
+    .ClearOnAsyncReset ( ClearOnAsyncReset )
+  ) i_cdc_reset_ctrlr_half (
+    .clk_i              ( dst_clk_i                  ),
+    .rst_ni             ( dst_rst_ni                 ),
+    .clear_i            ( dst_clear_i                ),
+    .clear_o            ( dst_clear_req              ),
+    .clear_ack_i        ( dst_clear_ack_q            ),
+    .isolate_o          ( dst_isolate_req            ),
+    .isolate_ack_i      ( dst_isolate_ack_q          ),
+    (* async *) .async_next_phase_o ( async_reset_next_phase_o ),
+    (* async *) .async_req_o        ( async_reset_req_o        ),
+    (* async *) .async_ack_i        ( async_reset_ack_i        ),
+    (* async *) .async_next_phase_i ( async_reset_next_phase_i ),
+    (* async *) .async_req_i        ( async_reset_req_i        ),
+    (* async *) .async_ack_o        ( async_reset_ack_o        )
+  );
 
   cc_cdc_fifo_gray_dst_clearable #(
     .data_t     ( data_t     ),
@@ -193,58 +390,23 @@ module cc_cdc_fifo_gray_clearable #(
   ) i_dst (
     .dst_rst_ni,
     .dst_clk_i,
-    .dst_clear_i ( s_dst_clear_req                  ),
+    .dst_clear_i ( dst_clear_req                  ),
     .dst_data_o,
-    .dst_valid_o ( s_dst_valid                      ),
-    .dst_ready_i ( dst_ready_i & !s_dst_isolate_req ),
+    .dst_valid_o ( dst_valid                      ),
+    .dst_ready_i ( dst_ready_i & !dst_isolate_req ),
 
-    (* async *) .async_data_i ( async_data ),
-    (* async *) .async_wptr_i ( async_wptr ),
-    (* async *) .async_rptr_o ( async_rptr )
+    (* async *) .async_data_i ( async_data_i ),
+    (* async *) .async_wptr_i ( async_wptr_i ),
+    (* async *) .async_rptr_o ( async_rptr_o )
   );
 
-  assign dst_valid_o = s_dst_valid & !s_dst_isolate_req;
+  assign dst_valid_o = dst_valid & !dst_isolate_req;
 
-  // Synchronize the clear and reset signaling in both directions (see header of
-  // the cc_cdc_reset_ctrlr module for more details.)
-  cc_cdc_reset_ctrlr #(
-    .SyncStages(SyncStages-1)
-  ) i_cdc_reset_ctrlr (
-    .a_clk_i         ( src_clk_i           ),
-    .a_rst_ni        ( src_rst_ni          ),
-    .a_clear_i       ( src_clear_i         ),
-    .a_clear_o       ( s_src_clear_req     ),
-    .a_clear_ack_i   ( s_src_clear_ack_q   ),
-    .a_isolate_o     ( s_src_isolate_req   ),
-    .a_isolate_ack_i ( s_src_isolate_ack_q ),
-    .b_clk_i         ( dst_clk_i           ),
-    .b_rst_ni        ( dst_rst_ni          ),
-    .b_clear_i       ( dst_clear_i         ),
-    .b_clear_o       ( s_dst_clear_req     ),
-    .b_clear_ack_i   ( s_dst_clear_ack_q   ),
-    .b_isolate_o     ( s_dst_isolate_req   ),
-    .b_isolate_ack_i ( s_dst_isolate_ack_q )
-  );
+  // Isolation and clear are acknowledged one cycle after the local request.
+  `FF(dst_isolate_ack_q, dst_isolate_req, 1'b0, dst_clk_i, dst_rst_ni)
+  `FF(dst_clear_ack_q,   dst_clear_req,   1'b0, dst_clk_i, dst_rst_ni)
 
-  // Just delay the isolate request by one cycle. We can ensure isolation within
-  // one cycle by just deasserting valid and ready signals on both sides of the CDC.
-  `FF(s_src_isolate_ack_q, s_src_isolate_req, 1'b0, src_clk_i, src_rst_ni)
-  `FF(s_src_clear_ack_q,   s_src_clear_req,   1'b0, src_clk_i, src_rst_ni)
-
-  `FF(s_dst_isolate_ack_q, s_dst_isolate_req, 1'b0, dst_clk_i, dst_rst_ni)
-  `FF(s_dst_clear_ack_q,   s_dst_clear_req,   1'b0, dst_clk_i, dst_rst_ni)
-
-
-  assign src_clear_pending_o = s_src_isolate_req; // The isolate signal stays
-                                                  // asserted during the whole
-                                                  // clear sequence.
-  assign dst_clear_pending_o = s_dst_isolate_req;
-
-  // Check the invariants.
-  `ifndef COMMON_CELLS_ASSERTS_OFF
-  `ASSERT_INIT(log_depth_0, LogDepth > 0)
-  `ASSERT_INIT(sync_stages_lt_2, SyncStages >= 2)
-  `endif
+  assign dst_clear_pending_o = dst_isolate_req;
 
 endmodule
 
@@ -268,43 +430,36 @@ module cc_cdc_fifo_gray_src_clearable #(
   input  logic  [LogDepth:0]      async_rptr_i
 );
 
-  localparam int unsigned PtrWidth = LogDepth+1;
-  localparam logic [PtrWidth-1:0] PtrFull = (1 << LogDepth);
+  logic [LogDepth-1:0] src_widx;
+  logic src_write;
 
-  data_t [2**LogDepth-1:0] data_q, data_d;
-  logic [PtrWidth-1:0] wptr_q, wptr_d, wptr_bin, wptr_next, rptr, rptr_bin;
+  assign src_write = src_valid_i & src_ready_o;
 
-  // Data FIFO.
-  assign async_data_o = data_q;
-  always_comb begin
-    data_d                          = data_q;
-    data_d[wptr_bin[LogDepth-1:0]] = src_data_i;
-  end
-  `FFL(data_q, data_d, src_valid_i & src_ready_o, '0, src_clk_i, src_rst_ni)
+  cc_cdc_fifo_gray_src_data_clearable #(
+    .data_t   ( data_t   ),
+    .LogDepth ( LogDepth )
+  ) i_src_data (
+    .src_rst_ni,
+    .src_clk_i,
+    .src_data_i,
+    .src_widx_i  ( src_widx     ),
+    .src_write_i ( src_write    ),
+    .async_data_o
+  );
 
-  // Read pointer.
-  for (genvar i = 0; i < PtrWidth; i++) begin : gen_sync
-    tc_sync #(.Stages(SyncStages)) i_sync (
-      .clk_i    ( src_clk_i       ),
-      .rst_ni   ( src_rst_ni      ),
-      .serial_i ( async_rptr_i[i] ),
-      .serial_o ( rptr[i]         )
-    );
-  end
-  cc_gray_to_binary #(PtrWidth) i_rptr_g2b (.a_i(rptr), .z_o(rptr_bin));
-
-  // Write pointer.
-  assign wptr_next = wptr_bin+1;
-  cc_gray_to_binary #(PtrWidth) i_wptr_g2b (.a_i(wptr_q), .z_o(wptr_bin));
-  cc_binary_to_gray #(PtrWidth) i_wptr_b2g (.a_i(wptr_next), .z_o(wptr_d));
-  `FFLARNC(wptr_q, wptr_d, src_valid_i & src_ready_o, src_clear_i, '0, src_clk_i, src_rst_ni)
-  assign async_wptr_o = wptr_q;
-
-  // The pointers into the FIFO are one bit wider than the actual address into
-  // the FIFO. This makes detecting critical states very simple: if all but the
-  // topmost bit of rptr and wptr agree, the FIFO is in a critical state. If the
-  // topmost bit is equal, the FIFO is empty, otherwise it is full.
-  assign src_ready_o = ((wptr_bin ^ rptr_bin) != PtrFull);
+  cc_cdc_fifo_gray_src_ptr_clearable #(
+    .LogDepth   ( LogDepth   ),
+    .SyncStages ( SyncStages )
+  ) i_src_ptr (
+    .src_rst_ni,
+    .src_clk_i,
+    .src_clear_i,
+    .src_valid_i,
+    .src_ready_o,
+    .src_widx_o  ( src_widx     ),
+    .async_wptr_o,
+    .async_rptr_i
+  );
 
 endmodule
 
@@ -328,23 +483,161 @@ module cc_cdc_fifo_gray_dst_clearable #(
   output logic  [LogDepth:0]      async_rptr_o
 );
 
+  logic dst_valid, dst_ready;
+  logic [LogDepth-1:0] dst_ridx;
+
+  cc_cdc_fifo_gray_dst_ptr_clearable #(
+    .LogDepth   ( LogDepth   ),
+    .SyncStages ( SyncStages )
+  ) i_dst_ptr (
+    .dst_rst_ni,
+    .dst_clk_i,
+    .dst_clear_i,
+    .dst_ready_i ( dst_ready    ),
+    .dst_valid_o ( dst_valid    ),
+    .dst_ridx_o  ( dst_ridx     ),
+    .async_wptr_i,
+    .async_rptr_o
+  );
+
+  cc_cdc_fifo_gray_dst_data_clearable #(
+    .data_t   ( data_t   ),
+    .LogDepth ( LogDepth )
+  ) i_dst_data (
+    .dst_rst_ni,
+    .dst_clk_i,
+    .dst_clear_i,
+    .dst_data_o,
+    .dst_valid_o,
+    .dst_ready_i,
+    .dst_valid_i ( dst_valid    ),
+    .dst_ready_o ( dst_ready    ),
+    .dst_ridx_i  ( dst_ridx     ),
+    .async_data_i
+  );
+
+endmodule
+
+
+(* no_ungroup *)
+(* no_boundary_optimization *)
+module cc_cdc_fifo_gray_src_data_clearable #(
+  parameter type data_t = logic,
+  parameter int unsigned LogDepth = 3
+)(
+  input  logic  src_rst_ni,
+  input  logic  src_clk_i,
+  input  data_t src_data_i,
+  input  logic [LogDepth-1:0] src_widx_i,
+  input  logic  src_write_i,
+  output data_t [2**LogDepth-1:0] async_data_o
+);
+
+  data_t [2**LogDepth-1:0] data_d, data_q;
+
+  always_comb begin
+    data_d = data_q;
+    data_d[src_widx_i] = src_data_i;
+  end
+
+  `FFL(data_q, data_d, src_write_i, '0, src_clk_i, src_rst_ni)
+
+  assign async_data_o = data_q;
+
+endmodule
+
+
+(* no_ungroup *)
+(* no_boundary_optimization *)
+module cc_cdc_fifo_gray_src_ptr_clearable #(
+  parameter int unsigned LogDepth = 3,
+  parameter int unsigned SyncStages = 2
+)(
+  input  logic src_rst_ni,
+  input  logic src_clk_i,
+  input  logic src_clear_i,
+  input  logic src_valid_i,
+  output logic src_ready_o,
+  output logic [LogDepth-1:0] src_widx_o,
+  output logic [LogDepth:0]   async_wptr_o,
+  input  logic [LogDepth:0]   async_rptr_i
+);
+
+  localparam int unsigned PtrWidth = LogDepth+1;
+  localparam logic [PtrWidth-1:0] PtrFull = (1 << LogDepth);
+
+  logic [PtrWidth-1:0] wptr_q, wptr_d, wptr_bin, wptr_next, rptr, rptr_bin;
+
+  if (SyncStages < 2) begin : gen_sync_stage_assertion
+    $error("A minimum of 2 synchronizer stages is required for proper functionality.");
+  end
+
+  // Read pointer from the destination domain, synchronized into the source
+  // domain for the full check.
+  for (genvar i = 0; i < PtrWidth; i++) begin : gen_sync
+    tc_sync #(.Stages(SyncStages)) i_sync (
+      .clk_i    ( src_clk_i       ),
+      .rst_ni   ( src_rst_ni      ),
+      .serial_i ( async_rptr_i[i] ),
+      .serial_o ( rptr[i]         )
+    );
+  end
+  cc_gray_to_binary #(PtrWidth) i_rptr_g2b (.a_i(rptr), .z_o(rptr_bin));
+
+  // Local write pointer.
+  assign wptr_next = wptr_bin+1;
+  cc_gray_to_binary #(PtrWidth) i_wptr_g2b (.a_i(wptr_q), .z_o(wptr_bin));
+  cc_binary_to_gray #(PtrWidth) i_wptr_b2g (.a_i(wptr_next), .z_o(wptr_d));
+  `FFLARNC(wptr_q, wptr_d, src_valid_i & src_ready_o, src_clear_i, '0, src_clk_i, src_rst_ni)
+
+  assign src_widx_o   = wptr_bin[LogDepth-1:0];
+  assign async_wptr_o = wptr_q;
+
+  // The pointers into the FIFO are one bit wider than the actual address into
+  // the FIFO. This makes detecting critical states very simple: if all but the
+  // topmost bit of rptr and wptr agree, the FIFO is in a critical state. If the
+  // topmost bit is equal, the FIFO is empty, otherwise it is full.
+  assign src_ready_o = ((wptr_bin ^ rptr_bin) != PtrFull);
+
+endmodule
+
+
+(* no_ungroup *)
+(* no_boundary_optimization *)
+module cc_cdc_fifo_gray_dst_ptr_clearable #(
+  parameter int unsigned LogDepth = 3,
+  parameter int unsigned SyncStages = 2
+)(
+  input  logic dst_rst_ni,
+  input  logic dst_clk_i,
+  input  logic dst_clear_i,
+  input  logic dst_ready_i,
+  output logic dst_valid_o,
+  output logic [LogDepth-1:0] dst_ridx_o,
+  input  logic [LogDepth:0]   async_wptr_i,
+  output logic [LogDepth:0]   async_rptr_o
+);
+
   localparam int unsigned PtrWidth = LogDepth+1;
   localparam logic [PtrWidth-1:0] PtrEmpty = '0;
 
-  data_t dst_data;
   logic [PtrWidth-1:0] rptr_q, rptr_d, rptr_bin, rptr_next, wptr, wptr_bin;
-  logic dst_valid, dst_ready;
-  // Data selector and register.
-  assign dst_data = async_data_i[rptr_bin[LogDepth-1:0]];
 
-  // Read pointer.
+  if (SyncStages < 2) begin : gen_sync_stage_assertion
+    $error("A minimum of 2 synchronizer stages is required for proper functionality.");
+  end
+
+  // Local read pointer.
   assign rptr_next = rptr_bin+1;
   cc_gray_to_binary #(PtrWidth) i_rptr_g2b (.a_i(rptr_q), .z_o(rptr_bin));
   cc_binary_to_gray #(PtrWidth) i_rptr_b2g (.a_i(rptr_next), .z_o(rptr_d));
-  `FFLARNC(rptr_q, rptr_d, dst_valid & dst_ready, dst_clear_i, '0, dst_clk_i, dst_rst_ni)
+  `FFLARNC(rptr_q, rptr_d, dst_valid_o & dst_ready_i, dst_clear_i, '0, dst_clk_i, dst_rst_ni)
+
+  assign dst_ridx_o   = rptr_bin[LogDepth-1:0];
   assign async_rptr_o = rptr_q;
 
-  // Write pointer.
+  // Write pointer from the source domain, synchronized into the destination
+  // domain for the empty check.
   for (genvar i = 0; i < PtrWidth; i++) begin : gen_sync
     tc_sync #(.Stages(SyncStages)) i_sync (
       .clk_i    ( dst_clk_i       ),
@@ -359,7 +652,32 @@ module cc_cdc_fifo_gray_dst_clearable #(
   // the FIFO. This makes detecting critical states very simple: if all but the
   // topmost bit of rptr and wptr agree, the FIFO is in a critical state. If the
   // topmost bit is equal, the FIFO is empty, otherwise it is full.
-  assign dst_valid = ((wptr_bin ^ rptr_bin) != PtrEmpty);
+  assign dst_valid_o = ((wptr_bin ^ rptr_bin) != PtrEmpty);
+
+endmodule
+
+
+(* no_ungroup *)
+(* no_boundary_optimization *)
+module cc_cdc_fifo_gray_dst_data_clearable #(
+  parameter type data_t = logic,
+  parameter int unsigned LogDepth = 3
+)(
+  input  logic  dst_rst_ni,
+  input  logic  dst_clk_i,
+  input  logic  dst_clear_i,
+  output data_t dst_data_o,
+  output logic  dst_valid_o,
+  input  logic  dst_ready_i,
+  input  logic  dst_valid_i,
+  output logic  dst_ready_o,
+  input  logic [LogDepth-1:0] dst_ridx_i,
+  input  data_t [2**LogDepth-1:0] async_data_i
+);
+
+  data_t dst_data;
+
+  assign dst_data = async_data_i[dst_ridx_i];
 
   // Cut the combinatorial path with a spill register.
   cc_spill_register_flushable #(
@@ -369,8 +687,8 @@ module cc_cdc_fifo_gray_dst_clearable #(
     .rst_ni  ( dst_rst_ni               ),
     .clr_i   ( '0                       ),
     .flush_i ( dst_clear_i              ),
-    .valid_i ( dst_valid & !dst_clear_i ),
-    .ready_o ( dst_ready                ),
+    .valid_i ( dst_valid_i & !dst_clear_i ),
+    .ready_o ( dst_ready_o              ),
     .data_i  ( dst_data                 ),
     .valid_o ( dst_valid_o              ),
     .ready_i ( dst_ready_i              ),

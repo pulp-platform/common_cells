@@ -46,7 +46,9 @@ sg-lint:
   timeout: 10min
   script:
     - |
-      if [ "$TOPLEVEL" = "cc_cdc_2phase_clearable_tb" ]; then
+      if [ "$TOPLEVEL" = "cc_cdc_fifo_clearable_tb" ]; then
+        ./test/simulate_cdc_fifo_gray_clearable.sh
+      elif [ "$TOPLEVEL" = "cc_cdc_2phase_clearable_tb" ]; then
         ./test/simulate_cdc_clearable.sh
       elif [ "$TOPLEVEL" = "cc_cdc_2phase_tb" ]; then
         ./test/simulate_cdc_2phase.sh
@@ -75,8 +77,8 @@ tests:
           - cc_cdc_2phase_tb
           - cc_cdc_4phase_tb
           - cc_cdc_fifo_2phase_tb
+          - cc_cdc_fifo_clearable_tb
           - cc_cdc_fifo_gray_tb
-          # - cc_cdc_fifo_clearable_tb
           - cc_clk_int_div_tb
           - cc_clk_int_div_static_tb
           - cc_clk_mux_glitch_free_tb
