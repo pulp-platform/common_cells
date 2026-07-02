@@ -51,8 +51,8 @@ module stream_xbar #(
   ) i_cc_stream_xbar (
     .clk_i   ( clk_i   ),
     .rst_ni  ( rst_ni  ),
-    .clr_i     ( flush_i ),
-    .clr_arb_i ( 1'b0   ),
+    .clr_i     ( 1'b0   ),
+    .clr_arb_i ( flush_i ),
     .rr_i      ( rr_i   ),
     .data_i  ( data_i  ),
     .sel_i   ( sel_i   ),
