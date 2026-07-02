@@ -1009,12 +1009,12 @@ module cc_cdc_2phase_clearable_tb_delay_injector
     .out_o ( async_reset_src2dst_ack_to_dst   )
   );
 
-  // Production domain wrappers connected through the delayed async wires.
-  cc_cdc_2phase_src_domain_clearable #(
+  // Production sides connected through the delayed async wires.
+  cc_cdc_2phase_clearable_src #(
     .data_t            ( logic [31:0]        ),
     .SyncStages        ( SYNC_STAGES         ),
     .ClearOnAsyncReset ( CLEAR_ON_ASYNC_RESET )
-  ) i_src_domain (
+  ) i_src (
     .src_rst_ni,
     .src_clk_i,
     .src_clear_i,
@@ -1033,11 +1033,11 @@ module cc_cdc_2phase_clearable_tb_delay_injector
     .async_reset_ack_o         ( async_reset_src2dst_ack_from_src        )
   );
 
-  cc_cdc_2phase_dst_domain_clearable #(
+  cc_cdc_2phase_clearable_dst #(
     .data_t            ( logic [31:0]        ),
     .SyncStages        ( SYNC_STAGES         ),
     .ClearOnAsyncReset ( CLEAR_ON_ASYNC_RESET )
-  ) i_dst_domain (
+  ) i_dst (
     .dst_rst_ni,
     .dst_clk_i,
     .dst_clear_i,
