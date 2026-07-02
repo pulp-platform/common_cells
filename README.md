@@ -45,6 +45,8 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | [`cc_majority_vote_filter`](src/cc_majority_vote_filter.sv)                   | Smooth noisy data using a moving window threshold vote                                           | active |               |
 | [`cc_sync_wedge`](src/cc_sync_wedge.sv)                                       | Serial line synchronizer with edge detector                                                      | active |               |
 
+The generic synchronizer is provided by the [`tech_cells_generic`](https://github.com/pulp-platform/tech_cells_generic) dependency as `tc_sync`.
+
 ### Counters and Shift Registers
 
 | Name                                              | Description                                                         | Status | Superseded By |
