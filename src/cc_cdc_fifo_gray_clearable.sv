@@ -207,8 +207,10 @@ module cc_cdc_fifo_gray_clearable #(
 
   // Synchronize the clear and reset signaling in both directions (see header of
   // the cc_cdc_reset_ctrlr module for more details.)
+  localparam int unsigned ResetSyncStages = (SyncStages > 2) ? SyncStages - 1 : 2;
+
   cc_cdc_reset_ctrlr #(
-    .SyncStages        ( SyncStages-1      ),
+    .SyncStages        ( ResetSyncStages   ),
     .ClearOnAsyncReset ( ClearOnAsyncReset )
   ) i_cdc_reset_ctrlr (
     .a_clk_i         ( src_clk_i           ),
