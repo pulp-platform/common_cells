@@ -172,6 +172,7 @@ The use of linter rules that flag explicit uses of `always_ff` in source code is
 - *Argument suffix `_sig` indicates signal names for present and next state as well as clocks, resets and synchronous clear signals.*
 - *Argument `rst_val` specifies the value literal to be assigned upon reset.*
 - *Argument `load_ena` specifies the boolean expression that forms the load enable of the register.*
+- *Arguments `clr_sig`, `rst_sig` and `rstn_sig` must be plain signal names, not expressions.*
 
 ### SystemVerilog Assertion Macros
 

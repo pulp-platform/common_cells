@@ -30,8 +30,10 @@ module cc_delta_counter #(
     logic [Width:0] counter_q, counter_d;
     if (StickyOverflow) begin : gen_sticky_overflow
         logic overflow_d, overflow_q;
+        logic overflow_clr;
 
-        `FFARNC(overflow_q, overflow_d, clr_i || load_i, 1'b0, clk_i, rst_ni)
+        assign overflow_clr = clr_i || load_i;
+        `FFARNC(overflow_q, overflow_d, overflow_clr, 1'b0, clk_i, rst_ni)
 
         always_comb begin
             overflow_d = overflow_q;

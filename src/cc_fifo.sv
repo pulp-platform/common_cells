@@ -117,9 +117,11 @@ module cc_fifo #(
     end
 
     // sequential process
-    `FFARNC(read_pointer_q, read_pointer_n, clr_i || flush_i, '0, clk_i, rst_ni)
-    `FFARNC(write_pointer_q, write_pointer_n, clr_i || flush_i, '0, clk_i, rst_ni)
-    `FFARNC(status_cnt_q, status_cnt_n, clr_i || flush_i, '0, clk_i, rst_ni)
+    logic clr_or_flush;
+    assign clr_or_flush = clr_i || flush_i;
+    `FFARNC(read_pointer_q, read_pointer_n, clr_or_flush, '0, clk_i, rst_ni)
+    `FFARNC(write_pointer_q, write_pointer_n, clr_or_flush, '0, clk_i, rst_ni)
+    `FFARNC(status_cnt_q, status_cnt_n, clr_or_flush, '0, clk_i, rst_ni)
 
     `FFLARNC(mem_q, mem_n, !gate_clock, clr_i, {FifoDepth{data_t'('0)}}, clk_i, rst_ni)
 
