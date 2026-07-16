@@ -16,7 +16,7 @@
 // helper macro to reduce code clutter, can be used to hide signal defs only used for assertions
 `ifndef ASSERTS_OFF
 `ifndef SYNTHESIS
-`ifndef XSIM
+`ifndef XILINX_SIMULATOR
 `define INC_ASSERT
 `endif
 `endif   
