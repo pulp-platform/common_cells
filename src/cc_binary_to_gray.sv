@@ -18,5 +18,8 @@ module cc_binary_to_gray #(
     input  logic [Width-1:0] a_i,
     output logic [Width-1:0] z_o
 );
-    assign z_o = a_i ^ (a_i >> 1);
+    logic [Width:0] a_ext;
+
+    assign a_ext = {1'b0, a_i};
+    assign z_o   = a_i ^ a_ext[Width:1];
 endmodule
