@@ -10,8 +10,38 @@
 //
 // Author: Luca Colagrande <colluca@iis.ee.ethz.ch>
 //
-// Counter which resets automatically when it reaches a specified bound, i.e.
-// when it "trips". Useful e.g. for implementing hardware loop logic.
+// Counter which resets automatically after it reaches a specified bound, i.e.
+// when it "trips". Useful e.g. for implementing hardware loop logic, where the
+// counter can be used to track the induction variable of a loop.
+//
+// Example use case
+// ================
+//
+// Set `delta_i` to `j_incr` and `bound_i` to `j_bound`, and `q_o` will
+// track `j` in the following loop nest:
+//
+//   for (int i = 0; i <= i_bound; i+=i_incr)
+//     for (int j = 0; j <= j_bound; j+=j_incr)
+//
+// Step the `j` loop iterations by asserting `en_i` for each iteration.
+// The `last_o` flag is asserted when the last iteration of the `j` loop is
+// reached.
+// The `trip_o` flag is asserted when stepping the loop during the last
+// iteration, after which the counter is reset.
+//
+// Caveats
+// =======
+//
+// To reduce ambiguity and complexity, we require the counter to land exactly
+// on the bound on the last iteration. This ensures there exists an injective
+// function between increment and bound inputs and the output induction
+// variable sequence. For example, the {0 2 4 6} sequence could be obtained by
+// setting `j_incr` to 2 and `j_bound` to either 6 or 7. With this constraint,
+// only the prior is valid, and the latter will trigger the
+// `CounterExceedsBound` assertion.
+//
+// To track the induction variable of a loop with increment `incr` and `N`
+// iterations, set `delta_i` to `incr` and `bound_i` to `(N-1)*incr`.
 
 `include "common_cells/assertions.svh"
 
@@ -47,6 +77,9 @@ module cc_trip_counter #(
     assign last_o = (q_o == bound_i);
     assign trip_o = last_o && en_i;
 
-    `ASSERT(CounterExceedsBound, !(en_i && (q_o + delta_i) > bound_i))
+    // Only flag a real overshoot, i.e. incrementing past `bound_i` without landing on it exactly.
+    // On the trip cycle itself (`last_o`), `q_o` already equals `bound_i` and `en_i` is expected to
+    // be high, so `q_o + delta_i` legitimately exceeds `bound_i` there without indicating a bug.
+    `ASSERT(CounterExceedsBound, !(en_i && !last_o && (q_o + delta_i) > bound_i))
 
 endmodule
