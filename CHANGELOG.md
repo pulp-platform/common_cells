@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.0.0-beta.2 - 2026-07-16
+### Changed
+- `README`: Update cell names, links, and API documentation for v2
+
+### Fixed
+- `cc_fifo`, `cc_delta_counter`: Use named synchronous clear signals for Synopsys Fusion Compiler compatibility
+- `cc_binary_to_gray`: Fix the lint for the `Width == 1` special case
+- `assertions.svh`: Use the built-in `XILINX_SIMULATOR` macro to disable assertions under Xilinx simulation
+- `cc_trip_counter`: Fix the `CounterExceedsBound` assertion on trip cycles and document exact-bound behavior
+
 ## 2.0.0-beta - 2026-07-02
 ### Added
 - Add deprecated v1 compatibility wrappers for renamed modules, packages, register macros and formal properties
