@@ -80,6 +80,10 @@ module cc_trip_counter #(
     // Only flag a real overshoot, i.e. incrementing past `bound_i` without landing on it exactly.
     // On the trip cycle itself (`last_o`), `q_o` already equals `bound_i` and `en_i` is expected to
     // be high, so `q_o + delta_i` legitimately exceeds `bound_i` there without indicating a bug.
-    `ASSERT(CounterExceedsBound, !(en_i && !last_o && (q_o + delta_i) > bound_i))
+    // We also exclude cycles where `clr_i` is asserted, and zero-extend the addends before summing
+    // them, since `q_o`, `delta_i` and `bound_i` share the same width and could otherwise overflow
+    // back to a value below `bound_i`, masking a real overrun.
+    `ASSERT(CounterExceedsBound, !(en_i && !last_o && !clr_i &&
+      ({1'b0, q_o} + {1'b0, delta_i}) > {1'b0, bound_i}))
 
 endmodule
