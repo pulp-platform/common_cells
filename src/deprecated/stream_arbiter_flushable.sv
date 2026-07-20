@@ -7,6 +7,7 @@
 module stream_arbiter_flushable #(
   parameter type    DATA_T  = logic,
   parameter integer N_INP   = 1,
+// verilog_lint: waive explicit-parameter-storage-type
   parameter         ARBITER = "rr"
 ) (
   input  logic               clk_i,
