@@ -7,7 +7,8 @@
 module stream_arbiter #(
   parameter type    DATA_T  = logic,
   parameter integer N_INP   = 1,
-  parameter string  ARBITER = "rr"
+// verilog_lint: waive explicit-parameter-storage-type
+  parameter         ARBITER = "rr"
 ) (
   input  logic               clk_i,
   input  logic               rst_ni,
