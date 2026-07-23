@@ -26,7 +26,7 @@ FORMAL_BUILDDIR ?= build
 FORMAL_FLIST := $(FORMAL_BUILDDIR)/cdc_reset_ctrlr.flist
 
 all: fifo.check counter.check fall_through_register.check lzc.check \
-	cdc_reset_ctrlr_half.check cdc_reset_ctrlr_composed.check
+	cdc_reset_ctrlr_half.check cdc_reset_ctrlr_composed.check heaviside.check
 
 $(FORMAL_BUILDDIR):
 	mkdir -p $@
@@ -74,8 +74,15 @@ $(FORMAL_BUILDDIR)/cdc_reset_ctrlr_composed.check: cdc_reset_ctrlr_composed.sby 
 	$(SBY) -f -d $(FORMAL_BUILDDIR)/cdc_reset_ctrlr_composed $<
 	touch $@
 
+heaviside.check: $(FORMAL_BUILDDIR)/heaviside.check
+
+$(FORMAL_BUILDDIR)/heaviside.check: heaviside.sby ../src/cc_pkg.sv ../src/cc_heaviside.sv \
+				cc_heaviside_properties.sv cc_heaviside_formal.sv | $(FORMAL_BUILDDIR)
+	$(SBY) -f -d $(FORMAL_BUILDDIR)/heaviside $<
+	touch $@
+
 .PHONY: all clean fifo.check counter.check fall_through_register.check lzc.check cdc_reset_ctrlr_half.check \
-	cdc_reset_ctrlr_composed.check
+	cdc_reset_ctrlr_composed.check heaviside.check
 clean:
 	$(RM) $(FORMAL_BUILDDIR)
 	$(RM) fifo.check fifo/
