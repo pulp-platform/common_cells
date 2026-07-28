@@ -8,6 +8,7 @@
 // Heaviside function (https://en.wikipedia.org/wiki/Heaviside_step_function).
 // Specifically, it generates a mask with all and only the bits in
 // the [0, x_i] interval asserted.
+// If x_i is greater than or equal to Width, mask_o saturates to all ones.
 
 module cc_heaviside #(
     parameter int unsigned Width = 32,
