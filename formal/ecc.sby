@@ -1,0 +1,57 @@
+# Copyright 2026 ETH Zurich and University of Bologna.
+#
+# Copyright and related rights are licensed under the Solderpad Hardware
+# License, Version 0.51 (the "License"); you may not use this file except in
+# compliance with the License. You may obtain a copy of the License at
+# http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
+# or agreed to in writing, software, hardware and materials distributed under
+# this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+# CONDITIONS OF ANY KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations under the License.
+#
+# Authors:
+# - Warren Smith <233830950+repowazdogz-droid@users.noreply.github.com>
+#
+# Description: SECDED Encoder/Decoder Proof Configuration
+# Configure the SymbiYosys proofs for a set of cc_ecc_encode/cc_ecc_decode
+# parametrizations.
+#
+# `prove`  proves the four documented decoder cases on the default widths.
+# `cover`  shows the injected-error preconditions are reachable, so a green
+#          `prove` cannot be the result of an unsatisfiable assumption.
+# `sweep`  repeats `prove` over every parity-width transition up to the module
+#          default of DataWidth 64. It is not part of `make all`; run it with
+#          `sby -f ecc.sby sweep`.
+
+[tasks]
+prove proving default
+cover default
+sweep proving
+
+[options]
+proving: mode prove
+cover: mode cover
+depth 1
+
+[engines]
+# The encoder/decoder pair is purely combinational, so depth 1 already covers
+# all reachable behaviour; `mode prove` is used so the result is not reported
+# as a bounded check. `abc pdr` replaces the `smtbmc` engine the other proofs
+# use purely for runtime: on the default width set this proof takes about 7 s
+# with PDR against about 3 min with smtbmc, and the gap widens with width.
+# The cover task needs a BMC engine, so it stays on smtbmc.
+proving: abc pdr
+cover: smtbmc
+
+[script]
+plugin -i slang.so
+sweep: read_slang --std 1800-2017 -I../../../../include -DECC_FULL_SWEEP --top cc_ecc_formal cc_pkg.sv cc_ecc_encode.sv cc_ecc_decode.sv cc_ecc_properties.sv cc_ecc_formal.sv
+~sweep: read_slang --std 1800-2017 -I../../../../include --top cc_ecc_formal cc_pkg.sv cc_ecc_encode.sv cc_ecc_decode.sv cc_ecc_properties.sv cc_ecc_formal.sv
+prep -top cc_ecc_formal
+
+[files]
+../src/cc_pkg.sv
+../src/cc_ecc_encode.sv
+../src/cc_ecc_decode.sv
+cc_ecc_properties.sv
+cc_ecc_formal.sv

@@ -26,7 +26,8 @@ FORMAL_BUILDDIR ?= build
 FORMAL_FLIST := $(FORMAL_BUILDDIR)/cdc_reset_ctrlr.flist
 
 all: fifo.check counter.check fall_through_register.check lzc.check \
-	cdc_reset_ctrlr_half.check cdc_reset_ctrlr_composed.check heaviside.check
+	cdc_reset_ctrlr_half.check cdc_reset_ctrlr_composed.check heaviside.check \
+	ecc.check
 
 $(FORMAL_BUILDDIR):
 	mkdir -p $@
@@ -81,8 +82,19 @@ $(FORMAL_BUILDDIR)/heaviside.check: heaviside.sby ../src/cc_pkg.sv ../src/cc_hea
 	$(SBY) -f -d $(FORMAL_BUILDDIR)/heaviside $<
 	touch $@
 
+ecc.check: $(FORMAL_BUILDDIR)/ecc.check
+
+# The full parametrization sweep is deliberately not part of `all`; run it with
+# `sby -f ecc.sby sweep`.
+$(FORMAL_BUILDDIR)/ecc.check: ecc.sby ../src/cc_pkg.sv ../src/cc_ecc_encode.sv \
+				../src/cc_ecc_decode.sv cc_ecc_properties.sv cc_ecc_formal.sv \
+				| $(FORMAL_BUILDDIR)
+	$(SBY) -f -d $(FORMAL_BUILDDIR)/ecc_prove $< prove
+	$(SBY) -f -d $(FORMAL_BUILDDIR)/ecc_cover $< cover
+	touch $@
+
 .PHONY: all clean fifo.check counter.check fall_through_register.check lzc.check cdc_reset_ctrlr_half.check \
-	cdc_reset_ctrlr_composed.check heaviside.check
+	cdc_reset_ctrlr_composed.check heaviside.check ecc.check
 clean:
 	$(RM) $(FORMAL_BUILDDIR)
 	$(RM) fifo.check fifo/
