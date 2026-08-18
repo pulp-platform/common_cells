@@ -24,6 +24,8 @@ module stream_xbar #(
   parameter int unsigned DataWidth   = 32'd1,
   /// Payload type of the data ports, only usage of parameter `DataWidth`.
   parameter type         payload_t   = logic [DataWidth-1:0],
+  /// Adds a spill register stage at each input.
+  parameter bit          InpSpillReg = 1'b0,
   /// Adds a spill register stage at each output.
   parameter bit          OutSpillReg = 1'b0,
   /// Use external priority for the individual `rr_arb_trees`.
@@ -92,6 +94,11 @@ module stream_xbar #(
     idx_inp_t idx;
   } spill_data_t;
 
+  typedef struct packed {
+    payload_t data;
+    sel_oup_t sel;
+  } inp_spill_data_t;
+
   logic     [NumInp-1:0][NumOut-1:0] inp_valid;
   logic     [NumInp-1:0][NumOut-1:0] inp_ready;
 
@@ -101,12 +108,36 @@ module stream_xbar #(
 
   // Generate the input selection
   for (genvar i = 0; unsigned'(i) < NumInp; i++) begin : gen_inps
+    inp_spill_data_t in_spill;
+    inp_spill_data_t inp_data;
+    logic in_valid, in_ready;
+
+    assign inp_data = {data_i[i], sel_i[i]};
+
+    spill_register #(
+      .T      ( inp_spill_data_t ),
+      .Bypass ( !InpSpillReg     )
+    ) i_inp_spill_register (
+      .clk_i,
+      .rst_ni,
+      .valid_i ( valid_i[i] ),
+      .ready_o ( ready_o[i] ),
+      .data_i  ( inp_data   ),
+      .valid_o ( in_valid   ),
+      .ready_i ( in_ready   ),
+      .data_o  ( in_spill   )
+    );
+
+    payload_t data;
+    sel_oup_t sel;
+    assign {data,sel} = in_spill;
+
     stream_demux #(
       .N_OUP ( NumOut )
     ) i_stream_demux (
-      .inp_valid_i ( valid_i[i]   ),
-      .inp_ready_o ( ready_o[i]   ),
-      .oup_sel_i   ( sel_i[i]     ),
+      .inp_valid_i ( in_valid     ),
+      .inp_ready_o ( in_ready     ),
+      .oup_sel_i   ( sel          ),
       .oup_valid_o ( inp_valid[i] ),
       .oup_ready_i ( inp_ready[i] )
     );
@@ -114,7 +145,7 @@ module stream_xbar #(
     // Do the switching cross of the signals.
     for (genvar j = 0; unsigned'(j) < NumOut; j++) begin : gen_cross
       // Propagate the data from this input to all outputs.
-      assign out_data[j][i]  = data_i[i];
+      assign out_data[j][i]  = data;
       // switch handshaking
       assign out_valid[j][i] = inp_valid[i][j];
       assign inp_ready[i][j] = out_ready[j][i];
@@ -151,7 +182,7 @@ module stream_xbar #(
     spill_register #(
       .T      ( spill_data_t ),
       .Bypass ( !OutSpillReg )
-    ) i_spill_register (
+    ) i_out_spill_register (
       .clk_i,
       .rst_ni,
       .valid_i ( arb_valid  ),
