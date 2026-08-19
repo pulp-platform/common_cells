@@ -1,10 +1,12 @@
 CAPI=2:
 
-name : pulp-platform.org::common_cells:1.39.0
+name : pulp-platform.org::common_cells:2.0.0
 description: Common SystemVerilog components
 
 filesets:
   rtl:
+    depend:
+      - ">=pulp-platform.org::tech_cells_generic:0.2.14"
     files:
       - include/common_cells/registers.svh : {is_include_file : true, include_path : include}
       - include/common_cells/assertions.svh : {is_include_file : true, include_path : include}
@@ -12,6 +14,7 @@ filesets:
       # Files in level 1 only depend on files in level 0, files in level 2 on files in levels 1 and 0,
       # etc. Files within a level are ordered alphabetically.
       # Level 0
+      - src/assert_rpt_pkg.sv
       - src/cc_binary_to_gray.sv
       - src/cc_pkg.sv
       - src/cc_onehot.sv
@@ -23,16 +26,19 @@ filesets:
       - src/cc_exp_backoff.sv
       - src/cc_fifo.sv
       - src/cc_gray_to_binary.sv
+      - src/cc_heaviside.sv
       - src/cc_isochronous_4phase_handshake.sv
       - src/cc_isochronous_spill_register.sv
       - src/cc_lfsr.sv
       - src/cc_lfsr_16bit.sv
       - src/cc_lfsr_8bit.sv
+      - src/cc_lossy_valid_to_stream.sv
       - src/cc_multiaddr_decode.sv
       - src/cc_onehot_to_bin.sv
       - src/cc_plru_tree.sv
       - src/cc_passthrough_stream_fifo.sv
       - src/cc_popcount.sv
+      - src/cc_ring_buffer.sv
       - src/cc_rr_arb_tree.sv
       - src/cc_rstgen_bypass.sv
       - src/cc_serial_deglitch.sv
@@ -48,12 +54,12 @@ filesets:
       - src/cc_stream_mux.sv
       - src/cc_stream_throttle.sv
       - src/cc_sub_per_hash.sv
-      - src/cc_sync.sv
       - src/cc_sync_wedge.sv
       - src/cc_unread.sv
       - src/cc_read.sv
       # Level 1
       - src/cc_addr_decode_dync.sv
+      - src/cc_boxcar.sv
       - src/cc_cdc_2phase.sv
       - src/cc_cdc_4phase.sv
       - src/cc_cb_filter.sv
@@ -64,6 +70,7 @@ filesets:
       - src/cc_edge_detect.sv
       - src/cc_edge_propagator_ack.sv
       - src/cc_edge_propagator_rx.sv
+      - src/cc_trip_counter.sv
       - src/cc_lzc.sv
       - src/cc_majority_vote_filter.sv
       - src/cc_max_counter.sv
