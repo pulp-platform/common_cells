@@ -40,9 +40,11 @@ module cc_sync_wedge #(
         .serial_o ( serial )
     );
 
-    pulp_clock_gating i_pulp_clock_gating (
+    tc_clk_gating #(
+        .IS_FUNCTIONAL ( 1'b0 )
+    ) i_clk_gate (
         .clk_i,
-        .en_i,
+        .en_i      ( en_i | clr_i ),
         .test_en_i ( 1'b0 ),
         .clk_o     ( clk  )
     );
