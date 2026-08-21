@@ -14,7 +14,6 @@
 module cc_edge_detect (
     input  logic clk_i,   // Clock
     input  logic rst_ni,  // Asynchronous reset active low
-    input  logic clr_i,   // Synchronous clear active high
     input  logic d_i,     // Data stream in
     output logic re_o,    // Rising edge detected
     output logic fe_o     // Falling edge detected
@@ -23,8 +22,6 @@ module cc_edge_detect (
     cc_sync_wedge i_sync_wedge (
         .clk_i    ( clk_i  ),
         .rst_ni   ( rst_ni ),
-        .clr_i    ( clr_i  ),
-        .en_i     ( 1'b1   ),
         .serial_i ( d_i    ),
         .r_edge_o ( re_o   ),
         .f_edge_o ( fe_o   ),
