@@ -5,15 +5,20 @@
 `include "common_cells/assertions.svh"
 
 /// A trailing zero counter / leading zero counter.
-/// Set MODE to LZC_TRAILING_ZERO_CNT for trailing zero counter => cnt_o is the number of trailing zeros (from the LSB)
-/// Set MODE to LZC_LEADING_ZERO_CNT for leading zero counter  => cnt_o is the number of leading zeros  (from the MSB)
-/// If the input does not contain a one, `empty_o` is asserted. Additionally `cnt_o` contains
-/// the maximum number of zeros - 1. For example:
+/// Set the public `Mode` parameter to LZC_TRAILING_ZERO_CNT for a trailing
+/// zero counter (`cnt_o` counts from the LSB), or to
+/// LZC_LEADING_ZERO_CNT for a leading zero counter (`cnt_o` counts from the
+/// MSB).
+/// If the input does not contain a one, `empty_o` is asserted. For Width > 1,
+/// `cnt_o` then contains Width - 1. The explicit Width = 1 implementation
+/// returns a count of 1 for an all-zero input. For example:
 ///   in_i = 000_0000, empty_o = 1, cnt_o = 6 (mode = LZC_TRAILING_ZERO_CNT)
 ///   in_i = 000_0001, empty_o = 0, cnt_o = 0 (mode = LZC_TRAILING_ZERO_CNT)
 ///   in_i = 000_1000, empty_o = 0, cnt_o = 3 (mode = LZC_TRAILING_ZERO_CNT)
-/// Furthermore, this unit contains a more efficient implementation for Verilator (simulation only).
-/// This speeds up simulation significantly.
+/// Furthermore, this unit contains a more efficient implementation for
+/// Verilator (simulation only), which speeds up simulation significantly. The
+/// `verilator split_var` hints split large tree arrays for Verilator and do not
+/// alter synthesizable behavior.
 module cc_lzc import cc_pkg::*; #(
   /// The width of the input vector.
   parameter int unsigned Width = 2,

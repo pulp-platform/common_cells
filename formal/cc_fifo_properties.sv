@@ -1,4 +1,4 @@
-// Copyright 2019 ETH Zurich and University of Bologna.
+// Copyright 2026 ETH Zurich and University of Bologna.
 // Copyright and related rights are licensed under the Solderpad Hardware
 // License, Version 0.51 (the "License"); you may not use this file except in
 // compliance with the License. You may obtain a copy of the License at
@@ -8,128 +8,161 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-// Author: Robert Balas <balasr@iis.ee.ethz.ch>
-
-module cc_fifo_properties #(
-    parameter bit          FallThrough = 1'b0, // fifo is in fall-through mode
-    parameter int unsigned DataWidth   = 32,   // default data width if the fifo is of type logic
-    parameter int unsigned Depth       = 8,    // depth can be arbitrary from 0 to 2**32
+// Public-interface FIFO checker.  This checker deliberately models the FIFO
+// from its stream interface only.  In particular, it does not rely on the
+// implementation's pointers, counter, or memory, so it also applies to
+// alternative implementations of the same interface.
+module cc_fifo_properties import cc_pkg::*; #(
+    parameter bit          FallThrough = 1'b0,
+    parameter int unsigned DataWidth   = 2,
+    parameter int unsigned Depth       = 1,
     parameter type         data_t      = logic [DataWidth-1:0],
-    // DO NOT OVERWRITE THIS PARAMETER
-    localparam int unsigned AddrDepth  = (Depth > 1) ? $clog2(Depth) : 1
+    parameter bit          CheckUsage  = 1'b1,
+    parameter bit          CheckResetReleaseCover = 1'b0,
+    localparam int unsigned UsageWidth  = cc_pkg::cnt_width(Depth),
+    localparam int unsigned PtrWidth    = cc_pkg::idx_width(Depth),
+    localparam int unsigned FifoDepth   = (Depth > 0) ? Depth : 1
 ) (
-    input logic                    clk_i, // Clock
-    input logic                    rst_ni, // Asynchronous reset active low
-    input logic                    flush_i, // flush the queue
-    // status flags
-    input logic                    full_o, // queue is full
-    input logic                    empty_o, // queue is empty
-    input logic [AddrDepth-1:0]    usage_o, // fill pointer
-    // as long as the queue is not full we can push new data
-    input logic                    push_i, // data is valid and can be pushed to the queue
-    // as long as the queue is not empty we can pop new elements
-    input logic                    pop_i, // pop head from queue
-
-    input logic [AddrDepth-1:0]    read_pointer_n,
-    input logic [AddrDepth-1:0]    read_pointer_q,
-    input logic [AddrDepth-1:0]    write_pointer_n,
-    input logic [AddrDepth-1:0]    write_pointer_q,
-
-    input logic [AddrDepth:0]      status_cnt_n, // counter to keep track of the current queue status
-    input logic [AddrDepth:0]      status_cnt_q
+    input logic                  clk_i,
+    input logic                  rst_ni,
+    input logic                  clr_i,
+    input logic                  flush_i,
+    input logic                  full_o,
+    input logic                  empty_o,
+    input logic [UsageWidth-1:0] usage_o,
+    input data_t                 data_i,
+    input logic                  push_i,
+    input data_t                 data_o,
+    input logic                  pop_i
 );
 
-    localparam int unsigned FifoDepth = (Depth > 0) ? Depth : 1;
-    // verbatim from cc_fifo
-    localparam int unsigned FifoSize  = FifoDepth[AddrDepth:0];
+    logic [UsageWidth-1:0] model_count_q;
+    logic [PtrWidth-1:0]   model_read_q, model_write_q;
+    data_t                 model_mem_q [FifoDepth];
 
-    logic [AddrDepth-1:0] fill_level;
-    logic                 read_incr;
-    logic                 write_incr;
-    int                   writes = 0; // number of writes to fifo
-    int                   reads  = 0; // number of reads from fifo
+    localparam logic [UsageWidth-1:0] DepthValue = Depth;
+    localparam logic [PtrWidth-1:0]   LastPointer = FifoDepth - 1;
 
-    // We use this as a workaround to trigger and initial event at the beginning
-    // of the simulation. I can't think of a better way with the subset of sv
-    // yosys supports.
-    logic init = 1'b0;
-    always_ff @(posedge clk_i) init <= 1'b1;
+    logic bypass;
+    logic bypass_transfer;
+    logic stored_push;
+    logic stored_pop;
+    logic flush_prev_nonempty_q;
+    logic clr_prev_nonempty_q;
 
-    // make sure that we touch the reset but otherwise we don't constrain it in
-    // any way
-    assume property (@(posedge clk_i) (!init) |-> !rst_ni);
+    assign bypass = FallThrough && (model_count_q == '0) && push_i;
+    assign bypass_transfer = bypass && pop_i;
+    // An empty fall-through push is stored when it is not consumed in the
+    // same cycle.  Only the simultaneous push/pop case is a pure bypass.
+    assign stored_push = push_i && !clr_i && !flush_i &&
+                         (model_count_q != DepthValue) && !bypass_transfer;
+    assign stored_pop  = pop_i && !clr_i && !flush_i && (model_count_q != '0);
 
-    // we don't have tests for FallThrough mode
-    always_comb assert (FallThrough == 1'b0);
+    function automatic logic [PtrWidth-1:0] pointer_inc(
+        input logic [PtrWidth-1:0] pointer
+    );
+        if (pointer == LastPointer)
+            pointer_inc = '0;
+        else
+            pointer_inc = pointer + 1'b1;
+    endfunction
 
-    // assume we are good boys and dont try to mess with the queue
-    // It doesn't look like we need these assumptions
-    // assume property(@(posedge clk_i)
-    //     disable iff (!rst_ni) (full_o |-> !push_i));
+    // The first cycle is reset.  This constrains only the initial state;
+    // reset can be asserted again at any later time.
+    logic init_q = 1'b0;
 
-    // assume property(@(posedge clk_i)
-    //     disable iff (!rst_ni) (empty_o |-> !pop_i));
+    logic rst_prev_q;
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (!rst_ni)
+            rst_prev_q <= 1'b0;
+        else
+            rst_prev_q <= 1'b1;
+    end
 
-
-    assign fill_level = writes - reads;
-    assign read_incr = read_pointer_n - read_pointer_q;
-    assign write_incr = write_pointer_n - write_pointer_q;
-
-    // writes and reads track the number of writes and reads to the fifo. Our
-    // assumption and assertions make sure that these values stay logically
-    // consistent.
-    always_ff @(posedge clk_i, negedge rst_ni) begin
+    // Reference state.  clr_i clears both state and payload storage, while
+    // flush_i clears only the queue pointers/count, matching cc_fifo.
+    always_ff @(posedge clk_i or negedge rst_ni) begin
         if (!rst_ni) begin
-            writes <= 0;
-            reads  <= 0;
-        end else begin
-            if (flush_i) begin
-                writes <= 0;
-                reads  <= 0;
-            end else begin
-                writes <= writes + write_incr;
-                reads  <= reads + read_incr;
+            model_count_q <= '0;
+            model_read_q  <= '0;
+            model_write_q <= '0;
+            for (int unsigned i = 0; i < FifoDepth; i++)
+                model_mem_q[i] <= '0;
+        end else if (clr_i || flush_i) begin
+            model_count_q <= '0;
+            model_read_q  <= '0;
+            model_write_q <= '0;
+            if (clr_i) begin
+                for (int unsigned i = 0; i < FifoDepth; i++)
+                    model_mem_q[i] <= '0;
             end
+        end else begin
+            if (stored_push) begin
+                model_mem_q[model_write_q] <= data_i;
+                model_write_q <= pointer_inc(model_write_q);
+            end
+            if (stored_pop)
+                model_read_q <= pointer_inc(model_read_q);
+
+            case ({stored_push, stored_pop})
+                2'b10: model_count_q <= model_count_q + 1'b1;
+                2'b01: model_count_q <= model_count_q - 1'b1;
+                default: model_count_q <= model_count_q;
+            endcase
         end
     end
 
-    // assume that we test for a finite amount of transactions otherwise the
-    // solver tries to be cute by overflowing the writes and reads variables
-    assume property (@(posedge clk_i)
-        (reads < 1024 && writes < 1024));
-    // start induction with correct internal fill level
-    assume property (@(posedge clk_i)
-        ((writes - reads) == status_cnt_q));
+    // Immediate checks are used because the Slang/Yosys frontend does not
+    // lower concurrent SVA.  At a clock edge both the DUT and this model are
+    // sampled before their nonblocking updates, so the checks compare the
+    // same queue state.
+    always @(posedge clk_i) begin
+        if (!init_q)
+            assume (!rst_ni);
+        init_q <= 1'b1;
 
-    // don't underflow
-    assert property (@(posedge clk_i)
-        (writes >= reads));
-    // don't overflow
-    assert property (@(posedge clk_i)
-        ((writes - reads) <= FifoSize));
+        if (rst_ni) begin
+            // Interface legality is derived from the independent model, not
+            // from DUT status outputs.  A full model may not accept a push;
+            // an empty model may not accept a pop except for the legal
+            // fall-through empty push/pop bypass transaction.
+            assume (!(model_count_q == DepthValue && push_i));
+            assume (!(model_count_q == '0 && pop_i && !bypass));
 
-    // do we set fill indicators properly
-    assert property (@(posedge clk_i)
-        ((writes == reads) |-> empty_o));
-    assert property (@(posedge clk_i)
-        (((writes - reads) == FifoSize) |-> full_o));
-    // check if we compute fill level correctly
-    assert property (@(posedge clk_i)
-        disable iff (!rst_ni) (fill_level == usage_o));
+            if (CheckUsage)
+                assert (usage_o == model_count_q);
+            assert (full_o == (model_count_q == DepthValue));
+            assert (empty_o == ((model_count_q == '0) && !bypass));
 
-    // sanity of internal vars
-    assert property (@(posedge clk_i)
-        status_cnt_q <= FifoSize);
+            if (bypass)
+                assert (data_o == data_i);
+            else if (model_count_q != '0)
+                assert (data_o == model_mem_q[model_read_q]);
 
-    // make sure we hit the interesting cases
-    cover property (@(posedge clk_i)
-        full_o == 1'b1);
-    cover property (@(posedge clk_i)
-        empty_o == 1'b1);
+            // Bounded cover targets: reset release, full, pointer wrap,
+            // flush, simultaneous transfer, and fall-through bypass.
+            if (CheckResetReleaseCover)
+                cover (!rst_prev_q && rst_ni);
+            cover (full_o);
+            cover (stored_push && (model_write_q == LastPointer));
+            cover (flush_prev_nonempty_q && empty_o);
+            cover (clr_prev_nonempty_q && empty_o);
+            if (Depth > 1)
+                cover (push_i && pop_i && (model_count_q != '0) &&
+                       !full_o && !empty_o);
+            if (FallThrough)
+                cover (bypass_transfer && (data_o == data_i));
+        end
 
-endmodule // cc_fifo_properties
+        if (!rst_ni) begin
+            flush_prev_nonempty_q <= 1'b0;
+            clr_prev_nonempty_q <= 1'b0;
+        end else begin
+            // Exercise clear and flush independently; a combined pulse would
+            // otherwise satisfy both cover obligations with one trace.
+            flush_prev_nonempty_q <= flush_i && !clr_i && (model_count_q != '0);
+            clr_prev_nonempty_q <= clr_i && !flush_i && (model_count_q != '0);
+        end
+    end
 
-// propagate parameters from cc_fifo to properties
-bind cc_fifo cc_fifo_properties #(
-    .FallThrough(FallThrough), .DataWidth(DataWidth), .Depth(Depth), .data_t(data_t)
-) i_fifo_properties(.*);
+endmodule : cc_fifo_properties

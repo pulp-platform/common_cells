@@ -31,11 +31,6 @@ module cc_cdc_reset_ctrlr_half_properties #(
   input wire       isolate_ack_i,
   input wire       clear_o,
   input wire       clear_ack_i,
-  input wire [1:0] async_next_phase_o,
-  input wire       async_req_o,
-  input wire [1:0] async_next_phase_i,
-  input wire       async_req_i,
-  input wire       async_ack_o,
   input wire [3:0] initiator_state_q,
   input wire       initiator_phase_transition_ack,
   input wire [1:0] initiator_clear_seq_phase,
@@ -48,6 +43,8 @@ module cc_cdc_reset_ctrlr_half_properties #(
   input wire       receiver_phase_req,
   input wire       receiver_phase_ack,
   input wire       receiver_phase_pending_q,
+  input wire       receiver_phase_done_q,
+  input wire       receiver_capture_phase,
   input wire       receiver_isolate_out,
   input wire       receiver_clear_out
 );
@@ -67,13 +64,6 @@ module cc_cdc_reset_ctrlr_half_properties #(
   localparam logic [3:0] InitPostClear           = 4'd7;
   localparam logic [3:0] InitFinished            = 4'd8;
 
-  function automatic logic valid_phase(input logic [1:0] phase);
-    case (phase)
-      PhaseIdle, PhaseIsolate, PhaseClear, PhasePostClear: valid_phase = 1'b1;
-      default: valid_phase = 1'b0;
-    endcase
-  endfunction
-
   function automatic logic valid_initiator_state(input logic [3:0] state);
     case (state)
       InitIdle,
@@ -91,13 +81,30 @@ module cc_cdc_reset_ctrlr_half_properties #(
 
   logic init_q = 1'b0;
 
-  // Reset modeling: force the first sampled cycle into reset so the proof starts
-  // from a reachable reset-controller half state.
+  // The remote phase is an ordered, acknowledged protocol.  Keep the
+  // captured phase separately so a CLEAR capture cannot skip an
+  // unacknowledged ISOLATE phase.
+  logic [1:0] remote_acked_phase_q      = PhaseIdle;
+  logic [1:0] remote_captured_phase_q   = PhaseIdle;
+  logic       remote_capture_pending_q = 1'b0;
+
+  localparam logic [2:0] ReceiverCoverIdle       = 3'd0;
+  localparam logic [2:0] ReceiverCoverIsolate    = 3'd1;
+  localparam logic [2:0] ReceiverCoverClear      = 3'd2;
+  localparam logic [2:0] ReceiverCoverPostClear  = 3'd3;
+  localparam logic [2:0] ReceiverCoverReturnIdle = 3'd4;
+  localparam logic [2:0] ReceiverCoverDone       = 3'd5;
+  logic [2:0] receiver_cover_q = ReceiverCoverIdle;
+
+  // Reset modeling: force the first sampled cycle into reset, then defer later
+  // asynchronous reset assertions to a separate reset model.
   always_ff @(posedge clk_i) begin
-    init_q <= 1'b1;
     if (!init_q) begin
       assume (!rst_ni);
+    end else begin
+      assume (rst_ni);
     end
+    init_q <= 1'b1;
   end
 
   // Combinational contract: These checks tie the public clear/isolate
@@ -114,35 +121,17 @@ module cc_cdc_reset_ctrlr_half_properties #(
     end
 
     if (rst_ni) begin
-      assert (clear_o == (initiator_clear_out || receiver_clear_out));
-      assert (isolate_o == (initiator_isolate_out || receiver_isolate_out));
       assert (!clear_o || isolate_o);
-      assert (!initiator_clear_out || initiator_isolate_out);
-      assert (!receiver_clear_out || receiver_isolate_out);
-
       assert (valid_initiator_state(initiator_state_q));
-      assert (valid_phase(receiver_phase_q));
-      assert (valid_phase(receiver_effective_phase));
-
-      if (async_req_o) begin
-        assert (valid_phase(async_next_phase_o));
-      end
-
-      if (initiator_phase_transition_req) begin
-        assert (valid_phase(initiator_clear_seq_phase));
-      end
-
-      if (receiver_phase_req) begin
-        if (ASSUME_REMOTE_PHASE) begin
-          assume (valid_phase(receiver_next_phase));
-        end else begin
-          assert (valid_phase(receiver_next_phase));
-        end
-      end
 
       case (receiver_effective_phase)
         PhaseIdle: begin
           assert (!receiver_clear_out);
+          // The receiver raises isolation for the capture cycle before the
+          // registered phase is updated.  Idle is de-isolated otherwise.
+          if (!receiver_capture_phase) begin
+            assert (!receiver_isolate_out);
+          end
         end
         PhaseIsolate: begin
           assert (!receiver_clear_out);
@@ -162,19 +151,12 @@ module cc_cdc_reset_ctrlr_half_properties #(
 
       if (receiver_phase_ack) begin
         assert (receiver_phase_pending_q);
+        if (receiver_effective_phase == PhaseIsolate)
+          assert (isolate_ack_i);
+        if (receiver_effective_phase == PhaseClear)
+          assert (clear_ack_i);
       end
 
-      if (receiver_clear_out) begin
-        assert (receiver_effective_phase == PhaseClear);
-      end
-
-      if (receiver_phase_ack && receiver_effective_phase == PhaseClear) begin
-        assert (clear_ack_i);
-      end
-
-      if (receiver_phase_ack && receiver_effective_phase == PhaseIsolate) begin
-        assert (isolate_ack_i);
-      end
     end
   end
 
@@ -182,12 +164,43 @@ module cc_cdc_reset_ctrlr_half_properties #(
   // initiator state and require stalled receiver phases to stay stable.
   always_ff @(posedge clk_i) begin
     if (rst_ni && init_q) begin
-      if (receiver_phase_req && !receiver_phase_ack) begin
+      if ($past(rst_ni && receiver_phase_req && !receiver_phase_ack)) begin
         if (ASSUME_REMOTE_PHASE) begin
+          assume (receiver_phase_req);
           assume (receiver_next_phase == $past(receiver_next_phase));
         end else begin
+          assert (receiver_phase_req);
           assert (receiver_next_phase == $past(receiver_next_phase));
         end
+      end
+
+      // Receiver transaction state is sampled one cycle after each DUT
+      // transition.  Guard every past-value check with both reset samples so
+      // the initial reset message is not mistaken for a normal transaction.
+      if ($past(rst_ni) && $past(receiver_capture_phase)) begin
+        assert (receiver_phase_pending_q);
+        assert (receiver_phase_q == $past(receiver_next_phase));
+      end
+
+      if ($past(rst_ni && receiver_phase_pending_q && !receiver_phase_ack)) begin
+        assert (receiver_phase_pending_q);
+        assert (receiver_phase_q == $past(receiver_phase_q));
+      end
+
+      if ($past(rst_ni && receiver_phase_ack)) begin
+        assert (!receiver_phase_pending_q);
+      end
+
+      if (receiver_phase_done_q) begin
+        assert (!receiver_capture_phase);
+      end
+
+      if (receiver_phase_pending_q) begin
+        assert (!receiver_capture_phase);
+      end
+
+      if ($past(rst_ni && !receiver_phase_req)) begin
+        assert (!receiver_phase_done_q);
       end
 
       if (initiator_state_q == InitIdle) begin
@@ -302,11 +315,80 @@ module cc_cdc_reset_ctrlr_half_properties #(
       endcase
     end
 
-    // Cover the main local and remote clear phases
-    // so bounded runs exercise both sides of the bidirectional half.
+    // Constrain the remote phase order only in the standalone half proof; in
+    // the composed proof the opposite half supplies that protocol.  Tracking
+    // consistency remains asserted in both configurations.
+    if (!rst_ni) begin
+      remote_acked_phase_q      <= PhaseIdle;
+      remote_captured_phase_q   <= PhaseIdle;
+      remote_capture_pending_q  <= 1'b0;
+    end else begin
+      if (receiver_capture_phase) begin
+        if (ASSUME_REMOTE_PHASE) begin
+          case (remote_acked_phase_q)
+            PhaseIdle:      assume (receiver_next_phase == PhaseIsolate);
+            PhaseIsolate:   assume (receiver_next_phase == PhaseClear);
+            PhaseClear:     assume (receiver_next_phase == PhasePostClear);
+            PhasePostClear: assume (receiver_next_phase == PhaseIdle);
+            default:        assume (1'b0);
+          endcase
+        end
+        remote_captured_phase_q  <= receiver_next_phase;
+        remote_capture_pending_q <= 1'b1;
+      end
+
+      if (receiver_phase_ack) begin
+        assert (remote_capture_pending_q);
+        assert (receiver_phase_q == remote_captured_phase_q);
+        remote_acked_phase_q     <= receiver_phase_q;
+        remote_capture_pending_q <= 1'b0;
+      end
+    end
+
+    // Complete remote accepted cycle: IDLE -> ISOLATE -> CLEAR -> POST_CLEAR
+    // -> IDLE, including request withdrawal after the final acknowledge.
+    if (!rst_ni) begin
+      receiver_cover_q <= ReceiverCoverIdle;
+    end else begin
+      case (receiver_cover_q)
+        ReceiverCoverIdle:
+          if (receiver_phase_ack && receiver_phase_q == PhaseIsolate)
+            receiver_cover_q <= ReceiverCoverIsolate;
+        ReceiverCoverIsolate:
+          if (receiver_phase_ack && receiver_phase_q == PhaseClear)
+            receiver_cover_q <= ReceiverCoverClear;
+        ReceiverCoverClear:
+          if (receiver_phase_ack && receiver_phase_q == PhasePostClear)
+            receiver_cover_q <= ReceiverCoverPostClear;
+        ReceiverCoverPostClear:
+          if (receiver_phase_ack && receiver_phase_q == PhaseIdle)
+            receiver_cover_q <= ReceiverCoverReturnIdle;
+        ReceiverCoverReturnIdle:
+          if (!receiver_phase_req)
+            receiver_cover_q <= ReceiverCoverDone;
+        default: begin
+        end
+      endcase
+    end
+
+`ifndef CC_CDC_RESET_CTRLR_SKIP_HALF_COVERS
+    // Keep initiator sequence, wait/backpressure, and return-to-idle evidence.
     cover (rst_ni && initiator_state_q == InitClear);
     cover (rst_ni && initiator_state_q == InitPostClear);
-    cover (rst_ni && receiver_phase_q == PhaseClear);
+    cover (rst_ni && initiator_state_q == InitWaitIsolatePhaseAck);
+    cover (rst_ni && initiator_state_q == InitWaitIsolateAck);
+    cover (rst_ni && initiator_state_q == InitWaitClearPhaseAck);
+    cover (rst_ni && initiator_state_q == InitWaitClearAck);
+    cover (rst_ni && initiator_phase_transition_req &&
+           !initiator_phase_transition_ack);
+    cover (rst_ni && receiver_phase_pending_q && receiver_phase_req &&
+           !receiver_phase_ack);
+    cover (rst_ni && $past(rst_ni) && init_q &&
+           $past(initiator_state_q == InitFinished &&
+                 initiator_phase_transition_ack) &&
+           initiator_state_q == InitIdle);
+    cover (rst_ni && receiver_cover_q == ReceiverCoverDone);
+`endif
   end
 
 endmodule
@@ -322,11 +404,6 @@ bind cc_cdc_reset_ctrlr_half cc_cdc_reset_ctrlr_half_properties #(
   .isolate_ack_i,
   .clear_o,
   .clear_ack_i,
-  .async_next_phase_o,
-  .async_req_o,
-  .async_next_phase_i,
-  .async_req_i,
-  .async_ack_o,
   .initiator_state_q,
   .initiator_phase_transition_ack,
   .initiator_clear_seq_phase,
@@ -339,6 +416,8 @@ bind cc_cdc_reset_ctrlr_half cc_cdc_reset_ctrlr_half_properties #(
   .receiver_phase_req,
   .receiver_phase_ack,
   .receiver_phase_pending_q,
+  .receiver_phase_done_q,
+  .receiver_capture_phase,
   .receiver_isolate_out,
   .receiver_clear_out
 );

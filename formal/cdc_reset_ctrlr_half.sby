@@ -13,19 +13,28 @@
 # - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 #
 # Description: Reset-Controller Half Proof Configuration
-# Configure the SymbiYosys proof for one reset-controller half and its bound
-# local-state property module.
+# Configure unbounded safety and bounded sequencing covers for one
+# reset-controller half and its bound local-state property module.
+
+[tasks]
+prove
+cover
 
 [options]
-mode prove
-depth 40
+prove: mode prove
+cover: mode cover
+cover: depth 64
 
 [engines]
-abc pdr
+prove: abc pdr
+cover: smtbmc
 
 [script]
 plugin -i slang.so
-read_slang --std 1800-2017 -Wno-implicit-port-type-mismatch -DCC_CDC_RESET_CTRLR_ASSUME_REMOTE_PHASE --top cc_cdc_reset_ctrlr_half -F ../../cdc_reset_ctrlr.flist
+read_slang --std 1800-2017 -Wno-implicit-port-type-mismatch -DCC_CDC_RESET_CTRLR_ASSUME_REMOTE_PHASE --top cc_cdc_reset_ctrlr_half -F formal.flist
 prep -top cc_cdc_reset_ctrlr_half
 async2sync
 dffunmap
+
+[files]
+build/formal.flist

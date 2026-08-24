@@ -6,9 +6,6 @@
 /Bender.lock
 /Bender.local
 build
-formal/fifo
-formal/counter
-formal/fall_through_register
 *.check
 *.vcd
 obj_dir/

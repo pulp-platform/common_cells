@@ -8,8 +8,9 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 
-# Proof and bounded-cover configuration for cc_counter widths 1 through 8
-# and both overflow modes.
+# Proof and bounded-cover configuration for all cc_delta_counter
+# widths 1 through 8 and both overflow modes.  delta_i is unconstrained in
+# the harness.
 
 [tasks]
 prove
@@ -26,8 +27,8 @@ smtbmc
 
 [script]
 plugin -i slang.so
-read_slang --std 1800-2017 --top cc_counter_formal -F formal.flist
-prep -top cc_counter_formal
+read_slang --std 1800-2017 --top cc_delta_counter_formal -F formal.flist
+prep -top cc_delta_counter_formal
 async2sync
 dffunmap
 

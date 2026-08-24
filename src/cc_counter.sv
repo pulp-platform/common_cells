@@ -9,7 +9,10 @@
 // specific language governing permissions and limitations under the License.
 
 // Author: Florian Zaruba
-// Description: Generic up/down counter
+// Description: Generic unit-step up/down counter. Synchronous clear has
+// priority over load, which has priority over counting. In transient mode,
+// overflow_o is the extra arithmetic bit. In sticky mode, overflow_o records
+// the first overflow or underflow until reset, clear, or load.
 
 module cc_counter #(
     parameter int unsigned Width = 4,

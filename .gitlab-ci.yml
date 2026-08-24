@@ -106,4 +106,4 @@ tests:
 formal:
   timeout: 30min
   script:
-    - make -B -C formal cdc_reset_ctrlr_half.check cdc_reset_ctrlr_composed.check
+    - make -B -C formal all

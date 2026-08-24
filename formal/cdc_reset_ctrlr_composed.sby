@@ -13,18 +13,29 @@
 # - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 #
 # Description: Composed Reset-Controller Proof Configuration
-# Configure the SymbiYosys proof for the two-half reset-controller harness.
+# Configure unbounded safety and bounded sequencing covers for the
+# two-half reset-controller harness.
+
+[tasks]
+prove
+cover
 
 [options]
-mode prove
-depth 48
+prove: mode prove
+cover: mode cover
+cover: depth 128
 
 [engines]
-abc pdr
+prove: abc pdr
+cover: smtbmc
 
 [script]
 plugin -i slang.so
-read_slang --std 1800-2017 -Wno-implicit-port-type-mismatch --top cc_cdc_reset_ctrlr_composed_harness -F ../../cdc_reset_ctrlr.flist
+prove: read_slang --std 1800-2017 -Wno-implicit-port-type-mismatch --top cc_cdc_reset_ctrlr_composed_harness -F formal.flist
+cover: read_slang --std 1800-2017 -Wno-implicit-port-type-mismatch -DCC_CDC_RESET_CTRLR_COVER -DCC_CDC_RESET_CTRLR_SKIP_HALF_COVERS --top cc_cdc_reset_ctrlr_composed_harness -F formal.flist
 prep -top cc_cdc_reset_ctrlr_composed_harness
 async2sync
 dffunmap
+
+[files]
+build/formal.flist

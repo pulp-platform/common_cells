@@ -24,11 +24,8 @@ smtbmc
 
 [script]
 plugin -i slang.so
-read_slang --std 1800-2017 -I../../../../include --top cc_heaviside_formal cc_pkg.sv cc_heaviside.sv cc_heaviside_properties.sv cc_heaviside_formal.sv
+read_slang --std 1800-2017 --top cc_heaviside_formal -F formal.flist
 prep -top cc_heaviside_formal
 
 [files]
-../src/cc_pkg.sv
-../src/cc_heaviside.sv
-cc_heaviside_properties.sv
-cc_heaviside_formal.sv
+build/formal.flist

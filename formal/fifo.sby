@@ -1,15 +1,34 @@
+# Copyright 2026 ETH Zurich and University of Bologna.
+# Copyright and related rights are licensed under the Solderpad Hardware
+# License, Version 0.51 (the "License"); you may not use this file except in
+# compliance with the License. You may obtain a copy of the License at
+# http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
+# or agreed to in writing, software and hardware distributed under this
+# License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+# CONDITIONS OF ANY KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations under the License.
+
+[tasks]
+prove: default
+cover
+
 [options]
-mode prove
-depth 100
+prove: mode prove
+cover: mode cover
+prove: depth 12
+cover: depth 12
 
 [engines]
-smtbmc
+prove: smtbmc
+prove: abc pdr
+cover: smtbmc
 
 [script]
-read -formal cc_fifo.sv
-read -formal cc_fifo_properties.sv
-prep -top cc_fifo
+plugin -i slang.so
+read_slang --std 1800-2017 --top cc_fifo_formal -F formal.flist
+prep -top cc_fifo_formal
+async2sync
+dffunmap
 
 [files]
-cc_fifo_properties.sv
-../src/cc_fifo.sv
+build/formal.flist

@@ -12,7 +12,7 @@
 
 // Elaboration harness instantiating everything that will be checked
 module cc_lzc_formal import cc_pkg::*; #(
-    parameter int unsigned MaxWidth = 64
+    parameter int unsigned MaxWidth = 65
 ) (
     input logic [MaxWidth-1:0] in_i
 );

@@ -83,9 +83,13 @@
 // simulatenously trigger a clear sequence, proper sequencing is still
 // guaranteed.
 //
-// The time it takes to complete an entire clear sequence can be bounded as follows:
+// With both clocks continuously running and external isolate/clear requests
+// acknowledged without additional latency, the controller's contribution to
+// the time required for an entire clear sequence is bounded as follows:
 //
 // t_clear <= 20*T+16*SyncStages*T, with T=max(T_a, T_b) (clock periods of src and dst)
+//
+// Clock stalls and external acknowledgement latency extend this bound.
 //
 // How to Use the Module
 //

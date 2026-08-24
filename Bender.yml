@@ -118,8 +118,22 @@ sources:
 
   - target: formal
     files:
+      # Formal properties and harnesses. Keep each property module before the
+      # harness that instantiates it so the generated file list is usable by
+      # source-order-sensitive frontends.
+      - formal/cc_fifo_properties.sv
+      - formal/cc_fifo_formal.sv
+      - formal/cc_counter_properties.sv
+      - formal/cc_counter_formal.sv
+      - formal/cc_delta_counter_formal.sv
+      - formal/cc_fall_through_register_properties.sv
+      - formal/cc_fall_through_register_formal.sv
+      - formal/cc_lzc_properties.sv
+      - formal/cc_lzc_formal.sv
       - formal/cc_cdc_reset_ctrlr_half_properties.sv
       - formal/cc_cdc_reset_ctrlr_properties.sv
+      - formal/cc_heaviside_properties.sv
+      - formal/cc_heaviside_formal.sv
 
   - target: test
     files:

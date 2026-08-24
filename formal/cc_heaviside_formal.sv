@@ -13,9 +13,10 @@
 // Elaboration harness instantiating cc_heaviside over representative
 // parametrizations including non-power-of-two widths.
 module cc_heaviside_formal import cc_pkg::*; #(
-    parameter int unsigned MaxWidth = 33
+    parameter int unsigned MaxWidth = 65,
+    localparam int unsigned MaxIdxWidth = cc_pkg::idx_width(MaxWidth)
 ) (
-    input logic [MaxWidth-1:0] dummy_i
+    input logic [MaxIdxWidth-1:0] dummy_i
 );
 
     for (genvar width = 1; width <= MaxWidth; width++) begin : gen_width

@@ -21,7 +21,18 @@ module counter_properties #(
   cc_counter_properties #(
     .WIDTH           ( WIDTH           ),
     .STICKY_OVERFLOW ( STICKY_OVERFLOW )
-  ) i_cc_counter_properties (.*);
+  ) i_cc_counter_properties (
+    .clk_i      ( clk_i                               ),
+    .rst_ni     ( rst_ni                              ),
+    .clr_i      ( clear_i                             ),
+    .en_i       ( en_i                                ),
+    .load_i     ( load_i                              ),
+    .down_i     ( down_i                              ),
+    .delta_i    ( {{WIDTH-1{1'b0}}, 1'b1}             ),
+    .d_i        ( d_i                                 ),
+    .q_o        ( q_o                                 ),
+    .overflow_o ( overflow_o                          )
+  );
 endmodule
 
 bind counter counter_properties #(
