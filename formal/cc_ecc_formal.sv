@@ -50,10 +50,11 @@ module cc_ecc_formal import cc_pkg::*; #(
 );
 
   for (genvar w = 0; w < NumWidths; w++) begin : gen_width
-    localparam int unsigned DataWidth = Widths[w];
-    localparam int unsigned CwWidth   = cc_pkg::ecc_get_cw_width(DataWidth);
-    localparam int unsigned TotWidth  = CwWidth + 1;
-    localparam int unsigned IdxWidth  = cc_pkg::idx_width(TotWidth);
+    localparam int unsigned DataWidth   = Widths[w];
+    localparam int unsigned ParityWidth = cc_pkg::ecc_get_parity_width(DataWidth);
+    localparam int unsigned CwWidth     = cc_pkg::ecc_get_cw_width(DataWidth);
+    localparam int unsigned TotWidth    = CwWidth + 1;
+    localparam int unsigned IdxWidth    = cc_pkg::idx_width(TotWidth);
 
     logic [DataWidth-1:0] data;
     logic [IdxWidth-1:0]  pos_a, pos_b;
@@ -94,38 +95,39 @@ module cc_ecc_formal import cc_pkg::*; #(
     logic sgl_single,   sgl_parity,   sgl_double;
     logic par_single,   par_parity,   par_double;
     logic dbl_single,   dbl_parity,   dbl_double;
+    logic [ParityWidth-1:0] clean_syndrome, sgl_syndrome, par_syndrome, dbl_syndrome;
 
     cc_ecc_decode #(
         .DataWidth ( DataWidth )
     ) i_decode_clean (
-        .data_i         ( word_clean   ),
-        .data_o         ( clean_data   ),
-        .syndrome_o     (              ),
-        .single_error_o ( clean_single ),
-        .parity_error_o ( clean_parity ),
-        .double_error_o ( clean_double )
+        .data_i         ( word_clean    ),
+        .data_o         ( clean_data    ),
+        .syndrome_o     ( clean_syndrome ),
+        .single_error_o ( clean_single  ),
+        .parity_error_o ( clean_parity  ),
+        .double_error_o ( clean_double  )
     );
 
     cc_ecc_decode #(
         .DataWidth ( DataWidth )
     ) i_decode_single (
-        .data_i         ( word_single ),
-        .data_o         ( sgl_data    ),
-        .syndrome_o     (             ),
-        .single_error_o ( sgl_single  ),
-        .parity_error_o ( sgl_parity  ),
-        .double_error_o ( sgl_double  )
+        .data_i         ( word_single  ),
+        .data_o         ( sgl_data     ),
+        .syndrome_o     ( sgl_syndrome ),
+        .single_error_o ( sgl_single   ),
+        .parity_error_o ( sgl_parity   ),
+        .double_error_o ( sgl_double   )
     );
 
     cc_ecc_decode #(
         .DataWidth ( DataWidth )
     ) i_decode_parity (
-        .data_i         ( word_parity ),
-        .data_o         ( par_data    ),
-        .syndrome_o     (             ),
-        .single_error_o ( par_single  ),
-        .parity_error_o ( par_parity  ),
-        .double_error_o ( par_double  )
+        .data_i         ( word_parity  ),
+        .data_o         ( par_data     ),
+        .syndrome_o     ( par_syndrome ),
+        .single_error_o ( par_single   ),
+        .parity_error_o ( par_parity   ),
+        .double_error_o ( par_double   )
     );
 
     // data_o is left unconnected on purpose: the decoder promises nothing about
@@ -133,12 +135,12 @@ module cc_ecc_formal import cc_pkg::*; #(
     cc_ecc_decode #(
         .DataWidth ( DataWidth )
     ) i_decode_double (
-        .data_i         ( word_double ),
-        .data_o         (             ),
-        .syndrome_o     (             ),
-        .single_error_o ( dbl_single  ),
-        .parity_error_o ( dbl_parity  ),
-        .double_error_o ( dbl_double  )
+        .data_i         ( word_double  ),
+        .data_o         (              ),
+        .syndrome_o     ( dbl_syndrome ),
+        .single_error_o ( dbl_single   ),
+        .parity_error_o ( dbl_parity   ),
+        .double_error_o ( dbl_double   )
     );
 
     // ---------------------------------------------------------- properties
@@ -148,21 +150,25 @@ module cc_ecc_formal import cc_pkg::*; #(
         .data_i         ( data         ),
         .pos_a_i        ( pos_a        ),
         .pos_b_i        ( pos_b        ),
-        .clean_data_i   ( clean_data   ),
-        .clean_single_i ( clean_single ),
-        .clean_parity_i ( clean_parity ),
-        .clean_double_i ( clean_double ),
-        .sgl_data_i     ( sgl_data     ),
-        .sgl_single_i   ( sgl_single   ),
-        .sgl_parity_i   ( sgl_parity   ),
-        .sgl_double_i   ( sgl_double   ),
-        .par_data_i     ( par_data     ),
-        .par_single_i   ( par_single   ),
-        .par_parity_i   ( par_parity   ),
-        .par_double_i   ( par_double   ),
-        .dbl_single_i   ( dbl_single   ),
-        .dbl_parity_i   ( dbl_parity   ),
-        .dbl_double_i   ( dbl_double   )
+        .clean_data_i     ( clean_data     ),
+        .clean_single_i   ( clean_single   ),
+        .clean_parity_i   ( clean_parity   ),
+        .clean_double_i   ( clean_double   ),
+        .clean_syndrome_i ( clean_syndrome ),
+        .sgl_data_i       ( sgl_data       ),
+        .sgl_single_i     ( sgl_single     ),
+        .sgl_parity_i     ( sgl_parity     ),
+        .sgl_double_i     ( sgl_double     ),
+        .sgl_syndrome_i   ( sgl_syndrome   ),
+        .par_data_i       ( par_data       ),
+        .par_single_i     ( par_single     ),
+        .par_parity_i     ( par_parity     ),
+        .par_double_i     ( par_double     ),
+        .par_syndrome_i   ( par_syndrome   ),
+        .dbl_single_i     ( dbl_single     ),
+        .dbl_parity_i     ( dbl_parity     ),
+        .dbl_double_i     ( dbl_double     ),
+        .dbl_syndrome_i   ( dbl_syndrome   )
     );
   end
 

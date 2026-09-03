@@ -20,6 +20,9 @@
 //   - nothing is asserted about data_o under a double error. The decoder does
 //     not promise a value there, and the syndrome can address a position
 //     outside the codeword, in which case no correction is applied at all.
+//   - only nonzeroness, not an exact value, is asserted about the syndrome
+//     under a double error. The documented contract promises a non-zero
+//     syndrome there and nothing more.
 //   - nothing is claimed for more than two flipped bits, which is beyond the
 //     distance of a SECDED code.
 //   - the encoder is exercised only through this decoder, not against an
@@ -44,23 +47,27 @@ module cc_ecc_properties #(
     input logic                 clean_single_i,
     input logic                 clean_parity_i,
     input logic                 clean_double_i,
+    input logic [ParityWidth-1:0] clean_syndrome_i,
 
     /// Decoder fed one flipped bit inside the Hamming codeword.
     input logic [DataWidth-1:0] sgl_data_i,
     input logic                 sgl_single_i,
     input logic                 sgl_parity_i,
     input logic                 sgl_double_i,
+    input logic [ParityWidth-1:0] sgl_syndrome_i,
 
     /// Decoder fed a flipped extended parity bit, codeword untouched.
     input logic [DataWidth-1:0] par_data_i,
     input logic                 par_single_i,
     input logic                 par_parity_i,
     input logic                 par_double_i,
+    input logic [ParityWidth-1:0] par_syndrome_i,
 
     /// Decoder fed two distinct flipped bits anywhere in the encoded word.
     input logic                 dbl_single_i,
     input logic                 dbl_parity_i,
-    input logic                 dbl_double_i
+    input logic                 dbl_double_i,
+    input logic [ParityWidth-1:0] dbl_syndrome_i
 );
 
   // ---------------------------------------------------------------------
@@ -115,10 +122,11 @@ module cc_ecc_properties #(
   // ---------------------------------------------------------------- P1
   // No corruption: the data returns intact and no flag is raised.
   always_comb begin
-    p1_data:   assert (clean_data_i == data_i);
-    p1_single: assert (clean_single_i == 1'b0);
-    p1_parity: assert (clean_parity_i == 1'b0);
-    p1_double: assert (clean_double_i == 1'b0);
+    p1_data:     assert (clean_data_i == data_i);
+    p1_single:   assert (clean_single_i == 1'b0);
+    p1_parity:   assert (clean_parity_i == 1'b0);
+    p1_double:   assert (clean_double_i == 1'b0);
+    p1_syndrome: assert (clean_syndrome_i == '0);
   end
 
   // ---------------------------------------------------------------- P2
@@ -134,6 +142,11 @@ module cc_ecc_properties #(
       p2_single: assert (sgl_single_i == 1'b1);
       p2_parity: assert (sgl_parity_i == 1'b0);
       p2_double: assert (sgl_double_i == 1'b0);
+      // The syndrome is the 1-based position of the flipped codeword bit:
+      // flipping bit k toggles exactly the syndrome bits set in (k + 1).
+      // The comparison is made at 32 bits for the same truncation reason as
+      // the position assumptions above.
+      p2_syndrome: assert (32'(sgl_syndrome_i) == 32'(pos_a_i) + 1);
     end
   end
 
@@ -141,10 +154,13 @@ module cc_ecc_properties #(
   // Only the extended parity bit is flipped: the data is untouched and the
   // error is reported as a parity error.
   always_comb begin
-    p3_data:   assert (par_data_i == data_i);
-    p3_parity: assert (par_parity_i == 1'b1);
-    p3_single: assert (par_single_i == 1'b0);
-    p3_double: assert (par_double_i == 1'b0);
+    p3_data:     assert (par_data_i == data_i);
+    p3_parity:   assert (par_parity_i == 1'b1);
+    p3_single:   assert (par_single_i == 1'b0);
+    p3_double:   assert (par_double_i == 1'b0);
+    // The syndrome only covers the Hamming codeword, so a flip of the
+    // extended parity bit alone leaves it zero.
+    p3_syndrome: assert (par_syndrome_i == '0);
   end
 
   // ---------------------------------------------------------------- P4
@@ -155,6 +171,10 @@ module cc_ecc_properties #(
       p4_double: assert (dbl_double_i == 1'b1);
       p4_single: assert (dbl_single_i == 1'b0);
       p4_parity: assert (dbl_parity_i == 1'b0);
+      // Only nonzeroness is claimed here: the documented contract promises a
+      // non-zero syndrome for a double fault, but no particular value, so the
+      // exact (implementation-determined) value is deliberately not asserted.
+      p4_syndrome: assert (dbl_syndrome_i != '0);
     end
   end
 
