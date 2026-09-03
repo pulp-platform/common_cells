@@ -89,6 +89,7 @@ module cc_ecc_decode import cc_pkg::*; #(
   end
 
   assign syndrome_not_zero = |syndrome;
+  assign syndrome_o = syndrome;
 
   // correct the data word if the syndrome is non-zero
   always_comb begin
