@@ -15,7 +15,9 @@ module stream_fork #(
   input  logic [N_OUP-1:0] ready_i
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_stream_fork' instead.");
+  `endif
   // synthesis translate_on
   cc_stream_fork #(
     .NumOup ( N_OUP )

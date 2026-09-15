@@ -34,7 +34,9 @@ module stream_xbar #(
   input  logic     [NumOut-1:0] ready_i
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_stream_xbar' instead.");
+  `endif
   // synthesis translate_on
   // Note: SelWidth, sel_oup_t, IdxWidth, idx_inp_t are localparams in cc_stream_xbar,
   //       not passed in instantiation.

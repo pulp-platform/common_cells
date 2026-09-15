@@ -15,7 +15,9 @@ module clk_int_div_static #(
   output logic clk_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_clk_int_div_static' instead.");
+  `endif
   // synthesis translate_on
   cc_clk_int_div_static #(
     .DivValue ( DIV_VALUE             ),

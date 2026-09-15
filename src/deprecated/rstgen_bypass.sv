@@ -15,7 +15,9 @@ module rstgen_bypass #(
   output logic init_no
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_rstgen_bypass' instead.");
+  `endif
   // synthesis translate_on
   cc_rstgen_bypass #(
     .NumRegs ( NumRegs )

@@ -17,24 +17,33 @@
 //
 //   Pass the bender target 'cc_no_deprecated' (define TARGET_CC_NO_DEPRECATED) to
 //   compile this file as empty and enforce use of the non-deprecated macros.
+//   Pass 'cc_no_deprecated_warnings' (define TARGET_CC_NO_DEPRECATED_WARNINGS) to
+//   retain the aliases without emitting runtime migration warnings.
 
 `ifndef COMMON_CELLS_REGISTERS_DEPRECATED_SVH_
 `define COMMON_CELLS_REGISTERS_DEPRECATED_SVH_
 
 `ifndef TARGET_CC_NO_DEPRECATED
 
+`ifdef TARGET_CC_NO_DEPRECATED_WARNINGS
+`define COMMON_CELLS_DEPRECATED_REGISTER_WARNING(__message)
+`else
+`define COMMON_CELLS_DEPRECATED_REGISTER_WARNING(__message) \
+  initial $warning(__message);
+`endif
+
 // `FFARN: asynchronous active-low reset (alias of `FF)
 `define FFARN(__q, __d, __reset_value, __clk = `REG_DFLT_CLK, __arst_n = `REG_DFLT_RST_N) \
   `FF(__q, __d, __reset_value, __clk, __arst_n)                                            \
   /* synopsys translate_off */                                                            \
-  initial $warning("Macro 'FFARN' is deprecated. Use 'FF' instead.");                      \
+  `COMMON_CELLS_DEPRECATED_REGISTER_WARNING("Macro 'FFARN' is deprecated. Use 'FF' instead.") \
   /* synopsys translate_on */
 
 // `FFLARN: load-enable, asynchronous active-low reset (alias of `FFL)
 `define FFLARN(__q, __d, __load, __reset_value, __clk = `REG_DFLT_CLK, __arst_n = `REG_DFLT_RST_N) \
   `FFL(__q, __d, __load, __reset_value, __clk, __arst_n)                                            \
   /* synopsys translate_off */                                                                      \
-  initial $warning("Macro 'FFLARN' is deprecated. Use 'FFL' instead.");                             \
+  `COMMON_CELLS_DEPRECATED_REGISTER_WARNING("Macro 'FFLARN' is deprecated. Use 'FFL' instead.") \
   /* synopsys translate_on */
 
 `endif // TARGET_CC_NO_DEPRECATED

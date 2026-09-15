@@ -20,7 +20,9 @@ module cdc_fifo_2phase #(
   input  logic dst_ready_i
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_fifo_2phase' instead.");
+  `endif
   // synthesis translate_on
   cc_cdc_fifo_2phase #(
     .data_t     ( T           ),

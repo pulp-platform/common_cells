@@ -23,7 +23,9 @@ module cdc_reset_ctrlr #(
   input  logic b_isolate_ack_i
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_reset_ctrlr' instead.");
+  `endif
   // synthesis translate_on
   cc_cdc_reset_ctrlr #(
     .SyncStages ( SYNC_STAGES         ),
@@ -66,7 +68,9 @@ module cdc_reset_ctrlr_half #(
   output logic                          async_ack_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_reset_ctrlr_half' instead.");
+  `endif
   // synthesis translate_on
 
   cc_pkg::cdc_clear_seq_phase_e async_next_phase_from_cc;

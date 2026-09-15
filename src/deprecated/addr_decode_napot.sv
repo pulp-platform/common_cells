@@ -21,7 +21,9 @@ module addr_decode_napot #(
   input  idx_t                default_idx_i
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_addr_decode_napot' instead.");
+  `endif
   // synthesis translate_on
   // Note: IdxWidth and idx_t are localparams in cc_addr_decode_napot, not passed.
   cc_addr_decode_napot #(

@@ -16,7 +16,9 @@ module sub_per_hash #(
   output logic [2**HashWidth-1:0] hash_onehot_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_sub_per_hash' instead.");
+  `endif
   // synthesis translate_on
   cc_sub_per_hash #(
     .InpWidth   ( InpWidth   ),

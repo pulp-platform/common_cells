@@ -169,6 +169,10 @@ sources:
   # Included by default for backward compatibility. Set the target 'cc_no_deprecated'
   # to exclude them and enforce use of the new cc_* names.
   - target: not(cc_no_deprecated)
+    defines:
+      # Suppress migration warnings without removing the compatibility wrappers.
+      COMMON_CELLS_NO_DEPRECATED_WARNINGS:
+        target: cc_no_deprecated_warnings
     files:
       # Deprecated packages forwarding to cc_pkg (keep old package names working)
       - src/deprecated/cf_math_pkg.sv

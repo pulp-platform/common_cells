@@ -24,7 +24,9 @@ module fifo_v3 #(
     input  logic  pop_i
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_fifo' instead.");
+  `endif
   // synthesis translate_on
   logic [cc_pkg::cnt_width(DEPTH)-1:0] usage;
   assign usage_o = usage[ADDR_DEPTH-1:0];

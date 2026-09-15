@@ -24,7 +24,9 @@ module cdc_2phase_clearable #(
   input  logic dst_ready_i
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_2phase_clearable' instead.");
+  `endif
   // synthesis translate_on
   cc_cdc_2phase_clearable #(
     .data_t ( T                   ),
@@ -64,7 +66,9 @@ module cdc_2phase_src_clearable #(
   output T     async_data_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_2phase_src_clearable' instead.");
+  `endif
   // synthesis translate_on
   cc_cdc_2phase_src_clearable #(
     .data_t ( T           ),
@@ -98,7 +102,9 @@ module cdc_2phase_dst_clearable #(
   input  T     async_data_i
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_2phase_dst_clearable' instead.");
+  `endif
   // synthesis translate_on
   cc_cdc_2phase_dst_clearable #(
     .data_t ( T           ),

@@ -29,7 +29,9 @@ module rr_arb_tree #(
   output idx_t               idx_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_rr_arb_tree' instead.");
+  `endif
   // synthesis translate_on
   // Note: IdxWidth and idx_t are localparams in cc_rr_arb_tree, not passed.
   cc_rr_arb_tree #(

@@ -22,7 +22,9 @@ module passthrough_stream_fifo #(
   input  logic  ready_i
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_passthrough_stream_fifo' instead.");
+  `endif
   // synthesis translate_on
   cc_passthrough_stream_fifo #(
     .Depth       ( Depth       ),
