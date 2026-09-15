@@ -46,7 +46,9 @@ module mem_to_banks_detailed #(
   input  oup_ruser_t [NumBanks-1:0]  bank_ruser_i
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_mem_to_banks_detailed' instead.");
+  `endif
   // synthesis translate_on
   cc_mem_to_banks_detailed #(
     .AddrWidth  ( AddrWidth  ),

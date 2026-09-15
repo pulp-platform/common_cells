@@ -24,7 +24,9 @@ module stream_to_mem #(
   input  logic      mem_resp_valid_i
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_stream_to_mem' instead.");
+  `endif
   // synthesis translate_on
   cc_stream_to_mem #(
     .mem_req_t  ( mem_req_t  ),

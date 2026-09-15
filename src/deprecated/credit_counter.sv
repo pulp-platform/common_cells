@@ -22,7 +22,9 @@ module credit_counter #(
   output logic         credit_full_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_credit_counter' instead.");
+  `endif
   // synthesis translate_on
   // Note: InitNumCredits and credit_cnt_t are localparams in cc_credit_counter, not passed.
   cc_credit_counter #(

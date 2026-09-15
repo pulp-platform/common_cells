@@ -15,7 +15,9 @@ module exp_backoff #(
   output logic is_zero_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_exp_backoff' instead.");
+  `endif
   // synthesis translate_on
   cc_exp_backoff #(
     .Seed   ( Seed   ),

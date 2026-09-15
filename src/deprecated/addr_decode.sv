@@ -27,7 +27,9 @@ module addr_decode #(
   input  idx_t                default_idx_i
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_addr_decode' instead.");
+  `endif
   // synthesis translate_on
   cc_addr_decode #(
     .NoIndices ( NoIndices ),

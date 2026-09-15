@@ -9,14 +9,18 @@ package ecc_pkg;
 
   function automatic int unsigned get_parity_width (input int unsigned data_width);
     // synopsys translate_off
+    `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
     $warning("Package 'ecc_pkg' is deprecated. Use 'cc_pkg' instead.");
+    `endif
     // synopsys translate_on
     return cc_pkg::ecc_get_parity_width(data_width);
   endfunction
 
   function automatic int unsigned get_cw_width (input int unsigned data_width);
     // synopsys translate_off
+    `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
     $warning("Package 'ecc_pkg' is deprecated. Use 'cc_pkg' instead.");
+    `endif
     // synopsys translate_on
     return cc_pkg::ecc_get_cw_width(data_width);
   endfunction

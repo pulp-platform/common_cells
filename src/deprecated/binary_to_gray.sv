@@ -11,7 +11,9 @@ module binary_to_gray #(
   output logic [N-1:0] Z
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_binary_to_gray' instead.");
+  `endif
   // synthesis translate_on
   cc_binary_to_gray #(
     .Width ( N )

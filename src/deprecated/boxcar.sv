@@ -12,7 +12,9 @@ module boxcar #(
   output logic [Width-1:0]                          mask_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_boxcar' instead.");
+  `endif
   // synthesis translate_on
   cc_boxcar #(
     .Width ( Width )

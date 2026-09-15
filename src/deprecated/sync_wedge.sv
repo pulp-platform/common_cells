@@ -16,7 +16,9 @@ module sync_wedge #(
   output logic serial_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_sync_wedge' instead.");
+  `endif
   // synthesis translate_on
 
   cc_sync_wedge #(

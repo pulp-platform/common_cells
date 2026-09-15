@@ -26,7 +26,9 @@ module cdc_fifo_gray_clearable #(
   input  logic dst_ready_i
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_fifo_gray_clearable' instead.");
+  `endif
   // synthesis translate_on
   cc_cdc_fifo_gray_clearable #(
     .Width ( WIDTH               ),
@@ -69,7 +71,9 @@ module cdc_fifo_gray_src_clearable #(
   input  logic [LOG_DEPTH:0]  async_rptr_i
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_fifo_gray_src_clearable' instead.");
+  `endif
   // synthesis translate_on
   cc_cdc_fifo_gray_src_clearable #(
     .data_t ( T           ),
@@ -105,7 +109,9 @@ module cdc_fifo_gray_dst_clearable #(
   output logic [LOG_DEPTH:0]  async_rptr_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_cdc_fifo_gray_dst_clearable' instead.");
+  `endif
   // synthesis translate_on
   cc_cdc_fifo_gray_dst_clearable #(
     .data_t ( T           ),

@@ -19,7 +19,9 @@ module spill_register_flushable #(
   output T     data_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_spill_register_flushable' instead.");
+  `endif
   // synthesis translate_on
   cc_spill_register_flushable #(
     .data_t ( T      ),

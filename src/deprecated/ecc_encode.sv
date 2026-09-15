@@ -19,7 +19,9 @@ module ecc_encode #(
   output encoded_data_t data_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_ecc_encode' instead.");
+  `endif
   // synthesis translate_on
   cc_ecc_encode #(
     .DataWidth ( DataWidth )

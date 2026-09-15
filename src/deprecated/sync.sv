@@ -14,7 +14,9 @@ module sync #(
   output logic serial_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'tc_sync' from 'tech_cells_generic' instead.");
+  `endif
   // synthesis translate_on
   tc_sync #(
     .Stages     ( STAGES     ),

@@ -19,7 +19,9 @@ module stream_register #(
   output T     data_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_stream_register' instead.");
+  `endif
   // synthesis translate_on
   cc_stream_register #(
     .data_t ( T )

@@ -17,7 +17,9 @@ module clk_mux_glitch_free #(
   output logic                  clk_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_clk_mux_glitch_free' instead.");
+  `endif
   // synthesis translate_on
   cc_clk_mux_glitch_free #(
     .NumInputs ( NUM_INPUTS         ),
@@ -41,7 +43,9 @@ module clk_or_tree #(
   output logic                  clk_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_clk_or_tree' instead.");
+  `endif
   // synthesis translate_on
   cc_clk_or_tree #(
     .NumInputs ( NUM_INPUTS )

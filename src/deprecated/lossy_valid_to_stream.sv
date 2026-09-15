@@ -18,7 +18,9 @@ module lossy_valid_to_stream #(
   output logic busy_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_lossy_valid_to_stream' instead.");
+  `endif
   // synthesis translate_on
   cc_lossy_valid_to_stream #(
     .DataWidth ( DATA_WIDTH ),

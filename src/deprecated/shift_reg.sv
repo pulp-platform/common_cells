@@ -14,7 +14,9 @@ module shift_reg #(
   output dtype d_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_shift_register' instead.");
+  `endif
   // synthesis translate_on
   cc_shift_register #(
     .data_t ( dtype ),

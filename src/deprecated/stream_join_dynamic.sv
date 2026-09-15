@@ -14,7 +14,9 @@ module stream_join_dynamic #(
   input  logic             oup_ready_i
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_stream_join_dynamic' instead.");
+  `endif
   // synthesis translate_on
   cc_stream_join_dynamic #(
     .NumInp ( N_INP )

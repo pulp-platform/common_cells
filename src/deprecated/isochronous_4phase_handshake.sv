@@ -15,7 +15,9 @@ module isochronous_4phase_handshake (
   output logic dst_valid_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_isochronous_4phase_handshake' instead.");
+  `endif
   // synthesis translate_on
   cc_isochronous_4phase_handshake i_cc_isochronous_4phase_handshake (
     .src_clk_i   ( src_clk_i   ),
