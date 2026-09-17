@@ -84,6 +84,8 @@ The generic synchronizer is provided by the [`tech_cells_generic`](https://githu
 | [`cc_spill_register`](src/cc_spill_register.sv)                           | Register with ready/valid interface to cut all combinational interface paths                              | active |               |
 | [`cc_stream_arbiter`](src/cc_stream_arbiter.sv)                           | Round-robin arbiter for ready/valid stream interface                                                      | active |               |
 | [`cc_stream_demux`](src/cc_stream_demux.sv)                               | Ready/valid interface demultiplexer                                                                       | active |               |
+| [`cc_stream_downsizer`](src/cc_stream_downsizer.sv)                       | Ready/valid interface width downsizer                                                                     | active |               |
+| [`cc_stream_upsizer`](src/cc_stream_upsizer.sv)                           | Ready/valid interface width upsizer                                                                       | active |               |
 | [`cc_lossy_valid_to_stream`](src/cc_lossy_valid_to_stream.sv)             | Convert Valid-only to ready/valid by updating in-flight transaction                                       | active |               |
 | [`cc_stream_join`](src/cc_stream_join.sv)                                 | Ready/valid handshake join multiple to one common                                                         | active |               |
 | [`cc_stream_join_dynamic`](src/cc_stream_join_dynamic.sv)                 | Ready/valid handshake join multiple to one common, dynamically configurable subset selection              | active |               |
