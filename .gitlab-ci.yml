@@ -87,9 +87,11 @@ tests:
           - cc_passthrough_stream_fifo_tb
           - cc_popcount_tb
           - cc_rr_arb_tree_tb
+          - cc_stream_downsizer_tb
           - cc_stream_omega_net_tb
           - cc_stream_register_tb
           - cc_stream_to_mem_tb
+          - cc_stream_upsizer_tb
           - cc_stream_xbar_tb
           - cc_sub_per_hash_tb
           - cc_lossy_valid_to_stream_tb

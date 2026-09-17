@@ -32,9 +32,6 @@ module cc_stream_upsizer #(
   input  logic                   oup_ready_i
 );
 
-  `ASSERT_INIT(WidthRatio, (WideWidth % NarrowWidth == 0),
-               "WideWidth must be an integer multiple of NarrowWidth")
-
   if (Ratio == 1) begin : gen_passthrough
     assign inp_ready_o = oup_ready_i;
     assign oup_valid_o = inp_valid_i;
@@ -74,5 +71,8 @@ module cc_stream_upsizer #(
       end
     end
   end
+
+  `ASSERT_INIT(WidthRatio, (WideWidth % NarrowWidth == 0),
+             "WideWidth must be an integer multiple of NarrowWidth")
 
 endmodule : cc_stream_upsizer
