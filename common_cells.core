@@ -83,8 +83,10 @@ filesets:
       - src/cc_id_queue.sv
       - src/cc_stream_to_mem.sv
       - src/cc_stream_arbiter.sv
+      - src/cc_stream_downsizer.sv
       - src/cc_stream_fifo_optimal_wrap.sv
       - src/cc_stream_register.sv
+      - src/cc_stream_upsizer.sv
       - src/cc_stream_xbar.sv
       # Level 3
       - src/cc_cdc_fifo_gray_clearable.sv
