@@ -8,8 +8,13 @@
 module cc_stream_downsizer_tb #(
   parameter int unsigned NarrowWidth = 8,
   parameter int unsigned WideWidth   = 32,
+  parameter int unsigned NumChecks   = 32'd100000,
   localparam int unsigned Ratio      = WideWidth / NarrowWidth
 );
+
+  localparam time TClk = 10ns;
+  localparam time TA   = TClk / 4;
+  localparam time TT   = TClk * 3 / 4;
 
   logic clk, rst_n;
   logic inp_valid, inp_ready;
@@ -18,7 +23,43 @@ module cc_stream_downsizer_tb #(
   logic [  WideWidth-1:0] inp_data;
   logic [NarrowWidth-1:0] oup_data;
 
-  int unsigned nr_checks;
+  clk_rst_gen #(
+    .ClkPeriod   (TClk),
+    .RstClkCycles(5)
+  ) i_clk_rst_gen (
+    .clk_o (clk),
+    .rst_no(rst_n)
+  );
+
+  // Randomized narrow-side manager.
+  rand_stream_mst #(
+    .data_t       (logic [WideWidth-1:0]),
+    .MinWaitCycles(0),
+    .MaxWaitCycles(8),
+    .ApplDelay    (TA),
+    .AcqDelay     (TT)
+  ) i_rand_stream_mst (
+    .clk_i  (clk),
+    .rst_ni (rst_n),
+    .data_o (inp_data),
+    .valid_o(inp_valid),
+    .ready_i(inp_ready)
+  );
+
+  // Randomized narrow-side consumer.
+  rand_stream_slv #(
+    .data_t       (logic [NarrowWidth-1:0]),
+    .MinWaitCycles(1),
+    .MaxWaitCycles(8),
+    .ApplDelay    (TA),
+    .AcqDelay     (TT)
+  ) i_rand_stream_slv (
+    .clk_i  (clk),
+    .rst_ni (rst_n),
+    .data_i (oup_data),
+    .valid_i(oup_valid),
+    .ready_o(oup_ready)
+  );
 
   cc_stream_downsizer #(
     .NarrowWidth(NarrowWidth),
@@ -34,70 +75,6 @@ module cc_stream_downsizer_tb #(
     .oup_ready_i(oup_ready)
   );
 
-  initial begin
-    clk = 1'b0;
-    rst_n = 1'b0;
-    repeat (8) #10ns clk = ~clk;
-
-    rst_n = 1'b1;
-    forever #10ns clk = ~clk;
-  end
-
-  // simulator stopper, this is suboptimal better go for coverage
-  initial begin
-    #100ms
-    $display("Checked %0d stimuli", nr_checks);
-    $stop;
-  end
-
-  // clocking outputs are DUT inputs and vice versa
-  clocking cb @(posedge clk);
-    default input #2 output #4;
-    output inp_data, inp_valid, oup_ready;
-    input inp_ready, oup_valid, oup_data;
-  endclocking
-
-  clocking pck @(posedge clk);
-    default input #2 output #4;
-    input inp_data, inp_valid, inp_ready, oup_data, oup_valid, oup_ready;
-  endclocking
-
-  // --------
-  // Driver
-  // --------
-  // Holds `inp_data`/`inp_valid` stable while waiting for `inp_ready`, per the
-  // handshake contract the downsizer itself relies on (it re-reads `inp_data_i`
-  // for every slice instead of registering it).
-  initial begin
-    automatic logic [WideWidth-1:0] word;
-
-    cb.inp_valid <= 1'b0;
-    wait (rst_n == 1'b1);
-
-    forever begin
-      word = {$urandom(), $urandom()};
-      repeat ($urandom_range(0, 4)) @(cb);
-      cb.inp_data  <= word;
-      cb.inp_valid <= 1'b1;
-      @(cb);
-      while (!cb.inp_ready) @(cb);
-      cb.inp_valid <= 1'b0;
-    end
-  end
-
-  // --------
-  // Consumer
-  // --------
-  initial begin
-    wait (rst_n == 1'b1);
-    forever begin
-      @(cb);
-      cb.oup_ready <= 1'b1;
-      repeat ($urandom_range(0, 4)) @(cb);
-      cb.oup_ready <= 1'b0;
-    end
-  end
-
   // -------------------
   // Monitor && Checker
   // -------------------
@@ -112,29 +89,37 @@ module cc_stream_downsizer_tb #(
 
   initial begin
     automatic logic [NarrowWidth-1:0] expected;
-    automatic logic word_pending;
-    nr_checks = 0;
+    automatic logic                   word_pending;
+    automatic int unsigned            nr_checks;
+    nr_checks    = 0;
     word_pending = 1'b0;
 
+    wait (rst_n);
     forever begin
-      @(pck);
+      @(posedge clk);
+      #TT;
 
-      if (pck.inp_valid && !word_pending) begin
+      if (inp_valid && !word_pending) begin
         for (int unsigned k = 0; k < Ratio; k++) begin
-          queue.push_back(pck.inp_data[k*NarrowWidth+:NarrowWidth]);
+          queue.push_back(inp_data[k*NarrowWidth+:NarrowWidth]);
         end
         word_pending = 1'b1;
       end
 
-      if (pck.inp_valid && pck.inp_ready) begin
+      if (inp_valid && inp_ready) begin
         word_pending = 1'b0;
       end
 
-      if (pck.oup_valid && pck.oup_ready) begin
+      if (oup_valid && oup_ready) begin
         expected = queue.pop_front();
-        assert (expected == pck.oup_data)
-        else $error("Mismatch, Expected: %0h Got %0h", expected, pck.oup_data);
+        assert (expected == oup_data)
+        else $error("Mismatch, Expected: %0h Got %0h", expected, oup_data);
         nr_checks++;
+      end
+
+      if (nr_checks >= NumChecks) begin
+        $display("Checked %0d stimuli", nr_checks);
+        $finish(0);
       end
     end
   end
