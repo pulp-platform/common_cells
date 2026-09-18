@@ -105,8 +105,10 @@ sources:
       - src/cc_id_queue.sv
       - src/cc_stream_to_mem.sv
       - src/cc_stream_arbiter.sv
+      - src/cc_stream_downsizer.sv
       - src/cc_stream_fifo_optimal_wrap.sv
       - src/cc_stream_register.sv
+      - src/cc_stream_upsizer.sv
       - src/cc_stream_xbar.sv
       # Level 3
       - src/cc_cdc_fifo_gray_clearable.sv
@@ -143,8 +145,10 @@ sources:
       - test/cc_passthrough_stream_fifo_tb.sv
       - test/cc_popcount_tb.sv
       - test/cc_rr_arb_tree_tb.sv
+      - test/cc_stream_downsizer_tb.sv
       - test/cc_stream_register_tb.sv
       - test/cc_stream_to_mem_tb.sv
+      - test/cc_stream_upsizer_tb.sv
       - test/cc_sub_per_hash_tb.sv
       # Level 1
       - test/cc_isochronous_crossing_tb.sv
