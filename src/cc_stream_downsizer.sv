@@ -31,27 +31,25 @@ module cc_stream_downsizer #(
 );
 
   logic [CntWidth-1:0] slice_q;
-  logic last_slice, slice_en;
+  logic slice_en;
 
-  assign last_slice  = (slice_q == Ratio - 1);
   assign slice_en    = inp_valid_i && oup_ready_i;
   assign oup_data_o  = inp_data_i[slice_q*NarrowWidth+:NarrowWidth];
   assign oup_valid_o = inp_valid_i;
-  assign inp_ready_o = slice_en && last_slice;
 
-  cc_counter #(
-    .Width         (CntWidth),
-    .StickyOverflow(1'b0)
+  // Counts streamed slices.
+  cc_trip_counter #(
+    .Width(CntWidth)
   ) i_slice_cnt (
     .clk_i,
     .rst_ni,
-    .clr_i     (inp_ready_o),
-    .en_i      (slice_en),
-    .load_i    (1'b0),
-    .down_i    (1'b0),
-    .d_i       ('0),
-    .q_o       (slice_q),
-    .overflow_o(  /* unused */)
+    .clr_i  (1'b0),
+    .en_i   (slice_en),
+    .delta_i(CntWidth'(1)),
+    .bound_i(CntWidth'(Ratio - 1)),
+    .q_o    (slice_q),
+    .last_o (  /* unused */),
+    .trip_o (inp_ready_o)
   );
 
   `ASSERT_INIT(WidthRatio, (WideWidth % NarrowWidth == 0),
