@@ -16,7 +16,9 @@ module shift_reg_gated #(
   output dtype data_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_shift_register_gated' instead.");
+  `endif
   // synthesis translate_on
   cc_shift_register_gated #(
     .Depth  ( Depth  ),

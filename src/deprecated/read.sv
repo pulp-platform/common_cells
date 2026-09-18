@@ -12,7 +12,9 @@ module read #(
   output T d_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_read' instead.");
+  `endif
   // synthesis translate_on
   cc_read #(
     .Width ( Width ),

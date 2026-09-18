@@ -22,7 +22,9 @@ module stream_fifo_optimal_wrap #(
     input  logic                 ready_i
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_stream_fifo_optimal_wrap' instead.");
+  `endif
   // synthesis translate_on
   logic [cc_pkg::cnt_width(Depth)-1:0] usage;
   assign usage_o = usage[AddrDepth-1:0];

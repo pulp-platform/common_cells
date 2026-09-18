@@ -12,7 +12,9 @@ module edge_propagator_tx (
   output logic valid_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_edge_propagator_tx' instead.");
+  `endif
   // synthesis translate_on
   cc_edge_propagator_tx i_cc_edge_propagator_tx (
     .clk_i   ( clk_i   ),

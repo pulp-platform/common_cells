@@ -12,12 +12,13 @@ module edge_detect (
   output logic fe_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_edge_detect' instead.");
+  `endif
   // synthesis translate_on
   cc_edge_detect i_cc_edge_detect (
     .clk_i  ( clk_i  ),
     .rst_ni ( rst_ni ),
-    .clr_i  ( 1'b0  ),
     .d_i    ( d_i    ),
     .re_o   ( re_o   ),
     .fe_o   ( fe_o   )

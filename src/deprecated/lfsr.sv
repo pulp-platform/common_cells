@@ -17,7 +17,9 @@ module lfsr #(
   output logic [OutWidth-1:0] out_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_lfsr' instead.");
+  `endif
   // synthesis translate_on
   cc_lfsr #(
     .LfsrWidth    ( LfsrWidth    ),

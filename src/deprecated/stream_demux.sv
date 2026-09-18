@@ -16,7 +16,9 @@ module stream_demux #(
   input  logic [N_OUP-1:0]   oup_ready_i
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_stream_demux' instead.");
+  `endif
   // synthesis translate_on
   // Note: LOG_N_OUP is a localparam in cc_stream_demux, not passed.
   cc_stream_demux #(

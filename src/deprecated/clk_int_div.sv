@@ -20,7 +20,9 @@ module clk_int_div #(
   output logic [DIV_VALUE_WIDTH-1:0]  cycl_count_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_clk_int_div' instead.");
+  `endif
   // synthesis translate_on
   cc_clk_int_div #(
     .DivValueWidth ( DIV_VALUE_WIDTH       ),

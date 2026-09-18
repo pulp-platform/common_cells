@@ -19,7 +19,9 @@ module stream_mux #(
   input  logic                   oup_ready_i
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_stream_mux' instead.");
+  `endif
   // synthesis translate_on
   // Note: SEL_WIDTH is a localparam in cc_stream_mux, not passed.
   cc_stream_mux #(

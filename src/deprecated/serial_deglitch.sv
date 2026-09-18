@@ -14,7 +14,9 @@ module serial_deglitch #(
   output logic q_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated.");
+  `endif
   // synthesis translate_on
 
   logic [SIZE-1:0] count_q;

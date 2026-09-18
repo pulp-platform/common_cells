@@ -20,7 +20,9 @@ module isochronous_spill_register #(
   output T     dst_data_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_isochronous_spill_register' instead.");
+  `endif
   // synthesis translate_on
   cc_isochronous_spill_register #(
     .data_t ( T      ),

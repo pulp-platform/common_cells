@@ -17,14 +17,11 @@ module cc_sync_wedge #(
 ) (
     input  logic clk_i,    // Clock
     input  logic rst_ni,   // Asynchronous reset active low
-    input  logic clr_i,    // Synchronous clear active high
-    input  logic en_i,
     input  logic serial_i,
     output logic r_edge_o,
     output logic f_edge_o,
     output logic serial_o
 );
-    logic clk;
     logic serial, serial_q;
 
     assign serial_o =  serial_q;
@@ -40,12 +37,5 @@ module cc_sync_wedge #(
         .serial_o ( serial )
     );
 
-    pulp_clock_gating i_pulp_clock_gating (
-        .clk_i,
-        .en_i,
-        .test_en_i ( 1'b0 ),
-        .clk_o     ( clk  )
-    );
-
-    `FFLARNC(serial_q, serial, en_i, clr_i, 1'b0, clk, rst_ni)
+    `FF(serial_q, serial, 1'b0, clk_i, rst_ni)
 endmodule

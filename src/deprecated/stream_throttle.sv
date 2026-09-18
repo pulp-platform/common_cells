@@ -21,7 +21,9 @@ module stream_throttle #(
   input  credit_t credit_i
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_stream_throttle' instead.");
+  `endif
   // synthesis translate_on
   // Note: CntWidth and credit_t are localparams in cc_stream_throttle, not passed.
   cc_stream_throttle #(

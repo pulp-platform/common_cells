@@ -9,22 +9,23 @@ module sync_wedge #(
 ) (
   input  logic clk_i,
   input  logic rst_ni,
-  input  logic en_i,
+  input  logic en_i, // Retained for source compatibility; intentionally ignored.
   input  logic serial_i,
   output logic r_edge_o,
   output logic f_edge_o,
   output logic serial_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_sync_wedge' instead.");
+  `endif
   // synthesis translate_on
+
   cc_sync_wedge #(
     .Stages ( STAGES )
   ) i_cc_sync_wedge (
     .clk_i    ( clk_i    ),
     .rst_ni   ( rst_ni   ),
-    .clr_i   ( 1'b0   ),
-    .en_i     ( en_i     ),
     .serial_i ( serial_i ),
     .r_edge_o ( r_edge_o ),
     .f_edge_o ( f_edge_o ),

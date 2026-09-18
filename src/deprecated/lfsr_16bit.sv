@@ -15,7 +15,9 @@ module lfsr_16bit #(
   output logic [$clog2(WIDTH)-1:0] refill_way_bin
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_lfsr_16bit' instead.");
+  `endif
   // synthesis translate_on
   cc_lfsr_16bit #(
     .Seed ( SEED  ),

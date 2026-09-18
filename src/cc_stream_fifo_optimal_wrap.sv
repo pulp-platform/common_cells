@@ -79,7 +79,7 @@ module cc_stream_fifo_optimal_wrap #(
         );
 
         // usage is not supported
-        assign usage_o = 'x;
+        assign usage_o = '0;
     end
 
 

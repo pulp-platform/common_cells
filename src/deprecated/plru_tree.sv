@@ -13,7 +13,9 @@ module plru_tree #(
   output logic [ENTRIES-1:0] plru_o
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_plru_tree' instead.");
+  `endif
   // synthesis translate_on
   cc_plru_tree #(
     .Entries ( ENTRIES )

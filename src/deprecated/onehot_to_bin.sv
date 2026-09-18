@@ -13,7 +13,9 @@ module onehot_to_bin #(
   output logic [BIN_WIDTH-1:0]    bin
 );
   // synthesis translate_off
+  `ifndef COMMON_CELLS_NO_DEPRECATED_WARNINGS
   initial $warning("Module '%m' is deprecated. Use 'cc_onehot_to_bin' instead.");
+  `endif
   // synthesis translate_on
   // Note: BIN_WIDTH is a localparam in cc_onehot_to_bin, not passed.
   cc_onehot_to_bin #(
