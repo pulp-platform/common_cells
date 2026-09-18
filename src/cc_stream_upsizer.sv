@@ -11,15 +11,9 @@
 /// (valid-ready handshake) into one wide output beat.
 module cc_stream_upsizer #(
   /// Data width of the narrow (input) side, in bits.
-  parameter  int unsigned NarrowWidth = 32'd1,
+  parameter int unsigned NarrowWidth = 32'd1,
   /// Data width of the wide (output) side, in bits. Must be an integer multiple of `NarrowWidth`.
-  parameter  int unsigned WideWidth   = 32'd1,
-  /// Number of narrow beats per wide beat (derived, do not override).
-  localparam int unsigned Ratio       = WideWidth / NarrowWidth,
-  /// Width of the internal slice counter (derived, do not override).
-  localparam int unsigned CntWidth    = cc_pkg::idx_width(Ratio),
-  /// Width of the register bank holding the non-final slices (derived, do not override).
-  localparam int unsigned StoreWidth  = (Ratio - 1) * NarrowWidth
+  parameter int unsigned WideWidth   = 32'd1
 ) (
   input  logic                   clk_i,
   input  logic                   rst_ni,
@@ -32,6 +26,13 @@ module cc_stream_upsizer #(
   output logic                   oup_valid_o,
   input  logic                   oup_ready_i
 );
+
+  /// Number of narrow beats per wide beat.
+  localparam int unsigned Ratio      = WideWidth / NarrowWidth;
+  /// Width of the internal slice counter.
+  localparam int unsigned CntWidth   = cc_pkg::idx_width(Ratio);
+  /// Width of the register bank holding the non-final slices.
+  localparam int unsigned StoreWidth = (Ratio - 1) * NarrowWidth;
 
   if (Ratio == 1) begin : gen_passthrough
     assign inp_ready_o = oup_ready_i;

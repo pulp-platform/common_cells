@@ -10,13 +10,9 @@
 /// `WideWidth / NarrowWidth` consecutive narrow output beats, LSB slice first.
 module cc_stream_downsizer #(
   /// Data width of the narrow (output) side, in bits.
-  parameter  int unsigned NarrowWidth = 32'd1,
+  parameter int unsigned NarrowWidth = 32'd1,
   /// Data width of the wide (input) side, in bits. Must be an integer multiple of `NarrowWidth`.
-  parameter  int unsigned WideWidth   = 32'd1,
-  /// Number of narrow beats per wide beat (derived, do not override).
-  localparam int unsigned Ratio       = WideWidth / NarrowWidth,
-  /// Width of the internal slice counter (derived, do not override).
-  localparam int unsigned CntWidth    = cc_pkg::idx_width(Ratio)
+  parameter int unsigned WideWidth   = 32'd1
 ) (
   input  logic                   clk_i,
   input  logic                   rst_ni,
@@ -30,10 +26,13 @@ module cc_stream_downsizer #(
   input  logic                   oup_ready_i
 );
 
-  logic [CntWidth-1:0] slice_q;
-  logic slice_en;
+  /// Number of narrow beats per wide beat.
+  localparam int unsigned Ratio    = WideWidth / NarrowWidth;
+  /// Width of the internal slice counter.
+  localparam int unsigned CntWidth = cc_pkg::idx_width(Ratio);
 
-  assign slice_en    = inp_valid_i && oup_ready_i;
+  logic [CntWidth-1:0] slice_q;
+
   assign oup_data_o  = inp_data_i[slice_q*NarrowWidth+:NarrowWidth];
   assign oup_valid_o = inp_valid_i;
 
@@ -44,11 +43,11 @@ module cc_stream_downsizer #(
     .clk_i,
     .rst_ni,
     .clr_i  (1'b0),
-    .en_i   (slice_en),
+    .en_i   (inp_valid_i && oup_ready_i),
     .delta_i(CntWidth'(1)),
     .bound_i(CntWidth'(Ratio - 1)),
     .q_o    (slice_q),
-    .last_o (  /* unused */),
+    .last_o (/* unused */),
     .trip_o (inp_ready_o)
   );
 
