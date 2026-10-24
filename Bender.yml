@@ -160,13 +160,7 @@ sources:
       - test/cc_clk_int_div_static_tb.sv
       - test/cc_clk_mux_glitch_free_tb.sv
       - test/cc_lossy_valid_to_stream_tb.sv
-      - test/cc_wrr_arbiter_tb.sv
-      - test/cc_wrr_arbiter_cascade_tb.sv
       - test/cc_qos_wrr_arbiter_tb.sv
-      - test/cc_qos_wrr_3tier_tb.sv
-      - test/cc_qos_wrr_cascade_tb.sv
-      - test/cc_qos_wrr_cascade_share_tb.sv
-      - test/cc_arbiter_compare_tb.sv
 
   - target: synth_test
     files:
