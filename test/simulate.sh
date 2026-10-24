@@ -18,9 +18,14 @@ bender script vsim -t test -t tb > compile.tcl
 
 "$VSIM" -c -quiet -do 'source compile.tcl; quit'
 
+GUI_MODE=0
 call_vsim() {
-	echo "run -all" | "$VSIM" "$@" | tee vsim.log 2>&1
-	grep "Errors: 0," vsim.log
+  if [[ $GUI_MODE -eq 1 ]]; then
+    "$VSIM" "$@"
+  else
+    echo "run -all" | "$VSIM" "$@" | tee vsim.log 2>&1
+    grep "Errors: 0," vsim.log
+  fi
 }
 
 #call_vsim cc_cdc_fifo_tb # currently broken
