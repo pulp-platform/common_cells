@@ -22,7 +22,7 @@
 module cc_ring_buffer #(
     parameter int unsigned Depth = 32,
     parameter type data_t = logic,
-    /// Derived parameter *Do not override*
+    /// Derived parameters *Do not override*
     localparam int unsigned AddrWidth = cc_pkg::idx_width(Depth),
     localparam int unsigned StepWidth = cc_pkg::idx_width(Depth+1),
     localparam type addr_t = logic [AddrWidth-1:0],
