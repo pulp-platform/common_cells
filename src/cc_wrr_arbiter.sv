@@ -9,96 +9,61 @@
 // specific language governing permissions and limitations under the License.
 // SPDX-License-Identifier: SHL-0.51
 //
-// Authors: Vatsal Dixit <vdixit@student.ethz.ch>
-//          Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
-// Description: Weighted round-robin (WRR) arbiter.
+// Authors:
+// - Vatsal Dixit <vdixit@student.ethz.ch>
+// - Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
+//
+// Description: Weighted round-robin arbiter.
+//
+// This module implements weighted round-robin arbitration among `NumIn` inputs that share one
+// output channel. The output bandwidth is distributed among the inputs according to their weights
+// (`weights_i`). Whenever input `i` wins arbitration, it performs up to `weights_i[i]` consecutive
+// transfers, after which the arbiter grants access to the next contending input. Over a full
+// arbitration round, input `i` therefore performs `weights_i[i]` out of `sum(weights_i)`
+// transfers. The bandwidth share of each input is thus proportional to its weight. The higher the
+// weight, the more bandwidth the input is granted. Every weight must be at least 1.
+//
+// A transfer is a generic valid/ready handshake on the output, so the unit of a weight depends on
+// what the handshake represents, e.g., a flit, a NoC packet, or an AXI4 burst.
+//
+// Weighted round-robin is an extension of standard round-robin arbitration. Accordingly,
+// `cc_wrr_arbiter` is built on top of `cc_rr_arb_tree`, which decides which input wins the
+// arbitration and holds that decision for the entire duration of the weight window.
 
 `include "common_cells/registers.svh"
 `include "common_cells/assertions.svh"
 
-/// # Weighted Round-Robin Arbiter (`cc_wrr_arbiter`)
-///
-/// A generic, N-input arbiter that merges `NumIn` valid/ready input streams onto a single
-/// valid/ready output stream while distributing the output bandwidth *proportionally to a
-/// per-input weight* `weights_i[i]`. Under saturation (every input always requesting) input
-/// `i` receives a steady-state share of
-///
-///     bandwidth_i = w_i / sum_j(w_j)        (j over all currently-contending inputs)
-///
-/// This is the knob the WRRA exposes: a requester with a higher weight `w_i` is granted more
-/// of the shared link, which is exactly what is needed to counteract *topological unfairness*
-/// in a NoC. When a chain/tree of these arbiters merges traffic towards a common destination,
-/// setting each input's weight to the number of original requesters it aggregates restores
-/// global fairness (each leaf source ends up with an equal share, regardless of how many hops
-/// deep it sits). Weights are additive up the tree, so the same cell composes at any radix.
-///
-/// ## Mechanism: deficit / burst weighted round-robin
-///
-/// The weight is realised as a *burst*: when an input wins arbitration it is granted up to
-/// `w_i` consecutive flits (one flit = one valid/ready transfer) before the round-robin pointer
-/// advances to the next contender. Over a full rotation that visits every contender once, input
-/// `i` therefore emits `w_i` out of `sum_j(w_j)` flits, giving the bandwidth split above.
-///
-/// Design decisions (and their trade-offs):
-/// * **Reuse `cc_rr_arb_tree` for winner selection.** The inner arbiter (with `FairArb` and
-///   `LockIn`) decides *who* wins and *holds that decision* for the whole burst; the wrra cell only
-///   adds the burst counter on top. The inner `gnt_i` is pulsed exactly once per burst (on the
-///   last accepted flit) so the inner round-robin pointer moves once per burst, not once per
-///   flit. We feed the inner arbiter a *snapshot* of the contender set (`req_lock_q`) that is held
-///   stable for the whole burst, which keeps the `LockIn` decision stable even if a non-winning
-///   input deasserts, and avoids tripping the inner arbiter's `LockIn` assumptions.
-/// * **Burst vs. interleaved.** A burst arbiter is small and simple but makes the output bursty:
-///   a low-weight input may wait through a full high-weight burst, so its *latency/jitter* is
-///   worse than with a (more expensive) interleaved/WFQ-style scheme. The bandwidth ratio is
-///   identical either way, so for bandwidth shaping under contention the burst scheme is chosen.
-/// * **The burst length is a *maximum*, not a guarantee of work.** A burst advances on accepted
-///   flits (`req_o & gnt_i`). A downstream stall (`gnt_i` low while the winner still requests) just
-///   pauses the burst. But if the winner *withdraws* its request mid-burst - including being masked
-///   out by an upstream QoS/priority stage - the burst is **abandoned** and the arbiter re-arbitrates
-///   to the next contender (`winner_gone`). This keeps the cell work-conserving and, crucially,
-///   prevents a permanent stall when this cell is wrapped by a dynamic eligibility mask (see
-///   `cc_qos_wrr_arbiter`). Under saturated traffic the winner never withdraws, so the bandwidth
-///   ratio is exact; under non-saturation it degrades gracefully towards the offered load.
-/// * **Weight of 0 means "no service".** An input whose weight is 0 is excluded from arbitration
-///   entirely: it is skipped and never granted, even while it is requesting (it gets zero
-///   bandwidth, as the weight says). This also keeps the burst counter from ever loading 0. If
-///   *every* requesting input has weight 0, the output simply stays idle.
 module cc_wrr_arbiter #(
-  /// Number of request ports to arbitrate.
-  parameter int unsigned NumIn     = 4,
-  /// Data width of the payload in bits. Not needed if `data_t` is overwritten.
-  parameter int unsigned DataWidth = 32,
-  /// Data type of the payload, can be overwritten with a custom type.
-  parameter type         data_t    = logic [DataWidth-1:0],
-  /// Width of the per-input weight signal. A weight may range `[0, 2**WtWidth-1]`. A weight of 0
-  /// excludes the input from arbitration (no service); otherwise the burst length is `weight` flits.
-  parameter int unsigned WtWidth   = 4,
-  /// Width of the arbitrated index.
-  localparam int unsigned IdxWidth = cc_pkg::idx_width(NumIn),
-  /// Type of the arbitrated index.
-  localparam type         idx_t    = logic [IdxWidth-1:0]
+  // Number of request channels to arbitrate.
+  parameter int unsigned NumIn       = 4,
+  // Data width of the payload in bits. Not needed if `data_t` is overwritten.
+  parameter int unsigned DataWidth   = 32,
+  // Data type of the payload. It can be overwritten with a custom type.
+  parameter type         data_t      = logic [DataWidth-1:0],
+  // Width of the input weights. A weight may range from 1 to `2**WeightWidth-1`. 
+  // A weight of 0 is illegal.
+  parameter int unsigned WeightWidth = 4,
+  // Derived parameters, do **not** overwrite!
+  //
+  // Width of the arbitrated index.
+  localparam int unsigned IdxWidth   = cc_pkg::idx_width(NumIn),
+  // Type of the arbitrated index.
+  localparam type         idx_t      = logic [IdxWidth-1:0]
 ) (
   input  logic                            clk_i,
-  /// Asynchronous reset, active low.
   input  logic                            rst_ni,
-  /// Synchronously clears the arbiter state (snapshot, counter, pointer).
   input  logic                            flush_i,
-  /// Input request / valid, one per requester.
+  // Input channels.
   input  logic    [NumIn-1:0]             req_i,
-  /// Input grant / ready, one per requester.
   output logic    [NumIn-1:0]             gnt_o,
-  /// Input data for each requester.
   input  data_t   [NumIn-1:0]             data_i,
-  /// Per-input weight. The winner is granted `weights_i[winner]` consecutive flits; a weight of 0
-  /// excludes that input from arbitration.
-  input  logic    [NumIn-1:0][WtWidth-1:0] weights_i,
-  /// Output request / valid.
+  // Input weights.
+  input  logic    [NumIn-1:0][WeightWidth-1:0] weights_i,
+  // Output channel.
   output logic                            req_o,
-  /// Output grant / ready.
   input  logic                            gnt_i,
-  /// Output data of the winning input.
   output data_t                           data_o,
-  /// Index of the winning input.
+  // Index from which input the data came from.
   output idx_t                            idx_o
 );
 

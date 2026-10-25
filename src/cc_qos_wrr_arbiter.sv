@@ -9,79 +9,100 @@
 // specific language governing permissions and limitations under the License.
 // SPDX-License-Identifier: SHL-0.51
 //
-// Authors: Vatsal Dixit <vdixit@student.ethz.ch>
-//          Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
-// Description: Combined QoS-priority + weighted-round-robin arbiter.
+// Authors:
+// - Vatsal Dixit <vdixit@student.ethz.ch>
+// - Gianluca Bellocchi <gianluca.bellocchi@unimore.it>
+//
+// Description: QoS-aware weighted round-robin arbiter.
+//
+// This module extends standard round-robin arbitration with the three mechanisms described
+// below.
+//
+// ## QoS priority-aware arbitration
+//
+// This mechanism arbitrates based on the QoS priority level of each input (`qos_i`). Traffic
+// streams with a higher QoS priority level are served first. The output follows the valid/ready
+// handshake. To this end, the set of inputs at the highest QoS priority level is frozen while
+// the output is stalled, so that a higher-priority request arriving during a stall is only
+// considered after the pending transfer.
+//
+// ## Weighted round-robin arbitration
+//
+// This mechanism distributes the bandwidth of the output channel shared by the `NumIn` inputs
+// according to their weights (`weights_i`). The weight of an input determines the bandwidth share
+// it is allocated whenever it wins arbitration. The higher the weight, the more bandwidth the
+// input is granted on the shared output channel. Every weight must be at least 1. Further details
+// can be found in the description of `cc_wrr_arbiter`.
+//
+// ## QoS aging
+//
+// This mechanism prevents the starvation of low-priority traffic streams, which could otherwise be
+// preempted by high-priority streams indefinitely, and thus keep their input channel buffers
+// occupied for a long time. The age of each input (`age[i]`) is added to its QoS priority level
+// (`qos_i[i]`) to compute the effective QoS priority level (`eff_qos[i]`) used for arbitration.
+// While an input is held back by inputs at a higher QoS priority level, its age is incremented by
+// 1 every `AgingThreshold` valid/ready handshakes on the output. A handshake is generic and can
+// represent a variety of transfers, such as a NoC packet or an AXI4 burst. The age stops growing
+// once the input reaches the highest QoS priority level, where round-robin guarantees its turn,
+// and is reset to 0 when the input is served. An input can gain up to `AgingQosMax` levels through
+// aging, which spans the full QoS range: a request at the lowest QoS priority level can always age
+// up to the highest one, so no input is ever starved.
+//
+// ## Modularity
+//
+// At design-time, each mechanism can be enabled or disabled through a dedicated parameter. When a
+// mechanism is disabled, its functionality is completely bypassed. At runtime, with all inputs at
+// the same QoS priority level, the arbiter behaves like `cc_wrr_arbiter`. Moreover, if all weights
+// are set to 1, the module behaves cycle by cycle like a standard round-robin arbiter.
 
 `include "common_cells/registers.svh"
 `include "common_cells/assertions.svh"
 
-/// # QoS + Weighted-Round-Robin Arbiter (`cc_qos_wrr_arbiter`)
-///
-/// Combines the two arbitration axes into one cell:
-/// * **`qos_i`** (priority / latency): higher QoS is served first. A waiting request's effective
-///   QoS *ages* upward so it is never starved.
-/// * **`weights_i`** (bandwidth): among the requesters that share the *winning* QoS tier, the
-///   output bandwidth is split in proportion to their weights via `cc_wrr_arbiter`.
-///
-/// So QoS chooses *which tier* is served, and the weight chooses *how the tier's bandwidth is
-/// divided*. Mechanism:
-///
-///   effective_qos[i] = qos_i[i] + age[i]
-///   max_eff          = max over contenders of effective_qos[i]
-///   eligible[i]      = req_i[i] && (effective_qos[i] == max_eff)   // the winning QoS tier
-///   winner           = weighted round robin (by weights_i) among `eligible`   // cc_wrr_arbiter
-///
-/// For all i, `age[i]` climbs by 1 every `AgingInterval` number of transfered flits
-/// while input `i` is requesting but *not* in the winning tier (i.e. held back due to low QoS);
-/// the aging pauses once the input reaches the tier (where the weighted RR then guarantees its
-/// turn) and resets to 0 when granted. Counting grants rather than absolute clock cycles helps
-/// in preventing a downstream stall does not inflate the age[i].
-///
-/// ## Design notes
-///   Reuse `cc_wrr_arbiter` for the within-tier split. That cell already snapshots its
-///   contender set and locks the winner for the burst, so the (continuously recomputed) `eligible`
-///   mask can be fed to it directly; it re-evaluates the tier at each burst boundary.
-///
-///   Weight 0 means no participation
-///
-///   Aging only the QoS-blocked inputs (not the ones merely awaiting their weighted-RR turn)
-///   Aging is counted per grant, not per clock (the prescaler advances only when a flit is
-///   transferred).Use a clock-cycle prescaler instead if a hard wall-clock latency bound is required.
-
 module cc_qos_wrr_arbiter #(
-  parameter int unsigned NumIn         = 4, /// Number of request ports to arbitrate.
-  parameter int unsigned DataWidth     = 32, /// Payload width in bits. Unused if `data_t` is set.
-  parameter type         data_t        = logic [DataWidth-1:0], /// Data type of the payload.
-  parameter int unsigned QosWidth      = 4, /// Width of per-input QoS level (AXI AxQOS is 4 bits).
-  parameter int unsigned WtWidth       = 4, /// Width of the per-input weight signal.
-  parameter int unsigned AgeWidth      = 4, /// Width of the per-input aging counter.
-
-  /// Number of grants (served flits) a QoS-blocked request waits per +1 of effective QoS.
-  /// Counted in forward-progress cycles, not clock cycles, so stalls do not age requests. Must be >= 1.
-  parameter int unsigned AgingInterval = 16,
-
-  /// Dependent parameters, do not overwrite.
-  localparam int unsigned IdxWidth     = cc_pkg::idx_width(NumIn),
-  localparam type         idx_t        = logic [IdxWidth-1:0],
-  localparam int unsigned EffWidth     = cc_pkg::max(QosWidth, AgeWidth) + 1
+  // Number of request channels to arbitrate.
+  parameter int unsigned NumIn          = 4,
+  // Data width of the payload in bits. Not needed if `data_t` is overwritten.
+  parameter int unsigned DataWidth      = 32,
+  // Data type of the payload. It can be overwritten with a custom type.
+  parameter type         data_t         = logic [DataWidth-1:0],
+  // Width of the input QoS priority level. Default is 4.
+  parameter int unsigned QosWidth       = 4,
+  // Width of the input weights. A weight may range from 1 to `2**WeightWidth-1`.
+  // A weight of 0 is illegal.
+  parameter int unsigned WeightWidth    = 4,
+  // Number of output transfers after which the age of a stalled input is incremented.
+  parameter int unsigned AgingThreshold = 16,
+  // Derived parameters, do **not** overwrite!
+  //
+  // Width of the arbitrated index.
+  localparam int unsigned IdxWidth      = cc_pkg::idx_width(NumIn),
+  // Type of the arbitrated index.
+  localparam type         idx_t         = logic [IdxWidth-1:0],
+  // Maximum number of QoS priority levels an input can gain through aging. It spans the full QoS
+  // range, so that the lowest QoS priority level can age up to the highest one.
+  localparam int unsigned AgingQosMax   = 2**QosWidth - 1,
+  // Width of the age counter, which saturates at `AgingQosMax`.
+  localparam int unsigned AgingWidth    = unsigned'($clog2(AgingQosMax + 1)),
+  // Width of the effective QoS priority level (input QoS priority level + age).
+  localparam int unsigned EffWidth      = QosWidth + 1
 ) (
-  input  logic                            clk_i,
-  input  logic                            rst_ni,
-  input  logic                            flush_i,
-  input  logic    [NumIn-1:0]             req_i,
-  output logic    [NumIn-1:0]             gnt_o,
-  input  data_t   [NumIn-1:0]             data_i,
-
-  // Per-input QoS level (priority); higher is served first.
-  input  logic    [NumIn-1:0][QosWidth-1:0] qos_i,
-  // Per-input weight; splits a tier's bandwidth. A weight of 0 excludes the input.
-  input  logic    [NumIn-1:0][WtWidth-1:0]  weights_i,
-
-  output logic                            req_o,
-  input  logic                            gnt_i,
-  output data_t                           data_o,
-  output idx_t                            idx_o
+  input  logic                               clk_i,
+  input  logic                               rst_ni,
+  input  logic                               flush_i,
+  // Input channels.
+  input  logic    [NumIn-1:0]                req_i,
+  output logic    [NumIn-1:0]                gnt_o,
+  input  data_t   [NumIn-1:0]                data_i,
+  // Input QoS priority levels.
+  input  logic    [NumIn-1:0][QosWidth-1:0]    qos_i,
+  // Input weights.
+  input  logic    [NumIn-1:0][WeightWidth-1:0] weights_i,
+  // Output channel.
+  output logic                               req_o,
+  input  logic                               gnt_i,
+  output data_t                              data_o,
+  // Index from which input the data came from.
+  output idx_t                               idx_o
 );
 
   // ---------------------------------------------------------------------------------------------
