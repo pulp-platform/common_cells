@@ -68,7 +68,9 @@ module cc_wrr_arbiter #(
   input  logic                            gnt_i,
   output data_t                           data_o,
   // Index from which input the data came from.
-  output idx_t                            idx_o
+  output idx_t                            idx_o,
+  // Error flags for illegal weight values.
+  output logic    [NumIn-1:0]             weight_error_o
 );
 
   logic                   any_req;                // at least one input requests
@@ -84,7 +86,7 @@ module cc_wrr_arbiter #(
   logic                   transfer;               // one output transfer
   logic                   last_transfer;          // last output transfer of arbitration round
 
-  logic [WeightWidth-1:0] cnt_eff;                // remaining transfers in the current arbitration round
+  logic [WeightWidth-1:0] cnt_eff;                // remaining transfers in the current round
   logic [WeightWidth-1:0] cnt_q,      cnt_d;
   logic [WeightWidth-1:0] sel_weight;             // weight of arbitration winner
 
@@ -158,6 +160,13 @@ module cc_wrr_arbiter #(
   `FFARNC(req_lock_q, req_lock_d, flush_i, '0,   clk_i, rst_ni)
   `FFARNC(end_arb_q,  end_arb_d,  flush_i, 1'b0, clk_i, rst_ni)
   `FFARNC(cnt_q,      cnt_d,      flush_i, '0,   clk_i, rst_ni)
+
+  ///////////////////
+  // Error control //
+  ///////////////////
+  for (genvar i = 0; i < NumIn; i++) begin : gen_weight_error
+    assign weight_error_o[i] = (weights_i[i] == '0);
+  end
 
   ////////////////
   // Assertions //

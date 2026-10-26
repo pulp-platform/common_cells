@@ -123,7 +123,9 @@ module cc_qos_wrr_arbiter #(
   input  logic                               gnt_i,
   output data_t                              data_o,
   // Index from which input the data came from.
-  output idx_t                               idx_o
+  output idx_t                               idx_o,
+  // Error flags for illegal weight values.
+  output logic    [NumIn-1:0]                weight_error_o
 );
 
   logic                      transfer;                     // one output transfer
@@ -139,6 +141,7 @@ module cc_qos_wrr_arbiter #(
   logic [AgingWidth-1:0]     age_q [NumIn], age_d [NumIn]; // age of each input
 
   logic [NumIn-1:0][WrrWeightWidth-1:0] wrr_weights;       // weights of the WRR arbiter
+  logic [NumIn-1:0]          wrr_weight_error;             // weight errors of the WRR arbiter
 
   /////////////////////
   // Aging prescaler //
@@ -219,16 +222,19 @@ module cc_qos_wrr_arbiter #(
   ) i_cc_wrr_arbiter (
     .clk_i,
     .rst_ni,
-    .flush_i   ( flush_i     ),
-    .req_i     ( qos_req_d   ),
-    .gnt_o     ( gnt_o       ),
-    .data_i    ( data_i      ),
-    .weights_i ( wrr_weights ),
-    .req_o     ( req_o       ),
-    .gnt_i     ( gnt_i       ),
-    .data_o    ( data_o      ),
-    .idx_o     ( idx_o       )
+    .flush_i        ( flush_i          ),
+    .req_i          ( qos_req_d        ),
+    .gnt_o          ( gnt_o            ),
+    .data_i         ( data_i           ),
+    .weights_i      ( wrr_weights      ),
+    .req_o          ( req_o            ),
+    .gnt_i          ( gnt_i            ),
+    .data_o         ( data_o           ),
+    .idx_o          ( idx_o            ),
+    .weight_error_o ( wrr_weight_error )
   );
+
+  assign weight_error_o = EnableWeights ? wrr_weight_error : '0;
 
   //////////////////
   // Aging update //
