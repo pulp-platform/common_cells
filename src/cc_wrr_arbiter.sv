@@ -143,8 +143,9 @@ module cc_wrr_arbiter #(
   // Count the remaining transfers of the winner in the current arbitration round.
   assign transfer = req_o & gnt_i;
 
-  // Weight of the current arbitration winner.
-  assign sel_weight = weights_i[idx_o];
+  // Weight of the current arbitration winner. If the winner has an illegal weight of 0, then
+  // treat it as a weight of 1, so that the input gets consumed.
+  assign sel_weight = weights_i[idx_o] | WeightWidth'(weights_i[idx_o] == '0);
 
   assign cnt_eff       = start_arb ? sel_weight : cnt_q;
   assign last_transfer = (cnt_eff == WeightWidth'(1));
