@@ -24,11 +24,15 @@
 // weight, the more bandwidth the input is granted. Every weight must be at least 1.
 //
 // A transfer is a generic valid/ready handshake on the output, so the unit of a weight depends on
-// what the handshake represents, e.g., a flit, a NoC packet, or an AXI4 burst.
+// what the handshake represents. In this sense, the approach can be adapted to various arbitration
+// use-cases, such as for a NoC packet or an AXI4 burst.
 //
 // Weighted round-robin is an extension of standard round-robin arbitration. Accordingly,
-// `cc_wrr_arbiter` is built on top of `cc_rr_arb_tree`, which decides which input wins the
-// arbitration and holds that decision for the entire duration of the weight window.
+// `cc_wrr_arbiter` is built on top of `cc_rr_arb_tree`, which is used as an index generator. It
+// decides which input wins the arbitration and holds that decision for the entire duration of the
+// arbitration round. To this end, `cc_rr_arb_tree` is provided with a snapshot of the input
+// contender set (`req_lock_q`) and its round-robin pointer only advances when an arbitration
+// round ends (`end_arb`). It then outputs the index of the arbitration winner (`winner_idx`).
 
 `include "common_cells/registers.svh"
 `include "common_cells/assertions.svh"
@@ -40,7 +44,7 @@ module cc_wrr_arbiter #(
   parameter int unsigned DataWidth   = 32,
   // Data type of the payload. It can be overwritten with a custom type.
   parameter type         data_t      = logic [DataWidth-1:0],
-  // Width of the input weights. A weight may range from 1 to `2**WeightWidth-1`. 
+  // Width of the input weights. A weight may range from 1 to `2**WeightWidth-1`.
   // A weight of 0 is illegal.
   parameter int unsigned WeightWidth = 4,
   // Derived parameters, do **not** overwrite!
@@ -67,115 +71,97 @@ module cc_wrr_arbiter #(
   output idx_t                            idx_o
 );
 
-  // ---------------------------------------------------------------------------------------------
-  // Winner selection: reuse the fair round-robin tree purely as an index generator.
-  // ---------------------------------------------------------------------------------------------
-  // The inner arbiter is fed a *snapshot* of the contender set and its pointer only advances when
-  // we pulse its `gnt_i` (once per completed burst). It therefore tells us *who* the current
-  // winner is and holds that choice stable for the duration of the burst.
-  idx_t                 winner_idx;
-  logic                 any_req;
-  logic [NumIn-1:0]     eff_req;                // requesting AND non-zero weight -> may contend
+  logic                   any_req;                // at least one input requests
+  idx_t                   winner_idx;             // index of next arbitration winner
+  logic [NumIn-1:0]       req_lock_q, req_lock_d; // current contender set
 
-  logic [NumIn-1:0]     req_lock_q, req_lock_d; // snapshot of the contenders for the current round
-  logic                 done_q,     done_d;     // registered "previous flit completed a burst"
-  logic [WtWidth-1:0]   cnt_q,      cnt_d;      // remaining flits in the current burst
-  logic [WtWidth-1:0]   cnt_eff;                // effective remaining count this cycle
-  logic [WtWidth-1:0]   sel_weight;             // weight of the current winner (always >= 1)
+  logic                   start_arb;              // start of arbitration round
+  logic                   early_end_arb;          // arbitration round ends before last transfer
+  logic                   end_arb;                // end of arbitration round -> advance rr pointer
+  logic                   end_arb_q,  end_arb_d;
+  logic                   done_arb;               // last transfer of the round is accepted
 
-  logic                 load_round;             // (re)load snapshot + weight for a fresh burst
-  logic                 flit_transfered;        // one accepted transfer (flit) from current winner
-  logic                 last_flit;              // this flit is the last of the current burst
-  logic                 burst_done;             // last flit accepted -> advance the rr pointer
-  logic                 winner_gone;            // locked winner quit requesting (e.g. QoS-masked)
-  logic                 round_end;              // burst done OR winner abandoned -> re-arbitrate
+  logic                   transfer;               // one output transfer
+  logic                   last_transfer;          // last output transfer of arbitration round
 
-  // A weight of 0 means "no bandwidth": that input is excluded from arbitration entirely (skipped,
-  // never granted) instead of being served. Only requesting inputs with a non-zero weight contend,
-  // which also guarantees the burst counter never loads 0.
-  always_comb begin : proc_eff_req
-    for (int unsigned i = 0; i < NumIn; i++) eff_req[i] = req_i[i] & (weights_i[i] != '0);
-  end
+  logic [WeightWidth-1:0] cnt_eff;                // remaining transfers in the current arbitration round
+  logic [WeightWidth-1:0] cnt_q,      cnt_d;
+  logic [WeightWidth-1:0] sel_weight;             // weight of arbitration winner
 
-  assign any_req = |eff_req;
+  //////////////////////
+  // Winner selection //
+  //////////////////////
+  assign any_req = |req_i;
 
-  // A fresh burst is loaded when the arbiter is idle (no snapshot held) or the previous flit
-  // finished a burst. On both of these cycles the inner arbiter's LockIn is disengaged, so it is
-  // safe to present it a fresh (possibly changed) request vector here.
-  assign load_round = (~|req_lock_q) | done_q; // no request pending OR this round complete
-  assign req_lock_d = load_round ? eff_req : req_lock_q;
+  // A new arbitration round starts when the arbiter is idle or when the previous round ended. In
+  // both cases the round-robin arbiter is not locked, so a new contender set can be loaded safely.
+  assign start_arb  = (~|req_lock_q) | end_arb_q;
+  assign req_lock_d = start_arb ? req_i : req_lock_q;
 
+  /////////////////////////
+  // Round-robin arbiter //
+  /////////////////////////
   cc_rr_arb_tree #(
     .NumIn     ( NumIn  ),
-    .data_t    ( logic  ), // inner arbiter is used for the index only; data is muxed externally
+    .data_t    ( logic  ),
     .ExtPrio   ( 1'b0   ),
     .AxiVldRdy ( 1'b1   ),
-    .LockIn    ( 1'b1   ), // hold the winning index for the whole burst
-    .FairArb   ( 1'b1   )  // fair rotation across bursts
+    .LockIn    ( 1'b1   ),
+    .FairArb   ( 1'b1   )
   ) i_cc_rr_arb_tree (
     .clk_i,
     .rst_ni,
     .flush_i ( flush_i      ),
     .rr_i    ( '0           ),
-    .req_i   ( req_lock_d   ), // stable contender snapshot
+    .req_i   ( req_lock_d   ),
     .gnt_o   ( /* unused */ ),
     .data_i  ( '0           ),
     .req_o   ( /* unused */ ),
-    .gnt_i   ( round_end    ), // advance the pointer when a burst completes or is abandoned
+    .gnt_i   ( end_arb      ),
     .data_o  ( /* unused */ ),
     .idx_o   ( winner_idx   )
   );
 
-  // ---------------------------------------------------------------------------------------------
-  // Output handshake / data: muxed from the current winner.
-  // ---------------------------------------------------------------------------------------------
+  ////////////////////
+  // Output control //
+  ////////////////////
+  // Guard the output index when no input requests.
   assign idx_o  = any_req ? winner_idx : '0;
   assign req_o  = any_req ? req_i[idx_o] : 1'b0;
   assign data_o = data_i[idx_o];
 
   always_comb begin : proc_gnt_o
     gnt_o = '0;
-    // Grant the winner only when its flit actually transfers (output valid AND downstream ready).
-    // Gating on `req_o` (not just `gnt_i`) matters when the winner was masked out mid-burst by an
-    // upstream stage (e.g. cc_qos_wrr_arbiter): without it the winner would get a spurious grant for
-    // a flit that never leaves, dropping data. Under saturation req_o is always 1, so this is a
-    // no-op there.
     if (req_o) gnt_o[idx_o] = gnt_i;
   end
 
-  // ---------------------------------------------------------------------------------------------
-  // Burst counter.
-  // ---------------------------------------------------------------------------------------------
-  assign flit_transfered = req_o & gnt_i;
+  //////////////////////
+  // Transfer counter //
+  //////////////////////
+  // Count the remaining transfers of the winner in the current arbitration round.
+  assign transfer = req_o & gnt_i;
 
-  // idx_o is always an eligible (non-zero-weight) winner, so this weight is >= 1.
+  // Weight of the current arbitration winner.
   assign sel_weight = weights_i[idx_o];
 
-  // On a load cycle the count starts at the winner's weight; otherwise it is the running value.
-  assign cnt_eff    = load_round ? sel_weight : cnt_q;
-  assign last_flit  = (cnt_eff == WtWidth'(1));
-  assign burst_done = flit_transfered & last_flit;
+  assign cnt_eff       = start_arb ? sel_weight : cnt_q;
+  assign last_transfer = (cnt_eff == WeightWidth'(1));
+  assign done_arb      = transfer & last_transfer;
 
-  // Abandon the current burst if the locked winner stops requesting (e.g. it was masked out by an
-  // upstream QoS/priority stage). Without this the arbiter stays locked on a winner that can no
-  // longer present a flit and stalls forever; abandoning keeps it work-conserving and lets the next
-  // contender win. Under saturated traffic the winner never withdraws mid-burst, so `winner_gone`
-  // never fires and behaviour is unchanged. (A downstream stall keeps the winner requesting, so it
-  // does NOT abandon - only an actual withdrawal does.)
-  assign winner_gone = (|req_lock_q) & ~eff_req[winner_idx];
-  assign round_end   = burst_done | winner_gone;
+  assign early_end_arb = (|req_lock_q) & ~req_i[winner_idx];
+  assign end_arb       = done_arb | early_end_arb;
 
-  // Decrement only on an accepted flit; hold otherwise (covers downstream stalls and bubbles).
-  assign cnt_d  = flit_transfered ? (cnt_eff - WtWidth'(1)) : cnt_eff;
-  assign done_d = round_end;
+  // Decrement on each transfer. Hold during stalls and idle cycles.
+  assign cnt_d     = transfer ? (cnt_eff - WeightWidth'(1)) : cnt_eff;
+  assign end_arb_d = end_arb;
 
   `FFARNC(req_lock_q, req_lock_d, flush_i, '0,   clk_i, rst_ni)
-  `FFARNC(done_q,     done_d,     flush_i, 1'b0, clk_i, rst_ni)
+  `FFARNC(end_arb_q,  end_arb_d,  flush_i, 1'b0, clk_i, rst_ni)
   `FFARNC(cnt_q,      cnt_d,      flush_i, '0,   clk_i, rst_ni)
 
-  // ---------------------------------------------------------------------------------------------
-  // Assertions.
-  // ---------------------------------------------------------------------------------------------
+  ////////////////
+  // Assertions //
+  ////////////////
   `ifndef COMMON_CELLS_ASSERTS_OFF
   `ASSERT_INIT(numin_0, NumIn >= 1, "Need at least one input.")
   `ASSERT(req_implies_input, req_o |-> |req_i, clk_i, !rst_ni || flush_i,
@@ -184,8 +170,10 @@ module cc_wrr_arbiter #(
           "Grant must be one-hot or zero.")
   `ASSERT(gnt_implies_req, |gnt_o |-> gnt_i, clk_i, !rst_ni || flush_i,
           "A grant out implies the downstream granted in.")
-  `ASSERT(no_zero_weight_grant, |gnt_o |-> (weights_i[idx_o] != '0), clk_i, !rst_ni || flush_i,
-          "A zero-weight input must never be granted.")
+  for (genvar i = 0; i < NumIn; i++) begin : gen_weight_assumptions
+    `ASSUME(weight_nonzero, weights_i[i] != '0, clk_i, !rst_ni,
+            $sformatf("Weight of input %0d is 0, which is illegal.", i))
+  end
   `endif
 
 endmodule
