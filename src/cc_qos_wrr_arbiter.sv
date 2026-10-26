@@ -268,11 +268,19 @@ module cc_qos_wrr_arbiter #(
   ////////////////
   `ifndef COMMON_CELLS_ASSERTS_OFF
   `ASSERT_INIT(numin_0, NumIn >= 1, "Need at least one input.")
-  `ASSERT_INIT(aging_threshold_0, AgingThreshold >= 1, "AgingThreshold must be at least 1.")
   `ASSERT(req_implies_input, req_o |-> |req_i, clk_i, !rst_ni || flush_i,
           "Output valid must imply at least one input valid.")
   `ASSERT(req_stable, req_o && !gnt_i |=> req_o && (idx_o == $past(idx_o)), clk_i,
           !rst_ni || flush_i, "Output valid must stay stable until it is granted.")
+  if (EnableQos) begin : gen_qos_assumptions
+    for (genvar i = 0; i < NumIn; i++) begin : gen_qos_stable
+      `ASSUME(qos_stable, req_i[i] && !gnt_o[i] |=> $stable(qos_i[i]), clk_i, !rst_ni || flush_i,
+              $sformatf("QoS of input %0d changed while its request was waiting.", i))
+    end
+    `ASSERT(eff_qos_bounded, max_eff_qos <= EffWidth'(AgingQosMax), clk_i, !rst_ni || flush_i,
+            "Effective QoS priority level above the highest QoS priority level.")
+  end
+  `ASSERT_INIT(aging_threshold_0, AgingThreshold >= 1, "AgingThreshold must be at least 1.")
   `endif
 
 endmodule
