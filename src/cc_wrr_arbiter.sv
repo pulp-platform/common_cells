@@ -184,6 +184,8 @@ module cc_wrr_arbiter #(
     `ASSUME(weight_nonzero, weights_i[i] != '0, clk_i, !rst_ni,
             $sformatf("Weight of input %0d is 0, which is illegal.", i))
   end
+  `ASSUME(flush_not_stalled, flush_i |-> !(req_o && !gnt_i), clk_i, !rst_ni,
+          "Flush while an output transfer is pending.")
   `endif
 
 endmodule
