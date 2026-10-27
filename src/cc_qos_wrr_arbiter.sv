@@ -137,8 +137,9 @@ module cc_qos_wrr_arbiter #(
   logic [EffWidth-1:0]       max_eff_qos;                  // highest effective QoS priority level
 
   logic                      aging_qos_up;                 // upgrade QoS to avoid starvation
-  logic [AgingCntWidth-1:0]  aging_cnt_q,   aging_cnt_d;   // transfers since last QoS upgrade
-  logic [AgingWidth-1:0]     age_q [NumIn], age_d [NumIn]; // age of each input
+  logic [AgingCntWidth-1:0]  aging_cnt;                    // transfers since last QoS upgrade
+  logic [AgingWidth-1:0]     age_q [NumIn];                // age of each input
+  logic [NumIn-1:0]          age_clr,       age_inc;       // reset or increment each age
 
   logic [NumIn-1:0][WrrWeightWidth-1:0] wrr_weights;       // weights of the WRR arbiter
   logic [NumIn-1:0]          wrr_weight_error;             // weight errors of the WRR arbiter
@@ -149,15 +150,25 @@ module cc_qos_wrr_arbiter #(
   assign transfer = req_o & gnt_i;
 
   if (AgingActive) begin : gen_aging_prescaler
-    assign aging_qos_up = transfer & ((AgingThreshold <= 1) ? 1'b1 :
-                          (aging_cnt_q == AgingCntWidth'(AgingThreshold - 1)));
-    assign aging_cnt_d  = ~transfer ? aging_cnt_q : (aging_qos_up ? '0 : (aging_cnt_q + 1'b1));
+    // Count the output transfers and restart after `AgingThreshold` of them.
+    assign aging_qos_up = transfer & (aging_cnt == AgingCntWidth'(AgingThreshold - 1));
 
-    `FFARNC(aging_cnt_q, aging_cnt_d, flush_i, '0, clk_i, rst_ni)
+    cc_counter #(
+      .Width ( AgingCntWidth )
+    ) i_aging_cnt (
+      .clk_i,
+      .rst_ni,
+      .clear_i    ( flush_i | aging_qos_up ),
+      .en_i       ( transfer               ),
+      .load_i     ( 1'b0                   ),
+      .down_i     ( 1'b0                   ),
+      .d_i        ( '0                     ),
+      .q_o        ( aging_cnt              ),
+      .overflow_o ( /* unused */           )
+    );
   end else begin : gen_no_aging_prescaler
     assign aging_qos_up = 1'b0;
-    assign aging_cnt_q  = '0;
-    assign aging_cnt_d  = '0;
+    assign aging_cnt    = '0;
   end
 
   ////////////////////////
@@ -240,33 +251,35 @@ module cc_qos_wrr_arbiter #(
   // Aging update //
   //////////////////
   if (AgingActive) begin : gen_aging
-    always_comb begin : proc_age
-      for (int unsigned i = 0; i < NumIn; i++) begin
-        // Reset the age if the input is served or idle.
-        if (gnt_o[i] || !req_i[i]) begin
-          age_d[i] = '0;
-        // Hold the age while the input is at the highest QoS priority level.
-        end else if (top_qos_req[i]) begin
-          age_d[i] = age_q[i];
-        // Upgrade the QoS priority level when the aging threshold is reached, saturating at
-        // `AgingQosMax`.
-        end else if (aging_qos_up) begin
-          age_d[i] = (age_q[i] == AgingWidth'(AgingQosMax)) ? age_q[i] : (age_q[i] + 1'b1);
-        end else begin
-          age_d[i] = age_q[i];
-        end
-      end
-    end
+    for (genvar i = 0; i < NumIn; i++) begin : gen_age
+      // Reset the age if the input is served or idle.
+      assign age_clr[i] = gnt_o[i] | ~req_i[i];
+      // Upgrade the QoS priority level when the aging threshold is reached, unless the input is
+      // at the highest QoS priority level. The age saturates at `AgingQosMax`.
+      assign age_inc[i] = aging_qos_up & ~top_qos_req[i] &
+                          (age_q[i] != AgingWidth'(AgingQosMax));
 
-    for (genvar i = 0; i < NumIn; i++) begin : gen_age_ff
-      `FFARNC(age_q[i], age_d[i], flush_i, '0, clk_i, rst_ni)
+      cc_counter #(
+        .Width ( AgingWidth )
+      ) i_age_cnt (
+        .clk_i,
+        .rst_ni,
+        .clear_i    ( flush_i | age_clr[i] ),
+        .en_i       ( age_inc[i]           ),
+        .load_i     ( 1'b0                 ),
+        .down_i     ( 1'b0                 ),
+        .d_i        ( '0                   ),
+        .q_o        ( age_q[i]             ),
+        .overflow_o ( /* unused */         )
+      );
     end
   end else begin : gen_no_aging
     // The ages stay 0: the effective QoS priority level is the input QoS priority level.
     for (genvar i = 0; i < NumIn; i++) begin : gen_age
-      assign age_d[i] = '0;
       assign age_q[i] = '0;
     end
+    assign age_clr = '0;
+    assign age_inc = '0;
   end
 
   ////////////////
