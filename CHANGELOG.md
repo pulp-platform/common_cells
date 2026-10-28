@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - `cc_stream_downsizer`, `cc_stream_upsizer`: Add ready/valid stream width converters
 
+### Fixed
+- `popcount` (deprecated wrapper): Fix the width mismatch with `cc_popcount` for an `INPUT_WIDTH` that is not a power of two
+
 ## 2.0.0-beta.3 - 2026-07-29
 ### Added
 - `cc_heaviside`: Add open-source formal verification and document saturation behavior
