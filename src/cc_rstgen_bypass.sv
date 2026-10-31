@@ -54,7 +54,7 @@ module cc_rstgen_bypass #(
         if (~rst_n) begin
             synch_regs_q <= 0;
         end else begin
-            synch_regs_q <= {synch_regs_q[NumRegs-2:0], 1'b1};
+            synch_regs_q <= (synch_regs_q << 1) | NumRegs'(1'b1);
         end
     end
     `ifndef SYNTHESIS

@@ -145,6 +145,7 @@ sources:
       - test/cc_passthrough_stream_fifo_tb.sv
       - test/cc_popcount_tb.sv
       - test/cc_rr_arb_tree_tb.sv
+      - test/cc_rstgen_bypass_tb.sv
       - test/cc_stream_downsizer_tb.sv
       - test/cc_stream_register_tb.sv
       - test/cc_stream_to_mem_tb.sv
