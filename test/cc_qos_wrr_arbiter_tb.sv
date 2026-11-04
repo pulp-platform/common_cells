@@ -102,27 +102,6 @@ module cc_qos_wrr_arbiter_tb #(
     gnt_oup = 1'b1;
   end
 
-  cc_qos_wrr_arbiter #(
-    .NumIn         ( NumInp        ),
-    .DataWidth     ( DataWidth     ),
-    .QosWidth      ( QosWidth      ),
-    .WtWidth       ( WtWidth       ),
-    .AgeWidth      ( AgeWidth      ),
-    .AgingInterval ( AgingInterval )
-  ) i_dut (
-    .clk_i     ( clk      ),
-    .rst_ni    ( rst_n    ),
-    .flush_i   ( 1'b0     ),
-    .req_i     ( req_inp  ),
-    .gnt_o     ( gnt_inp  ),
-    .data_i    ( data_inp ),
-    .qos_i     ( qos      ),
-    .weights_i ( weights  ),
-    .req_o     ( req_oup  ),
-    .gnt_i     ( gnt_oup  ),
-    .data_o    ( data_oup ),
-    .idx_o     ( idx_oup  )
-  );
 
   initial begin : proc_check
     automatic longint unsigned cnt            [NumInp];
@@ -190,5 +169,81 @@ module cc_qos_wrr_arbiter_tb #(
     $display("=== QoS+WRR arbiter test done ===");
     $stop();
   end
+
+  /////////
+  // DUT //
+  /////////
+  assign round_owner = i_dut_qos_wrr.i_cc_wrr_arbiter.round_owner_o;
+
+  cc_qos_wrr_arbiter #(
+    .NumIn          ( NumInp         ),
+    .DataWidth      ( DataWidth      ),
+    .QosWidth       ( QosWidth       ),
+    .WeightWidth    ( WeightWidth    ),
+    .AgingThreshold ( AgingThreshold ),
+    .EnableQos      ( EnableQos      ),
+    .EnableWrr      ( EnableWrr      ),
+    .EnableAging    ( EnableAging    )
+  ) i_dut_qos_wrr (
+    .clk_i          ( clk             ),
+    .rst_ni         ( rst_n           ),
+    .flush_i        ( flush           ),
+    .req_i          ( req_inp         ),
+    .gnt_o          ( gnt_inp         ),
+    .data_i         ( data_inp        ),
+    .qos_i          ( qos_inp         ),
+    .weight_i       ( weight          ),
+    .req_o          ( req_oup         ),
+    .gnt_i          ( gnt_oup         ),
+    .data_o         ( data_oup        ),
+    .idx_o          ( idx_oup         ),
+    .weight_error_o ( weight_error    )
+  );
+
+  ////////////////////////
+  // Reference arbiters //
+  ////////////////////////
+  // Standalone weighted round-robin arbiter.
+  cc_wrr_arbiter #(
+    .NumIn       ( NumInp      ),
+    .DataWidth   ( DataWidth   ),
+    .WeightWidth ( WeightWidth )
+  ) i_ref_wrr (
+    .clk_i          ( clk             ),
+    .rst_ni         ( rst_n           ),
+    .flush_i        ( flush           ),
+    .req_i          ( req_ref_wrr     ),
+    .gnt_o          ( gnt_wrr         ),
+    .data_i         ( data_inp        ),
+    .weight_i       ( weight_ref_wrr  ),
+    .req_o          ( req_wrr         ),
+    .gnt_i          ( gnt_oup         ),
+    .data_o         ( data_wrr        ),
+    .idx_o          ( idx_wrr         ),
+    .weight_error_o (                 ),
+    .round_owner_o  (                 )
+  );
+
+  // Standalone basic round-robin arbiter.
+  cc_rr_arb_tree #(
+    .NumIn     ( NumInp    ),
+    .DataWidth ( DataWidth ),
+    .ExtPrio   ( 1'b0      ),
+    .AxiVldRdy ( 1'b1      ),
+    .LockIn    ( 1'b1      ),
+    .FairArb   ( 1'b1      )
+  ) i_ref_rr (
+    .clk_i   ( clk      ),
+    .rst_ni  ( rst_n      ),
+    .flush_i ( flush      ),
+    .rr_i    ( '0         ),
+    .req_i   ( req_ref_rr ),
+    .gnt_o   ( gnt_rr     ),
+    .data_i  ( data_inp   ),
+    .gnt_i   ( gnt_oup    ),
+    .req_o   ( req_rr     ),
+    .data_o  ( data_rr    ),
+    .idx_o   ( idx_rr     )
+  );
 
 endmodule
