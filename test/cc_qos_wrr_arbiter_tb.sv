@@ -88,7 +88,13 @@ module cc_qos_wrr_arbiter_tb #(
   localparam bit          StarvationCheck = !EnableQos || AgingActive,
   // Maximum number of transfers an input may wait before being served.
   localparam int unsigned StarvationBound = 2 * ((QosMax + AgingQosMax + 1) * AgingThreshold +
-                                                 2 * NumIn * WeightMax)
+                                                 2 * NumIn * WeightMax),
+  // Derived types, do **not** overwrite!
+  //
+  localparam type         data_t          = logic [DataWidth-1:0],
+  localparam type         idx_t           = logic [IdxWidth-1:0],
+  localparam type         qos_t           = logic [QosWidth-1:0],
+  localparam type         weight_t        = logic [WeightWidth-1:0]
 );
 
 
