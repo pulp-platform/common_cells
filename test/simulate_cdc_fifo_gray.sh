@@ -15,7 +15,8 @@
 #
 # Description: Gray-Counter CDC FIFO Simulation Sweep
 # Compile the test target and run plain plus timed-delay Questa regressions for
-# cc_cdc_fifo_gray.
+# cc_cdc_fifo_gray, and the plain regressions for cc_cdc_fifo_gray_ram
+# (USE_RAM_DUT=1; the timed delay injection exists for the split original only).
 
 set -euo pipefail
 
@@ -72,6 +73,41 @@ call_vsim src_fast \
   -gTCK_DST_PS=17000
 
 call_vsim dst_fast \
+  -gSEED=5 \
+  -gDEPTH=3 \
+  -gNUM_RANDOM_TRANSFERS=100 \
+  -gTCK_SRC_PS=17000 \
+  -gTCK_DST_PS=5000
+
+# Memory-based variant: same plain regressions (no delay injection).
+call_vsim ram_depth1_default \
+  -gUSE_RAM_DUT=1 \
+  -gSEED=1 \
+  -gDEPTH=1 \
+  -gNUM_RANDOM_TRANSFERS=80
+
+call_vsim ram_depth2_default \
+  -gUSE_RAM_DUT=1 \
+  -gSEED=2 \
+  -gDEPTH=2 \
+  -gNUM_RANDOM_TRANSFERS=100
+
+call_vsim ram_depth3_default \
+  -gUSE_RAM_DUT=1 \
+  -gSEED=3 \
+  -gDEPTH=3 \
+  -gNUM_RANDOM_TRANSFERS=120
+
+call_vsim ram_src_fast \
+  -gUSE_RAM_DUT=1 \
+  -gSEED=4 \
+  -gDEPTH=3 \
+  -gNUM_RANDOM_TRANSFERS=100 \
+  -gTCK_SRC_PS=5000 \
+  -gTCK_DST_PS=17000
+
+call_vsim ram_dst_fast \
+  -gUSE_RAM_DUT=1 \
   -gSEED=5 \
   -gDEPTH=3 \
   -gNUM_RANDOM_TRANSFERS=100 \

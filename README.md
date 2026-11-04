@@ -32,6 +32,7 @@ Please note that cells with status *deprecated* are not to be used for new desig
 | [`cc_cdc_fifo_2phase`](src/cc_cdc_fifo_2phase.sv)                             | Clock domain crossing FIFO using two-phase handshake, with ready/valid interface                 | active |               |
 | [`cc_cdc_fifo_gray`](src/cc_cdc_fifo_gray.sv)                                 | Clock domain crossing FIFO using a gray-counter, with ready/valid interface                      | active |               |
 | [`cc_cdc_fifo_gray_clearable`](src/cc_cdc_fifo_gray_clearable.sv)             | Identical to `cc_cdc_fifo_gray` but supports one-sided async/sync resetting of either src or dst | active |               |
+| [`cc_cdc_fifo_gray_ram`](src/cc_cdc_fifo_gray_ram.sv)                         | `cc_cdc_fifo_gray` with the storage in a dual-clock memory (block RAM on FPGA), same interface   | active |               |
 | [`cc_cdc_reset_ctrlr`](src/cc_cdc_reset_ctrlr.sv)                             | Lock-step reset sequencer across clock domains, internally used by clearable CDCs                | active |               |
 | [`cc_clk_mux_glitch_free`](src/cc_clk_mux_glitch_free.sv)                     | A glitch-free clock multiplexer with parameterizable number of inputs.                           | active |               |
 | [`cc_edge_detect`](src/cc_edge_detect.sv)                                     | Rising/falling edge detector                                                                     | active |               |
