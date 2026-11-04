@@ -186,16 +186,29 @@ module cc_qos_wrr_arbiter #(
       assign qos_eff[i] = EffWidth'(qos_i[i]) + EffWidth'(qos_aging[i]);
     end
 
+    // Find the highest effective QoS priority level among the requesting inputs.
+    localparam int unsigned NumLeaves = 2**$clog2(NumIn);
+    logic [EffWidth-1:0] qos_max_tree [2*NumLeaves-1];
+
+    // Feed the leaves with the effective QoS priority levels of the requesting inputs.
+    for (genvar i = 0; i < NumLeaves; i++) begin : gen_qos_max_leaf
+      if (i < NumIn) begin : gen_input
+        assign qos_max_tree[NumLeaves-1+i] = req_i[i] ? qos_eff[i] : '0;
+      end else begin : gen_padding
+        assign qos_max_tree[NumLeaves-1+i] = '0;
+      end
+    end
+
+    // Compare the leaves values and keep the larger.
+    for (genvar n = 0; n < NumLeaves - 1; n++) begin : gen_qos_max_node
+      assign qos_max_tree[n] = (qos_max_tree[2*n+1] > qos_max_tree[2*n+2]) ?
+                               qos_max_tree[2*n+1] : qos_max_tree[2*n+2];
+    end
+    assign qos_eff_max = qos_max_tree[0];
+
     // Mask the requests that are not at the highest effective QoS priority level.
-    always_comb begin : proc_qos_top_req
-      qos_eff_max = '0;
-      for (int unsigned i = 0; i < NumIn; i++) begin
-        if (req_i[i] && (qos_eff[i] > qos_eff_max))
-          qos_eff_max = qos_eff[i];
-      end
-      for (int unsigned i = 0; i < NumIn; i++) begin
-        qos_top_req[i] = req_i[i] && (qos_eff[i] == qos_eff_max);
-      end
+    for (genvar i = 0; i < NumIn; i++) begin : gen_qos_top_req
+      assign qos_top_req[i] = req_i[i] && (qos_eff[i] == qos_eff_max);
     end
 
     // Freeze the contenders while the output is stalled, so that `req_o` is never withdrawn
