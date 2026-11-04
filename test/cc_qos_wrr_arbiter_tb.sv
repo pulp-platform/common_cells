@@ -35,53 +35,64 @@
 // 4. `dut_qos_aging`: this test assesses the QoS priority-aware arbitration and the QoS aging of
 //    the DUT. Each arbitration round must start with an input at the highest effective QoS priority
 //    level. Aging must prevent starvation by ensuring a stalled requester not to exceed
-//    `StarveBound` of waiting time. `StarveBound` is a safe upper bound on the time an input needs
-//    to age up to the highest QoS priority level and then wait for its round-robin turn. All inputs
-//    are saturated, and the output is under random back-pressure. Inputs are spread over several
-//    QoS priority levels, two inputs per level with different weights, so that the weighted split
-//    within a QoS priority level is also exercised.
+//    `StarvationBound` of waiting time. `StarvationBound` is a safe upper bound on the time an
+//    input needs to age up to the highest QoS priority level and then wait for its round-robin
+//    turn. All inputs are saturated, and the output is under random back-pressure. Inputs are
+//    spread over several QoS priority levels, two inputs per level with different weights, so that
+//    the weighted split within a QoS priority level is also exercised.
 //
 // 5. `dut_all_random`: this test assesses all the mechanisms of the DUT together. Requests arrive
 //    with random timing, carrying a random QoS priority level. Weights are randomized at every
 //    repetition of the test and the output is under random back-pressure.
 
 module cc_qos_wrr_arbiter_tb #(
-  parameter int unsigned NumInp        = 32'd4,
-  parameter int unsigned QosWidth      = 32'd4,
-  parameter int unsigned WtWidth       = 32'd4,
-  parameter int unsigned AgeWidth      = 32'd4,
-  parameter int unsigned AgingInterval = 32'd64,
-  parameter int unsigned NumFlits      = 32'd200000,
-  /// When sweeping AgingInterval, set to 1 to relax the QoS-dominance/ratio asserts (they only
-  /// hold at the nominal interval); the CSV line is still emitted for the tuning curve.
-  parameter bit          SweepMode     = 1'b0
+  // Simulation parameters.
+  //
+  // Clock period.
+  localparam time         CyclTime        = 10ns,
+  // Stimuli application time.
+  localparam time         ApplTime        = 2ns,
+  // Response test time.
+  localparam time         TestTime        = 8ns,
+  // DUT configuration.
+  //
+  // Enable the QoS priority-aware arbitration, the weighted round-robin arbitration and the aging.
+  parameter bit           EnableQos       = 1'b1,
+  parameter bit           EnableWrr       = 1'b1,
+  parameter bit           EnableAging     = 1'b1,
+  // Number of request channels to arbitrate.
+  parameter int unsigned  NumIn           = 32'd4,
+  // Number of requests sent by each input in a test.
+  parameter int unsigned  NumReqs         = 32'd20000,
+  // Width of the data payload in bits.
+  parameter int unsigned  DataWidth       = 32'd32,
+  // Width of the input QoS priority level.
+  parameter int unsigned  QosWidth        = 32'd4,
+  // Width of the input weights.
+  parameter int unsigned  WeightWidth     = 32'd4,
+  // Number of output transfers after which an input held back by QoS gains one QoS priority level.
+  parameter int unsigned  AgingThreshold  = 32'd1,
+  // Derived parameters, do **not** overwrite!
+  //
+  // Width of the arbitrated index.
+  localparam int unsigned IdxWidth        = cc_pkg::idx_width(NumIn),
+  // Maximum QoS priority level.
+  localparam int unsigned QosMax          = 2**QosWidth - 1,
+  // Maximum weight value.
+  localparam int unsigned WeightMax       = 2**WeightWidth - 1,
+  // Maximum number of QoS priority levels an input can gain through aging, as in the DUT.
+  localparam int unsigned AgingQosMax     = QosMax,
+  // Aging is only active together with QoS, as in the DUT.
+  localparam bit          AgingActive     = EnableQos && EnableAging,
+  // Check starvation, unless QoS is enabled without aging.
+  localparam bit          StarvationCheck = !EnableQos || AgingActive,
+  // Maximum number of transfers an input may wait before being served.
+  localparam int unsigned StarvationBound = 2 * ((QosMax + AgingQosMax + 1) * AgingThreshold +
+                                                 2 * NumIn * WeightMax)
 );
 
-  localparam time CyclTime = 10ns;
-  localparam time TestTime = 8ns;
 
-  localparam int unsigned DataWidth = 32'd32;
-  localparam int unsigned IdxWidth  = (NumInp > 32'd1) ? unsigned'($clog2(NumInp)) : 32'd1;
-  typedef logic [DataWidth-1:0] data_t;
-  typedef logic [IdxWidth-1:0]  idx_t;
-
-  logic clk, rst_n;
-
-  logic  [NumInp-1:0]               req_inp, gnt_inp;
-  data_t [NumInp-1:0]              data_inp;
-  logic  [NumInp-1:0][QosWidth-1:0] qos;
-  logic  [NumInp-1:0][WtWidth-1:0]  weights;
-  logic                             req_oup, gnt_oup;
-  data_t                            data_oup;
-  idx_t                             idx_oup;
-
-  // Two tiers: inputs 0,1 are high QoS; 2,3 are low QoS. Within the high tier, weights are 1:3.
-  for (genvar i = 0; i < NumInp; i++) begin : gen_inp_const
-    assign qos[i]      = (i < 2) ? QosWidth'(2) : QosWidth'(0);
-    assign weights[i]  = (i == 1) ? WtWidth'(3) : WtWidth'(1);
-    assign data_inp[i] = data_t'(i);
-  end
-
+  // Clock and reset generator.
   clk_rst_gen #(
     .ClkPeriod    ( CyclTime ),
     .RstClkCycles ( 5        )
@@ -176,7 +187,7 @@ module cc_qos_wrr_arbiter_tb #(
   assign round_owner = i_dut_qos_wrr.i_cc_wrr_arbiter.round_owner_o;
 
   cc_qos_wrr_arbiter #(
-    .NumIn          ( NumInp         ),
+    .NumIn          ( NumIn          ),
     .DataWidth      ( DataWidth      ),
     .QosWidth       ( QosWidth       ),
     .WeightWidth    ( WeightWidth    ),
@@ -205,7 +216,7 @@ module cc_qos_wrr_arbiter_tb #(
   ////////////////////////
   // Standalone weighted round-robin arbiter.
   cc_wrr_arbiter #(
-    .NumIn       ( NumInp      ),
+    .NumIn       ( NumIn       ),
     .DataWidth   ( DataWidth   ),
     .WeightWidth ( WeightWidth )
   ) i_ref_wrr (
@@ -226,7 +237,7 @@ module cc_qos_wrr_arbiter_tb #(
 
   // Standalone basic round-robin arbiter.
   cc_rr_arb_tree #(
-    .NumIn     ( NumInp    ),
+    .NumIn     ( NumIn     ),
     .DataWidth ( DataWidth ),
     .ExtPrio   ( 1'b0      ),
     .AxiVldRdy ( 1'b1      ),
