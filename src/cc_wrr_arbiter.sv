@@ -17,11 +17,15 @@
 //
 // This module implements weighted round-robin arbitration among `NumIn` inputs that share one
 // output channel. The output bandwidth is distributed among the inputs according to their weights
-// (`weight_i`). Whenever input `i` wins arbitration, it performs up to `weight_i[i]` consecutive
+// (`weight_i`). Whenever input `i` wins arbitration, it performs `weight_i[i]` consecutive
 // transfers, after which the arbiter grants access to the next contending input. Over a full
 // arbitration round, input `i` therefore performs `weight_i[i]` out of `sum(weight_i)`
 // transfers. The bandwidth share of each input is thus proportional to its weight. The higher the
 // weight, the more bandwidth the input is granted. Every weight must be at least 1.
+//
+// An arbitration round is never interrupted. If the winner pauses between two transfers, the
+// arbiter waits for it, so that a transaction spanning several transfers is never interleaved
+// with other traffic.
 //
 // A transfer is a generic valid/ready handshake on the output, so the unit of a weight depends on
 // what the handshake represents. In this sense, the approach can be adapted to various arbitration
@@ -70,7 +74,10 @@ module cc_wrr_arbiter #(
   // Index from which input the data came from.
   output idx_t                            idx_o,
   // Error flags for illegal weight values.
-  output logic    [NumIn-1:0]             weight_error_o
+  output logic    [NumIn-1:0]             weight_error_o,
+  // Input that owns the in-progress arbitration round (one-hot). An upstream stage that filters
+  // `req_i` must not mask this input until its round ends, otherwise the arbiter waits forever.
+  output logic    [NumIn-1:0]             round_owner_o
 );
 
   // Arbitration control.
@@ -78,10 +85,10 @@ module cc_wrr_arbiter #(
   idx_t                   winner_idx;             // index of next arbitration winner
   logic [NumIn-1:0]       req_lock_q, req_lock_d; // current contender set
   logic                   start_arb;              // start of arbitration round
-  logic                   early_end_arb;          // arbitration round ends before last transfer
   logic                   end_arb;                // end of arbitration round -> advance rr pointer
   logic                   end_arb_q,  end_arb_d;
   logic                   done_arb;               // last transfer of the round is accepted
+  logic [NumIn-1:0]       owner_q,    owner_d;    // input that owns the current round
 
   // Transfer control.
   logic                   transfer;               // one output transfer
@@ -153,8 +160,8 @@ module cc_wrr_arbiter #(
   assign last_transfer = (cnt_eff == WeightWidth'(1));
   assign done_arb      = transfer & last_transfer;
 
-  assign early_end_arb = (|req_lock_q) & ~req_i[winner_idx];
-  assign end_arb       = done_arb | early_end_arb;
+  // The arbitration round terminates after its last transfer.
+  assign end_arb       = done_arb;
 
   // Decrement on each transfer. Hold during stalls and idle cycles.
   assign cnt_d     = transfer ? (cnt_eff - WeightWidth'(1)) : cnt_eff;
@@ -163,6 +170,23 @@ module cc_wrr_arbiter #(
   `FFARNC(req_lock_q, req_lock_d, flush_i, '0,   clk_i, rst_ni)
   `FFARNC(end_arb_q,  end_arb_d,  flush_i, 1'b0, clk_i, rst_ni)
   `FFARNC(cnt_q,      cnt_d,      flush_i, '0,   clk_i, rst_ni)
+
+  /////////////////////////////
+  // Arbitration round owner //
+  /////////////////////////////
+  always_comb begin : proc_owner
+    owner_d = owner_q;
+    if (end_arb) begin
+      owner_d = '0;
+    end else if (start_arb && any_req) begin
+      owner_d = '0;
+      owner_d[winner_idx] = 1'b1;
+    end
+  end
+
+  `FFARNC(owner_q, owner_d, flush_i, '0, clk_i, rst_ni)
+
+  assign round_owner_o = owner_q;
 
   ///////////////////
   // Error control //
@@ -188,6 +212,8 @@ module cc_wrr_arbiter #(
   end
   `ASSUME(flush_not_stalled, flush_i |-> !(req_o && !gnt_i), clk_i, !rst_ni,
           "Flush while an output transfer is pending.")
+  `ASSUME(req_pending_stable, req_o && !gnt_i |=> req_i[$past(idx_o)], clk_i, !rst_ni || flush_i,
+          "Request withdrawn while its transfer was pending.")
   `endif
 
 endmodule

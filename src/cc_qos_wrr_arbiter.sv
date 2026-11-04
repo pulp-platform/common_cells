@@ -21,10 +21,13 @@
 // ## QoS priority-aware arbitration
 //
 // This mechanism arbitrates based on the QoS priority level of each input (`qos_i`). Traffic
-// streams with a higher QoS priority level are served first. The output follows the valid/ready
-// handshake. To this end, the set of inputs at the highest QoS priority level is frozen while
-// the output is stalled, so that a higher-priority request arriving during a stall is only
-// considered after the pending transfer.
+// streams with a higher QoS priority level are served first. QoS priority is only enforced between
+// arbitration rounds. Once an input wins arbitration, its round of transfers is not preempted by a
+// higher-priority request, which is only considered when the round ends. All transfers of a round
+// are assumed to belong to the same QoS priority level, as they come from the same traffic owner.
+// The output follows the valid/ready handshake. To this end, the set of inputs at the highest QoS
+// priority level is also frozen while the output is stalled, so that a higher-priority request
+// arriving during a stall is only considered after the pending transfer.
 //
 // ## Weighted round-robin arbitration
 //
@@ -85,7 +88,7 @@ module cc_qos_wrr_arbiter #(
   parameter bit          EnableQos      = 1'b1,
   // Enable the weighted round-robin arbitration.
   parameter bit          EnableWrr      = 1'b1,
-  // Enable QoS aging. Only effective if `EnableQos` is set.
+  // Enable the QoS aging. Only effective if `EnableQos` is set.
   parameter bit          EnableAging    = 1'b1,
   // Derived parameters, do **not** overwrite!
   //
@@ -133,6 +136,7 @@ module cc_qos_wrr_arbiter #(
   logic                      transfer;                     // one output transfer
   logic                      lock_q,        lock_d;        // output stalled: freeze `qos_req_d`
   logic [NumIn-1:0]          qos_req_q,     qos_req_d;     // contenders of the WRR arbiter
+  logic [NumIn-1:0]          qos_round_owner;              // input owning the current round
 
   // QoS prioritization.
   logic [NumIn-1:0]          qos_top_req;                  // inputs at highest effective level
@@ -212,9 +216,10 @@ module cc_qos_wrr_arbiter #(
     end
 
     // Freeze the contenders while the output is stalled, so that `req_o` is never withdrawn
-    // because of a higher-priority request arriving in the meantime.
+    // because of a higher-priority request arriving in the meantime. Moreover, keep the owner of
+    // the current round as a contender until its round ends, so that QoS never preempts a round.
     assign lock_d    = req_o & ~gnt_i;
-    assign qos_req_d = lock_q ? (qos_req_q & req_i) : qos_top_req;
+    assign qos_req_d = (lock_q ? (qos_req_q & req_i) : qos_top_req) | (qos_round_owner & req_i);
 
     `FFARNC(lock_q,    lock_d,    flush_i, 1'b0, clk_i, rst_ni)
     `FFARNC(qos_req_q, qos_req_d, flush_i, '0,   clk_i, rst_ni)
@@ -260,7 +265,8 @@ module cc_qos_wrr_arbiter #(
     .gnt_i          ( gnt_i                ),
     .data_o         ( data_o               ),
     .idx_o          ( idx_o                ),
-    .weight_error_o ( qos_wrr_weight_error )
+    .weight_error_o ( qos_wrr_weight_error ),
+    .round_owner_o  ( qos_round_owner      )
   );
 
   assign weight_error_o = EnableWrr ? qos_wrr_weight_error : '0;
