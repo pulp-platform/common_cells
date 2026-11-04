@@ -35,6 +35,8 @@ module cc_cdc_fifo_gray_tb;
   parameter int unsigned MAX_DELAY_PS = 0;
   parameter int unsigned SRC_START_DELAY_PS = 0;
   parameter int unsigned DST_START_DELAY_PS = 0;
+  /// Test the memory-based variant `cc_cdc_fifo_gray_ram` instead.
+  parameter bit          USE_RAM_DUT = 1'b0;
 
   localparam int unsigned FifoDepth = 2**DEPTH;
   localparam int unsigned PtrWidth = DEPTH + 1;
@@ -45,8 +47,10 @@ module cc_cdc_fifo_gray_tb;
     DstReadyRandom
   } dst_ready_mode_e;
 
-  time tck_src = TCK_SRC_PS * 1ps;
-  time tck_dst = TCK_DST_PS * 1ps;
+  // `realtime`: with the integer `time` type (timeunit 1ns) an odd period
+  // such as 5000 ps was truncated to 4 ns by the `/ 2` in the clock generators.
+  realtime tck_src = TCK_SRC_PS * 1ps;
+  realtime tck_dst = TCK_DST_PS * 1ps;
 
   logic        src_rst_ni = 1'b1;
   logic        src_clk_i = 1'b0;
@@ -94,6 +98,26 @@ module cc_cdc_fifo_gray_tb;
       .async_wptr_mon_o ( async_wptr_mon ),
       .async_rptr_mon_o ( async_rptr_mon )
     );
+  end else if (USE_RAM_DUT) begin : gen_dut
+    cc_cdc_fifo_gray_ram #(
+      .data_t     ( logic [31:0] ),
+      .LogDepth   ( DEPTH        ),
+      .SyncStages ( SYNC_STAGES  )
+    ) i_dut (
+      .src_rst_ni,
+      .src_clk_i,
+      .src_data_i,
+      .src_valid_i,
+      .src_ready_o,
+      .dst_rst_ni,
+      .dst_clk_i,
+      .dst_data_o,
+      .dst_valid_o,
+      .dst_ready_i
+    );
+
+    assign async_wptr_mon = i_dut.async_wptr;
+    assign async_rptr_mon = i_dut.async_rptr;
   end else begin : gen_dut
     cc_cdc_fifo_gray #(
       .data_t     ( logic [31:0] ),
@@ -121,12 +145,12 @@ module cc_cdc_fifo_gray_tb;
   // --------------------------------------------------------------------------
   initial begin : gen_src_clk
     #(SRC_START_DELAY_PS * 1ps);
-    forever #(tck_src / 2) src_clk_i = ~src_clk_i;
+    forever #(tck_src / 2.0) src_clk_i = ~src_clk_i;
   end
 
   initial begin : gen_dst_clk
     #(DST_START_DELAY_PS * 1ps);
-    forever #(tck_dst / 2) dst_clk_i = ~dst_clk_i;
+    forever #(tck_dst / 2.0) dst_clk_i = ~dst_clk_i;
   end
 
   always @(negedge dst_clk_i) begin
@@ -392,10 +416,16 @@ module cc_cdc_fifo_gray_tb;
   initial begin : run_tests
     int unsigned seed;
 
+    // INJECT_DELAYS selects the split original regardless of USE_RAM_DUT;
+    // refuse the ambiguous combination instead of mislabeling the run.
+    if (INJECT_DELAYS && USE_RAM_DUT) begin
+      $fatal(1, "%m: INJECT_DELAYS=1 with USE_RAM_DUT=1 is not supported (delay injection exists for cc_cdc_fifo_gray only)");
+    end
     seed = SEED;
     seed = $urandom(seed);
-    $display("%m: SEED=0x%08h derived=0x%08h DEPTH=%0d SYNC_STAGES=%0d",
-             SEED, seed, DEPTH, SYNC_STAGES);
+    $display("%m: SEED=0x%08h derived=0x%08h DEPTH=%0d SYNC_STAGES=%0d DUT=%s",
+             SEED, seed, DEPTH, SYNC_STAGES,
+             USE_RAM_DUT ? "cc_cdc_fifo_gray_ram" : "cc_cdc_fifo_gray");
 
     reset_both_domains();
 

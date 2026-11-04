@@ -97,6 +97,7 @@ filesets:
       - src/cc_stream_xbar.sv
       # Level 3
       - src/cc_cdc_fifo_gray_clearable.sv
+      - src/cc_cdc_fifo_gray_ram.sv
       - src/cc_cdc_2phase_clearable.sv
       - src/cc_mem_to_banks_detailed.sv
       - src/cc_stream_omega_net.sv
