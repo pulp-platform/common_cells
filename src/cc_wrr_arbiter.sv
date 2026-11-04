@@ -44,9 +44,9 @@
 module cc_wrr_arbiter #(
   // Number of request channels to arbitrate.
   parameter int unsigned NumIn       = 4,
-  // Data width of the payload in bits. Not needed if `data_t` is overwritten.
+  // Width of the data payload in bits. Not needed if `data_t` is overwritten.
   parameter int unsigned DataWidth   = 32,
-  // Data type of the payload. It can be overwritten with a custom type.
+  // Type of the data payload. It can be overwritten with a custom type.
   parameter type         data_t      = logic [DataWidth-1:0],
   // Width of the input weights. A weight may range from 1 to `2**WeightWidth-1`.
   // A weight of 0 is illegal.

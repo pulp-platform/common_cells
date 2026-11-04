@@ -72,9 +72,9 @@
 module cc_qos_wrr_arbiter #(
   // Number of request channels to arbitrate.
   parameter int unsigned NumIn          = 4,
-  // Data width of the payload in bits. Not needed if `data_t` is overwritten.
+  // Width of the data payload in bits. Not needed if `data_t` is overwritten.
   parameter int unsigned DataWidth      = 32,
-  // Data type of the payload. It can be overwritten with a custom type.
+  // Type of the data payload. It can be overwritten with a custom type.
   parameter type         data_t         = logic [DataWidth-1:0],
   // Width of the input QoS priority level. Default is 4.
   parameter int unsigned QosWidth       = 4,
