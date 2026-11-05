@@ -14,36 +14,46 @@
 //
 // This testbench includes the following tests:
 //
-// 1. `dut_vs_ref_rr`: this test assesses the DUT back-compatibility with `cc_rr_arb_tree`.
-//    The DUT must be cycle-equivalent to the reference arbiter, which runs in lock-step
-//    on the same stimuli. The traffic is generated as in `cc_rr_arb_tree_tb`. QoS and
-//    weights are maintained equal across different inputs.
+// 1. `dut_vs_ref_rr_fixed_no_stall`: this test assesses the DUT back-compatibility with
+//    `cc_rr_arb_tree`. The DUT must be cycle-equivalent to the reference arbiter, which runs in
+//    lock-step on the same stimuli. The traffic follows the fixed schedule of `cc_rr_arb_tree_tb`:
+//    inputs stop requesting one after the other, then only even inputs request. These requests do
+//    not follow the valid/ready handshake, so the output is never stalled. QoS and weights are
+//    maintained equal across different inputs.
 //
-// 2. `dut_vs_ref_wrr_saturated`: this test assesses the weighted round-robin arbitration of the DUT
-//    against the standalone `cc_wrr_arbiter`. Each arbitration round must last exactly
+// 2. `dut_vs_ref_rr_random_stall`: this test assesses the DUT back-compatibility with
+//    `cc_rr_arb_tree` under output backpressure. The DUT must be cycle-equivalent to the reference
+//    arbiter, which runs in lock-step on the same stimuli. Requests arrive with random timing and
+//    follow the valid/ready handshake, and the output is under random backpressure. While the
+//    output is stalled, its request, index and data must remain stable. QoS and weights are
+//    maintained equal across different inputs.
+//
+// 3. `dut_vs_ref_wrr_saturated_stall`: this test assesses the weighted round-robin arbitration of
+//    the DUT against the standalone `cc_wrr_arbiter`. Each arbitration round must last exactly
 //    `weight_i[i]` transfers. Arbitration rounds must rotate in round-robin order. The DUT must be
-//    cycle-equivalent to the reference arbiter, which runs in lock-step on the same stimuli. QoS is
-//    maintained equal across different inputs, while each input has a distinct weight.
+//    cycle-equivalent to the reference arbiter, which runs in lock-step on the same stimuli. All
+//    inputs are saturated, and the output is under random backpressure. QoS is maintained equal
+//    across different inputs, while each input has a distinct weight.
 //
-// 3. `dut_vs_ref_wrr_random`: this test assesses the weighted round-robin arbitration of the DUT
-//    against the standalone `cc_wrr_arbiter` under random traffic. The DUT must be cycle-equivalent
-//    to the reference arbiter, which runs in lock-step on the same stimuli. All checks on the DUT
-//    therefore also apply to the reference arbiter. Requests arrive with random timing, and the
-//    output is under random back-pressure. QoS is maintained equal across different inputs, while
-//    weights are random.
+// 4. `dut_vs_ref_wrr_random_stall`: this test assesses the weighted round-robin arbitration of the
+//    DUT against the standalone `cc_wrr_arbiter` under random traffic. The DUT must be
+//    cycle-equivalent to the reference arbiter, which runs in lock-step on the same stimuli. All
+//    checks on the DUT therefore also apply to the reference arbiter. Requests arrive with random
+//    timing, and the output is under random backpressure. QoS is maintained equal across different
+//    inputs, while weights are random.
 //
-// 4. `dut_qos_aging`: this test assesses the QoS priority-aware arbitration and the QoS aging of
-//    the DUT. Each arbitration round must start with an input at the highest effective QoS priority
-//    level. Aging must prevent starvation by ensuring a stalled requester not to exceed
-//    `StarvationBound` of waiting time. `StarvationBound` is a safe upper bound on the time an
-//    input needs to age up to the highest QoS priority level and then wait for its round-robin
-//    turn. All inputs are saturated, and the output is under random back-pressure. Inputs are
+// 5. `dut_qos_aging_saturated_stall`: this test assesses the QoS priority-aware arbitration and the
+//    QoS aging of the DUT. Each arbitration round must start with an input at the highest effective
+//    QoS priority level. Aging must prevent starvation by ensuring a stalled requester not to
+//    exceed `StarvationBound` of waiting time. `StarvationBound` is a safe upper bound on the time
+//    an input needs to age up to the highest QoS priority level and then wait for its round-robin
+//    turn. All inputs are saturated, and the output is under random backpressure. Inputs are
 //    spread over several QoS priority levels, two inputs per level with different weights, so that
 //    the weighted split within a QoS priority level is also exercised.
 //
-// 5. `dut_all_random`: this test assesses all the mechanisms of the DUT together. Requests arrive
-//    with random timing, carrying a random QoS priority level. Weights are randomized at every
-//    repetition of the test and the output is under random back-pressure.
+// 6. `dut_all_random_stall`: this test assesses all the mechanisms of the DUT together. Requests
+//    arrive with random timing, carrying a random QoS priority level. Weights and the backpressure
+//    rate are randomized at every repetition of the test.
 
 module cc_qos_wrr_arbiter_tb #(
   // Simulation parameters.
