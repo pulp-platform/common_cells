@@ -15,7 +15,7 @@
 module cc_stream_demux #(
   /// Number of connected outputs.
   parameter  int unsigned NumOup    = 32'd1,
-  /// Dependent parameters, DO NOT OVERRIDE!
+  /// Dependent parameter, DO NOT OVERRIDE!
   localparam int unsigned LogNumOup = (NumOup > 32'd1) ? unsigned'($clog2(NumOup)) : 1'b1
 ) (
   input  logic                 inp_valid_i,

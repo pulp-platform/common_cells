@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 ### Added
 - `cc_stream_downsizer`, `cc_stream_upsizer`: Add ready/valid stream width converters
+- `cc_wrr_arbiter`: Add weighted round-robin arbiter, built on `cc_rr_arb_tree`
+- `cc_qos_wrr_arbiter`: Add weighted round-robin arbiter with QoS priority levels and aging
 
 ## 2.0.0-beta.3 - 2026-07-29
 ### Added
