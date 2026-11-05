@@ -41,6 +41,17 @@ for num in 1 4 7; do
   call_vsim cc_rr_arb_tree_tb -GNumInp=$num -coverage -voptargs="+acc +cover=bcesfx" -suppress vsim-3009
 done
 
+for num in 1 4 7; do
+  for age in 1 4 7; do
+    call_vsim cc_qos_wrr_arbiter_tb -GNumIn=$num -GAgingThreshold=$age -coverage -voptargs="+acc +cover=bcesfx" -suppress vsim-3009
+  done
+done
+
+for cfg in "1 1 0" "1 0 1" "1 0 0" "0 1 0" "0 0 0"; do
+  read -r qos wrr aging <<< "${cfg}"
+  call_vsim cc_qos_wrr_arbiter_tb -GNumIn=4 -GAgingThreshold=4 -GEnableQos=$qos -GEnableWrr=$wrr -GEnableAging=$aging -coverage -voptargs="+acc +cover=bcesfx" -suppress vsim-3009
+done
+
 for spill_reg in 0 1; do
   for num_inp in 1 4 18; do
     for num_out in 1 4 18; do
