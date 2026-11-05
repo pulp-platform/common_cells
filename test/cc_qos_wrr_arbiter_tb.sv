@@ -72,7 +72,8 @@ module cc_qos_wrr_arbiter_tb #(
   parameter bit           EnableAging     = 1'b1,
   // Number of request channels to arbitrate.
   parameter int unsigned  NumIn           = 32'd4,
-  // Number of input requests in a test, rounded up to be a multiple of the input weight during tests.
+  // Number of input requests in a test, rounded up to be a multiple of the input weight during
+  // tests.
   parameter int unsigned  NumReqs         = 32'd20000,
   // Width of the data payload in bits.
   parameter int unsigned  DataWidth       = 32'd32,
@@ -113,7 +114,7 @@ module cc_qos_wrr_arbiter_tb #(
   // DUT interface.
   logic                 clk;
   logic                 rst_n;
-  logic                 flush;
+  logic                 clr;
   logic    [NumIn-1:0]  req_i_dut;
   logic    [NumIn-1:0]  gnt_o_dut;
   data_t   [NumIn-1:0]  data_i_dut;
@@ -146,13 +147,13 @@ module cc_qos_wrr_arbiter_tb #(
   int unsigned          stall_percent;         // backpressure probability (%)
   int unsigned          num_inputs_done;       // number of input drivers that sent all requests
 
-  // Flush control.
-  logic                 flush_test;            // flush between consecutive tests
+  // Clear control.
+  logic                 clr_test;              // clear between consecutive tests
 
   ////////////////////////
   // Signal assignments //
   ////////////////////////
-  assign flush      = flush_test;
+  assign clr        = clr_test;
   assign weight_eff = EnableWrr ? weight_i_dut : {NumIn{weight_t'(1)}};
 
   assign compare_ref_rr_en  = compare_ref_rr  || (!EnableQos && !EnableWrr);
@@ -247,12 +248,12 @@ module cc_qos_wrr_arbiter_tb #(
     @(posedge clk);
   endtask : run_input_drivers
 
-  // Separate two tests: let the output drain, then flush the DUT and the reference model.
+  // Separate two tests: let the output drain, then clear the DUT and the reference model.
   task automatic next_test(input string name);
     repeat (10) @(posedge clk);
-    flush_test <= #ApplTime 1'b1;
+    clr_test <= #ApplTime 1'b1;
     @(posedge clk);
-    flush_test <= #ApplTime 1'b0;
+    clr_test <= #ApplTime 1'b0;
     @(posedge clk);
     test_name = name;
     $display("[%0t] Test %s", $time, name);
@@ -277,7 +278,7 @@ module cc_qos_wrr_arbiter_tb #(
     check_arb_round_order = 1'b0;
     compare_ref_rr        = 1'b0;
     compare_ref_wrr       = 1'b0;
-    flush_test            = 1'b0;
+    clr_test              = 1'b0;
     req_i_dut             = '0;
     data_i_dut            = '0;
     qos_i_dut             = '0;
@@ -467,7 +468,7 @@ module cc_qos_wrr_arbiter_tb #(
       end
 
       // Check output stability under backpressure.
-      if (check_output_stable && stalled && !flush) begin
+      if (check_output_stable && stalled && !clr) begin
         assert (req_o_dut && (idx_o_dut == stall_idx) && (data_o_dut === stall_data)) else
           $error("[%s] Output changed while stalled: req_o=%b idx_o=%0d (was %0d)",
                  test_name, req_o_dut, idx_o_dut, stall_idx);
@@ -508,7 +509,7 @@ module cc_qos_wrr_arbiter_tb #(
 
       // Check that no input waits for more than `StarvationBound` transfers.
       for (int unsigned i = 0; i < NumIn; i++) begin
-        if (!req_i_dut[i] || (transfer && (idx_o_dut == i)) || flush) begin
+        if (!req_i_dut[i] || (transfer && (idx_o_dut == i)) || clr) begin
           starvation_cnt[i] = 0;
         end else if (transfer) begin
           starvation_cnt[i]++;
@@ -547,7 +548,7 @@ module cc_qos_wrr_arbiter_tb #(
       // Check that each arbitration round matches the expected interval of time, proportional to
       // the input weight value. Check also that the round-robin arbiter serves inputs following
       // the expected ordering.
-      if (!check_arb_round_order || (num_inputs_done > 0) || flush) begin
+      if (!check_arb_round_order || (num_inputs_done > 0) || clr) begin
         arb_round_idx = -1;
       end else if (transfer) begin
         if (idx_o_dut == arb_round_idx) begin
@@ -570,11 +571,11 @@ module cc_qos_wrr_arbiter_tb #(
       end
 
       // Update the reference model.
-      stalled      = req_o_dut && !gnt_i_dut && !flush;
+      stalled      = req_o_dut && !gnt_i_dut && !clr;
       stall_idx    = idx_o_dut;
       stall_data   = data_o_dut;
       qos_aging_up = transfer && ((AgingThreshold <= 1) || (qos_aging_cnt == AgingThreshold - 1));
-      if (flush) begin
+      if (clr) begin
         qos_aging_cnt = 0;
         owner_cnt     = 0;
         foreach (qos_aging[i]) qos_aging[i] = 0;
@@ -611,7 +612,7 @@ module cc_qos_wrr_arbiter_tb #(
   ) i_dut_qos_wrr (
     .clk_i          ( clk                ),
     .rst_ni         ( rst_n              ),
-    .flush_i        ( flush              ),
+    .clr_i          ( clr                ),
     .req_i          ( req_i_dut          ),
     .gnt_o          ( gnt_o_dut          ),
     .data_i         ( data_i_dut         ),
@@ -635,7 +636,7 @@ module cc_qos_wrr_arbiter_tb #(
   ) i_ref_wrr (
     .clk_i          ( clk              ),
     .rst_ni         ( rst_n            ),
-    .flush_i        ( flush            ),
+    .clr_i          ( clr              ),
     .req_i          ( req_i_ref_wrr    ),
     .gnt_o          ( gnt_o_ref_wrr    ),
     .data_i         ( data_i_dut       ),
@@ -659,7 +660,7 @@ module cc_qos_wrr_arbiter_tb #(
   ) i_ref_rr (
     .clk_i   ( clk           ),
     .rst_ni  ( rst_n         ),
-    .flush_i ( flush         ),
+    .clr_i   ( clr           ),
     .rr_i    ( '0            ),
     .req_i   ( req_i_ref_rr  ),
     .gnt_o   ( gnt_o_ref_rr  ),

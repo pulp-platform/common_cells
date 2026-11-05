@@ -114,7 +114,7 @@ module cc_qos_wrr_arbiter #(
 ) (
   input  logic                               clk_i,
   input  logic                               rst_ni,
-  input  logic                               flush_i,
+  input  logic                               clr_i,
   // Input channels.
   input  logic    [NumIn-1:0]                req_i,
   output logic    [NumIn-1:0]                gnt_o,
@@ -168,7 +168,7 @@ module cc_qos_wrr_arbiter #(
     ) i_qos_aging_cnt (
       .clk_i,
       .rst_ni,
-      .clear_i    ( flush_i | qos_aging_up ),
+      .clr_i      ( clr_i | qos_aging_up   ),
       .en_i       ( transfer               ),
       .load_i     ( 1'b0                   ),
       .down_i     ( 1'b0                   ),
@@ -221,8 +221,8 @@ module cc_qos_wrr_arbiter #(
     assign lock_d    = req_o & ~gnt_i;
     assign qos_req_d = (lock_q ? (qos_req_q & req_i) : qos_top_req) | (qos_round_owner & req_i);
 
-    `FFARNC(lock_q,    lock_d,    flush_i, 1'b0, clk_i, rst_ni)
-    `FFARNC(qos_req_q, qos_req_d, flush_i, '0,   clk_i, rst_ni)
+    `FFARNC(lock_q,    lock_d,    clr_i, 1'b0, clk_i, rst_ni)
+    `FFARNC(qos_req_q, qos_req_d, clr_i, '0,   clk_i, rst_ni)
   end else begin : gen_no_qos
     // All inputs are at the same QoS priority level.
     for (genvar i = 0; i < NumIn; i++) begin : gen_qos_eff
@@ -256,7 +256,7 @@ module cc_qos_wrr_arbiter #(
   ) i_cc_wrr_arbiter (
     .clk_i,
     .rst_ni,
-    .flush_i        ( flush_i              ),
+    .clr_i          ( clr_i                ),
     .req_i          ( qos_req_d            ),
     .gnt_o          ( gnt_o                ),
     .data_i         ( data_i               ),
@@ -288,7 +288,7 @@ module cc_qos_wrr_arbiter #(
       ) i_qos_aging (
         .clk_i,
         .rst_ni,
-        .clear_i    ( flush_i | qos_aging_clr[i] ),
+        .clr_i      ( clr_i | qos_aging_clr[i]   ),
         .en_i       ( qos_aging_en[i]            ),
         .load_i     ( 1'b0                       ),
         .down_i     ( 1'b0                       ),
@@ -311,16 +311,16 @@ module cc_qos_wrr_arbiter #(
   ////////////////
   `ifndef COMMON_CELLS_ASSERTS_OFF
   `ASSERT_INIT(numin_0, NumIn >= 1, "Need at least one input.")
-  `ASSERT(req_implies_input, req_o |-> |req_i, clk_i, !rst_ni || flush_i,
+  `ASSERT(req_implies_input, req_o |-> |req_i, clk_i, !rst_ni || clr_i,
           "Output valid must imply at least one input valid.")
   `ASSERT(req_stable, req_o && !gnt_i |=> req_o && (idx_o == $past(idx_o)), clk_i,
-          !rst_ni || flush_i, "Output valid must stay stable until it is granted.")
+          !rst_ni || clr_i, "Output valid must stay stable until it is granted.")
   if (EnableQos) begin : gen_qos_assumptions
     for (genvar i = 0; i < NumIn; i++) begin : gen_qos_stable
-      `ASSUME(qos_stable, req_i[i] && !gnt_o[i] |=> $stable(qos_i[i]), clk_i, !rst_ni || flush_i,
+      `ASSUME(qos_stable, req_i[i] && !gnt_o[i] |=> $stable(qos_i[i]), clk_i, !rst_ni || clr_i,
               $sformatf("QoS of input %0d changed while its request was waiting.", i))
     end
-    `ASSERT(qos_eff_bounded, qos_eff_max <= EffWidth'(AgingQosMax), clk_i, !rst_ni || flush_i,
+    `ASSERT(qos_eff_bounded, qos_eff_max <= EffWidth'(AgingQosMax), clk_i, !rst_ni || clr_i,
             "Effective QoS priority level above the highest QoS priority level.")
   end
   `ASSERT_INIT(aging_threshold_0, AgingThreshold >= 1, "AgingThreshold must be at least 1.")

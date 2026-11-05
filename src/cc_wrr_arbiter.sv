@@ -60,7 +60,7 @@ module cc_wrr_arbiter #(
 ) (
   input  logic                            clk_i,
   input  logic                            rst_ni,
-  input  logic                            flush_i,
+  input  logic                            clr_i,
   // Input channels.
   input  logic    [NumIn-1:0]             req_i,
   output logic    [NumIn-1:0]             gnt_o,
@@ -122,7 +122,7 @@ module cc_wrr_arbiter #(
   ) i_cc_rr_arb_tree (
     .clk_i,
     .rst_ni,
-    .flush_i ( flush_i      ),
+    .clr_i   ( clr_i        ),
     .rr_i    ( '0           ),
     .req_i   ( req_lock_d   ),
     .gnt_o   ( /* unused */ ),
@@ -167,9 +167,9 @@ module cc_wrr_arbiter #(
   assign cnt_d     = transfer ? (cnt_eff - WeightWidth'(1)) : cnt_eff;
   assign end_arb_d = end_arb;
 
-  `FFARNC(req_lock_q, req_lock_d, flush_i, '0,   clk_i, rst_ni)
-  `FFARNC(end_arb_q,  end_arb_d,  flush_i, 1'b0, clk_i, rst_ni)
-  `FFARNC(cnt_q,      cnt_d,      flush_i, '0,   clk_i, rst_ni)
+  `FFARNC(req_lock_q, req_lock_d, clr_i, '0,   clk_i, rst_ni)
+  `FFARNC(end_arb_q,  end_arb_d,  clr_i, 1'b0, clk_i, rst_ni)
+  `FFARNC(cnt_q,      cnt_d,      clr_i, '0,   clk_i, rst_ni)
 
   /////////////////////////////
   // Arbitration round owner //
@@ -184,7 +184,7 @@ module cc_wrr_arbiter #(
     end
   end
 
-  `FFARNC(owner_q, owner_d, flush_i, '0, clk_i, rst_ni)
+  `FFARNC(owner_q, owner_d, clr_i, '0, clk_i, rst_ni)
 
   assign round_owner_o = owner_q;
 
@@ -200,19 +200,19 @@ module cc_wrr_arbiter #(
   ////////////////
   `ifndef COMMON_CELLS_ASSERTS_OFF
   `ASSERT_INIT(numin_0, NumIn >= 1, "Need at least one input.")
-  `ASSERT(req_implies_input, req_o |-> |req_i, clk_i, !rst_ni || flush_i,
+  `ASSERT(req_implies_input, req_o |-> |req_i, clk_i, !rst_ni || clr_i,
           "Output valid must imply at least one input valid.")
-  `ASSERT(gnt_onehot, $onehot0(gnt_o), clk_i, !rst_ni || flush_i,
+  `ASSERT(gnt_onehot, $onehot0(gnt_o), clk_i, !rst_ni || clr_i,
           "Grant must be one-hot or zero.")
-  `ASSERT(gnt_implies_req, |gnt_o |-> gnt_i, clk_i, !rst_ni || flush_i,
+  `ASSERT(gnt_implies_req, |gnt_o |-> gnt_i, clk_i, !rst_ni || clr_i,
           "A grant out implies the downstream granted in.")
   for (genvar i = 0; i < NumIn; i++) begin : gen_weight_assumptions
     `ASSUME(weight_nonzero, weight_i[i] != '0, clk_i, !rst_ni,
             $sformatf("Weight of input %0d is 0, which is illegal.", i))
   end
-  `ASSUME(flush_not_stalled, flush_i |-> !(req_o && !gnt_i), clk_i, !rst_ni,
-          "Flush while an output transfer is pending.")
-  `ASSUME(req_pending_stable, req_o && !gnt_i |=> req_i[$past(idx_o)], clk_i, !rst_ni || flush_i,
+  `ASSUME(clr_not_stalled, clr_i |-> !(req_o && !gnt_i), clk_i, !rst_ni,
+          "Clear while an output transfer is pending.")
+  `ASSUME(req_pending_stable, req_o && !gnt_i |=> req_i[$past(idx_o)], clk_i, !rst_ni || clr_i,
           "Request withdrawn while its transfer was pending.")
   `endif
 
