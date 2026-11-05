@@ -79,6 +79,8 @@ The generic synchronizer is provided by the [`tech_cells_generic`](https://githu
 | [`cc_shift_register`](src/cc_shift_register.sv)                           | Shift register for arbitrary types                                                                        | active |               |
 | [`cc_shift_register_gated`](src/cc_shift_register_gated.sv)               | Shift register with ICG for arbitrary types                                                               | active |               |
 | [`cc_rr_arb_tree`](src/cc_rr_arb_tree.sv)                                 | Round-robin arbiter for req/gnt and vld/rdy interfaces with optional priority                             | active |               |
+| [`cc_wrr_arbiter`](src/cc_wrr_arbiter.sv)                                 | Weighted round-robin arbiter with per-input weights                      | active |               |
+| [`cc_qos_wrr_arbiter`](src/cc_qos_wrr_arbiter.sv)                         | Weighted round-robin arbiter with QoS priority levels and aging to mitigate starvation                        | active |               |
 | [`cc_fall_through_register`](src/cc_fall_through_register.sv)             | Fall-through register with ready/valid interface                                                          | active |               |
 | [`cc_spill_register_flushable`](src/cc_spill_register_flushable.sv)       | Register with ready/valid interface to cut all combinational interface paths and additional flush signal. | active |               |
 | [`cc_spill_register`](src/cc_spill_register.sv)                           | Register with ready/valid interface to cut all combinational interface paths                              | active |               |
