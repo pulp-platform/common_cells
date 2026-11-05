@@ -200,7 +200,7 @@ module cc_qos_wrr_arbiter_tb #(
   /////////
   // DUT //
   /////////
-  assign round_owner = i_dut_qos_wrr.i_cc_wrr_arbiter.round_owner_o;
+  assign arb_round_owner = i_dut_qos_wrr.i_cc_wrr_arbiter.round_owner_o;
 
   cc_qos_wrr_arbiter #(
     .NumIn          ( NumIn          ),
@@ -212,19 +212,19 @@ module cc_qos_wrr_arbiter_tb #(
     .EnableWrr      ( EnableWrr      ),
     .EnableAging    ( EnableAging    )
   ) i_dut_qos_wrr (
-    .clk_i          ( clk             ),
-    .rst_ni         ( rst_n           ),
-    .flush_i        ( flush           ),
-    .req_i          ( req_inp         ),
-    .gnt_o          ( gnt_inp         ),
-    .data_i         ( data_inp        ),
-    .qos_i          ( qos_inp         ),
-    .weight_i       ( weight          ),
-    .req_o          ( req_oup         ),
-    .gnt_i          ( gnt_oup         ),
-    .data_o         ( data_oup        ),
-    .idx_o          ( idx_oup         ),
-    .weight_error_o ( weight_error    )
+    .clk_i          ( clk                ),
+    .rst_ni         ( rst_n              ),
+    .flush_i        ( flush              ),
+    .req_i          ( req_i_dut          ),
+    .gnt_o          ( gnt_o_dut          ),
+    .data_i         ( data_i_dut         ),
+    .qos_i          ( qos_i_dut          ),
+    .weight_i       ( weight_i_dut       ),
+    .req_o          ( req_o_dut          ),
+    .gnt_i          ( gnt_i_dut          ),
+    .data_o         ( data_o_dut         ),
+    .idx_o          ( idx_o_dut          ),
+    .weight_error_o ( weight_error_o_dut )
   );
 
   ////////////////////////
@@ -236,19 +236,19 @@ module cc_qos_wrr_arbiter_tb #(
     .DataWidth   ( DataWidth   ),
     .WeightWidth ( WeightWidth )
   ) i_ref_wrr (
-    .clk_i          ( clk             ),
-    .rst_ni         ( rst_n           ),
-    .flush_i        ( flush           ),
-    .req_i          ( req_ref_wrr     ),
-    .gnt_o          ( gnt_wrr         ),
-    .data_i         ( data_inp        ),
-    .weight_i       ( weight_ref_wrr  ),
-    .req_o          ( req_wrr         ),
-    .gnt_i          ( gnt_oup         ),
-    .data_o         ( data_wrr        ),
-    .idx_o          ( idx_wrr         ),
-    .weight_error_o (                 ),
-    .round_owner_o  (                 )
+    .clk_i          ( clk              ),
+    .rst_ni         ( rst_n            ),
+    .flush_i        ( flush            ),
+    .req_i          ( req_i_ref_wrr    ),
+    .gnt_o          ( gnt_o_ref_wrr    ),
+    .data_i         ( data_i_dut       ),
+    .weight_i       ( weight_i_ref_wrr ),
+    .req_o          ( req_o_ref_wrr    ),
+    .gnt_i          ( gnt_i_dut        ),
+    .data_o         ( data_o_ref_wrr   ),
+    .idx_o          ( idx_o_ref_wrr    ),
+    .weight_error_o (                  ),
+    .round_owner_o  (                  )
   );
 
   // Standalone basic round-robin arbiter.
@@ -260,17 +260,17 @@ module cc_qos_wrr_arbiter_tb #(
     .LockIn    ( 1'b1      ),
     .FairArb   ( 1'b1      )
   ) i_ref_rr (
-    .clk_i   ( clk      ),
-    .rst_ni  ( rst_n      ),
-    .flush_i ( flush      ),
-    .rr_i    ( '0         ),
-    .req_i   ( req_ref_rr ),
-    .gnt_o   ( gnt_rr     ),
-    .data_i  ( data_inp   ),
-    .gnt_i   ( gnt_oup    ),
-    .req_o   ( req_rr     ),
-    .data_o  ( data_rr    ),
-    .idx_o   ( idx_rr     )
+    .clk_i   ( clk           ),
+    .rst_ni  ( rst_n         ),
+    .flush_i ( flush         ),
+    .rr_i    ( '0            ),
+    .req_i   ( req_i_ref_rr  ),
+    .gnt_o   ( gnt_o_ref_rr  ),
+    .data_i  ( data_i_dut    ),
+    .gnt_i   ( gnt_i_dut     ),
+    .req_o   ( req_o_ref_rr  ),
+    .data_o  ( data_o_ref_rr ),
+    .idx_o   ( idx_o_ref_rr  )
   );
 
 endmodule
