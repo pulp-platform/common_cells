@@ -99,12 +99,12 @@ sources:
       - src/cc_stream_fork_dynamic.sv
       - src/cc_stream_join.sv
       - src/cc_wrr_arbiter.sv
-      - src/cc_qos_wrr_arbiter.sv
       # Level 2
       - src/cc_cdc_reset_ctrlr.sv
       - src/cc_cdc_fifo_gray.sv
       - src/cc_fall_through_register.sv
       - src/cc_id_queue.sv
+      - src/cc_qos_wrr_arbiter.sv
       - src/cc_stream_to_mem.sv
       - src/cc_stream_arbiter.sv
       - src/cc_stream_downsizer.sv
