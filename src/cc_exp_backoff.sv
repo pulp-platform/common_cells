@@ -63,7 +63,7 @@ module cc_exp_backoff #(
 
   // mask the wait counts with exponentially increasing mask (shift reg)
   assign mask_d = (clr_cnt_i) ? '0                                :
-                  (set_cnt_i) ? {{(WIDTH-MaxExp){1'b0}},mask_q[MaxExp-2:0], 1'b1} :
+                  (set_cnt_i) ? (((mask_q << 1) | WIDTH'(1)) & WIDTH'((1 << MaxExp) - 1)) :
                             mask_q;
 
   assign cnt_d =  (clr_cnt_i)      ? '0                :

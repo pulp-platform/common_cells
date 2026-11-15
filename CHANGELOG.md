@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - `cc_stream_downsizer`, `cc_stream_upsizer`: Add ready/valid stream width converters
 
+### Fixed
+- `cc_exp_backoff`: Fix the out-of-range part-select for `MaxExp == 1` so the backoff mask saturates at `2**MaxExp-1`
+
 ## 2.0.0-beta.3 - 2026-07-29
 ### Added
 - `cc_heaviside`: Add open-source formal verification and document saturation behavior
