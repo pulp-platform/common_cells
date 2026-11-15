@@ -33,7 +33,9 @@ module stream_fifo #(
     // output interface
     output T                      data_o,     // output data
     output logic                  valid_o,    // fifo is not empty
-    input  logic                  ready_i     // pop head from fifo
+    input  logic                  ready_i,    // pop head from fifo
+    // fault indication: rel_fifo internal TMR fault or ECC error on the popped word
+    output logic                  fifo_fault_o
 );
 
     logic push, pop;
@@ -44,23 +46,58 @@ module stream_fifo #(
     assign ready_o = ~full;
     assign valid_o = ~empty;
 
-    fifo_v3 #(
-        .FALL_THROUGH   (FALL_THROUGH),
-        .DATA_WIDTH     (DATA_WIDTH),
-        .DEPTH          (DEPTH),
-        .dtype(T)
-    ) fifo_i (
+    // The FIFO storage is protected by a Hsiao SECDED code: the data is encoded
+    // before it enters rel_fifo and decoded (and corrected) after it leaves.
+    localparam int unsigned DataW    = $bits(T);
+    localparam int unsigned ProtW    = hsiao_ecc_pkg::min_ecc(DataW);
+    localparam int unsigned EccDataW = DataW + ProtW;
+
+    logic [DataW-1:0]    data_raw_in, data_raw_out;
+    logic [EccDataW-1:0] data_enc, data_enc_out;
+    logic [1:0]          ecc_err;
+    logic                rel_fifo_fault;
+
+    assign data_raw_in = data_i;
+
+    hsiao_ecc_enc #(
+        .DataWidth ( DataW ),
+        .ProtWidth ( ProtW )
+    ) i_ecc_enc (
+        .in  ( data_raw_in ),
+        .out ( data_enc    )
+    );
+
+    rel_fifo #(
+        .FallThrough ( FALL_THROUGH ),
+        .DataWidth   ( EccDataW     ),
+        .Depth       ( DEPTH        )
+    ) i_rel_fifo (
         .clk_i,
         .rst_ni,
         .flush_i,
         .testmode_i,
-        .full_o     (full),
-        .empty_o    (empty),
+        .full_o     ( full         ),
+        .empty_o    ( empty        ),
         .usage_o,
-        .data_i,
-        .push_i     (push),
-        .data_o,
-        .pop_i      (pop)
+        .data_i     ( data_enc     ),
+        .push_i     ( push         ),
+        .data_o     ( data_enc_out ),
+        .pop_i      ( pop          ),
+        .fault_o    ( rel_fifo_fault )
     );
+
+    hsiao_ecc_dec #(
+        .DataWidth ( DataW ),
+        .ProtWidth ( ProtW )
+    ) i_ecc_dec (
+        .in         ( data_enc_out ),
+        .out        ( data_raw_out ),
+        .syndrome_o ( ),
+        .err_o      ( ecc_err      )
+    );
+
+    assign data_o       = T'(data_raw_out);
+    // ecc_err is only meaningful while the head of the FIFO holds valid data
+    assign fifo_fault_o = rel_fifo_fault | (valid_o & (|ecc_err));
 
 endmodule

@@ -53,10 +53,31 @@ module fall_through_register #(
     //     .pop_i          (ready_i & ~fifo_empty)
     // );
 
+    // The FIFO storage is protected by a Hsiao SECDED code: the data is encoded
+    // before it enters rel_fifo and decoded (and corrected) after it leaves.
+    localparam int unsigned DataW    = $bits(T);
+    localparam int unsigned ProtW    = hsiao_ecc_pkg::min_ecc(DataW);
+    localparam int unsigned EccDataW = DataW + ProtW;
+
+    logic [DataW-1:0]    data_raw_in, data_raw_out;
+    logic [EccDataW-1:0] data_enc, data_enc_out;
+    logic [1:0]          ecc_err;
+    logic                rel_fifo_fault;
+
+    assign data_raw_in = data_i;
+
+    hsiao_ecc_enc #(
+        .DataWidth ( DataW ),
+        .ProtWidth ( ProtW )
+    ) i_ecc_enc (
+        .in  ( data_raw_in ),
+        .out ( data_enc    )
+    );
+
     rel_fifo #(
-        .FallThrough ( 1'b0 ),
-        .DataWidth ( $bits(T) ),
-        .Depth ( 1 )
+        .FallThrough ( 1'b0     ),
+        .DataWidth   ( EccDataW ),
+        .Depth       ( 1        )
     ) i_id_fifo (
         .clk_i(clk_i),
         .rst_ni(rst_ni),
@@ -65,13 +86,26 @@ module fall_through_register #(
         .full_o (fifo_full),
         .empty_o (fifo_empty),
         .usage_o ( ),
-        // Onehot mask.
-        .data_i (data_i),
+        .data_i (data_enc),
         .push_i (valid_i & ~fifo_full),
-        .data_o (data_o),
+        .data_o (data_enc_out),
         .pop_i (ready_i & ~fifo_empty),
-        .fault_o (fifo_fault_o)
+        .fault_o (rel_fifo_fault)
     );
+
+    hsiao_ecc_dec #(
+        .DataWidth ( DataW ),
+        .ProtWidth ( ProtW )
+    ) i_ecc_dec (
+        .in         ( data_enc_out ),
+        .out        ( data_raw_out ),
+        .syndrome_o ( ),
+        .err_o      ( ecc_err      )
+    );
+
+    assign data_o       = T'(data_raw_out);
+    // ecc_err is only meaningful while the FIFO holds valid data
+    assign fifo_fault_o = rel_fifo_fault | (valid_o & (|ecc_err));
 
     assign ready_o = ~fifo_full;
     assign valid_o = ~fifo_empty;
