@@ -14,7 +14,7 @@ module cc_stream_throttle #(
     /// The maximum amount of allowable outstanding requests
     parameter int unsigned MaxNumPending = 1,
     /// The width of the credit counter (*DO NOT OVERWRITE*)
-    localparam int unsigned CntWidth = cc_pkg::idx_width(MaxNumPending),
+    localparam int unsigned CntWidth = cc_pkg::cnt_width(MaxNumPending),
     /// The type of the credit counter (*DO NOT OVERWRITE*)
     localparam type credit_t = logic [CntWidth-1:0]
 ) (
@@ -69,8 +69,9 @@ module cc_stream_throttle #(
         end
     end
 
-    // credit is available
-    assign credit_available = credit_q <= (credit_i - 'd1);
+    // credit is available if there is room for one more outstanding transfer. A credit of zero
+    // means no outstanding transfers are allowed, so nothing passes.
+    assign credit_available = (credit_i != '0) && (credit_q < credit_i);
 
     // a request id passed on as valid if the input is valid and we have credit.
     assign req_valid_o = req_valid_i & credit_available;
