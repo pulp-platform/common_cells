@@ -64,7 +64,21 @@ module fall_through_register #(
     logic [1:0]          ecc_err;
     logic                rel_fifo_fault;
 
+    // Simulation only: unused bits of the payload (e.g. rs2 of an FP convert)
+    // may arrive as X. One X bit would poison the whole Hsiao codeword (syndrome
+    // becomes X, so the decoder output is all X). Replace X bits by 0 before
+    // encoding. In silicon these bits are plain 0/1, so nothing is needed.
+`ifndef TARGET_SYNTHESIS
+    always_comb begin
+      logic [DataW-1:0] data_in_vec;
+      data_in_vec = data_i;
+      for (int unsigned b = 0; b < DataW; b++) begin
+        data_raw_in[b] = $isunknown(data_in_vec[b]) ? 1'b0 : data_in_vec[b];
+      end
+    end
+`else
     assign data_raw_in = data_i;
+`endif
 
     hsiao_ecc_enc #(
         .DataWidth ( DataW ),
