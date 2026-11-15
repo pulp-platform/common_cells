@@ -69,8 +69,9 @@ module cc_stream_throttle #(
         end
     end
 
-    // credit is available
-    assign credit_available = credit_q <= (credit_i - 'd1);
+    // credit is available if there is room for one more outstanding transfer. A credit of zero
+    // means no outstanding transfers are allowed, so nothing passes.
+    assign credit_available = (credit_i != '0) && (credit_q < credit_i);
 
     // a request id passed on as valid if the input is valid and we have credit.
     assign req_valid_o = req_valid_i & credit_available;
