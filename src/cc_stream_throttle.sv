@@ -14,7 +14,7 @@ module cc_stream_throttle #(
     /// The maximum amount of allowable outstanding requests
     parameter int unsigned MaxNumPending = 1,
     /// The width of the credit counter (*DO NOT OVERWRITE*)
-    localparam int unsigned CntWidth = cc_pkg::idx_width(MaxNumPending),
+    localparam int unsigned CntWidth = cc_pkg::cnt_width(MaxNumPending),
     /// The type of the credit counter (*DO NOT OVERWRITE*)
     localparam type credit_t = logic [CntWidth-1:0]
 ) (

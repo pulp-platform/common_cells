@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 - `cc_stream_throttle`: Block all requests when `credit_i` is zero instead of letting every request through
+- `cc_stream_throttle`, `stream_throttle`: Size `credit_i` with `cc_pkg::cnt_width(MaxNumPending)` so `MaxNumPending` is representable when it is a power of two (the port is one bit wider for those values)
 
 ## 2.0.0-beta.3 - 2026-07-29
 ### Added

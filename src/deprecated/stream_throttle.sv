@@ -7,7 +7,7 @@
 module stream_throttle #(
   parameter int unsigned MaxNumPending = 1,
   // Derived parameters (kept for backward compatibility, do not override)
-  parameter int unsigned CntWidth      = cc_pkg::idx_width(MaxNumPending),
+  parameter int unsigned CntWidth      = cc_pkg::cnt_width(MaxNumPending),
   parameter type         credit_t      = logic [CntWidth-1:0]
 ) (
   input  logic    clk_i,
