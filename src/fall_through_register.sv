@@ -27,28 +27,50 @@ module fall_through_register #(
     // Output port
     output logic    valid_o,
     input  logic    ready_i,
-    output T        data_o
+    output T        data_o,
+    // Correctable (TMR-masked) fault reported by the FIFO.
+    output logic    fifo_fault_o
 );
 
     logic   fifo_empty,
             fifo_full;
 
-    fifo_v3 #(
-        .FALL_THROUGH   (1'b1),
-        .DEPTH          (1),
-        .dtype          (T)
-    ) i_fifo (
-        .clk_i          (clk_i),
-        .rst_ni         (rst_ni),
-        .flush_i        (clr_i),
-        .testmode_i     (testmode_i),
-        .full_o         (fifo_full),
-        .empty_o        (fifo_empty),
-        .usage_o        (),
-        .data_i         (data_i),
-        .push_i         (valid_i & ~fifo_full),
-        .data_o         (data_o),
-        .pop_i          (ready_i & ~fifo_empty)
+    // fifo_v3 #(
+    //     .FALL_THROUGH   (1'b1),
+    //     .DEPTH          (1),
+    //     .dtype          (T)
+    // ) i_fifo (
+    //     .clk_i          (clk_i),
+    //     .rst_ni         (rst_ni),
+    //     .flush_i        (clr_i),
+    //     .testmode_i     (testmode_i),
+    //     .full_o         (fifo_full),
+    //     .empty_o        (fifo_empty),
+    //     .usage_o        (),
+    //     .data_i         (data_i),
+    //     .push_i         (valid_i & ~fifo_full),
+    //     .data_o         (data_o),
+    //     .pop_i          (ready_i & ~fifo_empty)
+    // );
+
+    rel_fifo #(
+        .FallThrough ( 1'b0 ),
+        .DataWidth ( $bits(T) ),
+        .Depth ( 1 )
+    ) i_id_fifo (
+        .clk_i(clk_i),
+        .rst_ni(rst_ni),
+        .flush_i (clr_i),
+        .testmode_i (testmode_i),
+        .full_o (fifo_full),
+        .empty_o (fifo_empty),
+        .usage_o ( ),
+        // Onehot mask.
+        .data_i (data_i),
+        .push_i (valid_i & ~fifo_full),
+        .data_o (data_o),
+        .pop_i (ready_i & ~fifo_empty),
+        .fault_o (fifo_fault_o)
     );
 
     assign ready_o = ~fifo_full;
